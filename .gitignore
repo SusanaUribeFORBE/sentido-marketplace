@@ -1,0 +1,14 @@
+# Archivos de sistema
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/
+*.code-workspace
+
+# Logs
+*.log
+
+# Dependencias (no aplica aquí, proyecto vanilla)
+node_modules/

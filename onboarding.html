@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Completa tu perfil — SENTIDO</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --green: #2D5A3D; --green-dark: #1F3D2B; --green-light: #E8F0E9; --green-mid: #4A8A5D;
+      --copper: #C4895A; --copper-light: #F5EDE3; --copper-dark: #A8744A;
+      --cream: #F5F0E8; --cream-dark: #EDE8DB;
+      --gray-50: #F8F6F2; --gray-100: #F0EDE6; --gray-200: #E0DAD0;
+      --gray-400: #9C9488; --gray-600: #5C554A; --gray-700: #3D3830; --gray-900: #1F1C17;
+      --white: #ffffff;
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--cream); color: var(--gray-900); }
+    nav {
+      background: var(--cream); border-bottom: 1px solid var(--gray-200);
+      padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 68px;
+    }
+    .nav-logo { display: flex; align-items: center; text-decoration: none; }
+    .nav-logo img { height: 52px; width: auto; }
+
+    /* STATES */
+    .state { display: none; }
+    .state.active { display: block; }
+
+    /* LOADING STATE */
+    .loading-screen { min-height: 60vh; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 14px; }
+    .loading-spinner { width: 40px; height: 40px; border: 3px solid var(--gray-200); border-top-color: var(--green); border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text { color: var(--gray-400); font-size: 14px; }
+
+    /* ERROR STATE */
+    .error-screen { max-width: 480px; margin: 80px auto; text-align: center; padding: 0 24px; }
+    .error-icon { font-size: 56px; margin-bottom: 16px; }
+    .error-title { font-size: 22px; font-weight: 800; margin-bottom: 10px; }
+    .error-sub { font-size: 15px; color: var(--gray-600); line-height: 1.6; }
+
+    /* CONGRATS HERO */
+    .congrats-hero { background: linear-gradient(150deg, #1F3D2B 0%, #2D5A3D 100%); color: white; padding: 48px 24px 40px; text-align: center; }
+    .congrats-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(196,137,90,0.25); border: 1px solid rgba(196,137,90,0.5); border-radius: 20px; padding: 5px 16px; font-size: 12px; font-weight: 700; margin-bottom: 18px; color: #F5C9A0; }
+    .congrats-hero h1 { font-size: clamp(22px, 4vw, 34px); font-weight: 900; margin-bottom: 10px; }
+    .congrats-hero h1 span { color: #C4895A; }
+    .congrats-hero p { font-size: 15px; color: rgba(255,255,255,0.75); max-width: 520px; margin: 0 auto; line-height: 1.6; }
+
+    .seals-preview { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 18px; }
+    .seal { font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 12px; border: 1px solid; }
+    .seal-green { background: rgba(209,250,229,0.2); color: #6ee7b7; border-color: rgba(110,231,183,0.4); }
+    .seal-blue { background: rgba(219,234,254,0.2); color: #93c5fd; border-color: rgba(147,197,253,0.4); }
+    .seal-purple { background: rgba(237,233,254,0.2); color: #c4b5fd; border-color: rgba(196,181,253,0.4); }
+    .seal-amber { background: rgba(254,243,199,0.2); color: #fcd34d; border-color: rgba(252,211,77,0.4); }
+    .seal-teal { background: rgba(204,251,241,0.2); color: #5eead4; border-color: rgba(94,234,212,0.4); }
+    .seal-pink { background: rgba(252,231,243,0.2); color: #f9a8d4; border-color: rgba(249,168,212,0.4); }
+
+    /* FORM */
+    .form-container { max-width: 700px; margin: 36px auto 60px; padding: 0 24px; }
+    .progress-bar { background: var(--gray-200); border-radius: 4px; height: 5px; margin-bottom: 28px; overflow: hidden; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--green), var(--green-mid)); border-radius: 4px; transition: width 0.3s; }
+
+    .form-card { background: var(--white); border-radius: 16px; border: 1.5px solid var(--gray-200); padding: 28px; margin-bottom: 18px; }
+    .form-card-title { font-size: 17px; font-weight: 800; margin-bottom: 5px; }
+    .form-card-sub { font-size: 13px; color: var(--gray-400); margin-bottom: 20px; }
+    .form-group { margin-bottom: 16px; }
+    .form-label { font-size: 12px; font-weight: 700; color: var(--gray-600); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 5px; display: block; }
+    .form-input, .form-textarea, .form-select {
+      width: 100%; padding: 10px 12px; border: 1.5px solid var(--gray-200); border-radius: 8px;
+      font-size: 14px; font-family: inherit; outline: none; background: var(--cream); transition: border-color 0.2s; color: var(--gray-900);
+    }
+    .form-input:focus, .form-textarea:focus, .form-select:focus { border-color: var(--green-mid); background: white; }
+    .form-textarea { resize: vertical; min-height: 85px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .hint { font-size: 12px; color: var(--gray-400); margin-top: 4px; }
+
+    .photo-preview { display: none; width: 100%; height: 180px; object-fit: cover; border-radius: 10px; margin-top: 8px; border: 1.5px solid var(--gray-200); }
+
+    /* PRODUCTS */
+    .product-block { background: var(--gray-50); border: 1.5px solid var(--gray-200); border-radius: 10px; padding: 14px; margin-bottom: 10px; }
+    .product-block-title { font-size: 12px; font-weight: 700; color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; }
+    .form-row-3 { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px; }
+
+    /* SUBMIT BUTTON */
+    .submit-btn {
+      width: 100%; padding: 16px; background: var(--green); color: white;
+      border: none; border-radius: 12px; font-size: 16px; font-weight: 900;
+      cursor: pointer; transition: all 0.15s; margin-top: 8px;
+    }
+    .submit-btn:hover { background: var(--green-dark); transform: translateY(-1px); }
+    .submit-btn:disabled { background: var(--gray-200); color: var(--gray-400); cursor: not-allowed; transform: none; }
+
+    /* SUCCESS STATE */
+    .success-screen { max-width: 520px; margin: 60px auto; text-align: center; padding: 0 24px; }
+    .success-icon { font-size: 80px; margin-bottom: 18px; }
+    .success-title { font-size: 28px; font-weight: 900; margin-bottom: 12px; color: var(--green); }
+    .success-sub { font-size: 16px; color: var(--gray-600); line-height: 1.65; margin-bottom: 28px; }
+    .success-card { background: var(--green-light); border: 1.5px solid var(--green-mid); border-radius: 14px; padding: 18px 22px; margin-bottom: 24px; text-align: left; }
+    .success-card-title { font-size: 12px; font-weight: 700; color: var(--green); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+    .success-card-text { font-size: 14px; color: var(--gray-700); line-height: 1.55; }
+    .btn-marketplace {
+      display: inline-flex; align-items: center; gap: 8px; padding: 14px 28px;
+      background: var(--green); color: white; border-radius: 10px;
+      font-size: 15px; font-weight: 800; text-decoration: none; transition: all 0.15s;
+    }
+    .btn-marketplace:hover { background: var(--green-dark); }
+
+    footer { background: var(--green-dark); color: rgba(255,255,255,0.65); text-align: center; padding: 28px; font-size: 13px; margin-top: 40px; }
+
+    @media (max-width: 600px) {
+      .form-row { grid-template-columns: 1fr; }
+      .form-row-3 { grid-template-columns: 1fr; }
+      .form-card { padding: 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="index.html"><img src="logo_sentido.png" alt="SENTIDO" /></a>
+</nav>
+
+<!-- LOADING -->
+<div class="state active" id="state-loading">
+  <div class="loading-screen">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Verificando tu invitación...</div>
+  </div>
+</div>
+
+<!-- ERROR -->
+<div class="state" id="state-error">
+  <div class="error-screen">
+    <div class="error-icon">🔑</div>
+    <div class="error-title">Link inválido o expirado</div>
+    <div class="error-sub" id="error-msg">Este link de onboarding no es válido. Si crees que es un error, contacta al equipo SENTIDO.</div>
+    <a href="index.html" style="display:inline-block;margin-top:24px;padding:12px 24px;background:var(--green);color:white;border-radius:10px;text-decoration:none;font-weight:700">Ir al inicio →</a>
+  </div>
+</div>
+
+<!-- MAIN FORM -->
+<div class="state" id="state-form">
+
+  <div class="congrats-hero">
+    <div class="congrats-badge">🎉 ¡Fuiste aprobado/a!</div>
+    <h1>Bienvenido/a a <span>SENTIDO</span>, <span id="emp-name">emprendedor/a</span></h1>
+    <p>Completa tu perfil para aparecer en el marketplace y empezar a vender a compradores conscientes.</p>
+    <div class="seals-preview" id="seals-preview"></div>
+  </div>
+
+  <div class="form-container">
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+
+    <!-- SECCIÓN 1: Foto -->
+    <div class="form-card">
+      <div class="form-card-title">📸 Foto de tu emprendimiento</div>
+      <div class="form-card-sub">Una buena imagen aumenta 3× las visitas a tu perfil. Puede ser de tus productos, tu equipo o tu proceso.</div>
+      <div class="form-group">
+        <label class="form-label">URL de imagen <span style="color:var(--copper)">*</span></label>
+        <input class="form-input" id="photo-url" type="url" placeholder="https://..." oninput="previewPhoto()" />
+        <div class="hint">Sube tu foto a Google Fotos, Imgur o Drive y pega el link aquí.</div>
+        <img class="photo-preview" id="photo-preview" alt="Vista previa" />
+      </div>
+    </div>
+
+    <!-- SECCIÓN 2: Descripción -->
+    <div class="form-card">
+      <div class="form-card-title">📝 Descripción y tagline</div>
+      <div class="form-card-sub">Esta es la primera frase que verán los compradores. Hazla memorable.</div>
+      <div class="form-group">
+        <label class="form-label">Tagline <span style="color:var(--copper)">*</span></label>
+        <input class="form-input" id="tagline" type="text" maxlength="140" placeholder="Una frase que describa lo que haces y para quién..." oninput="updateProgress()" />
+        <div class="hint" id="tagline-chars">0 / 140 caracteres</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Historia de impacto <span style="color:var(--copper)">*</span></label>
+        <textarea class="form-textarea" id="impact" placeholder="Cuéntanos el impacto real de tu emprendimiento: ¿cuántas personas beneficia? ¿qué problema resuelve? ¿qué evidencia tienes?" oninput="updateProgress()"></textarea>
+        <div class="hint">Este texto aparece en tu tarjeta del marketplace. Sé específico/a con números y evidencia.</div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN 3: Productos -->
+    <div class="form-card">
+      <div class="form-card-title">🛍️ Tus productos o servicios</div>
+      <div class="form-card-sub">Agrega hasta 3 productos principales. El precio puede ser un rango o descripción.</div>
+
+      <div class="product-block">
+        <div class="product-block-title">Producto 1 <span style="color:var(--copper)">*</span></div>
+        <div class="form-row-3">
+          <input class="form-input" id="p1-name" type="text" placeholder="Nombre del producto/servicio" />
+          <input class="form-input" id="p1-price" type="text" placeholder="Precio o rango" />
+          <input class="form-input" id="p1-raw" type="text" placeholder="$ en números (ej: 27000)" />
+        </div>
+      </div>
+      <div class="product-block">
+        <div class="product-block-title">Producto 2 <span style="color:var(--gray-400)">(opcional)</span></div>
+        <div class="form-row-3">
+          <input class="form-input" id="p2-name" type="text" placeholder="Nombre" />
+          <input class="form-input" id="p2-price" type="text" placeholder="Precio" />
+          <input class="form-input" id="p2-raw" type="text" placeholder="$ en números" />
+        </div>
+      </div>
+      <div class="product-block">
+        <div class="product-block-title">Producto 3 <span style="color:var(--gray-400)">(opcional)</span></div>
+        <div class="form-row-3">
+          <input class="form-input" id="p3-name" type="text" placeholder="Nombre" />
+          <input class="form-input" id="p3-price" type="text" placeholder="Precio" />
+          <input class="form-input" id="p3-raw" type="text" placeholder="$ en números" />
+        </div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN 4: Contacto -->
+    <div class="form-card">
+      <div class="form-card-title">📱 Datos de contacto</div>
+      <div class="form-card-sub">Los compradores verán el botón de WhatsApp en tu perfil para contactarte directamente.</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">WhatsApp <span style="color:var(--copper)">*</span></label>
+          <input class="form-input" id="whatsapp" type="tel" placeholder="3XXXXXXXXX" />
+          <div class="hint">Sin el +57, solo los 10 dígitos.</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Instagram (opcional)</label>
+          <input class="form-input" id="instagram" type="text" placeholder="@tu_emprendimiento" />
+        </div>
+      </div>
+    </div>
+
+    <button class="submit-btn" id="submit-btn" onclick="saveProfile()">
+      🚀 Publicar mi perfil en SENTIDO
+    </button>
+    <div style="text-align:center;margin-top:12px;font-size:12px;color:var(--gray-400)">
+      Al publicar, tu perfil aparecerá inmediatamente en el marketplace.
+    </div>
+  </div>
+</div>
+
+<!-- SUCCESS -->
+<div class="state" id="state-success">
+  <div class="success-screen">
+    <div class="success-icon">🌱</div>
+    <div class="success-title">¡Ya estás en el marketplace!</div>
+    <div class="success-sub" id="success-msg">Tu perfil está publicado y los compradores ya pueden encontrarte.</div>
+    <div class="success-card">
+      <div class="success-card-title">¿Qué sigue?</div>
+      <div class="success-card-text">
+        • Los compradores pueden agregar tus productos al carrito y contactarte.<br>
+        • Recibirás pedidos por WhatsApp con los detalles del comprador.<br>
+        • Próximamente: pagos en línea con Wompi / PSE integrados.
+      </div>
+    </div>
+    <a id="profile-link" href="marketplace.html" class="btn-marketplace">Ver mi perfil en SENTIDO →</a>
+  </div>
+</div>
+
+<footer>
+  <strong>SENTIDO</strong> — Marketplace de emprendimientos sostenibles con impacto verificado<br>
+  Medellín, Colombia · 2026
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="supabase-config.js"></script>
+<script src="data.js"></script>
+<script>
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const token = new URLSearchParams(location.search).get('token');
+let entrepreneur = null;
+
+function showState(id) {
+  document.querySelectorAll('.state').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+async function init() {
+  if (!token) {
+    document.getElementById('error-msg').textContent = 'No se encontró un token en la URL. Verifica el link que te enviaron.';
+    showState('state-error');
+    return;
+  }
+
+  try {
+    const { data, error } = await db
+      .from('entrepreneurs')
+      .select('*')
+      .eq('onboarding_token', token)
+      .single();
+
+    if (error || !data) {
+      document.getElementById('error-msg').textContent = 'No encontramos una invitación con este link. Puede que ya fue utilizado o es inválido.';
+      showState('state-error');
+      return;
+    }
+
+    if (data.onboarding_complete) {
+      // Already completed — show success and link to profile
+      document.getElementById('success-msg').innerHTML = `Tu perfil de <strong>${data.name}</strong> ya está publicado y activo en el marketplace.`;
+      document.getElementById('profile-link').href = `emprendimiento.html?id=${data.id}`;
+      showState('state-success');
+      return;
+    }
+
+    entrepreneur = data;
+    populateForm(data);
+    showState('state-form');
+    updateProgress();
+
+  } catch (e) {
+    console.error(e);
+    document.getElementById('error-msg').textContent = 'Error de conexión. Intenta de nuevo en unos minutos.';
+    showState('state-error');
+  }
+}
+
+function populateForm(emp) {
+  document.getElementById('emp-name').textContent = emp.name;
+
+  // Seals preview in hero
+  const seals = cleanSeals(emp.seals);
+  document.getElementById('seals-preview').innerHTML = seals.map(s =>
+    `<span class="seal ${sealColor(s).replace('seal-','seal-')}">${s}</span>`).join('');
+
+  // Pre-fill from application data
+  if (emp.photo_url) {
+    document.getElementById('photo-url').value = emp.photo_url;
+    previewPhoto();
+  }
+  if (emp.tagline) document.getElementById('tagline').value = emp.tagline;
+  if (emp.impact) document.getElementById('impact').value = emp.impact;
+  if (emp.whatsapp) document.getElementById('whatsapp').value = emp.whatsapp;
+
+  // Products
+  const products = emp.products || [];
+  for (let i = 0; i < Math.min(products.length, 3); i++) {
+    const p = products[i];
+    document.getElementById(`p${i+1}-name`).value = p.name || '';
+    document.getElementById(`p${i+1}-price`).value = p.price || '';
+    document.getElementById(`p${i+1}-raw`).value = p.rawPrice || '';
+  }
+}
+
+function previewPhoto() {
+  const url = document.getElementById('photo-url').value.trim();
+  const preview = document.getElementById('photo-preview');
+  if (url && url.startsWith('http')) {
+    preview.src = url;
+    preview.style.display = 'block';
+    preview.onerror = () => { preview.style.display = 'none'; };
+  } else {
+    preview.style.display = 'none';
+  }
+  updateProgress();
+}
+
+function updateProgress() {
+  const tagline = document.getElementById('tagline');
+  const chars = tagline.value.length;
+  document.getElementById('tagline-chars').textContent = `${chars} / 140 caracteres`;
+
+  const fields = [
+    document.getElementById('photo-url').value.trim(),
+    document.getElementById('tagline').value.trim(),
+    document.getElementById('impact').value.trim(),
+    document.getElementById('p1-name').value.trim(),
+    document.getElementById('whatsapp').value.trim()
+  ];
+  const filled = fields.filter(Boolean).length;
+  document.getElementById('progress-fill').style.width = `${(filled / fields.length) * 100}%`;
+}
+
+async function saveProfile() {
+  const photoUrl = document.getElementById('photo-url').value.trim();
+  const tagline = document.getElementById('tagline').value.trim();
+  const impact = document.getElementById('impact').value.trim();
+  const whatsapp = document.getElementById('whatsapp').value.trim().replace(/\D/g, '');
+  const p1Name = document.getElementById('p1-name').value.trim();
+
+  if (!photoUrl) { alert('Por favor agrega una foto de tu emprendimiento.'); return; }
+  if (!tagline) { alert('Por favor escribe el tagline de tu emprendimiento.'); return; }
+  if (!impact) { alert('Por favor describe el impacto de tu emprendimiento.'); return; }
+  if (!p1Name) { alert('Por favor agrega al menos un producto o servicio.'); return; }
+  if (!whatsapp) { alert('Por favor agrega tu número de WhatsApp.'); return; }
+
+  const products = [];
+  for (let i = 1; i <= 3; i++) {
+    const n = document.getElementById(`p${i}-name`).value.trim();
+    if (n) products.push({
+      name: n,
+      price: document.getElementById(`p${i}-price`).value.trim() || 'Consultar',
+      rawPrice: document.getElementById(`p${i}-raw`).value.trim() || ''
+    });
+  }
+
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.textContent = 'Publicando tu perfil...';
+
+  try {
+    const { error } = await db
+      .from('entrepreneurs')
+      .update({
+        photo_url: photoUrl,
+        tagline,
+        impact,
+        products,
+        whatsapp,
+        onboarding_complete: true,
+        updated_at: new Date().toISOString()
+      })
+      .eq('onboarding_token', token);
+
+    if (error) throw error;
+
+    // Re-fetch to get the ID
+    const { data: updated } = await db
+      .from('entrepreneurs')
+      .select('id, name')
+      .eq('onboarding_token', token)
+      .single();
+
+    document.getElementById('success-msg').innerHTML = `¡Tu perfil de <strong>${entrepreneur.name}</strong> está publicado! Los compradores ya pueden encontrarte y agregarte al carrito.`;
+    document.getElementById('profile-link').href = `emprendimiento.html?id=${updated?.id}`;
+    showState('state-success');
+
+  } catch (e) {
+    console.error(e);
+    alert('Error al guardar: ' + e.message);
+    btn.disabled = false;
+    btn.textContent = '🚀 Publicar mi perfil en SENTIDO';
+  }
+}
+
+// On load
+init();
+</script>
+</body>
+</html>
