@@ -1,0 +1,1212 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Registra tu emprendimiento — SENTIDO</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --green: #2D5A3D; --green-dark: #1F3D2B; --green-light: #E8F0E9; --green-mid: #4A8A5D;
+      --copper: #C4895A; --copper-light: #F5EDE3; --copper-dark: #A8744A;
+      --cream: #F5F0E8; --cream-dark: #EDE8DB;
+      --gray-50: #F8F6F2; --gray-100: #F0EDE6; --gray-200: #E0DAD0;
+      --gray-400: #9C9488; --gray-600: #5C554A; --gray-700: #3D3830; --gray-900: #1F1C17;
+      --white: #ffffff;
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--cream); color: var(--gray-900); }
+    nav {
+      background: var(--cream); border-bottom: 1px solid var(--gray-200);
+      position: sticky; top: 0; z-index: 200;
+      padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 68px;
+    }
+    .nav-logo { display: flex; align-items: center; text-decoration: none; }
+    .nav-logo img { height: 52px; width: auto; }
+    .nav-links { display: flex; gap: 6px; }
+    .nav-links a { font-size: 14px; font-weight: 600; color: var(--gray-600); text-decoration: none; padding: 7px 13px; border-radius: 8px; transition: all 0.15s; }
+    .nav-links a:hover { background: var(--gray-100); color: var(--green); }
+
+    .page-hero { background: linear-gradient(150deg, #1F3D2B 0%, #2D5A3D 100%); color: white; padding: 48px 24px 40px; text-align: center; }
+    .page-hero h1 { font-size: clamp(22px, 4vw, 34px); font-weight: 900; margin-bottom: 10px; }
+    .page-hero p { font-size: 15px; color: rgba(255,255,255,0.75); max-width: 500px; margin: 0 auto; line-height: 1.6; }
+
+    .form-container { max-width: 720px; margin: 40px auto; padding: 0 24px 60px; }
+
+    /* STEP INDICATOR */
+    .steps-bar { display: flex; align-items: center; margin-bottom: 32px; }
+    .step-dot {
+      width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--gray-200);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 800; color: var(--gray-400); flex-shrink: 0;
+      transition: all 0.2s;
+    }
+    .step-dot.active { background: var(--green); border-color: var(--green); color: white; }
+    .step-dot.done { background: var(--green-light); border-color: var(--green); color: var(--green); }
+    .step-line { flex: 1; height: 2px; background: var(--gray-200); margin: 0 6px; transition: background 0.2s; }
+    .step-line.done { background: var(--green); }
+    .step-label { font-size: 11px; font-weight: 600; color: var(--gray-400); margin-top: 4px; text-align: center; }
+
+    /* FORM CARD */
+    .form-card { background: var(--white); border-radius: 16px; border: 1.5px solid var(--gray-200); padding: 32px; }
+    .form-card-title { font-size: 20px; font-weight: 800; margin-bottom: 6px; }
+    .form-card-sub { font-size: 14px; color: var(--gray-600); margin-bottom: 28px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 18px; }
+    .form-row.single { grid-template-columns: 1fr; }
+    .form-group { display: flex; flex-direction: column; gap: 5px; }
+    .form-label { font-size: 12px; font-weight: 700; color: var(--gray-600); text-transform: uppercase; letter-spacing: 0.04em; }
+    .required { color: var(--copper); margin-left: 2px; }
+    .form-input, .form-textarea, .form-select {
+      padding: 10px 12px; border: 1.5px solid var(--gray-200); border-radius: 8px;
+      font-size: 14px; font-family: inherit; outline: none; background: var(--cream);
+      transition: border-color 0.2s; color: var(--gray-900);
+    }
+    .form-input:focus, .form-textarea:focus, .form-select:focus { border-color: var(--green-mid); background: white; }
+    .form-textarea { resize: vertical; min-height: 90px; }
+
+    /* SEALS CHECKBOXES */
+    .seals-grid { display: flex; flex-direction: column; gap: 8px; }
+    .seal-check { position: relative; }
+    .seal-check input { position: absolute; opacity: 0; width: 0; height: 0; }
+    .seal-check label {
+      display: flex; align-items: flex-start; gap: 12px; padding: 12px 14px; border-radius: 10px;
+      border: 1.5px solid var(--gray-200); cursor: pointer;
+      background: var(--cream); transition: all 0.15s; user-select: none;
+    }
+    .seal-check label:hover { border-color: var(--green-mid); background: var(--green-light); }
+    .seal-check input:checked + label { background: var(--green-light); border-color: var(--green); }
+    .seal-check input:checked + label .seal-name { color: var(--green); }
+    .seal-checkbox-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+    .seal-check-indicator {
+      width: 18px; height: 18px; border-radius: 4px; border: 2px solid var(--gray-200);
+      flex-shrink: 0; margin-top: 2px; background: white; display: flex; align-items: center;
+      justify-content: center; font-size: 11px; transition: all 0.15s;
+    }
+    .seal-check input:checked + label .seal-check-indicator { background: var(--green); border-color: var(--green); color: white; }
+    .seal-text { flex: 1; }
+    .seal-name { font-size: 13px; font-weight: 800; color: var(--gray-800); line-height: 1.3; margin-bottom: 3px; }
+    .seal-desc { font-size: 12px; color: var(--gray-500); line-height: 1.5; }
+
+    /* PRODUCT ROWS */
+    .product-entry { background: var(--gray-50); border-radius: 10px; border: 1.5px solid var(--gray-200); padding: 14px; margin-bottom: 10px; }
+    .product-entry-title { font-size: 12px; font-weight: 700; color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; }
+
+    /* NAV BUTTONS */
+    .form-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 28px; }
+    .btn-prev {
+      padding: 11px 22px; border: 2px solid var(--gray-200); border-radius: 10px;
+      background: transparent; font-size: 14px; font-weight: 700; color: var(--gray-600);
+      cursor: pointer; transition: all 0.15s;
+    }
+    .btn-prev:hover { border-color: var(--gray-400); color: var(--gray-900); }
+    .btn-next, .btn-submit {
+      padding: 12px 28px; background: var(--green); color: white; border: none;
+      border-radius: 10px; font-size: 15px; font-weight: 800; cursor: pointer; transition: all 0.15s;
+    }
+    .btn-next:hover, .btn-submit:hover { background: var(--green-dark); }
+    .btn-submit { background: var(--copper); }
+    .btn-submit:hover { background: var(--copper-dark); }
+
+    /* ── PANTALLAS DE RESULTADO ─────────────────────────── */
+    .result-screen { display: none; }
+    .result-screen.show { display: block; }
+
+    .result-page {
+      min-height: 100vh; background: #F5EDE0;
+      display: flex; align-items: flex-start; justify-content: center;
+      padding: 40px 20px 60px; position: relative; overflow: hidden;
+    }
+    .result-inner {
+      width: 100%; max-width: 700px; text-align: center;
+      position: relative; z-index: 2;
+    }
+
+    /* Logo */
+    .result-logo { margin-bottom: 28px; }
+    .result-logo img { height: 72px; width: auto; }
+
+    /* Título principal */
+    .result-main-title {
+      font-size: clamp(28px, 5vw, 46px); font-weight: 900;
+      color: #2D5A3D; line-height: 1.1; letter-spacing: -1px;
+      margin-bottom: 10px;
+    }
+    .result-main-sub {
+      font-size: 18px; color: #7A7060; margin-bottom: 22px; font-weight: 400;
+    }
+
+    /* Badge / Pill */
+    .result-badge-wrap { margin-bottom: 32px; }
+    .result-badge {
+      display: inline-block; padding: 11px 28px;
+      border: 2px solid #8B9E6A; border-radius: 50px;
+      background: #E8EDD8; color: #3A5228;
+      font-size: clamp(13px, 2vw, 16px); font-weight: 800;
+      letter-spacing: 0.01em; line-height: 1.35; max-width: 560px;
+    }
+
+    /* Cuerpo del mensaje */
+    .result-body {
+      text-align: left; max-width: 580px; margin: 0 auto;
+      font-size: 17px; color: #3D3830; line-height: 1.75;
+    }
+    .result-body p { margin-bottom: 16px; }
+    .result-body p:first-child { font-weight: 600; }
+
+    /* Botón CTA */
+    .result-cta {
+      display: inline-flex; align-items: center; gap: 8px;
+      margin-top: 32px; padding: 13px 28px;
+      background: #2D5A3D; color: white; border-radius: 10px;
+      font-size: 15px; font-weight: 800; text-decoration: none; transition: all 0.15s;
+    }
+    .result-cta:hover { background: #1F3D2B; }
+
+    /* Decoración botánica — esquinas */
+    .deco { position: absolute; z-index: 1; pointer-events: none; }
+    .deco-tl { top: 24px; left: 16px; font-size: 22px; line-height: 1.6; opacity: 0.55; }
+    .deco-tr { top: 16px; right: 12px; font-size: 22px; line-height: 1.6; opacity: 0.55; text-align: right; }
+    .deco-bl { bottom: 24px; left: 16px; font-size: 22px; opacity: 0.55; }
+    .deco-br { bottom: 16px; right: 12px; font-size: 22px; opacity: 0.55; text-align: right; }
+    @media (min-width: 600px) {
+      .deco-tl, .deco-tr, .deco-bl, .deco-br { font-size: 28px; }
+    }
+
+    .hint { font-size: 12px; color: var(--gray-400); margin-top: 3px; }
+    .hidden { display: none !important; }
+
+    footer { background: var(--green-dark); color: rgba(255,255,255,0.7); text-align: center; padding: 28px 24px; font-size: 13px; }
+
+    /* AI VERIFY VIEW */
+    .ai-verify-view { display: none; }
+    .ai-verify-view.active { display: block; }
+    .ai-loading-box { text-align: center; padding: 48px 24px; background: var(--white); border-radius: 16px; border: 1.5px solid var(--gray-200); }
+    .ai-loading-icon { font-size: 52px; margin-bottom: 14px; animation: pulse 1.4s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.12)} }
+    .ai-loading-title { font-size: 20px; font-weight: 800; margin-bottom: 8px; }
+    .ai-loading-sub { font-size: 14px; color: var(--gray-400); max-width: 420px; margin: 0 auto 22px; line-height: 1.6; }
+    .ai-spinner { width: 36px; height: 36px; border: 3px solid var(--gray-200); border-top-color: var(--green); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .ai-bar { height: 4px; background: linear-gradient(90deg, var(--green), var(--green-mid), var(--copper)); border-radius: 2px; margin-top: 18px; background-size: 200% 100%; animation: shimmer 1.5s linear infinite; }
+    @keyframes shimmer { 0%{background-position:100%} 100%{background-position:-100%} }
+
+    .ai-results-card { background: var(--white); border-radius: 16px; border: 1.5px solid var(--gray-200); overflow: hidden; }
+    .ai-result-header { display: flex; align-items: center; gap: 18px; padding: 22px 24px 18px; }
+    .ai-score-ring {
+      width: 72px; height: 72px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; font-weight: 900; border: 4px solid;
+    }
+    .score-high { border-color: #16a34a; color: #16a34a; background: #f0fdf4; }
+    .score-mid  { border-color: #d97706; color: #d97706; background: #fffbeb; }
+    .score-low  { border-color: #dc2626; color: #dc2626; background: #fff1f2; }
+    .ai-rec-badge { display: inline-block; font-size: 15px; font-weight: 900; padding: 6px 16px; border-radius: 10px; margin-bottom: 5px; }
+    .rec-aprobar  { background: #dcfce7; color: #166534; }
+    .rec-revisar  { background: #fef3c7; color: #92400e; }
+    .rec-rechazar { background: #fee2e2; color: #991b1b; }
+    .ai-rec-label-text { font-size: 12px; color: var(--gray-400); }
+    .ai-justif-section { padding: 0 24px 16px; font-size: 14px; color: var(--gray-700); line-height: 1.65; border-bottom: 1px solid var(--gray-100); }
+    .ai-seals-section { padding: 16px 24px; }
+    .ai-seals-group { margin-bottom: 14px; }
+    .ai-seals-group-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 7px; }
+    .ai-seals-row { display: flex; flex-wrap: wrap; gap: 6px; }
+    .seal-chip { font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 10px; display: flex; align-items: center; gap: 4px; }
+    .chip-ok  { background: #dcfce7; color: #166534; }
+    .chip-mid { background: #fef3c7; color: #92400e; }
+    .chip-no  { background: #fee2e2; color: #991b1b; }
+    .ai-notes-section { margin: 0 24px 16px; padding: 10px 14px; background: var(--gray-50); border-left: 3px solid var(--copper); border-radius: 0 8px 8px 0; font-size: 13px; color: var(--gray-600); line-height: 1.55; }
+    .ai-actions { display: flex; gap: 12px; padding: 16px 24px; border-top: 1px solid var(--gray-100); justify-content: flex-end; }
+    .btn-back-form { padding: 11px 20px; border: 2px solid var(--gray-200); border-radius: 9px; background: transparent; font-size: 14px; font-weight: 700; color: var(--gray-600); cursor: pointer; transition: all 0.15s; }
+    .btn-back-form:hover { border-color: var(--gray-400); }
+    .btn-confirm-submit { padding: 12px 26px; background: var(--green); color: white; border: none; border-radius: 9px; font-size: 14px; font-weight: 800; cursor: pointer; transition: all 0.15s; }
+    .btn-confirm-submit:hover { background: var(--green-dark); }
+    .btn-confirm-submit:disabled { background: var(--gray-200); color: var(--gray-400); cursor: not-allowed; }
+
+    @media (max-width: 600px) {
+      .form-row { grid-template-columns: 1fr; }
+      .seals-grid { grid-template-columns: 1fr 1fr; }
+      .form-card { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="index.html"><img src="logo_sentido.png" alt="SENTIDO" /></a>
+  <div class="nav-links">
+    <a href="index.html">Inicio</a>
+    <a href="marketplace.html">Marketplace</a>
+  </div>
+</nav>
+
+<div class="page-hero">
+  <h1>Registra tu emprendimiento 🌱</h1>
+  <p>Únete a la comunidad SENTIDO. El proceso de verificación toma menos de 5 días hábiles. El registro es gratuito.</p>
+</div>
+
+<div class="form-container" id="form-container-wrap">
+
+  <!-- STEP BAR -->
+  <div style="margin-bottom:28px">
+    <div class="steps-bar" id="steps-bar">
+      <div class="step-dot active" id="dot-1">1</div>
+      <div class="step-line" id="line-1"></div>
+      <div class="step-dot" id="dot-2">2</div>
+      <div class="step-line" id="line-2"></div>
+      <div class="step-dot" id="dot-3">3</div>
+      <div class="step-line" id="line-3"></div>
+      <div class="step-dot" id="dot-4">4</div>
+    </div>
+    <div style="display:flex;justify-content:space-between;padding:0 0px">
+      <span class="step-label" id="sl-1">Datos básicos</span>
+      <span class="step-label" id="sl-2">Productos</span>
+      <span class="step-label" id="sl-3">Impacto</span>
+      <span class="step-label" id="sl-4">Contacto</span>
+    </div>
+  </div>
+
+  <!-- STEP 1 -->
+  <div class="form-card" id="step-1">
+    <div class="form-card-title">Cuéntanos sobre tu emprendimiento</div>
+    <div class="form-card-sub">Información básica que aparecerá en tu perfil del marketplace.</div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Nombre del emprendimiento <span class="required">*</span></label>
+        <input class="form-input" id="f-name" type="text" placeholder="Ej: TodoSacha, Kattaleya..." />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Ciudad / Municipio <span class="required">*</span></label>
+        <input class="form-input" id="f-city" type="text" placeholder="Medellín, Bogotá..." />
+      </div>
+    </div>
+
+    <div class="form-row single">
+      <div class="form-group">
+        <label class="form-label">Descripción corta <span class="required">*</span></label>
+        <input class="form-input" id="f-tagline" type="text" placeholder="Una frase que describa lo que haces y para quién..." maxlength="140" />
+        <span class="hint">Máximo 140 caracteres. Aparece en tu tarjeta del marketplace.</span>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Estado de formalización</label>
+        <select class="form-select" id="f-formal">
+          <option value="SÍ">✓ Formalizado (RUT, NIT)</option>
+          <option value="En proceso">⏳ En proceso</option>
+          <option value="NO">○ Sin NIT aún</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Categoría principal</label>
+        <select class="form-select" id="f-cat">
+          <option>Alimentos y bebidas</option>
+          <option>Belleza y cuidado personal</option>
+          <option>Moda y accesorios</option>
+          <option>Hogar y limpieza</option>
+          <option>Servicios profesionales</option>
+          <option>Arte y artesanías</option>
+          <option>Salud y bienestar</option>
+          <option>Tecnología</option>
+          <option>Educación</option>
+          <option>Otro</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-row single">
+      <div class="form-group">
+        <label class="form-label">Sellos de impacto <span class="required">*</span></label>
+        <span class="hint" style="margin-bottom:10px;display:block">Selecciona los que aplican a tu emprendimiento (mínimo 1).</span>
+        <div class="seals-grid">
+
+          <div class="seal-check">
+            <input type="checkbox" id="s1" value="Bienestar Consciente">
+            <label for="s1">
+              <span class="seal-check-indicator">✓</span>
+              <span class="seal-checkbox-icon">🌡️</span>
+              <span class="seal-text">
+                <span class="seal-name">Bienestar Consciente</span>
+                <span class="seal-desc">Productos enfocados en la salud física y mental del consumidor (cosmética natural, bienestar, etc.) libres de químicos nocivos y testeados de forma ética.</span>
+              </span>
+            </label>
+          </div>
+
+          <div class="seal-check">
+            <input type="checkbox" id="s2" value="Liderazgo que Inspira">
+            <label for="s2">
+              <span class="seal-check-indicator">✓</span>
+              <span class="seal-checkbox-icon">💜</span>
+              <span class="seal-text">
+                <span class="seal-name">Liderazgo que Inspira</span>
+                <span class="seal-desc">El emprendimiento está liderado por mujeres o por personas de la comunidad LGBTI+, y promueve activamente la equidad de género y la diversidad como parte de su identidad.</span>
+              </span>
+            </label>
+          </div>
+
+          <div class="seal-check">
+            <input type="checkbox" id="s3" value="Jefatura de Hogar">
+            <label for="s3">
+              <span class="seal-check-indicator">✓</span>
+              <span class="seal-checkbox-icon">🏠</span>
+              <span class="seal-text">
+                <span class="seal-name">Jefatura de Hogar</span>
+                <span class="seal-desc">El equipo está compuesto principalmente por madres o padres cabeza de familia que son el único sustento económico de su hogar.</span>
+              </span>
+            </label>
+          </div>
+
+          <div class="seal-check">
+            <input type="checkbox" id="s4" value="Sello Economía Circular / Segunda Vida">
+            <label for="s4">
+              <span class="seal-check-indicator">✓</span>
+              <span class="seal-checkbox-icon">♻️</span>
+              <span class="seal-text">
+                <span class="seal-name">Sello Economía Circular / Segunda Vida</span>
+                <span class="seal-desc">Modelos de negocio que extienden el ciclo de vida de los materiales, comercialización de prendas de segundo uso o rediseño de procesos para residuo cero.</span>
+              </span>
+            </label>
+          </div>
+
+          <div class="seal-check">
+            <input type="checkbox" id="s5" value="Producción Limpia & Eco-Friendly">
+            <label for="s5">
+              <span class="seal-check-indicator">✓</span>
+              <span class="seal-checkbox-icon">🌿</span>
+              <span class="seal-text">
+                <span class="seal-name">Producción Limpia & Eco-Friendly</span>
+                <span class="seal-desc">Uso eficiente de recursos naturales, tecnologías verdes que reducen emisiones y procesos que no contaminan agua ni tierra.</span>
+              </span>
+            </label>
+          </div>
+
+          <div class="seal-check">
+            <input type="checkbox" id="s6" value="Cero Plástico / Empaque Ecológico">
+            <label for="s6">
+              <span class="seal-check-indicator">✓</span>
+              <span class="seal-checkbox-icon">🟤</span>
+              <span class="seal-text">
+                <span class="seal-name">Cero Plástico / Empaque Ecológico</span>
+                <span class="seal-desc">Productos cuyos envases o empaques son 100% reutilizables, reciclables o compostables, eliminando plásticos de un solo uso.</span>
+              </span>
+            </label>
+          </div>
+
+          <div class="seal-check">
+            <input type="checkbox" id="s7" value="Origen Rural">
+            <label for="s7">
+              <span class="seal-check-indicator">✓</span>
+              <span class="seal-checkbox-icon">🌾</span>
+              <span class="seal-text">
+                <span class="seal-name">Origen Rural</span>
+                <span class="seal-desc">El emprendimiento opera desde una zona rural o campo colombiano, o trabaja directamente con productores y comunidades campesinas fuera de los centros urbanos.</span>
+              </span>
+            </label>
+          </div>
+
+          <div class="seal-check">
+            <input type="checkbox" id="s8" value="Inclusión Económica & Empleo Digno">
+            <label for="s8">
+              <span class="seal-check-indicator">✓</span>
+              <span class="seal-checkbox-icon">🧡</span>
+              <span class="seal-text">
+                <span class="seal-name">Inclusión Económica & Empleo Digno</span>
+                <span class="seal-desc">Marcas que emplean activamente o integran en su cadena de valor a comunidades vulnerables o jóvenes en proceso de inclusión social (privadas de la libertad, excombatientes o víctimas del conflicto armado).</span>
+              </span>
+            </label>
+          </div>
+
+          <div class="seal-check">
+            <input type="checkbox" id="s9" value="Saberes Ancestrales & Artesanal">
+            <label for="s9">
+              <span class="seal-check-indicator">✓</span>
+              <span class="seal-checkbox-icon">🪡</span>
+              <span class="seal-text">
+                <span class="seal-name">Saberes Ancestrales & Artesanal</span>
+                <span class="seal-desc">Preservación de técnicas tradicionales (crochet, miyuki, tejidos, etc.) y dignificación del trabajo de comunidades artesanas del territorio.</span>
+              </span>
+            </label>
+          </div>
+
+          <div class="seal-check">
+            <input type="checkbox" id="s10" value="Comercio Justo Local">
+            <label for="s10">
+              <span class="seal-check-indicator">✓</span>
+              <span class="seal-checkbox-icon">☀️</span>
+              <span class="seal-text">
+                <span class="seal-name">Comercio Justo Local</span>
+                <span class="seal-desc">Relaciones comerciales equitativas con pequeños productores y agricultores locales, garantizando precios justos y erradicando la explotación de intermediarios.</span>
+              </span>
+            </label>
+          </div>
+
+          <div class="seal-check">
+            <input type="checkbox" id="s11" value="Innovación Sostenible & Biotech">
+            <label for="s11">
+              <span class="seal-check-indicator">✓</span>
+              <span class="seal-checkbox-icon">🔬</span>
+              <span class="seal-text">
+                <span class="seal-name">Innovación Sostenible & Biotech</span>
+                <span class="seal-desc">Uso de biotecnología o herramientas tecnológicas para crear productos cotidianos útiles mediante procesos de bajo impacto.</span>
+              </span>
+            </label>
+          </div>
+
+          <div class="seal-check">
+            <input type="checkbox" id="s12" value="Origen Orgánico y Biocomercio">
+            <label for="s12">
+              <span class="seal-check-indicator">✓</span>
+              <span class="seal-checkbox-icon">🍎</span>
+              <span class="seal-text">
+                <span class="seal-name">Origen Orgánico y Biocomercio</span>
+                <span class="seal-desc">Alimentos o productos de bienestar derivados de la biodiversidad local bajo criterios de conservación y agricultura sostenible.</span>
+              </span>
+            </label>
+          </div>
+
+          <div class="seal-check">
+            <input type="checkbox" id="s13" value="Adulto Mayor Activo">
+            <label for="s13">
+              <span class="seal-check-indicator">✓</span>
+              <span class="seal-checkbox-icon">👴</span>
+              <span class="seal-text">
+                <span class="seal-name">Adulto Mayor Activo</span>
+                <span class="seal-desc">El 30% del equipo o el/la fundador/a tiene 60 años o más. Valoramos la experiencia como activo productivo.</span>
+              </span>
+            </label>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="form-nav">
+      <div></div>
+      <button class="btn-next" onclick="nextStep(1)">Siguiente: Productos →</button>
+    </div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="form-card" id="step-2" style="display:none">
+    <div class="form-card-title">Tus productos o servicios</div>
+    <div class="form-card-sub">Agrega hasta 3 productos o servicios principales que venderás en SENTIDO.</div>
+
+    <div class="product-entry" id="prod-1">
+      <div class="product-entry-title">Producto / Servicio 1 <span class="required">*</span></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Nombre</label><input class="form-input" id="p1-name" type="text" placeholder="Ej: Shampoo Romero y Miel" /></div>
+        <div class="form-group"><label class="form-label">Precio</label><input class="form-input" id="p1-price" type="text" placeholder="Ej: $27.000" /></div>
+      </div>
+      <div class="form-group"><label class="form-label">Descripción breve</label><input class="form-input" id="p1-desc" type="text" placeholder="Ingredientes clave, presentación, tamaño..." /></div>
+    </div>
+
+    <div class="product-entry" id="prod-2">
+      <div class="product-entry-title">Producto / Servicio 2 <span style="color:var(--gray-400)">(opcional)</span></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Nombre</label><input class="form-input" id="p2-name" type="text" placeholder="Ej: Jabón Glicerina" /></div>
+        <div class="form-group"><label class="form-label">Precio</label><input class="form-input" id="p2-price" type="text" placeholder="Ej: $12.000" /></div>
+      </div>
+    </div>
+
+    <div class="product-entry" id="prod-3">
+      <div class="product-entry-title">Producto / Servicio 3 <span style="color:var(--gray-400)">(opcional)</span></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Nombre</label><input class="form-input" id="p3-name" type="text" placeholder="Ej: Crema Facial" /></div>
+        <div class="form-group"><label class="form-label">Precio</label><input class="form-input" id="p3-price" type="text" placeholder="Ej: $45.000" /></div>
+      </div>
+    </div>
+
+    <div class="form-nav">
+      <button class="btn-prev" onclick="prevStep(2)">← Anterior</button>
+      <button class="btn-next" onclick="nextStep(2)">Siguiente: Impacto →</button>
+    </div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="form-card" id="step-3" style="display:none">
+    <div class="form-card-title">Tu historia de impacto</div>
+    <div class="form-card-sub">Cuéntanos el impacto social o ambiental real que genera tu emprendimiento.</div>
+
+    <div class="form-row single">
+      <div class="form-group">
+        <label class="form-label">¿Cuál es tu impacto? <span class="required">*</span></label>
+        <textarea class="form-textarea" id="f-impact" placeholder="Ej: Empleamos 5 madres cabeza de familia. Reutilizamos 20kg de ropa por semana. Beneficiamos a 50 familias rurales..."></textarea>
+        <span class="hint">Sé específico/a. ¿Cuántas personas beneficia? ¿Qué problema resuelve? Esto aparece en tu tarjeta del marketplace.</span>
+      </div>
+    </div>
+
+    <div class="form-row single">
+      <div class="form-group">
+        <label class="form-label">Foto o URL de imagen del emprendimiento</label>
+        <input class="form-input" id="f-photo" type="url" placeholder="https://... (opcional, puedes enviarnos la foto luego)" />
+        <span class="hint">Una imagen que represente tu emprendimiento. Puede ser de tu producto, tu equipo o tu proceso.</span>
+      </div>
+    </div>
+
+    <div class="form-row single">
+      <div class="form-group">
+        <label class="form-label">¿Por qué quieres unirte a SENTIDO?</label>
+        <textarea class="form-textarea" id="f-why" placeholder="Cuéntanos tu motivación y tus metas como emprendedor/a..." style="min-height:70px"></textarea>
+      </div>
+    </div>
+
+    <div class="form-nav">
+      <button class="btn-prev" onclick="prevStep(3)">← Anterior</button>
+      <button class="btn-next" onclick="nextStep(3)">Siguiente: Contacto →</button>
+    </div>
+  </div>
+
+  <!-- STEP 4 -->
+  <div class="form-card" id="step-4" style="display:none">
+    <div class="form-card-title">Datos de contacto</div>
+    <div class="form-card-sub">El equipo SENTIDO te contactará en estos datos para confirmar tu registro.</div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Nombre del/la emprendedor/a <span class="required">*</span></label>
+        <input class="form-input" id="f-owner" type="text" placeholder="Tu nombre completo" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Correo electrónico <span class="required">*</span></label>
+        <input class="form-input" id="f-email" type="email" placeholder="tu@correo.com" />
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">WhatsApp <span class="required">*</span></label>
+        <input class="form-input" id="f-wa" type="tel" placeholder="3XX XXX XXXX" />
+        <span class="hint">Número con indicativo (sin +57). Ej: 3001234567</span>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Instagram (opcional)</label>
+        <input class="form-input" id="f-ig" type="text" placeholder="@tu_emprendimiento" />
+      </div>
+    </div>
+
+    <div class="form-row single">
+      <div class="form-group">
+        <label class="form-label" style="display:flex;align-items:flex-start;gap:8px;cursor:pointer">
+          <input type="checkbox" id="f-terms" style="margin-top:2px;flex-shrink:0" />
+          <span>Acepto los términos y condiciones de SENTIDO y autorizo el uso de mi información para verificación y publicación en el marketplace. <span class="required">*</span></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="form-nav">
+      <button class="btn-prev" onclick="prevStep(4)">← Anterior</button>
+      <button class="btn-submit" id="btn-submit" onclick="submitForm()">🤖 Verificar con IA →</button>
+    </div>
+  </div>
+
+  <!-- AI VERIFY VIEW -->
+  <div class="ai-verify-view" id="ai-verify-view">
+    <!-- Loading -->
+    <div class="ai-loading-box" id="ai-loading-box">
+      <div class="ai-loading-icon">🤖</div>
+      <div class="ai-loading-title">Verificando sellos de impacto...</div>
+      <div class="ai-loading-sub">El agente IA de SENTIDO está analizando si tu emprendimiento cumple los criterios de los sellos solicitados.</div>
+      <div class="ai-spinner"></div>
+      <div class="ai-bar"></div>
+    </div>
+    <!-- Results -->
+    <div class="ai-results-card" id="ai-results-box" style="display:none">
+      <div class="ai-result-header">
+        <div class="ai-score-ring" id="ai-score-ring">—</div>
+        <div>
+          <div class="ai-rec-badge" id="ai-rec-badge">—</div>
+          <div class="ai-rec-label-text">Análisis por agente IA · SENTIDO</div>
+        </div>
+      </div>
+      <div class="ai-justif-section" id="ai-justif-section"></div>
+      <div class="ai-seals-section" id="ai-seals-section"></div>
+      <div class="ai-notes-section" id="ai-notes-section" style="display:none"></div>
+      <div class="ai-actions">
+        <button class="btn-back-form" onclick="goBackToForm()">← Ajustar solicitud</button>
+        <button class="btn-confirm-submit" id="btn-confirm-submit" onclick="confirmAndSave()">✅ Confirmar y enviar solicitud</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PANTALLA: APROBADO ══ -->
+  <div class="result-screen" id="result-approved">
+    <div class="result-page">
+      <span class="deco deco-tl">🌿<br>🌱<br>💧</span>
+      <span class="deco deco-tr">🍃 🌿<br>🌱<br>🍀</span>
+      <span class="deco deco-bl">🌱<br>🌿 💧</span>
+      <span class="deco deco-br">🍃<br>🌿 🌱<br>💧 🍀</span>
+      <div class="result-inner">
+        <div class="result-logo">
+          <img src="logo_sentido.png" alt="SENTIDO — impacto real y marketplace" />
+        </div>
+        <h1 class="result-main-title">SOLICITUD APROBADA</h1>
+        <p class="result-main-sub">¡Bienvenido/a a Sentido!</p>
+        <div class="result-badge-wrap">
+          <div class="result-badge">Tu emprendimiento fue admitido al marketplace</div>
+        </div>
+        <div class="result-body">
+          <p>Hola, <span id="approved-name"></span></p>
+          <p>Tenemos una noticia que nos alegra mucho compartirte. Revisamos tu solicitud con cuidado y encontramos lo que buscamos: impacto real, verificable y con propósito. A partir de hoy, tu emprendimiento es parte oficial del marketplace Sentido.</p>
+          <p>En los próximos días recibirás en tu correo el link para completar tu perfil y aparecer en el catálogo. ¡Bienvenido/a a esta comunidad que cree en el cambio real!</p>
+          <p><strong>Sellos verificados:</strong> <span id="approved-seals" style="color:#2D5A3D;font-weight:600"></span></p>
+        </div>
+        <a href="marketplace.html" class="result-cta">Ver el marketplace →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PANTALLA: EN REVISIÓN ══ -->
+  <div class="result-screen" id="result-review">
+    <div class="result-page">
+      <span class="deco deco-tl">🌿<br>🌱<br>💧</span>
+      <span class="deco deco-tr">🍃 🌿<br>🌱<br>🍀</span>
+      <span class="deco deco-bl">🌱<br>🌿 💧</span>
+      <span class="deco deco-br">🍃<br>🌿 🌱<br>💧 🍀</span>
+      <div class="result-inner">
+        <div class="result-logo">
+          <img src="logo_sentido.png" alt="SENTIDO — impacto real y marketplace" />
+        </div>
+        <h1 class="result-main-title">SOLICITUD EN REVISIÓN</h1>
+        <p class="result-main-sub">Tu registro requiere atención</p>
+        <div class="result-badge-wrap">
+          <div class="result-badge">REQUIERE INFORMACIÓN FALTANTE PARA VERIFICACIÓN</div>
+        </div>
+        <div class="result-body">
+          <p>Hola, <span id="review-name"></span></p>
+          <p>Gracias por postular tu emprendimiento a Sentido Colombia. Valoramos profundamente tu interés en construir un impacto social positivo y en sumarte a una comunidad que cree en el cambio real.</p>
+          <p>Tras revisar cuidadosamente tu registro, encontramos que aún no cumple con todos los criterios de nuestro sistema de verificación. Será enviado un correo en los próximos días para que incluyas la información faltante.</p>
+          <p style="font-size:14px;color:#7A7060"><strong>Puntos a completar:</strong> <span id="review-pending"></span></p>
+        </div>
+        <a href="registro.html" class="result-cta" style="background:#8B9E6A">Ajustar mi solicitud →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PANTALLA: RECHAZADO ══ -->
+  <div class="result-screen" id="result-rejected">
+    <div class="result-page">
+      <span class="deco deco-tl">🌿<br>🌱<br>💧</span>
+      <span class="deco deco-tr">🍃 🌿<br>🌱<br>🍀</span>
+      <span class="deco deco-bl">🌱<br>🌿 💧</span>
+      <span class="deco deco-br">🍃<br>🌿 🌱<br>💧 🍀</span>
+      <div class="result-inner">
+        <div class="result-logo">
+          <img src="logo_sentido.png" alt="SENTIDO — impacto real y marketplace" />
+        </div>
+        <h1 class="result-main-title">SOBRE TU SOLICITUD<br>DE ADMISIÓN</h1>
+        <p class="result-main-sub">Marketplace de impacto social y ambiental · Colombia</p>
+        <div class="result-badge-wrap">
+          <div class="result-badge">Aún no es el momento, / pero la puerta sigue abierta</div>
+        </div>
+        <div class="result-body">
+          <p>Hola, <span id="rejected-name"></span></p>
+          <p>Gracias por tomarte el tiempo de aplicar y por querer ser parte de este mercado con propósito. Revisamos con cuidado la solicitud y en esta ocasión no nos es posible aprobar la admisión.</p>
+          <p>Te animamos a seguir construyendo tu historia de impacto. Cuando sientas que tu emprendimiento cumple mejor con los criterios de los sellos SENTIDO, podrás volver a aplicar.</p>
+          <p style="font-size:14px;color:#7A7060"><strong>Nota del equipo:</strong> <span id="rejected-notes"></span></p>
+        </div>
+        <a href="index.html" class="result-cta" style="background:#8B7355">Volver al inicio</a>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <strong>SENTIDO</strong> — Marketplace de emprendimientos sostenibles con impacto verificado<br>
+  Medellín, Colombia · 2026
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="supabase-config.js"></script>
+<script src="config.js"></script>
+<script src="data.js"></script>
+<script>
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const ADMIN_WA = '573XXXXXXXXX';
+// GROQ_API_KEY y GROQ_MODEL se cargan desde config.js
+const ADMIN_EMAIL  = 'sentidomercado@hotmail.com';
+
+// ── CONFIGURACIÓN EMAILJS ─────────────────────────────────────────
+// 1. Crea cuenta gratis en emailjs.com
+// 2. Add New Service → conecta tu correo → copia Service ID
+// 3. Email Templates → Create New Template → copia Template ID
+// 4. Account → API Keys → copia Public Key
+const EMAILJS = {
+  publicKey:  'TU_PUBLIC_KEY',    // Account → API Keys
+  serviceId:  'TU_SERVICE_ID',   // Add New Service
+  templateId: 'TU_TEMPLATE_ID'   // Email Templates
+};
+emailjs.init(EMAILJS.publicKey);
+
+let currentStep = 1;
+let savedFormData = null;  // datos del form para confirmar después del análisis IA
+let aiResult = null;       // resultado del agente IA
+
+function updateStepBar(step) {
+  for (let i = 1; i <= 4; i++) {
+    const dot = document.getElementById(`dot-${i}`);
+    dot.className = 'step-dot' + (i < step ? ' done' : i === step ? ' active' : '');
+    dot.textContent = i < step ? '✓' : String(i);
+  }
+  for (let i = 1; i <= 3; i++) {
+    document.getElementById(`line-${i}`).className = 'step-line' + (i < step ? ' done' : '');
+  }
+}
+
+function nextStep(from) {
+  if (from === 1) {
+    if (!document.getElementById('f-name').value.trim()) { alert('Por favor escribe el nombre de tu emprendimiento.'); return; }
+    if (!document.getElementById('f-city').value.trim()) { alert('Por favor escribe tu ciudad.'); return; }
+    if (!document.getElementById('f-tagline').value.trim()) { alert('Por favor escribe una descripción corta.'); return; }
+    const checked = document.querySelectorAll('.seal-check input:checked');
+    if (checked.length === 0) { alert('Selecciona al menos un sello de impacto.'); return; }
+  }
+  if (from === 2) {
+    if (!document.getElementById('p1-name').value.trim()) { alert('Agrega al menos un producto o servicio.'); return; }
+  }
+  if (from === 3) {
+    if (!document.getElementById('f-impact').value.trim()) { alert('Cuéntanos tu historia de impacto.'); return; }
+  }
+  document.getElementById(`step-${from}`).style.display = 'none';
+  document.getElementById(`step-${from + 1}`).style.display = 'block';
+  currentStep = from + 1;
+  updateStepBar(currentStep);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function prevStep(from) {
+  document.getElementById(`step-${from}`).style.display = 'none';
+  document.getElementById(`step-${from - 1}`).style.display = 'block';
+  currentStep = from - 1;
+  updateStepBar(currentStep);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── PASO 1: Recoger datos y lanzar verificación IA ───────────────
+async function submitForm() {
+  const owner = document.getElementById('f-owner').value.trim();
+  const email = document.getElementById('f-email').value.trim();
+  const wa    = document.getElementById('f-wa').value.trim();
+  if (!owner) { alert('Por favor escribe tu nombre.'); return; }
+  if (!email) { alert('Por favor escribe tu correo electrónico.'); return; }
+  if (!wa)    { alert('Por favor escribe tu número de WhatsApp.'); return; }
+  if (!document.getElementById('f-terms').checked) { alert('Debes aceptar los términos y condiciones.'); return; }
+
+  const products = [];
+  for (let i = 1; i <= 3; i++) {
+    const n = document.getElementById(`p${i}-name`).value.trim();
+    if (n) products.push({ name: n, price: document.getElementById(`p${i}-price`).value.trim() || 'Consultar', rawPrice: '' });
+  }
+
+  savedFormData = {
+    name:       document.getElementById('f-name').value.trim(),
+    city:       document.getElementById('f-city').value.trim(),
+    tagline:    document.getElementById('f-tagline').value.trim(),
+    formal:     document.getElementById('f-formal').value,
+    category:   document.getElementById('f-cat').value,
+    seals:      [...document.querySelectorAll('.seal-check input:checked')].map(c => c.value).join(';'),
+    impact:     document.getElementById('f-impact').value.trim(),
+    why_sentido:document.getElementById('f-why').value.trim(),
+    photo_url:  document.getElementById('f-photo').value.trim(),
+    owner_name: owner, email, whatsapp: wa,
+    instagram:  document.getElementById('f-ig').value.trim(),
+    products
+  };
+
+  // Transición a pantalla IA
+  document.getElementById('step-4').style.display = 'none';
+  document.getElementById('steps-bar').closest('div').style.display = 'none';
+  const aiView = document.getElementById('ai-verify-view');
+  aiView.classList.add('active');
+  document.getElementById('ai-loading-box').style.display = 'block';
+  document.getElementById('ai-results-box').style.display = 'none';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  await runGroqVerification(savedFormData);
+}
+
+// ── PASO 2: Llamar al agente Gemini ──────────────────────────────
+async function runGroqVerification(data) {
+  const prompt = buildGroqPrompt(data);
+  try {
+    const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${GROQ_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: GROQ_MODEL,
+        temperature: 0.2,
+        max_tokens: 900,
+        messages: [
+          { role: 'system', content: 'Eres el agente revisor oficial de SENTIDO. Responde SOLO con JSON válido, sin texto adicional.' },
+          { role: 'user', content: prompt }
+        ]
+      })
+    });
+
+    if (!resp.ok) {
+      const err = await resp.json();
+      throw new Error(err.error?.message || `HTTP ${resp.status}`);
+    }
+
+    const result = await resp.json();
+    const text   = result.choices?.[0]?.message?.content || '';
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error('La IA no devolvió JSON válido');
+
+    aiResult = JSON.parse(jsonMatch[0]);
+    showAiResults(aiResult);
+
+  } catch (err) {
+    console.error('Error Groq:', err);
+
+    // Detectar causa raíz
+    let causa = err.message || 'Error desconocido';
+    let sugerencia = '';
+    if (location.protocol === 'file:') {
+      causa = 'Estás abriendo el archivo con file://, lo cual bloquea llamadas a APIs externas.';
+      sugerencia = 'Abre los archivos con un servidor local: en VS Code instala "Live Server" y haz clic en "Go Live" (esquina inferior derecha).';
+    } else if (causa.includes('Failed to fetch') || causa.includes('NetworkError')) {
+      sugerencia = 'Verifica tu conexión a internet.';
+    } else if (causa.includes('401') || causa.includes('invalid_api_key')) {
+      sugerencia = 'La API key de Groq es inválida o expiró.';
+    }
+
+    aiResult = {
+      score: null,
+      recommendation: 'REVISAR',
+      justification: `⚠️ El agente IA no pudo conectarse. ${sugerencia || causa}`,
+      verified_seals: [],
+      pending_seals: data.seals.split(';').filter(Boolean),
+      rejected_seals: [],
+      admin_notes: `Error técnico: ${causa}`
+    };
+    showAiResults(aiResult);
+  }
+}
+
+function buildGroqPrompt(data) {
+  const products = data.products.map(p => `• ${p.name} — ${p.price}`).join('\n');
+  return `Analiza esta solicitud de registro para SENTIDO, un marketplace colombiano de emprendimientos con impacto social y ambiental verificado.
+
+CRITERIOS POR SELLO:
+• Bienestar Consciente: productos de salud física/mental libres de químicos nocivos, testeados éticamente
+• Liderazgo que Inspira: liderado por mujeres o comunidad LGBTI+, promueve equidad de género
+• Jefatura de Hogar: equipo principalmente de madres/padres cabeza de familia, único sustento del hogar
+• Sello Economía Circular / Segunda Vida: extiende ciclo de vida de materiales, segunda vida, residuo cero
+• Producción Limpia & Eco-Friendly: recursos naturales, tecnologías verdes, no contamina agua ni tierra
+• Cero Plástico / Empaque Ecológico: empaques 100% reutilizables, reciclables o compostables
+• Origen Rural: opera en zona rural o trabaja con comunidades campesinas fuera de centros urbanos
+• Inclusión Económica & Empleo Digno: emplea poblaciones vulnerables, excombatientes, víctimas del conflicto
+• Saberes Ancestrales & Artesanal: preserva técnicas tradicionales (crochet, tejidos, artesanías del territorio)
+• Comercio Justo Local: precios justos a productores locales, elimina explotación de intermediarios
+• Innovación Sostenible & Biotech: biotecnología o tecnología para productos útiles de bajo impacto
+• Origen Orgánico y Biocomercio: biodiversidad local, conservación y agricultura sostenible
+• Adulto Mayor Activo: 30%+ del equipo o fundador/a tiene 60 años o más
+
+SOLICITUD:
+Nombre: ${data.name}
+Ciudad: ${data.city}
+Categoría: ${data.category}
+Formalización: ${data.formal}
+Descripción: ${data.tagline}
+Impacto declarado: ${data.impact}
+Motivación: ${data.why_sentido || '—'}
+Sellos solicitados: ${data.seals.replace(/;/g, ', ')}
+Productos/servicios:
+${products || '— No especificados'}
+
+Responde SOLO con este JSON:
+{
+  "score": [0-100, basado en claridad y evidencia del impacto],
+  "recommendation": "APROBAR" | "REVISAR" | "RECHAZAR",
+  "verified_seals": ["sellos confirmados con evidencia clara del texto"],
+  "pending_seals": ["sellos que necesitan más información o verificación"],
+  "rejected_seals": ["sellos solicitados que NO se justifican en la información"],
+  "justification": "2-3 oraciones explicando la decisión, en español",
+  "admin_notes": "puntos específicos a verificar antes de aprobar, en español"
+}`;
+}
+
+// ── PASO 3: Mostrar resultados ───────────────────────────────────
+function showAiResults(ai) {
+  document.getElementById('ai-loading-box').style.display = 'none';
+  document.getElementById('ai-results-box').style.display = 'block';
+
+  // Score ring
+  const score = ai.score;
+  const ring = document.getElementById('ai-score-ring');
+  ring.textContent = score !== null ? score : '—';
+  ring.className = 'ai-score-ring ' + (score >= 70 ? 'score-high' : score >= 40 ? 'score-mid' : 'score-low');
+
+  // Recommendation badge
+  const rec = ai.recommendation || 'REVISAR';
+  const badge = document.getElementById('ai-rec-badge');
+  badge.textContent = rec === 'APROBAR' ? '✅ CALIFICA' : rec === 'RECHAZAR' ? '❌ NO CALIFICA' : '⚠️ REVISAR';
+  badge.className = 'ai-rec-badge ' + (rec === 'APROBAR' ? 'rec-aprobar' : rec === 'RECHAZAR' ? 'rec-rechazar' : 'rec-revisar');
+
+  // Justification
+  document.getElementById('ai-justif-section').textContent = ai.justification || '';
+
+  // Seals breakdown
+  const verified = ai.verified_seals || [];
+  const pending  = ai.pending_seals  || [];
+  const rejected = ai.rejected_seals || [];
+  let sealsHTML = '';
+  if (verified.length) sealsHTML += `<div class="ai-seals-group"><div class="ai-seals-group-title" style="color:#166534">✓ Sellos verificados (${verified.length})</div><div class="ai-seals-row">${verified.map(s=>`<span class="seal-chip chip-ok">✓ ${s}</span>`).join('')}</div></div>`;
+  if (pending.length)  sealsHTML += `<div class="ai-seals-group"><div class="ai-seals-group-title" style="color:#92400e">⚠ Requieren más información (${pending.length})</div><div class="ai-seals-row">${pending.map(s=>`<span class="seal-chip chip-mid">? ${s}</span>`).join('')}</div></div>`;
+  if (rejected.length) sealsHTML += `<div class="ai-seals-group"><div class="ai-seals-group-title" style="color:#991b1b">✗ No aplican con la info dada (${rejected.length})</div><div class="ai-seals-row">${rejected.map(s=>`<span class="seal-chip chip-no">✗ ${s}</span>`).join('')}</div></div>`;
+  document.getElementById('ai-seals-section').innerHTML = sealsHTML;
+
+  // Admin notes
+  if (ai.admin_notes) {
+    document.getElementById('ai-notes-section').innerHTML = `<strong>📝 Nota del agente:</strong> ${ai.admin_notes}`;
+    document.getElementById('ai-notes-section').style.display = 'block';
+  }
+
+  // Adjust confirm button based on recommendation
+  const confirmBtn = document.getElementById('btn-confirm-submit');
+  if (rec === 'RECHAZAR') {
+    confirmBtn.textContent = '📩 Enviar de todas formas';
+    confirmBtn.style.background = 'var(--gray-400)';
+  } else {
+    confirmBtn.textContent = rec === 'APROBAR' ? '🚀 Confirmar y enviar solicitud →' : '📩 Enviar para revisión →';
+    confirmBtn.style.background = '';
+  }
+}
+
+// ── PASO 4: Confirmar, guardar en Supabase y notificar admin ────
+async function confirmAndSave() {
+  if (!savedFormData) return;
+  const btn = document.getElementById('btn-confirm-submit');
+  btn.disabled = true;
+  btn.textContent = 'Guardando...';
+
+  const ai = aiResult || {};
+  try {
+    const { error } = await db.from('applications').insert([{
+      ...savedFormData,
+      status: 'pending',
+      ai_score:          ai.score || null,
+      ai_recommendation: ai.recommendation || null,
+      ai_justification:  ai.justification || null,
+      ai_notes:          ai.admin_notes || null,
+      ai_verified_seals: (ai.verified_seals || []).join(';'),
+      ai_pending_seals:  (ai.pending_seals  || []).join(';'),
+      ai_rejected_seals: (ai.rejected_seals || []).join(';')
+    }]);
+
+    if (error) throw error;
+
+    // Notificar al equipo SENTIDO y al emprendedor por correo HTML
+    enviarCorreoAdmin(savedFormData, ai);
+    enviarCorreoEmprendedor(savedFormData, ai);
+
+    const rec   = ai.recommendation || 'REVISAR';
+    const owner = savedFormData.owner_name || '';
+
+    // Ocultar formulario y vista IA
+    document.getElementById('ai-verify-view').classList.remove('active');
+    document.getElementById('form-container-wrap')?.classList?.add('hidden');
+
+    // Mostrar pantalla de resultado según recomendación IA
+    if (rec === 'APROBAR') {
+      document.getElementById('approved-name').textContent = owner;
+      document.getElementById('approved-seals').textContent =
+        (ai.verified_seals || []).join(' · ') || savedFormData.seals.replace(/;/g, ' · ');
+      document.getElementById('result-approved').classList.add('show');
+    } else if (rec === 'RECHAZAR') {
+      document.getElementById('rejected-name').textContent = owner;
+      document.getElementById('rejected-notes').textContent =
+        ai.justification || 'Los sellos solicitados requieren mayor evidencia de impacto.';
+      document.getElementById('result-rejected').classList.add('show');
+    } else {
+      document.getElementById('review-name').textContent = owner;
+      document.getElementById('review-pending').textContent =
+        (ai.pending_seals || []).join(', ') || 'Información adicional sobre el impacto del emprendimiento.';
+      document.getElementById('result-review').classList.add('show');
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  } catch (err) {
+    console.error('Error guardando:', err);
+    alert('Error al guardar. Intenta de nuevo.');
+    btn.disabled = false;
+    btn.textContent = 'Confirmar y enviar solicitud →';
+  }
+}
+
+// ── Helpers de email ─────────────────────────────────────────────
+function emailBase(titulo, subtitulo, badge, cuerpoHtml, colorBadge = '#3A5228') {
+  return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>${titulo}</title></head>
+  <body style="margin:0;padding:0;background:#F5EDE0;font-family:Georgia,serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#F5EDE0;padding:32px 0">
+    <tr><td align="center">
+      <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#F5EDE0;border-radius:16px;overflow:hidden">
+
+        <!-- HEADER -->
+        <tr><td align="center" style="padding:40px 40px 20px">
+          <table cellpadding="0" cellspacing="0">
+            <tr><td align="center">
+              <span style="font-size:26px;font-weight:900;color:#2D5A3D;font-family:Georgia,serif;letter-spacing:-0.5px">sentido</span><br>
+              <span style="font-size:12px;color:#9C9488;font-family:Arial,sans-serif">impacto real y marketplace</span>
+            </td></tr>
+            <tr><td align="center" style="padding:20px 0 8px">
+              <h1 style="margin:0;font-size:36px;font-weight:900;color:#2D5A3D;font-family:Georgia,serif;line-height:1.15;letter-spacing:-1px">${titulo}</h1>
+            </td></tr>
+            ${subtitulo ? `<tr><td align="center" style="padding-bottom:18px"><p style="margin:0;font-size:16px;color:#7A7060;font-family:Arial,sans-serif">${subtitulo}</p></td></tr>` : ''}
+            <tr><td align="center" style="padding-bottom:8px">
+              <div style="display:inline-block;padding:11px 28px;border:2px solid #8B9E6A;border-radius:50px;background:#E8EDD8;color:${colorBadge};font-size:14px;font-weight:700;font-family:Arial,sans-serif;line-height:1.4;text-align:center">${badge}</div>
+            </td></tr>
+          </table>
+        </td></tr>
+
+        <!-- DIVIDER -->
+        <tr><td style="padding:0 40px"><hr style="border:none;border-top:1.5px solid #DDD5C5;margin:0"></td></tr>
+
+        <!-- BODY -->
+        <tr><td style="padding:28px 44px 40px;font-size:16px;color:#3D3830;font-family:Arial,sans-serif;line-height:1.75">
+          ${cuerpoHtml}
+        </td></tr>
+
+        <!-- FOOTER -->
+        <tr><td align="center" style="padding:20px 40px 32px;border-top:1px solid #DDD5C5">
+          <p style="margin:0;font-size:12px;color:#B0A898;font-family:Arial,sans-serif">
+            SENTIDO · Marketplace de impacto social y ambiental · Colombia 2026<br>
+            <a href="${window.location.origin}/marketplace.html" style="color:#2D5A3D">Ver el marketplace</a>
+          </p>
+        </td></tr>
+
+      </table>
+    </td></tr>
+  </table>
+  </body></html>`;
+}
+
+async function enviarEmail({ to, subject, html }) {
+  try {
+    await emailjs.send(EMAILJS.serviceId, EMAILJS.templateId, {
+      to_email: to,
+      subject:  subject,
+      html_body: html,
+      reply_to: ADMIN_EMAIL
+    });
+    console.log('Correo enviado a', to);
+  } catch (err) {
+    console.warn('Error EmailJS:', err);
+  }
+}
+
+// ── Correo al admin: nueva postulación ──────────────────────────
+function enviarCorreoAdmin(data, ai) {
+  const rec   = ai.recommendation || 'REVISAR';
+  const emoji = rec === 'APROBAR' ? '✅' : rec === 'RECHAZAR' ? '❌' : '⚠️';
+
+  const sealsHtml = [
+    (ai.verified_seals||[]).length  ? `<p style="margin:6px 0"><span style="color:#16a34a;font-weight:700">✓ Verificados:</span> ${(ai.verified_seals||[]).join(', ')}</p>` : '',
+    (ai.pending_seals ||[]).length  ? `<p style="margin:6px 0"><span style="color:#d97706;font-weight:700">? Pendientes:</span> ${(ai.pending_seals||[]).join(', ')}</p>`  : '',
+    (ai.rejected_seals||[]).length  ? `<p style="margin:6px 0"><span style="color:#dc2626;font-weight:700">✗ No aplican:</span> ${(ai.rejected_seals||[]).join(', ')}</p>`  : ''
+  ].join('');
+
+  const body = `
+    <p><strong>Hola equipo SENTIDO,</strong></p>
+    <p>Llegó una nueva postulación. El agente IA la analizó y emite la siguiente recomendación:</p>
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:10px;border:1.5px solid #DDD5C5;margin:16px 0">
+      <tr><td style="padding:16px 20px">
+        <p style="margin:0 0 4px;font-size:20px;font-weight:900;color:#2D5A3D">${data.name}</p>
+        <p style="margin:0;font-size:13px;color:#9C9488">${data.city} · ${data.category} · ${data.formal}</p>
+      </td><td align="right" style="padding:16px 20px;white-space:nowrap">
+        <span style="font-size:22px;font-weight:900;color:${rec==='APROBAR'?'#16a34a':rec==='RECHAZAR'?'#dc2626':'#d97706'}">${ai.score ?? '—'}/100</span><br>
+        <span style="font-size:12px;font-weight:700;color:#7A7060">${emoji} ${rec}</span>
+      </td></tr>
+    </table>
+    <p style="margin:12px 0 4px;font-weight:700">Descripción:</p>
+    <p style="margin:0;color:#5C554A">${data.tagline}</p>
+    <p style="margin:14px 0 4px;font-weight:700">Historia de impacto:</p>
+    <p style="margin:0;color:#5C554A">${data.impact}</p>
+    <p style="margin:14px 0 4px;font-weight:700">Sellos solicitados:</p>
+    ${sealsHtml || `<p style="color:#9C9488;margin:0">${(data.seals||'').replace(/;/g,', ')}</p>`}
+    <p style="margin:14px 0 4px;font-weight:700">Justificación IA:</p>
+    <p style="margin:0;color:#5C554A;font-style:italic">"${ai.justification || '—'}"</p>
+    <p style="margin:14px 0 4px;font-weight:700">Contacto:</p>
+    <p style="margin:0">👤 ${data.owner_name} &nbsp;|&nbsp; 📧 ${data.email} &nbsp;|&nbsp; 📱 ${data.whatsapp}</p>
+    <br>
+    <table cellpadding="0" cellspacing="0"><tr><td style="background:#2D5A3D;border-radius:8px;padding:12px 24px">
+      <a href="${window.location.origin}/admin.html" style="color:white;text-decoration:none;font-weight:800;font-size:14px">→ Revisar y aprobar en el panel admin</a>
+    </td></tr></table>
+    <p style="font-size:12px;color:#B0A898;margin-top:10px">Contraseña admin: <code>sentido2026</code></p>`;
+
+  enviarEmail({
+    to: ADMIN_EMAIL,
+    subject: `${emoji} Nueva postulación SENTIDO: ${data.name} | IA ${ai.score ?? '—'}/100 · ${rec}`,
+    html: emailBase('NUEVA POSTULACIÓN', 'Requiere tu revisión', `${emoji} ${rec} · Puntaje IA: ${ai.score ?? '—'}/100`, body)
+  });
+}
+
+// ── Correo al emprendedor: resultado ────────────────────────────
+function enviarCorreoEmprendedor(data, ai) {
+  const rec = ai.recommendation || 'REVISAR';
+
+  if (rec === 'APROBAR') {
+    const seals = (ai.verified_seals||[]).join(' &nbsp;·&nbsp; ') || data.seals.replace(/;/g,' · ');
+    const body = `
+      <p>Hola, <strong>${data.owner_name}</strong></p>
+      <p>Tenemos una noticia que nos alegra mucho compartirte. Revisamos tu solicitud con cuidado y encontramos lo que buscamos: <strong>impacto real, verificable y con propósito.</strong></p>
+      <p>A partir de hoy, <strong>${data.name}</strong> es parte oficial del marketplace Sentido.</p>
+      ${seals ? `<p style="margin:16px 0;padding:12px 18px;background:#E8EDD8;border-radius:8px;border-left:4px solid #2D5A3D"><span style="font-weight:700;color:#2D5A3D">Sellos verificados:</span><br><span style="color:#3A5228">${seals}</span></p>` : ''}
+      <p>En los próximos días recibirás el link para completar tu perfil y aparecer en el catálogo. ¡Bienvenido/a a esta comunidad que cree en el cambio real!</p>
+      <br>
+      <table cellpadding="0" cellspacing="0"><tr><td style="background:#2D5A3D;border-radius:8px;padding:12px 24px">
+        <a href="${window.location.origin}/marketplace.html" style="color:white;text-decoration:none;font-weight:800;font-size:14px">→ Ver el marketplace Sentido</a>
+      </td></tr></table>`;
+    enviarEmail({
+      to: data.email,
+      subject: `✅ ¡${data.name} fue admitido al marketplace Sentido!`,
+      html: emailBase('SOLICITUD APROBADA', '¡Bienvenido/a a Sentido!', 'Tu emprendimiento fue admitido al marketplace', body)
+    });
+
+  } else if (rec === 'RECHAZAR') {
+    const body = `
+      <p>Hola, <strong>${data.owner_name}</strong></p>
+      <p>Gracias por tomarte el tiempo de aplicar y por querer ser parte de este mercado con propósito. Revisamos con cuidado la solicitud y en esta ocasión no nos es posible aprobar la admisión.</p>
+      ${ai.justification ? `<p style="margin:16px 0;padding:12px 18px;background:#FFF5F0;border-radius:8px;border-left:4px solid #C4895A;color:#5C3010;font-style:italic">"${ai.justification}"</p>` : ''}
+      <p>Te animamos a seguir construyendo tu historia de impacto. Cuando sientas que tu emprendimiento cumple mejor con los criterios de los sellos SENTIDO, podrás volver a aplicar.</p>`;
+    enviarEmail({
+      to: data.email,
+      subject: `Sobre tu solicitud de admisión a Sentido — ${data.name}`,
+      html: emailBase('SOBRE TU SOLICITUD<br>DE ADMISIÓN', 'Marketplace de impacto social y ambiental · Colombia', 'Aún no es el momento, pero la puerta sigue abierta', body)
+    });
+
+  } else {
+    const pending = (ai.pending_seals||[]).join(', ') || 'Información adicional sobre el impacto.';
+    const body = `
+      <p>Hola, <strong>${data.owner_name}</strong></p>
+      <p>Gracias por postular tu emprendimiento a Sentido Colombia. Valoramos profundamente tu interés en construir un impacto social positivo y en sumarte a una comunidad que cree en el cambio real.</p>
+      <p>Tras revisar cuidadosamente tu registro, encontramos que aún no cumple con todos los criterios de nuestro sistema de verificación.</p>
+      <p style="margin:16px 0;padding:12px 18px;background:#FFFBEB;border-radius:8px;border-left:4px solid #D97706;color:#92400E"><strong>Información que necesitamos completar:</strong><br>${pending}</p>
+      <p>Será enviado un correo en los próximos días para que incluyas la información faltante. Estamos aquí para acompañarte en el proceso.</p>`;
+    enviarEmail({
+      to: data.email,
+      subject: `Solicitud en revisión — ${data.name} | Sentido`,
+      html: emailBase('SOLICITUD EN REVISIÓN', 'Tu registro requiere atención', 'REQUIERE INFORMACIÓN FALTANTE PARA VERIFICACIÓN', body)
+    });
+  }
+}
+
+// ── Volver al formulario desde la vista IA ──────────────────────
+function goBackToForm() {
+  document.getElementById('ai-verify-view').classList.remove('active');
+  document.getElementById('steps-bar').closest('div').style.display = 'block';
+  document.getElementById('step-4').style.display = 'block';
+  updateStepBar(4);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>

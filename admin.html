@@ -1,0 +1,950 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — SENTIDO</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --green: #2D5A3D; --green-dark: #1F3D2B; --green-light: #E8F0E9; --green-mid: #4A8A5D;
+      --copper: #C4895A; --copper-light: #F5EDE3; --copper-dark: #A8744A;
+      --cream: #F5F0E8; --cream-dark: #EDE8DB;
+      --gray-50: #F8F6F2; --gray-100: #F0EDE6; --gray-200: #E0DAD0;
+      --gray-400: #9C9488; --gray-600: #5C554A; --gray-700: #3D3830; --gray-900: #1F1C17;
+      --white: #ffffff;
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--cream); color: var(--gray-900); }
+
+    /* LOGIN */
+    .login-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(150deg, #1F3D2B 0%, #2D5A3D 100%); }
+    .login-card { background: var(--white); border-radius: 16px; padding: 40px 36px; width: 360px; max-width: 90vw; text-align: center; }
+    .login-logo { font-size: 48px; margin-bottom: 10px; }
+    .login-title { font-size: 22px; font-weight: 900; margin-bottom: 6px; }
+    .login-sub { font-size: 14px; color: var(--gray-400); margin-bottom: 24px; }
+    .login-input { width: 100%; padding: 11px 14px; border: 1.5px solid var(--gray-200); border-radius: 8px; font-size: 15px; font-family: inherit; outline: none; text-align: center; letter-spacing: 0.1em; margin-bottom: 14px; }
+    .login-input:focus { border-color: var(--green-mid); }
+    .login-btn { width: 100%; padding: 12px; background: var(--green); color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 800; cursor: pointer; }
+    .login-btn:hover { background: var(--green-dark); }
+    .login-error { color: #ef4444; font-size: 13px; margin-top: 8px; display: none; }
+
+    /* ADMIN LAYOUT */
+    .admin-screen { display: none; }
+    nav { background: var(--green-dark); color: white; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 64px; position: sticky; top: 0; z-index: 100; }
+    .nav-brand { display: flex; align-items: center; gap: 12px; }
+    .nav-brand img { height: 40px; filter: brightness(0) invert(1); }
+    .nav-brand-text { font-size: 16px; font-weight: 800; color: white; }
+    .nav-right { display: flex; gap: 12px; align-items: center; }
+    .nav-link { color: rgba(255,255,255,0.7); font-size: 13px; text-decoration: none; }
+    .nav-link:hover { color: white; }
+    .logout-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 7px 14px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; }
+    .logout-btn:hover { background: rgba(255,255,255,0.2); }
+
+    .admin-main { max-width: 1200px; margin: 0 auto; padding: 28px 24px; }
+
+    /* API KEY BANNER */
+    .api-banner { background: #fef3c7; border: 1.5px solid #fcd34d; border-radius: 10px; padding: 12px 16px; display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+    .api-banner.ok { background: var(--green-light); border-color: var(--green-mid); }
+    .api-banner-text { flex: 1; font-size: 13px; color: var(--gray-700); }
+    .api-input { flex: 1; padding: 8px 12px; border: 1.5px solid var(--gray-200); border-radius: 7px; font-size: 13px; font-family: inherit; outline: none; }
+    .api-save-btn { padding: 8px 16px; background: var(--green); color: white; border: none; border-radius: 7px; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+
+    /* STATS */
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 28px; }
+    .stat-card { background: var(--white); border-radius: 12px; border: 1.5px solid var(--gray-200); padding: 16px 20px; }
+    .stat-num { font-size: 28px; font-weight: 900; color: var(--green); }
+    .stat-num.copper { color: var(--copper); }
+    .stat-num.amber { color: #d97706; }
+    .stat-label { font-size: 12px; color: var(--gray-400); margin-top: 4px; }
+
+    /* TABS */
+    .tabs { display: flex; gap: 4px; margin-bottom: 18px; border-bottom: 2px solid var(--gray-200); padding-bottom: 0; }
+    .tab { padding: 9px 18px; font-size: 13px; font-weight: 700; color: var(--gray-400); border: none; background: transparent; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.15s; }
+    .tab:hover { color: var(--green); }
+    .tab.active { color: var(--green); border-bottom-color: var(--green); }
+    .tab-badge { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; background: var(--copper); color: white; font-size: 10px; font-weight: 800; margin-left: 5px; }
+
+    /* TABLE */
+    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+    .section-title { font-size: 17px; font-weight: 800; }
+    .btn-add { display: flex; align-items: center; gap: 6px; padding: 8px 16px; background: var(--green); color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; }
+    .btn-add:hover { background: var(--green-dark); }
+    .table-wrap { background: var(--white); border-radius: 14px; border: 1.5px solid var(--gray-200); overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; }
+    th { text-align: left; padding: 11px 14px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--gray-400); border-bottom: 1.5px solid var(--gray-200); background: var(--gray-50); }
+    td { padding: 12px 14px; font-size: 13px; color: var(--gray-700); border-bottom: 1px solid var(--gray-100); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--gray-50); }
+    .td-name { font-weight: 700; color: var(--gray-900); }
+    .td-sub { font-size: 11px; color: var(--gray-400); margin-top: 2px; }
+    .status-badge { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 8px; display: inline-block; }
+    .status-pending { background: #fef3c7; color: #92400e; }
+    .status-approved { background: #dcfce7; color: #166534; }
+    .status-rejected { background: #fee2e2; color: #991b1b; }
+    .badge-formal { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 8px; }
+    .badge-formal.yes { background: #dcfce7; color: #166534; }
+    .badge-formal.no { background: #fef3c7; color: #92400e; }
+    .badge-formal.process { background: #dbeafe; color: #1e40af; }
+    .td-actions { display: flex; gap: 5px; flex-wrap: wrap; }
+    .btn-sm { padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; border: 1.5px solid; transition: all 0.15s; white-space: nowrap; }
+    .btn-ai { border-color: #a78bfa; background: #f5f3ff; color: #6d28d9; }
+    .btn-ai:hover { background: #ede9fe; }
+    .btn-approve { border-color: #86efac; background: #f0fdf4; color: #166534; }
+    .btn-approve:hover { background: #dcfce7; }
+    .btn-reject { border-color: #fca5a5; background: #fff5f5; color: #991b1b; }
+    .btn-reject:hover { background: #fee2e2; }
+    .btn-view { border-color: var(--gray-200); background: transparent; color: var(--gray-600); }
+    .btn-view:hover { border-color: var(--green); color: var(--green); }
+    .btn-del { border-color: #fca5a5; background: transparent; color: #ef4444; }
+    .btn-del:hover { background: #fee2e2; }
+
+    /* CHECKBOX DE APROBACIÓN */
+    .approve-check-wrap { display: flex; align-items: center; gap: 7px; cursor: pointer; }
+    .approve-checkbox { width: 18px; height: 18px; accent-color: #16a34a; cursor: pointer; }
+    .approve-label { font-size: 12px; font-weight: 700; color: var(--gray-600); }
+    .approve-check-wrap:hover .approve-label { color: #16a34a; }
+    .reject-check-wrap { display: flex; align-items: center; gap: 7px; cursor: pointer; }
+    .reject-checkbox { width: 18px; height: 18px; accent-color: #dc2626; cursor: pointer; }
+    .reject-label { font-size: 12px; font-weight: 700; color: var(--gray-600); }
+    .reject-check-wrap:hover .reject-label { color: #dc2626; }
+    .ai-score-pill { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 800; padding: 3px 8px; border-radius: 8px; }
+    .score-high { background: #dcfce7; color: #166534; }
+    .score-mid { background: #fef3c7; color: #92400e; }
+    .score-low { background: #fee2e2; color: #991b1b; }
+    .empty-state { text-align: center; padding: 48px; color: var(--gray-400); }
+    .empty-icon { font-size: 40px; margin-bottom: 8px; }
+    .loading-row td { text-align: center; color: var(--gray-400); font-style: italic; }
+
+    /* AI REVIEW MODAL */
+    .modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 500; align-items: flex-start; justify-content: center; padding: 24px 16px; overflow-y: auto; }
+    .modal-bg.open { display: flex; }
+    .modal-box { background: var(--white); border-radius: 16px; width: 100%; max-width: 680px; margin: auto; }
+    .modal-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--gray-200); display: flex; justify-content: space-between; align-items: center; }
+    .modal-title { font-size: 18px; font-weight: 800; }
+    .modal-close { background: var(--gray-100); border: none; border-radius: 8px; width: 32px; height: 32px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; }
+    .modal-body { padding: 20px 24px; }
+
+    /* Application detail */
+    .app-detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+    .app-detail-item { background: var(--gray-50); border-radius: 8px; padding: 10px 12px; }
+    .app-detail-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--gray-400); margin-bottom: 3px; }
+    .app-detail-val { font-size: 13px; font-weight: 600; color: var(--gray-900); }
+    .app-detail-full { grid-column: 1 / -1; }
+
+    /* AI Result */
+    .ai-result { border-radius: 12px; padding: 18px 20px; margin-bottom: 18px; }
+    .ai-result.loading { background: #f0f0ff; border: 1.5px dashed #a78bfa; }
+    .ai-result.done-approve { background: #f0fdf4; border: 1.5px solid #86efac; }
+    .ai-result.done-review { background: #fffbeb; border: 1.5px solid #fcd34d; }
+    .ai-result.done-reject { background: #fff1f2; border: 1.5px solid #fca5a5; }
+    .ai-loading-text { color: #6d28d9; font-size: 14px; text-align: center; padding: 16px; }
+    .ai-score-big { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+    .score-circle {
+      width: 64px; height: 64px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; font-weight: 900; flex-shrink: 0;
+    }
+    .score-circle.high { background: #dcfce7; color: #166534; }
+    .score-circle.mid { background: #fef3c7; color: #92400e; }
+    .score-circle.low { background: #fee2e2; color: #991b1b; }
+    .ai-rec-badge { font-size: 14px; font-weight: 800; padding: 6px 14px; border-radius: 10px; display: inline-block; margin-bottom: 8px; }
+    .rec-aprobar { background: #dcfce7; color: #166534; }
+    .rec-revisar { background: #fef3c7; color: #92400e; }
+    .rec-rechazar { background: #fee2e2; color: #991b1b; }
+    .ai-justif { font-size: 14px; color: var(--gray-700); line-height: 1.6; margin-bottom: 12px; }
+    .ai-notes { font-size: 13px; color: var(--gray-600); background: var(--gray-50); border-radius: 8px; padding: 10px 12px; border-left: 3px solid var(--gray-200); }
+    .seals-section { margin-top: 14px; }
+    .seals-section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+    .seals-row { display: flex; flex-wrap: wrap; gap: 5px; }
+    .seal-chip { font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 8px; }
+    .seal-verified { background: #dcfce7; color: #166534; }
+    .seal-pending { background: #fef3c7; color: #92400e; }
+    .seal-rejected { background: #fee2e2; color: #991b1b; }
+
+    .modal-footer { padding: 16px 24px; border-top: 1px solid var(--gray-200); display: flex; justify-content: flex-end; gap: 10px; }
+    .btn-cancel { padding: 10px 20px; border: 2px solid var(--gray-200); border-radius: 8px; background: transparent; font-size: 14px; font-weight: 700; color: var(--gray-600); cursor: pointer; }
+    .btn-approve-big { padding: 11px 24px; background: #16a34a; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 800; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; gap: 7px; }
+    .btn-approve-big:hover { background: #15803d; }
+    .btn-approve-big:disabled { background: var(--gray-200); color: var(--gray-400); cursor: not-allowed; }
+    .btn-reject-big { padding: 11px 24px; background: #dc2626; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 800; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; gap: 7px; }
+    .btn-reject-big:hover { background: #b91c1c; }
+
+    /* ADD MANUAL MODAL */
+    .add-modal-box { background: var(--white); border-radius: 16px; width: 100%; max-width: 580px; margin: auto; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+    .form-row.single { grid-template-columns: 1fr; }
+    .form-group { display: flex; flex-direction: column; gap: 4px; }
+    .form-label { font-size: 11px; font-weight: 700; color: var(--gray-600); text-transform: uppercase; letter-spacing: 0.04em; }
+    .form-input, .form-textarea, .form-select { padding: 8px 11px; border: 1.5px solid var(--gray-200); border-radius: 7px; font-size: 13px; font-family: inherit; outline: none; background: var(--cream); }
+    .form-input:focus, .form-textarea:focus, .form-select:focus { border-color: var(--green-mid); background: white; }
+    .form-textarea { resize: vertical; min-height: 65px; }
+    .prod-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 7px; margin-bottom: 7px; }
+    .btn-save { padding: 10px 22px; background: var(--green); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 800; cursor: pointer; }
+    .btn-save:hover { background: var(--green-dark); }
+
+    footer { background: var(--green-dark); color: rgba(255,255,255,0.6); text-align: center; padding: 22px; font-size: 12px; margin-top: 60px; }
+
+    @media (max-width: 768px) {
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+      .app-detail-grid { grid-template-columns: 1fr; }
+      .form-row { grid-template-columns: 1fr; }
+      .prod-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-screen" id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">🔐</div>
+    <div class="login-title">Panel Admin</div>
+    <div class="login-sub">SENTIDO Marketplace · Acceso restringido</div>
+    <input class="login-input" id="pass-input" type="password" placeholder="Contraseña" onkeydown="if(event.key==='Enter')doLogin()" />
+    <button class="login-btn" onclick="doLogin()">Ingresar</button>
+    <div class="login-error" id="login-error">Contraseña incorrecta</div>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div class="admin-screen" id="admin-screen">
+
+  <nav>
+    <div class="nav-brand">
+      <img src="logo_sentido.png" alt="SENTIDO" />
+      <span class="nav-brand-text">Admin Panel</span>
+    </div>
+    <div class="nav-right">
+      <a href="marketplace.html" class="nav-link" target="_blank">Ver marketplace ↗</a>
+      <button class="logout-btn" onclick="doLogout()">Salir</button>
+    </div>
+  </nav>
+
+  <div class="admin-main">
+
+    <!-- STATS -->
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-num" id="s-pending">—</div><div class="stat-label">Pendientes de revisión</div></div>
+      <div class="stat-card"><div class="stat-num copper" id="s-total">—</div><div class="stat-label">Total solicitudes</div></div>
+      <div class="stat-card"><div class="stat-num" id="s-approved">—</div><div class="stat-label">Emprendimientos aprobados</div></div>
+      <div class="stat-card"><div class="stat-num" id="s-marketplace">—</div><div class="stat-label">En marketplace (onboarding completo)</div></div>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab active" onclick="showTab('pending', this)">Pendientes <span class="tab-badge" id="badge-pending">0</span></button>
+      <button class="tab" onclick="showTab('approved', this)">Aprobados</button>
+      <button class="tab" onclick="showTab('rejected', this)">Rechazados</button>
+      <button class="tab" onclick="showTab('manual', this)">+ Agregar manual</button>
+    </div>
+
+    <!-- TAB: PENDING -->
+    <div id="tab-pending">
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Emprendimiento</th><th>Ciudad</th><th>Sellos solicitados</th>
+            <th>Fecha</th><th>Puntaje IA</th><th>Acciones</th>
+          </tr></thead>
+          <tbody id="table-pending"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB: APPROVED -->
+    <div id="tab-approved" style="display:none">
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Emprendimiento</th><th>Ciudad</th><th>Formalización</th>
+            <th>Onboarding</th><th>Aprobado</th><th>Acciones</th>
+          </tr></thead>
+          <tbody id="table-approved"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB: REJECTED -->
+    <div id="tab-rejected" style="display:none">
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Emprendimiento</th><th>Ciudad</th><th>Fecha</th><th>Puntaje IA</th><th>Motivo</th>
+          </tr></thead>
+          <tbody id="table-rejected"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB: MANUAL ADD -->
+    <div id="tab-manual" style="display:none">
+      <div class="table-wrap" style="padding:24px">
+        <div style="font-size:17px;font-weight:800;margin-bottom:6px">Agregar emprendimiento manualmente</div>
+        <div style="font-size:13px;color:var(--gray-400);margin-bottom:20px">Para emprendimientos que ya verificaste fuera del formulario. Se publica directamente en el marketplace.</div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Nombre *</label><input class="form-input" id="m-name" type="text" placeholder="Nombre del emprendimiento" /></div>
+          <div class="form-group"><label class="form-label">Ciudad *</label><input class="form-input" id="m-city" type="text" placeholder="Ciudad" /></div>
+        </div>
+        <div class="form-row single">
+          <div class="form-group"><label class="form-label">Descripción corta *</label><input class="form-input" id="m-tagline" type="text" placeholder="Describe el emprendimiento en una frase" /></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Formalización</label><select class="form-select" id="m-formal"><option value="SÍ">✓ Formalizado</option><option value="En proceso">⏳ En proceso</option><option value="NO">○ Sin NIT</option></select></div>
+          <div class="form-group"><label class="form-label">WhatsApp (con código país)</label><input class="form-input" id="m-wa" type="text" placeholder="573XXXXXXXXX" /></div>
+        </div>
+        <div class="form-row single">
+          <div class="form-group"><label class="form-label">Sellos (separados por ;)</label><input class="form-input" id="m-seals" type="text" placeholder="Liderazgo Femenino;Economía Circular" /></div>
+        </div>
+        <div class="form-row single">
+          <div class="form-group"><label class="form-label">Historia de impacto</label><textarea class="form-textarea" id="m-impact" placeholder="Describe el impacto social o ambiental..."></textarea></div>
+        </div>
+        <div class="form-row single">
+          <div class="form-group"><label class="form-label">URL de foto</label><input class="form-input" id="m-photo" type="url" placeholder="https://images.unsplash.com/..." /></div>
+        </div>
+        <div style="font-size:11px;font-weight:700;color:var(--gray-400);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px">Productos (hasta 3)</div>
+        <div class="prod-row">
+          <input class="form-input" id="mp1-name" type="text" placeholder="Producto 1" />
+          <input class="form-input" id="mp1-price" type="text" placeholder="Precio descriptivo" />
+          <input class="form-input" id="mp1-raw" type="text" placeholder="Precio en números" />
+        </div>
+        <div class="prod-row">
+          <input class="form-input" id="mp2-name" type="text" placeholder="Producto 2 (opcional)" />
+          <input class="form-input" id="mp2-price" type="text" placeholder="Precio descriptivo" />
+          <input class="form-input" id="mp2-raw" type="text" placeholder="Precio en números" />
+        </div>
+        <div class="prod-row">
+          <input class="form-input" id="mp3-name" type="text" placeholder="Producto 3 (opcional)" />
+          <input class="form-input" id="mp3-price" type="text" placeholder="Precio descriptivo" />
+          <input class="form-input" id="mp3-raw" type="text" placeholder="Precio en números" />
+        </div>
+        <div style="margin-top:18px">
+          <button class="btn-save" onclick="saveManualEmp()">Guardar y publicar en marketplace</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <footer><strong>SENTIDO</strong> Admin Panel · Uso interno del equipo</footer>
+</div>
+
+<!-- AI REVIEW MODAL -->
+<div class="modal-bg" id="review-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span class="modal-title" id="review-modal-title">Revisión de solicitud</span>
+      <button class="modal-close" onclick="closeReviewModal()">✕</button>
+    </div>
+    <div class="modal-body" id="review-modal-body">
+      <!-- Populated by JS -->
+    </div>
+    <div class="modal-footer" id="review-modal-footer">
+      <button class="btn-cancel" onclick="closeReviewModal()">Cerrar</button>
+      <button class="btn-reject-big" id="btn-modal-reject" onclick="rejectFromModal()" style="display:none">✗ Rechazar</button>
+      <button class="btn-approve-big" id="btn-modal-approve" onclick="approveFromModal()" style="display:none">✓ Aprobar y enviar link</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="supabase-config.js"></script>
+<script src="config.js"></script>
+<script src="data.js"></script>
+<script>
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const ADMIN_PASS   = 'sentido2026';
+// GROQ_API_KEY y GROQ_MODEL se cargan desde config.js
+
+// ── EMAILJS (misma config que registro.html) ─────────────────────
+const EMAILJS = {
+  publicKey:  'TU_PUBLIC_KEY',
+  serviceId:  'TU_SERVICE_ID',
+  templateId: 'TU_TEMPLATE_ID'
+};
+emailjs.init(EMAILJS.publicKey);
+
+async function enviarEmailAdmin({ to, subject, html }) {
+  try {
+    await emailjs.send(EMAILJS.serviceId, EMAILJS.templateId, {
+      to_email:  to,
+      subject:   subject,
+      html_body: html
+    });
+  } catch (e) { console.warn('EmailJS error:', e); }
+}
+
+function emailBaseAdmin(titulo, subtitulo, badge, cuerpoHtml) {
+  return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"></head>
+  <body style="margin:0;padding:0;background:#F5EDE0;font-family:Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#F5EDE0;padding:32px 16px">
+    <tr><td align="center"><table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;background:#F5EDE0">
+      <tr><td align="center" style="padding:40px 40px 18px">
+        <span style="font-size:26px;font-weight:900;color:#2D5A3D;font-family:Georgia,serif">sentido</span><br>
+        <span style="font-size:11px;color:#9C9488">impacto real y marketplace</span>
+        <h1 style="margin:18px 0 8px;font-size:34px;font-weight:900;color:#2D5A3D;font-family:Georgia,serif;line-height:1.15">${titulo}</h1>
+        ${subtitulo ? `<p style="margin:0 0 14px;font-size:15px;color:#7A7060">${subtitulo}</p>` : ''}
+        <div style="display:inline-block;padding:10px 24px;border:2px solid #8B9E6A;border-radius:50px;background:#E8EDD8;color:#3A5228;font-size:13px;font-weight:700">${badge}</div>
+      </td></tr>
+      <tr><td style="padding:0 40px"><hr style="border:none;border-top:1px solid #DDD5C5"></td></tr>
+      <tr><td style="padding:24px 44px 40px;font-size:15px;color:#3D3830;line-height:1.75">${cuerpoHtml}</td></tr>
+      <tr><td align="center" style="padding:16px;border-top:1px solid #DDD5C5">
+        <p style="margin:0;font-size:11px;color:#B0A898">SENTIDO · Marketplace de impacto social y ambiental · Colombia 2026</p>
+      </td></tr>
+    </table></td></tr>
+  </table></body></html>`;
+}
+
+let currentAppId = null;
+let currentApp   = null;
+
+// ── AUTH ──────────────────────────────────────────────────
+function doLogin() {
+  if (document.getElementById('pass-input').value === ADMIN_PASS) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('admin-screen').style.display = 'block';
+    loadData();
+  } else {
+    document.getElementById('login-error').style.display = 'block';
+    document.getElementById('pass-input').value = '';
+    document.getElementById('pass-input').focus();
+  }
+}
+
+function doLogout() {
+  document.getElementById('admin-screen').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('pass-input').value = '';
+}
+
+// (API key gestionada como constante GROQ_API_KEY)
+
+// ── DATA LOADING ──────────────────────────────────────────
+async function loadData() {
+  try {
+    const [{ data: apps }, { data: emps }] = await Promise.all([
+      db.from('applications').select('*').order('created_at', { ascending: false }),
+      db.from('entrepreneurs').select('*').order('created_at', { ascending: false })
+    ]);
+
+    const pending = (apps || []).filter(a => a.status === 'pending');
+    const approved = (apps || []).filter(a => a.status === 'approved');
+    const rejected = (apps || []).filter(a => a.status === 'rejected');
+    const live = (emps || []).filter(e => e.onboarding_complete && e.active);
+
+    // Stats
+    document.getElementById('s-pending').textContent = pending.length;
+    document.getElementById('s-total').textContent = (apps || []).length;
+    document.getElementById('s-approved').textContent = approved.length;
+    document.getElementById('s-marketplace').textContent = live.length;
+    document.getElementById('badge-pending').textContent = pending.length;
+
+    renderTable('table-pending', pending, 'pending');
+    renderTable('table-approved', approved, 'approved');
+    renderTable('table-rejected', rejected, 'rejected');
+
+  } catch (e) {
+    console.error('Error cargando datos:', e);
+    document.getElementById('table-pending').innerHTML = `<tr><td colspan="6" style="text-align:center;padding:32px;color:#ef4444">Error conectando con Supabase. Verifica las credenciales en supabase-config.js</td></tr>`;
+  }
+}
+
+function fmtDate(ts) {
+  if (!ts) return '—';
+  return new Date(ts).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+function scorePill(score) {
+  if (!score) return '—';
+  const cls = score >= 70 ? 'score-high' : score >= 40 ? 'score-mid' : 'score-low';
+  return `<span class="ai-score-pill ${cls}">🤖 ${score}/100</span>`;
+}
+
+function renderTable(tbodyId, rows, type) {
+  const tbody = document.getElementById(tbodyId);
+  if (!rows || rows.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">${type==='pending'?'📥':'🎉'}</div>No hay solicitudes ${type==='pending'?'pendientes':type==='approved'?'aprobadas':'rechazadas'}</div></td></tr>`;
+    return;
+  }
+  if (type === 'pending') {
+    tbody.innerHTML = rows.map(a => `
+      <tr id="row-${a.id}">
+        <td>
+          <div class="td-name">${a.name}</div>
+          <div class="td-sub">por ${a.owner_name||'—'} · ${a.email||'—'}</div>
+        </td>
+        <td>${a.city||'—'}</td>
+        <td style="font-size:11px;color:var(--gray-600);max-width:160px">${(a.seals||'').replace(/;/g,', ')}</td>
+        <td>${fmtDate(a.created_at)}</td>
+        <td>${scorePill(a.ai_score)}</td>
+        <td>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <!-- Checkbox APROBAR -->
+            <label class="approve-check-wrap">
+              <input type="checkbox" class="approve-checkbox"
+                onchange="if(this.checked) quickApprove('${a.id}', this)">
+              <span class="approve-label">✓ Aprobar y publicar</span>
+            </label>
+            <!-- Checkbox RECHAZAR -->
+            <label class="reject-check-wrap">
+              <input type="checkbox" class="reject-checkbox"
+                onchange="if(this.checked) quickReject('${a.id}', this)">
+              <span class="reject-label">✗ Rechazar</span>
+            </label>
+            <!-- Ver detalle / IA -->
+            <button class="btn-sm btn-ai" onclick="openReview('${a.id}')">🤖 Ver análisis IA</button>
+          </div>
+        </td>
+      </tr>`).join('');
+  } else if (type === 'approved') {
+    tbody.innerHTML = rows.map(a => `
+      <tr>
+        <td><div class="td-name">${a.name}</div><div class="td-sub">por ${a.owner_name||'—'}</div></td>
+        <td>${a.city||'—'}</td>
+        <td><span class="badge-formal ${a.formal==='SÍ'?'yes':a.formal==='En proceso'?'process':'no'}">${a.formal||'NO'}</span></td>
+        <td><span class="status-badge ${a.status==='approved'?'status-approved':'status-pending'}">✓ Aprobado</span></td>
+        <td>${fmtDate(a.reviewed_at||a.created_at)}</td>
+        <td><div class="td-actions">
+          <button class="btn-sm btn-ai" onclick="openReview('${a.id}')">Ver detalle</button>
+        </div></td>
+      </tr>`).join('');
+  } else {
+    tbody.innerHTML = rows.map(a => `
+      <tr>
+        <td><div class="td-name">${a.name}</div><div class="td-sub">por ${a.owner_name||'—'}</div></td>
+        <td>${a.city||'—'}</td>
+        <td>${fmtDate(a.created_at)}</td>
+        <td>${scorePill(a.ai_score)}</td>
+        <td style="font-size:12px;color:var(--gray-600);max-width:240px">${a.ai_justification||'—'}</td>
+      </tr>`).join('');
+  }
+}
+
+// ── TABS ──────────────────────────────────────────────────
+function showTab(name, el) {
+  ['pending','approved','rejected','manual'].forEach(t => {
+    document.getElementById(`tab-${t}`).style.display = t===name ? 'block' : 'none';
+  });
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// ── AI REVIEW ─────────────────────────────────────────────
+async function openReview(appId) {
+  const { data: app } = await db.from('applications').select('*').eq('id', appId).single();
+  if (!app) return;
+  currentAppId = appId;
+  currentApp = app;
+
+  document.getElementById('review-modal-title').textContent = `📋 ${app.name}`;
+  document.getElementById('review-modal').classList.add('open');
+
+  const approveBtn = document.getElementById('btn-modal-approve');
+  const rejectBtn = document.getElementById('btn-modal-reject');
+  approveBtn.style.display = app.status === 'pending' ? 'flex' : 'none';
+  rejectBtn.style.display = app.status === 'pending' ? 'flex' : 'none';
+
+  renderAppDetail(app);
+
+  // If not yet reviewed by AI, trigger review
+  if (!app.ai_score && app.status === 'pending') {
+    await runAiReview(app);
+  }
+}
+
+function renderAppDetail(app) {
+  const seals = (app.seals || '').split(/[;,]/).map(s => s.trim()).filter(Boolean);
+
+  document.getElementById('review-modal-body').innerHTML = `
+    <div class="app-detail-grid">
+      <div class="app-detail-item"><div class="app-detail-label">Ciudad</div><div class="app-detail-val">📍 ${app.city||'—'}</div></div>
+      <div class="app-detail-item"><div class="app-detail-label">Formalización</div><div class="app-detail-val">${app.formal||'—'}</div></div>
+      <div class="app-detail-item"><div class="app-detail-label">Categoría</div><div class="app-detail-val">${app.category||'—'}</div></div>
+      <div class="app-detail-item"><div class="app-detail-label">WhatsApp</div><div class="app-detail-val">${app.whatsapp||'—'}</div></div>
+      <div class="app-detail-item app-detail-full"><div class="app-detail-label">Descripción</div><div class="app-detail-val" style="white-space:pre-wrap">${app.tagline||'—'}</div></div>
+      <div class="app-detail-item app-detail-full"><div class="app-detail-label">Historia de impacto</div><div class="app-detail-val" style="white-space:pre-wrap;font-size:13px;line-height:1.5">${app.impact||'—'}</div></div>
+      <div class="app-detail-item app-detail-full"><div class="app-detail-label">Sellos solicitados</div><div class="app-detail-val" style="margin-top:4px"><div style="display:flex;flex-wrap:wrap;gap:5px">${seals.map(s=>`<span class="seal-chip seal-pending">${s}</span>`).join('')}</div></div></div>
+      ${(app.products||[]).length ? `<div class="app-detail-item app-detail-full"><div class="app-detail-label">Productos</div><div style="display:flex;flex-direction:column;gap:4px;margin-top:4px">${(app.products||[]).map(p=>`<span style="font-size:12px;color:var(--gray-700)">• ${p.name} — ${p.price}</span>`).join('')}</div></div>` : ''}
+    </div>
+    <div id="ai-result-container">${app.ai_score ? renderAiResultHTML(app) : '<div class="ai-result loading"><div class="ai-loading-text">🤖 Iniciando análisis con Claude...</div></div>'}</div>`;
+}
+
+function renderAiResultHTML(app) {
+  if (!app.ai_score) return '';
+  const rec = app.ai_recommendation || 'REVISAR';
+  const recClass = rec === 'APROBAR' ? 'done-approve' : rec === 'RECHAZAR' ? 'done-reject' : 'done-review';
+  const recBadge = rec === 'APROBAR' ? 'rec-aprobar' : rec === 'RECHAZAR' ? 'rec-rechazar' : 'rec-revisar';
+  const scoreClass = app.ai_score >= 70 ? 'high' : app.ai_score >= 40 ? 'mid' : 'low';
+
+  const verified = (app.ai_verified_seals||'').split(';').map(s=>s.trim()).filter(Boolean);
+  const pending = (app.ai_pending_seals||'').split(';').map(s=>s.trim()).filter(Boolean);
+  const rejected = (app.ai_rejected_seals||'').split(';').map(s=>s.trim()).filter(Boolean);
+
+  return `
+    <div class="ai-result ${recClass}">
+      <div class="ai-score-big">
+        <div class="score-circle ${scoreClass}">${app.ai_score}</div>
+        <div>
+          <span class="ai-rec-badge ${recBadge}">🤖 ${rec}</span>
+          <div style="font-size:12px;color:var(--gray-400);margin-top:2px">Análisis por Claude · Modelo ${CLAUDE_MODEL}</div>
+        </div>
+      </div>
+      <div class="ai-justif">${app.ai_justification||''}</div>
+      ${app.ai_notes ? `<div class="ai-notes">📝 <strong>Notas para el admin:</strong> ${app.ai_notes}</div>` : ''}
+      ${verified.length || pending.length || rejected.length ? `
+        <div class="seals-section" style="margin-top:14px">
+          ${verified.length ? `<div style="margin-bottom:8px"><div class="seals-section-title" style="color:#166534">✓ Sellos verificados</div><div class="seals-row">${verified.map(s=>`<span class="seal-chip seal-verified">${s}</span>`).join('')}</div></div>` : ''}
+          ${pending.length ? `<div style="margin-bottom:8px"><div class="seals-section-title" style="color:#92400e">? Requieren verificación</div><div class="seals-row">${pending.map(s=>`<span class="seal-chip seal-pending">${s}</span>`).join('')}</div></div>` : ''}
+          ${rejected.length ? `<div><div class="seals-section-title" style="color:#991b1b">✗ No aplican</div><div class="seals-row">${rejected.map(s=>`<span class="seal-chip seal-rejected">${s}</span>`).join('')}</div></div>` : ''}
+        </div>` : ''}
+    </div>`;
+}
+
+async function runAiReview(app) {
+  const prompt = buildReviewPrompt(app);
+
+  try {
+    const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${GROQ_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: GROQ_MODEL,
+        temperature: 0.2,
+        max_tokens: 1000,
+        messages: [
+          { role: 'system', content: 'Eres el agente revisor oficial de SENTIDO. Responde SOLO con JSON válido, sin texto adicional.' },
+          { role: 'user', content: prompt }
+        ]
+      })
+    });
+
+    if (!resp.ok) {
+      const err = await resp.json();
+      throw new Error(err.error?.message || `HTTP ${resp.status}`);
+    }
+
+    const result = await resp.json();
+    const text = result.choices?.[0]?.message?.content || '';
+
+    // Extract JSON from response
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error('La IA no devolvió JSON válido');
+
+    const aiData = JSON.parse(jsonMatch[0]);
+
+    // Save to Supabase
+    await db.from('applications').update({
+      ai_score: aiData.score,
+      ai_recommendation: aiData.recommendation,
+      ai_justification: aiData.justification,
+      ai_notes: aiData.admin_notes,
+      ai_verified_seals: (aiData.verified_seals || []).join(';'),
+      ai_pending_seals: (aiData.pending_seals || []).join(';'),
+      ai_rejected_seals: (aiData.rejected_seals || []).join(';')
+    }).eq('id', app.id);
+
+    // Update local state
+    currentApp = { ...app, ai_score: aiData.score, ai_recommendation: aiData.recommendation,
+      ai_justification: aiData.justification, ai_notes: aiData.admin_notes,
+      ai_verified_seals: (aiData.verified_seals||[]).join(';'),
+      ai_pending_seals: (aiData.pending_seals||[]).join(';'),
+      ai_rejected_seals: (aiData.rejected_seals||[]).join(';') };
+
+    document.getElementById('ai-result-container').innerHTML = renderAiResultHTML(currentApp);
+    loadData(); // refresh table
+
+  } catch (err) {
+    console.error('Error AI review:', err);
+    document.getElementById('ai-result-container').innerHTML = `<div class="ai-result" style="background:#fff1f2;border:1.5px solid #fca5a5;padding:16px"><strong>❌ Error en el agente IA:</strong> ${err.message}</div>`;
+  }
+}
+
+function buildReviewPrompt(app) {
+  const products = (app.products || []).map(p => `- ${p.name} (${p.price})`).join('\n');
+  return `Eres el agente revisor oficial de SENTIDO, un marketplace colombiano de emprendimientos con impacto social y ambiental verificado.
+
+Tu tarea es revisar la siguiente solicitud y determinar si el emprendimiento cumple los criterios para los sellos de impacto solicitados.
+
+CRITERIOS DE SELLOS SENTIDO:
+- Bienestar Consciente: Productos de salud física/mental libres de químicos nocivos, testeados éticamente.
+- Liderazgo que Inspira: Liderado por mujeres o comunidad LGBTI+, promueve equidad de género activamente.
+- Jefatura de Hogar: Equipo principalmente de madres/padres cabeza de familia, único sustento del hogar.
+- Sello Economía Circular / Segunda Vida: Extiende ciclo de vida de materiales, comercializa segunda vida, residuo cero.
+- Producción Limpia & Eco-Friendly: Recursos naturales, tecnologías verdes, no contamina agua ni tierra.
+- Cero Plástico / Empaque Ecológico: Empaques 100% reutilizables, reciclables o compostables.
+- Origen Rural: Opera en zona rural o trabaja con comunidades campesinas fuera de centros urbanos.
+- Inclusión Económica & Empleo Digno: Emplea poblaciones vulnerables, excombatientes o víctimas del conflicto armado.
+- Saberes Ancestrales & Artesanal: Preserva técnicas tradicionales (crochet, tejidos, artesanías del territorio).
+- Comercio Justo Local: Precios justos a productores locales, elimina explotación de intermediarios.
+- Innovación Sostenible & Biotech: Biotecnología o tecnología para productos útiles de bajo impacto ambiental.
+- Origen Orgánico y Biocomercio: Biodiversidad local, conservación y agricultura sostenible.
+- Adulto Mayor Activo: 30%+ del equipo o fundador/a tiene 60 años o más.
+
+SOLICITUD:
+Nombre: ${app.name}
+Ciudad: ${app.city}
+Categoría: ${app.category}
+Formalización: ${app.formal}
+Descripción: ${app.tagline}
+Impacto declarado: ${app.impact}
+Por qué quiere unirse: ${app.why_sentido || '—'}
+Sellos solicitados: ${app.seals}
+Productos/servicios:
+${products || '— No especificados'}
+Emprendedor/a: ${app.owner_name}
+
+INSTRUCCIONES:
+1. Analiza con criterio riguroso pero empático.
+2. Evalúa si los hechos descritos respaldan cada sello solicitado.
+3. Cita evidencia textual específica.
+4. Si falta información, indícalo como sello pendiente de verificación.
+
+Responde ÚNICAMENTE con este JSON (sin texto adicional):
+{
+  "score": [0-100],
+  "recommendation": "APROBAR" | "REVISAR" | "RECHAZAR",
+  "verified_seals": ["sellos confirmados por evidencia clara"],
+  "pending_seals": ["sellos que necesitan más información para confirmar"],
+  "rejected_seals": ["sellos que no aplican según la información presentada"],
+  "justification": "2-3 oraciones justificando la recomendación general",
+  "admin_notes": "puntos específicos a verificar o preocupaciones antes de aprobar"
+}`;
+}
+
+function closeReviewModal() {
+  document.getElementById('review-modal').classList.remove('open');
+  currentAppId = null;
+  currentApp = null;
+}
+
+// ── APROBACIÓN DIRECTA POR CHECKBOX ──────────────────────────────
+async function quickApprove(appId, checkbox) {
+  const row = document.getElementById(`row-${appId}`);
+  const name = row?.querySelector('.td-name')?.textContent || 'este emprendimiento';
+
+  if (!confirm(`¿Aprobar "${name}" y publicar en el marketplace?`)) {
+    checkbox.checked = false;
+    return;
+  }
+
+  // Visual feedback inmediato
+  checkbox.disabled = true;
+  checkbox.closest('label').querySelector('.approve-label').textContent = '⏳ Publicando...';
+
+  try {
+    const { data: app } = await db.from('applications').select('*').eq('id', appId).single();
+    if (!app) throw new Error('Aplicación no encontrada');
+
+    // 1. Marcar como aprobado
+    await db.from('applications').update({
+      status: 'approved',
+      reviewed_at: new Date().toISOString()
+    }).eq('id', appId);
+
+    // 2. Insertar en entrepreneurs → onboarding_complete=true para que aparezca inmediatamente
+    const { data: emp, error } = await db.from('entrepreneurs').insert([{
+      application_id:      appId,
+      name:                app.name,
+      city:                app.city     || '',
+      tagline:             app.tagline  || '',
+      formal:              app.formal   || 'NO',
+      seals:               app.ai_verified_seals || app.seals || '',
+      impact:              app.impact   || '',
+      photo_url:           app.photo_url || 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&h=400&fit=crop',
+      products:            app.products || [],
+      whatsapp:            app.whatsapp || '',
+      email:               app.email    || '',
+      onboarding_complete: true,   // ← publica directo al marketplace
+      active:              true
+    }]).select().single();
+
+    if (error) throw error;
+
+    // 3. Mostrar fila como aprobada
+    row.style.background = '#f0fdf4';
+    row.querySelectorAll('td').forEach(td => td.style.opacity = '0.6');
+    row.querySelector('.td-name').insertAdjacentHTML('afterend',
+      `<div style="font-size:11px;font-weight:700;color:#16a34a;margin-top:3px">✅ PUBLICADO EN EL MARKETPLACE</div>`);
+
+    // 4. Enviar correo HTML de aprobación al emprendedor
+    if (app.email) {
+      const seals = (app.ai_verified_seals || app.seals || '').replace(/;/g,' · ');
+      const body = `<p>Hola, <strong>${app.owner_name}</strong></p>
+        <p>Tenemos una noticia que nos alegra mucho compartirte. Revisamos tu solicitud con cuidado y encontramos lo que buscamos: <strong>impacto real, verificable y con propósito.</strong></p>
+        <p>A partir de hoy, <strong>${app.name}</strong> es parte oficial del marketplace Sentido.</p>
+        ${seals ? `<p style="margin:16px 0;padding:12px 18px;background:#E8EDD8;border-radius:8px;border-left:4px solid #2D5A3D"><span style="font-weight:700;color:#2D5A3D">Sellos verificados:</span> <span style="color:#3A5228">${seals}</span></p>` : ''}
+        <p>En breve recibirás el link para completar tu perfil. ¡Bienvenido/a a la comunidad que cree en el cambio real!</p>
+        <br><table cellpadding="0" cellspacing="0"><tr><td style="background:#2D5A3D;border-radius:8px;padding:12px 24px">
+          <a href="${window.location.origin}/marketplace.html" style="color:white;text-decoration:none;font-weight:800">→ Ver el marketplace Sentido</a>
+        </td></tr></table>`;
+      enviarEmailAdmin({
+        to: app.email,
+        subject: `✅ ¡${app.name} fue admitido al marketplace Sentido!`,
+        html: emailBaseAdmin('SOLICITUD APROBADA', '¡Bienvenido/a a Sentido!', 'Tu emprendimiento fue admitido al marketplace', body)
+      });
+    }
+
+    // 5. Notificar al emprendedor por WhatsApp (si tiene número)
+    if (app.whatsapp) {
+      const onbUrl = `${location.origin}/onboarding.html?token=${emp.onboarding_token}`;
+      const msg = `¡Felicitaciones ${app.owner_name}! 🌱\n\n*${app.name}* fue APROBADO en SENTIDO y ya está publicado en el marketplace.\n\nPuedes completar y actualizar tu perfil aquí:\n${onbUrl}`;
+      setTimeout(() => window.open(`https://wa.me/57${app.whatsapp.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`, '_blank'), 500);
+    }
+
+    loadData();
+    alert(`✅ "${app.name}" aprobado y publicado en el marketplace.`);
+
+  } catch (err) {
+    console.error('Error aprobando:', err);
+    alert('Error: ' + err.message);
+    checkbox.checked = false;
+    checkbox.disabled = false;
+    checkbox.closest('label').querySelector('.approve-label').textContent = '✓ Aprobar y publicar';
+  }
+}
+
+async function quickReject(appId, checkbox) {
+  const row = document.getElementById(`row-${appId}`);
+  const name = row?.querySelector('.td-name')?.textContent || 'este emprendimiento';
+  const motivo = prompt(`¿Por qué se rechaza "${name}"? (Opcional, se guardará como nota)`);
+  if (motivo === null) { checkbox.checked = false; return; }
+
+  checkbox.disabled = true;
+  try {
+    await db.from('applications').update({
+      status: 'rejected',
+      reviewed_at: new Date().toISOString(),
+      ai_notes: motivo ? `RECHAZADO: ${motivo}` : 'Rechazado por el admin'
+    }).eq('id', appId);
+
+    row.style.background = '#fff1f2';
+    row.querySelectorAll('td').forEach(td => td.style.opacity = '0.5');
+    row.querySelector('.td-name').insertAdjacentHTML('afterend',
+      `<div style="font-size:11px;font-weight:700;color:#991b1b;margin-top:3px">❌ RECHAZADO</div>`);
+
+    loadData();
+  } catch (err) {
+    alert('Error: ' + err.message);
+    checkbox.checked = false;
+    checkbox.disabled = false;
+  }
+}
+
+// ── APROBACIÓN DESDE MODAL (mantener para compatibilidad) ────────
+async function approveFromModal() {
+  if (!currentApp) return;
+  if (!confirm(`¿Aprobar "${currentApp.name}" y enviar link de onboarding?`)) return;
+
+  const btn = document.getElementById('btn-modal-approve');
+  btn.disabled = true;
+  btn.textContent = 'Procesando...';
+
+  try {
+    // 1. Update application status
+    await db.from('applications').update({
+      status: 'approved',
+      reviewed_at: new Date().toISOString()
+    }).eq('id', currentApp.id);
+
+    // 2. Create entrepreneur record
+    const { data: emp, error } = await db.from('entrepreneurs').insert([{
+      application_id: currentApp.id,
+      name: currentApp.name,
+      city: currentApp.city,
+      tagline: currentApp.tagline,
+      formal: currentApp.formal || 'NO',
+      seals: currentApp.ai_verified_seals || currentApp.seals || '',
+      impact: currentApp.impact || '',
+      photo_url: currentApp.photo_url || '',
+      products: currentApp.products || [],
+      whatsapp: currentApp.whatsapp || '',
+      email: currentApp.email || '',
+      onboarding_complete: false,
+      active: true
+    }]).select().single();
+
+    if (error) throw error;
+
+    // 3. Build onboarding link
+    const onboardingUrl = `${location.origin.replace('file://', 'http://localhost:5500')}/onboarding.html?token=${emp.onboarding_token}`;
+
+    // 4. Open WhatsApp to notify entrepreneur
+    const waNum = currentApp.whatsapp ? '57' + currentApp.whatsapp.replace(/\D/g, '') : null;
+    const waMsg = `¡Felicitaciones ${currentApp.owner_name}! 🌱\n\nTu emprendimiento *${currentApp.name}* fue aprobado en SENTIDO.\n\nAhora completa tu perfil para aparecer en el marketplace:\n${onboardingUrl}\n\nEste link es personal y único para ti. ¡Bienvenido/a a la comunidad SENTIDO!`;
+
+    closeReviewModal();
+    loadData();
+
+    // Show success with options
+    const copied = await navigator.clipboard.writeText(onboardingUrl).then(() => true).catch(() => false);
+
+    if (waNum) {
+      window.open(`https://wa.me/${waNum}?text=${encodeURIComponent(waMsg)}`, '_blank');
+      alert(`✅ "${currentApp.name}" aprobado!\n\nSe abrió WhatsApp para notificar al emprendedor.\nLink de onboarding${copied?' copiado al portapapeles':' generado'}:\n${onboardingUrl}`);
+    } else {
+      alert(`✅ "${currentApp.name}" aprobado!\n\nLink de onboarding para enviar al emprendedor:\n${onboardingUrl}`);
+    }
+
+  } catch (err) {
+    console.error('Error aprobando:', err);
+    alert('Error al aprobar: ' + err.message);
+    btn.disabled = false;
+    btn.textContent = '✓ Aprobar y enviar link';
+  }
+}
+
+async function rejectFromModal() {
+  if (!currentApp) return;
+  const motivo = prompt(`¿Por qué se rechaza "${currentApp.name}"? (Opcional)`);
+  if (motivo === null) return; // cancelled
+
+  await db.from('applications').update({
+    status: 'rejected',
+    reviewed_at: new Date().toISOString(),
+    ai_notes: motivo ? `RECHAZADO: ${motivo}` : (currentApp.ai_notes || 'Rechazado por el admin')
+  }).eq('id', currentApp.id);
+
+  closeReviewModal();
+  loadData();
+}
+
+// ── MANUAL ADD ────────────────────────────────────────────
+async function saveManualEmp() {
+  const name = document.getElementById('m-name').value.trim();
+  const city = document.getElementById('m-city').value.trim();
+  const tagline = document.getElementById('m-tagline').value.trim();
+  if (!name || !city || !tagline) { alert('Nombre, ciudad y descripción son obligatorios.'); return; }
+
+  const products = [];
+  for (let i = 1; i <= 3; i++) {
+    const n = document.getElementById(`mp${i}-name`).value.trim();
+    if (n) products.push({ name: n, price: document.getElementById(`mp${i}-price`).value.trim() || 'Consultar', rawPrice: document.getElementById(`mp${i}-raw`).value.trim() || '' });
+  }
+  if (!products.length) { alert('Agrega al menos un producto.'); return; }
+
+  const { error } = await db.from('entrepreneurs').insert([{
+    name, city, tagline,
+    formal: document.getElementById('m-formal').value,
+    seals: document.getElementById('m-seals').value.trim(),
+    impact: document.getElementById('m-impact').value.trim(),
+    photo_url: document.getElementById('m-photo').value.trim() || 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&h=400&fit=crop',
+    products,
+    whatsapp: document.getElementById('m-wa').value.trim(),
+    onboarding_complete: true,
+    active: true
+  }]);
+
+  if (error) { alert('Error: ' + error.message); return; }
+
+  alert(`✅ "${name}" agregado y publicado en el marketplace.`);
+  ['m-name','m-city','m-tagline','m-wa','m-seals','m-impact','m-photo',
+   'mp1-name','mp1-price','mp1-raw','mp2-name','mp2-price','mp2-raw','mp3-name','mp3-price','mp3-raw']
+    .forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  loadData();
+}
+</script>
+</body>
+</html>
