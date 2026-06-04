@@ -1,17 +1,15 @@
-# Claves privadas — NO subir a GitHub
+# ── Claves y credenciales — NUNCA subir a GitHub ─────────────
+.env
 config.js
 
-# Archivos de sistema
+# ── Sistema operativo ─────────────────────────────────────────
 .DS_Store
 Thumbs.db
 desktop.ini
 
-# Editor
+# ── Editor ────────────────────────────────────────────────────
 .vscode/
 *.code-workspace
 
-# Logs
+# ── Logs ──────────────────────────────────────────────────────
 *.log
-
-# Dependencias (no aplica aquí, proyecto vanilla)
-node_modules/
