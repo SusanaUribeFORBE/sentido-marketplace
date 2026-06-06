@@ -514,7 +514,12 @@ function render() {
 }
 
 // Renderizar BASE_DATA inmediatamente → nunca queda vacío
-render();
+try {
+  render();
+} catch(e) {
+  console.error('Error en render():', e);
+  document.getElementById('results-label').textContent = 'Error al cargar: ' + e.message;
+}
 // Enriquecer en segundo plano con emprendedores aprobados en Supabase
 loadSupabaseData();
 </script>
