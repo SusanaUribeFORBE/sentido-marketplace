@@ -304,8 +304,15 @@
 <script src="supabase-config.js"></script>
 <script src="data.js"></script>
 <script>
-const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-const ADMIN_WA = '573XXXXXXXXX'; // Reemplaza con el número WhatsApp del admin
+// Inicializar Supabase solo si config.js está cargado con credenciales válidas
+let db = null;
+try {
+  if (typeof SUPABASE_URL !== 'undefined' && SUPABASE_URL && !SUPABASE_URL.includes('TU_PROYECTO')) {
+    db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  }
+} catch(e) { console.warn('Supabase no disponible:', e.message); }
+
+const ADMIN_WA = '573XXXXXXXXX';
 
 let cart = loadCart();
 syncCartBadge();
@@ -423,10 +430,11 @@ function setFilter(f, el) {
   render();
 }
 
-// Merge BASE_DATA + Supabase entrepreneurs
+// Datos base disponibles siempre (sin Supabase)
 let ALL_DATA = getAll();
 
 async function loadSupabaseData() {
+  if (!db) return; // sin config.js válido, ya renderizamos con BASE_DATA
   try {
     const { data } = await db.from('entrepreneurs')
       .select('*')
@@ -435,26 +443,22 @@ async function loadSupabaseData() {
 
     if (data && data.length > 0) {
       const adapted = data.map(e => ({
-        id: e.id,
-        name: e.name,
-        city: e.city || '',
-        formal: e.formal || 'NO',
-        tagline: e.tagline || '',
-        seals: e.seals || '',
-        impact: e.impact || '',
+        id: e.id, name: e.name, city: e.city || '',
+        formal: e.formal || 'NO', tagline: e.tagline || '',
+        seals: e.seals || '', impact: e.impact || '',
         photo: e.photo_url || 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&h=400&fit=crop',
-        whatsapp: e.whatsapp || '',
-        products: (e.products || [])
+        whatsapp: e.whatsapp || '', products: (e.products || [])
       }));
-      // Avoid duplicating base data IDs
-      const baseIds = new Set(BASE_DATA.map(b => b.id));
-      const newEmps = adapted.filter(e => !baseIds.has(e.id));
-      ALL_DATA = [...getAll(), ...newEmps];
+      const baseIds = new Set(BASE_DATA.map(b => String(b.id)));
+      const newEmps = adapted.filter(e => !baseIds.has(String(e.id)));
+      if (newEmps.length > 0) {
+        ALL_DATA = [...getAll(), ...newEmps];
+        render(); // re-render con los nuevos de Supabase
+      }
     }
   } catch (err) {
-    console.warn('No se pudo conectar a Supabase, usando datos locales.', err.message);
+    console.warn('Supabase no disponible:', err.message);
   }
-  render();
 }
 
 function render() {
@@ -509,7 +513,9 @@ function render() {
   }).join('');
 }
 
-// Load Supabase data on init, fall back to local data if unavailable
+// Renderizar BASE_DATA inmediatamente → nunca queda vacío
+render();
+// Enriquecer en segundo plano con emprendedores aprobados en Supabase
 loadSupabaseData();
 </script>
 </body>
