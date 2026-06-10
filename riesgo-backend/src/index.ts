@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import path from 'path';
 import express from 'express';
 import rateLimit from 'express-rate-limit';
 import { authRouter } from './routes/auth';
@@ -23,7 +24,10 @@ const pinLimiter = rateLimit({
   message: { error: 'Demasiados intentos. Espera 15 minutos.' }
 });
 
-app.get('/', (_req, res) => {
+app.use(express.static(path.join(__dirname, '..', 'public')));
+app.use('/assets', express.static(path.join(__dirname, '..', 'assets')));
+
+app.get('/api', (_req, res) => {
   res.json({ status: 'RiesGO! backend corriendo ✅' });
 });
 
