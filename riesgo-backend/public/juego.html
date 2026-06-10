@@ -10,21 +10,19 @@
   <link rel="stylesheet" href="/css/style.css" />
 </head>
 <body>
-  <div class="card">
-    <img src="/assets/logo-riesgo.png" alt="RiesGO!" class="logo" />
-    <p class="subtitle">Bienvenido(a), <span id="nombre"></span></p>
-    <p class="subtitle">Módulo asignado: <strong id="modulo"></strong></p>
-    <p class="subtitle">Aquí irá el juego (mundo <span id="mundo"></span>). Próximamente.</p>
+  <div class="card game-card">
+    <div class="game-header">
+      <img src="/assets/logo-riesgo.png" alt="RiesGO!" class="logo" />
+      <span id="modulo-titulo" style="font-weight:700; color: var(--navy); font-size: 14px;"></span>
+    </div>
+    <p class="subtitle">Hola, <strong id="nombre"></strong></p>
+
+    <div id="game-container">
+      <div class="spinner">Cargando módulo...</div>
+    </div>
   </div>
 
-  <script>
-    const pinId = sessionStorage.getItem('riesgo_pin_id');
-    if (!pinId) {
-      window.location.href = '/';
-    }
-    document.getElementById('nombre').textContent = sessionStorage.getItem('riesgo_nombre') || '';
-    document.getElementById('modulo').textContent = sessionStorage.getItem('riesgo_modulo') || '';
-    document.getElementById('mundo').textContent = sessionStorage.getItem('riesgo_mundo') || '';
-  </script>
+  <script src="/js/modulos/orden-aseo.js"></script>
+  <script src="/js/juego.js"></script>
 </body>
 </html>

@@ -1,0 +1,111 @@
+window.MODULOS = window.MODULOS || {};
+
+window.MODULOS['ordenyaseo'] = {
+  titulo: 'Orden y Aseo (5S)',
+  preguntas: [
+    {
+      emoji: '🧰🔩🔧',
+      texto: 'Encuentras herramientas que no usas hace meses regadas en tu área de trabajo.',
+      pregunta: 'Según la metodología 5S, ¿qué debes hacer primero?',
+      opciones: [
+        'Guardarlas en cualquier cajón disponible',
+        'Clasificar: separar lo que sirve de lo que no (Seiri)',
+        'Dejarlas ahí, podrían servir algún día',
+        'Botarlas todas sin revisar',
+      ],
+      correcta: 1,
+      explicacion: 'La primera S (Seiri - Clasificar) consiste en separar lo necesario de lo innecesario en el puesto de trabajo.',
+    },
+    {
+      emoji: '🪜⚡🔌',
+      texto: 'Los cables eléctricos están enredados en el piso cerca de la escalera.',
+      pregunta: '¿Cuál es el riesgo principal de esta situación?',
+      opciones: [
+        'Ninguno, es algo normal en obra',
+        'Caídas y tropiezos del personal',
+        'Solo afecta la estética del lugar',
+        'Ahorra espacio de almacenamiento',
+      ],
+      correcta: 1,
+      explicacion: 'Los cables sueltos en zonas de tránsito son una causa común de caídas. Deben recogerse o señalizarse.',
+    },
+    {
+      emoji: '🗑️♻️',
+      texto: 'Terminaste de usar materiales de construcción y quedan sobrantes y empaques.',
+      pregunta: '¿Qué corresponde hacer con estos residuos?',
+      opciones: [
+        'Dejarlos para recogerlos al final del día',
+        'Disponerlos en los puntos de acopio o reciclaje correspondientes',
+        'Esconderlos detrás de algún elemento',
+        'Quemarlos en el sitio de trabajo',
+      ],
+      correcta: 1,
+      explicacion: 'Los residuos deben separarse y disponerse en los puntos designados, manteniendo el orden y cuidando el ambiente.',
+    },
+    {
+      emoji: '🧹✨',
+      texto: 'Está terminando tu turno de trabajo en la obra.',
+      pregunta: '¿Cómo debe quedar tu zona de trabajo antes de irte?',
+      opciones: [
+        'Igual que al iniciar el día, sin tocar nada',
+        'Limpia, ordenada y libre de obstáculos para el siguiente turno',
+        'Limpia solo si sobra tiempo',
+        'Es responsabilidad únicamente del personal de aseo general',
+      ],
+      correcta: 1,
+      explicacion: 'La S de Seiketsu/Seiso (Limpieza) es responsabilidad de cada trabajador en su propia área, todos los días.',
+    },
+    {
+      emoji: '🏷️📍',
+      texto: 'Las herramientas y equipos de tu cuadrilla se usan a diario.',
+      pregunta: '¿Cómo deben organizarse para facilitar el orden?',
+      opciones: [
+        'En cualquier lugar disponible cada día',
+        'Con un lugar fijo y señalizado para cada una',
+        'No es necesario marcarlas ni ubicarlas',
+        'Solo el supervisor necesita saber dónde están',
+      ],
+      correcta: 1,
+      explicacion: 'Seiton (Ordenar) implica un lugar fijo, identificado y de fácil acceso para cada herramienta o equipo.',
+    },
+    {
+      emoji: '🚧⚠️',
+      texto: 'Ves un derrame de aceite en el piso del taller de mantenimiento.',
+      pregunta: '¿Qué debes hacer al notarlo?',
+      opciones: [
+        'Caminar con cuidado y continuar tu labor',
+        'Señalizar la zona, limpiar de inmediato y reportar',
+        'Esperar a que se seque por sí solo',
+        'Cubrirlo con una lona para que no se vea',
+      ],
+      correcta: 1,
+      explicacion: 'Un derrame es un riesgo de caída y de incendio. Debe señalizarse, limpiarse y reportarse de inmediato.',
+    },
+    {
+      emoji: '📋🔁',
+      texto: 'Tu equipo mantiene el orden y aseo todos los días, no solo cuando hay visitas o auditorías.',
+      pregunta: '¿A cuál de las 5S corresponde este hábito constante?',
+      opciones: [
+        'Disciplina (Shitsuke)',
+        'Clasificación (Seiri)',
+        'Estandarización (Seiketsu)',
+        'Limpieza inicial (Seiso)',
+      ],
+      correcta: 0,
+      explicacion: 'Shitsuke (Disciplina) es convertir el orden y aseo en un hábito permanente, no en un esfuerzo ocasional.',
+    },
+    {
+      emoji: '🧤👷',
+      texto: 'Terminaste tu jornada y vas a guardar tus elementos de protección personal (casco, guantes, arnés).',
+      pregunta: '¿Qué debes hacer antes de guardarlos?',
+      opciones: [
+        'Guardarlos sucios, se limpian después',
+        'Revisarlos, limpiarlos y guardarlos en el lugar asignado',
+        'Dejarlos en el piso de la zona de trabajo',
+        'Pasarlos a un compañero sin revisión',
+      ],
+      correcta: 1,
+      explicacion: 'Revisar y limpiar el EPP antes de guardarlo prolonga su vida útil y garantiza que esté listo y seguro para el siguiente uso.',
+    },
+  ],
+};
