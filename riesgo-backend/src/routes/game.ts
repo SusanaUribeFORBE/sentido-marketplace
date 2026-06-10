@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { supabase } from '../supabase';
+import { generarCertificado } from '../services/certificado';
 
 export const gameRouter = Router();
 
@@ -50,9 +51,65 @@ gameRouter.post('/finalizar', async (req, res) => {
     return res.status(409).json({ error: 'El PIN ya fue finalizado' });
   }
 
-  return res.json({
-    pin_id: updated.id,
-    estado: updated.estado,
-    modulo_asignado: updated.modulo_asignado,
-  });
+  if (nuevoEstado !== 'Certificado') {
+    return res.json({
+      pin_id: updated.id,
+      estado: updated.estado,
+      modulo_asignado: updated.modulo_asignado,
+    });
+  }
+
+  const { data: empresa, error: empresaError } = await supabase
+    .from('empresas')
+    .select('*')
+    .eq('id_empresa', updated.id_empresa)
+    .single();
+
+  if (empresaError || !empresa) {
+    return res.status(500).json({ error: 'Error consultando la empresa para el certificado' });
+  }
+
+  try {
+    const certificado = await generarCertificado({
+      pinId: updated.id,
+      idEmpresa: empresa.id_empresa,
+      cedulaUsuario: updated.cedula_usuario,
+      nombreUsuario: updated.nombre_usuario,
+      modulo: updated.modulo_asignado,
+      nombreEmpresa: empresa.nombre_constructora,
+      emailSst: empresa.email_sst,
+    });
+
+    return res.json({
+      pin_id: updated.id,
+      estado: updated.estado,
+      modulo_asignado: updated.modulo_asignado,
+      certificado: {
+        codigo_qr: certificado.codigo_qr,
+        url_pdf: certificado.url_pdf,
+        enviado_a: certificado.enviado_a,
+      },
+    });
+  } catch (err) {
+    console.error('Error generando certificado:', err);
+    return res.status(500).json({ error: 'PIN certificado pero falló la generación del certificado' });
+  }
+});
+
+gameRouter.get('/verificar/:codigo', async (req, res) => {
+  const { data, error } = await supabase
+    .from('certificados')
+    .select('codigo_qr, nombre_usuario, cedula_usuario, modulo, emitido_at, url_pdf, id_empresa')
+    .eq('codigo_qr', req.params.codigo)
+    .maybeSingle();
+
+  if (error) {
+    return res.status(500).json({ error: 'Error consultando el certificado' });
+  }
+
+  if (!data) {
+    return res.status(404).json({ error: 'Certificado no encontrado' });
+  }
+
+  return res.json(data);
 });
