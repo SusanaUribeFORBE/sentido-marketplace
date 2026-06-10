@@ -18,6 +18,11 @@ const LICENCIA_FORBE =
   'acorde a los requisitos legales vigentes establecidos en Ley 1562 de 2012, Decreto 1072 de 2015, ' +
   'Resolución 0312 de 2019 y normatividad vigente en SST.';
 
+const INTENSIDAD_HORARIA: Record<string, number> = {
+  'Orden y Aseo': 4,
+};
+const INTENSIDAD_HORARIA_DEFAULT = 2;
+
 interface GenerarCertificadoParams {
   pinId: string;
   idEmpresa: string;
@@ -154,12 +159,14 @@ function buildPdf(
 
     doc.fillColor(NAVY).font('Helvetica-Bold').fontSize(18).text(data.modulo, 0, 265, { align: 'center' });
 
+    const horas = INTENSIDAD_HORARIA[data.modulo] ?? INTENSIDAD_HORARIA_DEFAULT;
+
     doc
       .fillColor(GRAY)
       .font('Helvetica')
       .fontSize(10)
       .text(
-        `Empresa: ${data.nombreEmpresa}    |    Fecha: ${new Date().toLocaleDateString('es-CO')}`,
+        `Empresa: ${data.nombreEmpresa}    |    Fecha: ${new Date().toLocaleDateString('es-CO')}    |    Intensidad horaria: ${horas} horas`,
         0,
         298,
         { align: 'center' }

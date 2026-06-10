@@ -271,3 +271,119 @@ button:hover:not(:disabled) {
   font-size: 14px;
   padding: 20px 0;
 }
+
+/* ===== Arcade: Pasillo de los Tropezones ===== */
+
+.arcade-game {
+  display: flex;
+  flex-direction: column;
+}
+
+.arcade-hud {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.arcade-score {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.arcade-instructions {
+  font-size: 12px;
+  text-align: center;
+  color: var(--gray);
+  margin: 0 0 10px;
+}
+
+.arcade-viewport {
+  position: relative;
+  width: 100%;
+  height: 400px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: repeating-linear-gradient(
+    to bottom,
+    #C9C2B4 0px,
+    #C9C2B4 40px,
+    #B8B0A0 40px,
+    #B8B0A0 80px
+  );
+  background-size: 100% 80px;
+  animation: scrollFloor 0.8s linear infinite;
+  border: 2px solid var(--navy);
+  touch-action: manipulation;
+}
+
+@keyframes scrollFloor {
+  from { background-position-y: 0; }
+  to { background-position-y: 80px; }
+}
+
+.arcade-avatar {
+  position: absolute;
+  left: 50%;
+  bottom: 14%;
+  transform: translateX(-50%);
+  font-size: 40px;
+  animation: walkBob 0.4s ease-in-out infinite alternate;
+  z-index: 5;
+  pointer-events: none;
+}
+
+@keyframes walkBob {
+  from { transform: translateX(-50%) translateY(0); }
+  to { transform: translateX(-50%) translateY(-6px); }
+}
+
+.arcade-avatar.trip {
+  animation: tripFall 0.6s ease-out forwards;
+}
+
+@keyframes tripFall {
+  0% { transform: translateX(-50%) rotate(0deg) translateY(0); }
+  40% { transform: translateX(-50%) rotate(80deg) translateY(10px); }
+  100% { transform: translateX(-50%) rotate(80deg) translateY(20px); }
+}
+
+.obstacle {
+  position: absolute;
+  top: -12%;
+  font-size: 36px;
+  transform: translateX(-50%);
+  cursor: pointer;
+  z-index: 4;
+  animation-name: fallDown;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+  user-select: none;
+}
+
+@keyframes fallDown {
+  from { top: -12%; }
+  to { top: 76%; }
+}
+
+.obstacle.cleared {
+  animation: none;
+  transition: transform 0.25s ease, opacity 0.25s ease;
+  transform: translateX(-50%) scale(1.6);
+  opacity: 0;
+}
+
+.particle {
+  position: absolute;
+  font-size: 24px;
+  transform: translateX(-50%);
+  z-index: 6;
+  pointer-events: none;
+  animation: floatUp 0.6s ease-out forwards;
+}
+
+@keyframes floatUp {
+  from { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+  to { opacity: 0; transform: translateX(-50%) translateY(-30px) scale(1.4); }
+}
