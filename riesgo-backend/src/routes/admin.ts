@@ -136,6 +136,27 @@ adminRouter.get('/pins', async (req, res) => {
   return res.json({ resumen, pins: data });
 });
 
+adminRouter.get('/certificados', async (req, res) => {
+  const { id_empresa } = req.query;
+
+  let query = supabase
+    .from('certificados')
+    .select('codigo_qr, nombre_usuario, cedula_usuario, modulo, url_pdf, emitido_at, id_empresa, empresas(nombre_constructora)')
+    .order('emitido_at', { ascending: false });
+
+  if (id_empresa) {
+    query = query.eq('id_empresa', id_empresa);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    return res.status(500).json({ error: 'Error consultando certificados' });
+  }
+
+  return res.json(data);
+});
+
 adminRouter.get('/analytics', async (_req, res) => {
   const [{ count: instalaciones, error: instError }, { data: pinsUsados, error: pinsError }] = await Promise.all([
     supabase.from('app_eventos').select('*', { count: 'exact', head: true }).eq('tipo', 'install'),

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RiesGO! - Panel admin</title>
+  <link rel="icon" href="/icons/icon-192.png" />
+  <meta name="theme-color" content="#0B1F3A" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body class="admin-body">
+  <div id="login-view" class="card">
+    <img src="/assets/logo-riesgo.png" alt="RiesGO!" class="logo" />
+    <p class="subtitle">Panel de administración</p>
+    <form id="admin-login-form">
+      <div class="field">
+        <label for="admin_key">Clave de administrador</label>
+        <input type="password" id="admin_key" placeholder="x-admin-key" required autocomplete="off" />
+      </div>
+      <button type="submit" id="admin-login-btn">Entrar</button>
+      <div id="admin-login-message" class="message"></div>
+    </form>
+  </div>
+
+  <div id="admin-view" class="admin-card" hidden>
+    <div class="admin-header">
+      <img src="/assets/logo-riesgo.png" alt="RiesGO!" class="logo-sm" />
+      <h1>Panel de administración</h1>
+      <button type="button" id="logout-btn" class="ghost-btn">Salir</button>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="resumen">Resumen</button>
+      <button class="tab-btn" data-tab="empresas">Empresas</button>
+      <button class="tab-btn" data-tab="pins">PINs</button>
+      <button class="tab-btn" data-tab="certificados">Certificados</button>
+    </div>
+
+    <section id="tab-resumen" class="tab-panel">
+      <div class="stat-cards">
+        <div class="stat-card">
+          <span class="stat-value" id="stat-instalaciones">-</span>
+          <span class="stat-label">Instalaciones de la app</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-value" id="stat-usuarios">-</span>
+          <span class="stat-label">Usuarios activos</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-value" id="stat-certificados">-</span>
+          <span class="stat-label">Certificados emitidos</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="tab-empresas" class="tab-panel" hidden>
+      <h2>Empresas registradas</h2>
+      <div class="table-wrap">
+        <table id="tabla-empresas">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>NIT</th>
+              <th>ARL</th>
+              <th>Contacto SST</th>
+              <th>Email SST</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <h2>Nueva empresa</h2>
+      <form id="empresa-form">
+        <div class="field">
+          <label for="emp_nombre">Nombre constructora</label>
+          <input type="text" id="emp_nombre" required autocomplete="off" />
+        </div>
+        <div class="field">
+          <label for="emp_nit">NIT</label>
+          <input type="text" id="emp_nit" required autocomplete="off" />
+        </div>
+        <div class="field">
+          <label for="emp_arl">ARL</label>
+          <input type="text" id="emp_arl" placeholder="AXA COLPATRIA" autocomplete="off" />
+        </div>
+        <div class="field">
+          <label for="emp_contacto">Contacto SST</label>
+          <input type="text" id="emp_contacto" autocomplete="off" />
+        </div>
+        <div class="field">
+          <label for="emp_email">Email SST (recibe certificados)</label>
+          <input type="email" id="emp_email" autocomplete="off" />
+        </div>
+        <button type="submit">Crear empresa</button>
+        <div id="empresa-message" class="message"></div>
+      </form>
+    </section>
+
+    <section id="tab-pins" class="tab-panel" hidden>
+      <h2>PINs por empresa</h2>
+      <div class="field">
+        <label for="pin-empresa-select">Empresa</label>
+        <select id="pin-empresa-select"></select>
+      </div>
+
+      <div class="stat-cards" id="pin-resumen" hidden>
+        <div class="stat-card"><span class="stat-value" id="pin-total">-</span><span class="stat-label">Total</span></div>
+        <div class="stat-card"><span class="stat-value" id="pin-disponible">-</span><span class="stat-label">Disponibles</span></div>
+        <div class="stat-card"><span class="stat-value" id="pin-en-juego">-</span><span class="stat-label">En juego</span></div>
+        <div class="stat-card"><span class="stat-value" id="pin-certificado">-</span><span class="stat-label">Certificados</span></div>
+        <div class="stat-card"><span class="stat-value" id="pin-quemado">-</span><span class="stat-label">Quemados</span></div>
+      </div>
+
+      <h2>Generar PINs</h2>
+      <form id="pin-form">
+        <div class="field">
+          <label for="pin_cantidad">Cantidad (1-500)</label>
+          <input type="number" id="pin_cantidad" min="1" max="500" value="10" required />
+        </div>
+        <div class="field">
+          <label for="pin_modulo">Módulo asignado</label>
+          <input type="text" id="pin_modulo" value="Orden y Aseo" autocomplete="off" />
+        </div>
+        <div class="field">
+          <label for="pin_mundo">Mundo ID</label>
+          <input type="number" id="pin_mundo" value="1" min="1" />
+        </div>
+        <button type="submit">Generar PINs</button>
+        <div id="pin-message" class="message"></div>
+      </form>
+
+      <div id="pin-generados" hidden>
+        <h2>PINs generados</h2>
+        <textarea id="pin-generados-texto" readonly rows="6"></textarea>
+      </div>
+
+      <h2>Listado de PINs</h2>
+      <div class="table-wrap">
+        <table id="tabla-pins">
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Estado</th>
+              <th>Módulo</th>
+              <th>Usuario</th>
+              <th>Fecha de uso</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="tab-certificados" class="tab-panel" hidden>
+      <h2>Módulos completados (certificados emitidos)</h2>
+      <div class="field">
+        <label for="cert-empresa-select">Filtrar por empresa</label>
+        <select id="cert-empresa-select">
+          <option value="">Todas las empresas</option>
+        </select>
+      </div>
+      <div class="table-wrap">
+        <table id="tabla-certificados">
+          <thead>
+            <tr>
+              <th>Usuario</th>
+              <th>Cédula</th>
+              <th>Empresa</th>
+              <th>Módulo</th>
+              <th>Emitido</th>
+              <th>Certificado</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <script src="/js/admin.js"></script>
+</body>
+</html>
