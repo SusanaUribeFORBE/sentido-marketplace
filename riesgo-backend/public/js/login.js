@@ -35,6 +35,7 @@ form.addEventListener('submit', async (e) => {
     sessionStorage.setItem('riesgo_modulo', data.modulo_asignado);
     sessionStorage.setItem('riesgo_mundo', data.mundo_id);
     sessionStorage.setItem('riesgo_nombre', nombre_usuario);
+    sessionStorage.setItem('riesgo_empresa', data.nombre_empresa || '');
 
     showMessage('¡Acceso concedido! Cargando módulo...', 'success');
     window.location.href = '/juego.html';

@@ -5,6 +5,7 @@ import rateLimit from 'express-rate-limit';
 import { authRouter } from './routes/auth';
 import { gameRouter } from './routes/game';
 import { adminRouter } from './routes/admin';
+import { analyticsRouter } from './routes/analytics';
 import { adminAuth } from './middleware/adminAuth';
 
 const app = express();
@@ -33,6 +34,7 @@ app.get('/api', (_req, res) => {
 
 app.use('/api', pinLimiter, authRouter);
 app.use('/api', gameRouter);
+app.use('/api', analyticsRouter);
 app.use('/api/admin', adminAuth, adminRouter);
 
 app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {

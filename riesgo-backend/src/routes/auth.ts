@@ -53,9 +53,16 @@ authRouter.post('/login', async (req, res) => {
     return res.status(409).json({ error: 'El PIN acaba de ser utilizado por otro usuario' });
   }
 
+  const { data: empresa } = await supabase
+    .from('empresas')
+    .select('nombre_constructora')
+    .eq('id_empresa', updated.id_empresa)
+    .maybeSingle();
+
   return res.json({
     pin_id: updated.id,
     modulo_asignado: updated.modulo_asignado,
     mundo_id: updated.mundo_id,
+    nombre_empresa: empresa?.nombre_constructora || '',
   });
 });

@@ -135,3 +135,23 @@ adminRouter.get('/pins', async (req, res) => {
 
   return res.json({ resumen, pins: data });
 });
+
+adminRouter.get('/analytics', async (_req, res) => {
+  const [{ count: instalaciones, error: instError }, { data: pinsUsados, error: pinsError }] = await Promise.all([
+    supabase.from('app_eventos').select('*', { count: 'exact', head: true }).eq('tipo', 'install'),
+    supabase.from('control_pins').select('cedula_usuario, estado').not('cedula_usuario', 'is', null),
+  ]);
+
+  if (instError || pinsError) {
+    return res.status(500).json({ error: 'Error consultando analítica' });
+  }
+
+  const usuariosActivos = new Set(pinsUsados.map((p) => p.cedula_usuario)).size;
+  const certificados = pinsUsados.filter((p) => p.estado === 'Certificado').length;
+
+  return res.json({
+    instalaciones: instalaciones || 0,
+    usuarios_activos: usuariosActivos,
+    certificados_emitidos: certificados,
+  });
+});

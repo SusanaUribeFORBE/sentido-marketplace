@@ -1,12 +1,14 @@
 const pinId = sessionStorage.getItem('riesgo_pin_id');
 const moduloAsignado = sessionStorage.getItem('riesgo_modulo') || '';
 const nombreUsuario = sessionStorage.getItem('riesgo_nombre') || '';
+const nombreEmpresa = sessionStorage.getItem('riesgo_empresa') || '';
 
 if (!pinId) {
   window.location.href = '/';
 }
 
 document.getElementById('nombre').textContent = nombreUsuario;
+document.getElementById('empresa').textContent = nombreEmpresa;
 document.getElementById('modulo-titulo').textContent = moduloAsignado;
 
 function normalizarClave(texto) {

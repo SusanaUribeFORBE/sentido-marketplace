@@ -6,188 +6,131 @@ window.MODULOS['ordenyaseo'] = {
   iniciar(container, { finalizar }) {
     const NIVELES = [
       {
-        nombre: 'Nivel 1: El Pasillo de los Tropezones',
-        instrucciones: '¡Toca los obstáculos antes de que el obrero tropiece!',
-        total: 12,
-        intervalo: 1100,
-        duracionCaida: 3200,
-        tipos: ['🔌', '💧', '🪵'],
+        tipo: 'obstaculos',
+        config: {
+          nombre: 'Nivel 1: El Pasillo de los Tropezones',
+          instrucciones: '¡Toca los obstáculos antes de que el obrero tropiece!',
+          total: 14,
+          intervalo: 1000,
+          duracionCaida: 3000,
+          tipos: ['🔌', '💧', '🪵', '🧱', '🔩', '🪨', '🚛'],
+          particulas: { '💧': '🟫' },
+        },
       },
       {
-        nombre: 'Nivel 2: La Zona de Acopio',
-        instrucciones: 'Materiales mal ubicados bloquean el paso. ¡Despéjalos rápido!',
-        total: 14,
-        intervalo: 950,
-        duracionCaida: 2800,
-        tipos: ['🧱', '🔩', '🪨', '🚛'],
+        tipo: 'trivia',
+        config: {
+          nombre: 'Nivel 2: Trivia de Orden y Aseo (5S)',
+          preguntas: [
+            {
+              emoji: '🧰🔩🔧',
+              texto: 'Encuentras herramientas que no usas hace meses regadas en tu área de trabajo.',
+              pregunta: 'Según la metodología 5S, ¿qué debes hacer primero?',
+              opciones: [
+                'Guardarlas en cualquier cajón disponible',
+                'Clasificar: separar lo que sirve de lo que no (Seiri)',
+                'Dejarlas ahí, podrían servir algún día',
+                'Botarlas todas sin revisar',
+              ],
+              correcta: 1,
+              explicacion: 'La primera S (Seiri - Clasificar) consiste en separar lo necesario de lo innecesario en el puesto de trabajo.',
+            },
+            {
+              emoji: '🪜⚡🔌',
+              texto: 'Los cables eléctricos están enredados en el piso cerca de la escalera.',
+              pregunta: '¿Cuál es el riesgo principal de esta situación?',
+              opciones: [
+                'Ninguno, es algo normal en obra',
+                'Caídas y tropiezos del personal',
+                'Solo afecta la estética del lugar',
+                'Ahorra espacio de almacenamiento',
+              ],
+              correcta: 1,
+              explicacion: 'Los cables sueltos en zonas de tránsito son una causa común de caídas. Deben recogerse o señalizarse.',
+            },
+            {
+              emoji: '🗑️♻️',
+              texto: 'Terminaste de usar materiales de construcción y quedan sobrantes y empaques.',
+              pregunta: '¿Qué corresponde hacer con estos residuos?',
+              opciones: [
+                'Dejarlos para recogerlos al final del día',
+                'Disponerlos en los puntos de acopio o reciclaje correspondientes',
+                'Esconderlos detrás de algún elemento',
+                'Quemarlos en el sitio de trabajo',
+              ],
+              correcta: 1,
+              explicacion: 'Los residuos deben separarse y disponerse en los puntos designados, manteniendo el orden y cuidando el ambiente.',
+            },
+            {
+              emoji: '🧹✨',
+              texto: 'Está terminando tu turno de trabajo en la obra.',
+              pregunta: '¿Cómo debe quedar tu zona de trabajo antes de irte?',
+              opciones: [
+                'Igual que al iniciar el día, sin tocar nada',
+                'Limpia, ordenada y libre de obstáculos para el siguiente turno',
+                'Limpia solo si sobra tiempo',
+                'Es responsabilidad únicamente del personal de aseo general',
+              ],
+              correcta: 1,
+              explicacion: 'La S de Seiketsu/Seiso (Limpieza) es responsabilidad de cada trabajador en su propia área, todos los días.',
+            },
+            {
+              emoji: '🏷️📍',
+              texto: 'Las herramientas y equipos de tu cuadrilla se usan a diario.',
+              pregunta: '¿Cómo deben organizarse para facilitar el orden?',
+              opciones: [
+                'En cualquier lugar disponible cada día',
+                'Con un lugar fijo y señalizado para cada una',
+                'No es necesario marcarlas ni ubicarlas',
+                'Solo el supervisor necesita saber dónde están',
+              ],
+              correcta: 1,
+              explicacion: 'Seiton (Ordenar) implica un lugar fijo, identificado y de fácil acceso para cada herramienta o equipo.',
+            },
+            {
+              emoji: '🚧⚠️',
+              texto: 'Ves un derrame de aceite en el piso del taller de mantenimiento.',
+              pregunta: '¿Qué debes hacer al notarlo?',
+              opciones: [
+                'Caminar con cuidado y continuar tu labor',
+                'Señalizar la zona, limpiar de inmediato y reportar',
+                'Esperar a que se seque por sí solo',
+                'Cubrirlo con una lona para que no se vea',
+              ],
+              correcta: 1,
+              explicacion: 'Un derrame es un riesgo de caída y de incendio. Debe señalizarse, limpiarse y reportarse de inmediato.',
+            },
+            {
+              emoji: '📋🔁',
+              texto: 'Tu equipo mantiene el orden y aseo todos los días, no solo cuando hay visitas o auditorías.',
+              pregunta: '¿A cuál de las 5S corresponde este hábito constante?',
+              opciones: [
+                'Disciplina (Shitsuke)',
+                'Clasificación (Seiri)',
+                'Estandarización (Seiketsu)',
+                'Limpieza inicial (Seiso)',
+              ],
+              correcta: 0,
+              explicacion: 'Shitsuke (Disciplina) es convertir el orden y aseo en un hábito permanente, no en un esfuerzo ocasional.',
+            },
+            {
+              emoji: '🧤👷',
+              texto: 'Terminaste tu jornada y vas a guardar tus elementos de protección personal (casco, guantes, arnés).',
+              pregunta: '¿Qué debes hacer antes de guardarlos?',
+              opciones: [
+                'Guardarlos sucios, se limpian después',
+                'Revisarlos, limpiarlos y guardarlos en el lugar asignado',
+                'Dejarlos en el piso de la zona de trabajo',
+                'Pasarlos a un compañero sin revisión',
+              ],
+              correcta: 1,
+              explicacion: 'Revisar y limpiar el EPP antes de guardarlo prolonga su vida útil y garantiza que esté listo y seguro para el siguiente uso.',
+            },
+          ],
+        },
       },
     ];
 
-    let nivelActual = 0;
-    let totalAciertos = 0;
-    let totalObstaculos = 0;
-
-    function jugarNivel() {
-      const config = NIVELES[nivelActual];
-      const tituloEl = document.getElementById('modulo-titulo');
-      if (tituloEl) tituloEl.textContent = config.nombre;
-
-      ejecutarNivelArcade(container, config, (resultado, aciertos, total) => {
-        totalAciertos += aciertos;
-        totalObstaculos += total;
-
-        if (resultado === 'reprobado') {
-          finalizar(
-            'reprobado',
-            `Te tropezaste demasiadas veces en "${config.nombre}". Despejaste ${totalAciertos} de ${totalObstaculos} obstáculos en total.`
-          );
-          return;
-        }
-
-        nivelActual += 1;
-        if (nivelActual >= NIVELES.length) {
-          finalizar(
-            'aprobado',
-            `¡Superaste los ${NIVELES.length} niveles! Despejaste ${totalAciertos} de ${totalObstaculos} obstáculos en total.`
-          );
-        } else {
-          mostrarTransicion(container, NIVELES[nivelActual], jugarNivel);
-        }
-      });
-    }
-
-    jugarNivel();
+    window.MotorJuego.iniciarSecuencia(container, NIVELES, finalizar);
   },
 };
-
-function mostrarTransicion(container, siguienteConfig, onContinuar) {
-  container.innerHTML = `
-    <div class="result-icon">✅</div>
-    <p class="result-title">¡Nivel superado!</p>
-    <p class="result-detail">Siguiente: ${siguienteConfig.nombre}</p>
-    <button id="continuar-btn">Continuar</button>
-  `;
-  document.getElementById('continuar-btn').addEventListener('click', onContinuar);
-}
-
-function ejecutarNivelArcade(container, config, onFin) {
-  const VIDAS_INICIALES = 3;
-  const PARTICULAS = {
-    '💧': '🟫',
-    default: '✨',
-  };
-
-  let vidas = VIDAS_INICIALES;
-  let spawnCount = 0;
-  let resueltos = 0;
-  let aciertos = 0;
-  let activo = true;
-  let spawnTimer = null;
-
-  container.innerHTML = `
-    <div class="arcade-game">
-      <div class="arcade-hud">
-        <div class="lives" id="arcade-lives">${'❤️'.repeat(vidas)}</div>
-        <div class="arcade-score" id="arcade-score">Despejados: 0/${config.total}</div>
-      </div>
-      <p class="arcade-instructions">${config.instrucciones}</p>
-      <div class="arcade-viewport" id="viewport">
-        <div class="arcade-avatar" id="avatar">🧍</div>
-      </div>
-    </div>
-  `;
-
-  const viewport = document.getElementById('viewport');
-  const avatar = document.getElementById('avatar');
-  const livesEl = document.getElementById('arcade-lives');
-  const scoreEl = document.getElementById('arcade-score');
-  const LANES = [20, 50, 80];
-
-  function actualizarHud() {
-    livesEl.innerHTML = '❤️'.repeat(Math.max(vidas, 0)) + '🤍'.repeat(VIDAS_INICIALES - Math.max(vidas, 0));
-    scoreEl.textContent = `Despejados: ${aciertos}/${config.total}`;
-  }
-
-  function mostrarParticula(emoji, leftPercent) {
-    const p = document.createElement('div');
-    p.className = 'particle';
-    p.textContent = emoji;
-    p.style.left = `${leftPercent}%`;
-    p.style.top = '70%';
-    viewport.appendChild(p);
-    setTimeout(() => p.remove(), 650);
-  }
-
-  function tropezar() {
-    vidas -= 1;
-    actualizarHud();
-    avatar.classList.remove('trip');
-    void avatar.offsetWidth;
-    avatar.classList.add('trip');
-    setTimeout(() => avatar.classList.remove('trip'), 600);
-
-    if (vidas <= 0) {
-      terminar('reprobado');
-    }
-  }
-
-  function spawnObstaculo() {
-    if (!activo) return;
-    spawnCount += 1;
-
-    const lane = LANES[Math.floor(Math.random() * LANES.length)];
-    const tipo = config.tipos[Math.floor(Math.random() * config.tipos.length)];
-
-    const el = document.createElement('div');
-    el.className = 'obstacle';
-    el.textContent = tipo;
-    el.style.left = `${lane}%`;
-    el.style.animationDuration = `${config.duracionCaida}ms`;
-
-    let resuelto = false;
-
-    el.addEventListener('pointerdown', () => {
-      if (resuelto || !activo) return;
-      resuelto = true;
-      aciertos += 1;
-      resueltos += 1;
-      el.classList.add('cleared');
-      mostrarParticula(PARTICULAS[tipo] || PARTICULAS.default, lane);
-      actualizarHud();
-      setTimeout(() => el.remove(), 250);
-      comprobarFin();
-    });
-
-    el.addEventListener('animationend', () => {
-      if (resuelto || !activo) return;
-      resuelto = true;
-      resueltos += 1;
-      el.remove();
-      tropezar();
-      comprobarFin();
-    });
-
-    viewport.appendChild(el);
-
-    if (spawnCount >= config.total) {
-      clearInterval(spawnTimer);
-    }
-  }
-
-  function comprobarFin() {
-    if (!activo) return;
-    if (resueltos >= config.total && vidas > 0) {
-      terminar('aprobado');
-    }
-  }
-
-  function terminar(resultado) {
-    if (!activo) return;
-    activo = false;
-    clearInterval(spawnTimer);
-    onFin(resultado, aciertos, config.total);
-  }
-
-  spawnTimer = setInterval(spawnObstaculo, config.intervalo);
-  spawnObstaculo();
-}

@@ -113,6 +113,12 @@ button:hover:not(:disabled) {
   color: #1E7E34;
 }
 
+.install-btn {
+  margin-top: 12px;
+  background: var(--yellow);
+  color: var(--navy);
+}
+
 /* ===== Juego ===== */
 
 .game-card {
