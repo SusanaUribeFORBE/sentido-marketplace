@@ -26,6 +26,7 @@ const POLITICA_DATOS =
 const INTENSIDAD_HORARIA: Record<string, number> = {
   'Orden y Aseo': 4,
   'Manejo de Cargas y Ergonomía': 4,
+  'Seguridad Vial': 2,
 };
 const INTENSIDAD_HORARIA_DEFAULT = 2;
 
