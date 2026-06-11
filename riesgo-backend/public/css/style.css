@@ -204,8 +204,10 @@ button:hover:not(:disabled) {
 
 .option-btn.correct {
   background: #E6F4EA;
+  border-width: 3px;
   border-color: #1E7E34;
   color: #1E7E34;
+  font-weight: 700;
 }
 
 .option-btn.incorrect {

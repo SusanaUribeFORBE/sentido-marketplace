@@ -215,6 +215,7 @@ window.MotorJuego = {
       botones[p.correcta].classList.add('correct');
       if (!correcto) {
         botones[seleccion].classList.add('incorrect');
+        botones[p.correcta].insertAdjacentHTML('beforeend', ' ✅');
         vidas -= 1;
       } else {
         aciertos += 1;
