@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Propuesta RiesGO! — AXA Colpatria</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --navy: #0B1F3A; --navy-light: #16335C; --navy-pale: #E8EDF5;
+      --yellow: #FFC727; --yellow-pale: #FFF6DC;
+      --gray: #5C554A; --gray-100: #F4F1EA; --gray-200: #E5E0D6; --gray-900: #1F1C17;
+      --green: #1E7E34; --red: #B42318;
+    }
+    body { font-family: 'Inter', sans-serif; background: white; color: var(--gray-900); font-size: 14px; line-height: 1.6; }
+
+    /* COVER */
+    .cover {
+      background: linear-gradient(150deg, #061226 0%, #0B1F3A 55%, #16335C 100%);
+      color: white; padding: 56px 64px; min-height: 280px;
+      display: flex; flex-direction: column; justify-content: space-between;
+    }
+    .cover-top { display: flex; justify-content: space-between; align-items: center; }
+    .cover-logos { display: flex; align-items: center; gap: 18px; }
+    .cover-logos img { height: 44px; width: auto; }
+    .cover-divider { width: 1px; height: 32px; background: rgba(255,255,255,0.25); }
+    .cover-badge { background: rgba(255,199,39,0.18); border: 1px solid rgba(255,199,39,0.5); border-radius: 20px; padding: 5px 16px; font-size: 12px; font-weight: 700; color: var(--yellow); }
+    .cover-title { font-size: 38px; font-weight: 900; line-height: 1.15; letter-spacing: -1px; margin-top: 36px; }
+    .cover-title em { color: var(--yellow); font-style: normal; }
+    .cover-sub { font-size: 14px; color: rgba(255,255,255,0.7); margin-top: 10px; max-width: 560px; }
+    .cover-meta { display: flex; gap: 32px; margin-top: 28px; flex-wrap: wrap; }
+    .cover-meta-item { font-size: 12px; color: rgba(255,255,255,0.6); }
+    .cover-meta-item strong { display: block; font-size: 14px; font-weight: 700; color: white; margin-bottom: 2px; }
+
+    /* LAYOUT */
+    .content { max-width: 880px; margin: 0 auto; padding: 48px 64px 64px; }
+
+    /* SECTION */
+    .section { margin-bottom: 44px; }
+    .section-num { font-size: 11px; font-weight: 800; color: var(--yellow); background: var(--navy); display: inline-block; padding: 2px 10px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
+    .section-title { font-size: 21px; font-weight: 900; color: var(--navy); margin-bottom: 14px; padding-bottom: 10px; border-bottom: 2px solid var(--navy-pale); }
+    .section p { margin-bottom: 10px; color: var(--gray); }
+    .section p strong { color: var(--gray-900); }
+
+    /* HIGHLIGHT BOX */
+    .highlight { background: var(--navy-pale); border-left: 4px solid var(--navy); border-radius: 0 8px 8px 0; padding: 14px 18px; margin: 14px 0; font-size: 14px; color: var(--navy); }
+    .highlight-yellow { background: var(--yellow-pale); border-left: 4px solid var(--yellow); border-radius: 0 8px 8px 0; padding: 14px 18px; margin: 14px 0; font-size: 14px; color: #7A5A00; }
+
+    /* GRID 2 COL */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 14px 0; }
+    .card { background: var(--gray-100); border-radius: 10px; padding: 16px 18px; border: 1px solid var(--gray-200); }
+    .card-title { font-size: 12px; font-weight: 800; color: var(--navy); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 8px; }
+    .card p { font-size: 13px; margin: 0; color: var(--gray); }
+
+    /* LIST */
+    ul.styled { list-style: none; padding: 0; margin: 10px 0; }
+    ul.styled li { padding: 6px 0 6px 20px; position: relative; color: var(--gray); border-bottom: 1px solid var(--gray-200); font-size: 13px; }
+    ul.styled li:last-child { border-bottom: none; }
+    ul.styled li::before { content: '›'; position: absolute; left: 0; color: var(--navy); font-weight: 900; font-size: 16px; line-height: 1.4; }
+
+    /* TABLE */
+    table.tools { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 12.5px; }
+    table.tools th { background: var(--navy); color: white; padding: 9px 12px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; }
+    table.tools td { padding: 9px 12px; border-bottom: 1px solid var(--gray-200); color: var(--gray); vertical-align: top; }
+    table.tools tr:nth-child(even) td { background: var(--gray-100); }
+    table.tools td strong { color: var(--gray-900); }
+
+    /* FLOW */
+    .flow { display: flex; flex-direction: column; gap: 8px; margin: 14px 0; }
+    .flow-step { display: flex; gap: 14px; align-items: flex-start; }
+    .flow-num { width: 28px; height: 28px; border-radius: 50%; background: var(--navy); color: var(--yellow); font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+    .flow-step-body h4 { font-size: 13px; font-weight: 700; margin-bottom: 2px; color: var(--gray-900); }
+    .flow-step-body p { font-size: 12px; color: var(--gray); margin: 0; }
+
+    /* TAGS */
+    .tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+    .tag { font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 12px; background: var(--navy-pale); color: var(--navy); border: 1px solid #C7D5EC; }
+    .tag-yellow { background: var(--yellow-pale); color: #7A5A00; border-color: #FFE49A; }
+    .tag-green { background: #e7f6ec; color: var(--green); border-color: #a7e3b9; }
+
+    /* TIMELINE */
+    .steps-timeline { margin: 14px 0; }
+    .timeline-phase { margin-bottom: 18px; }
+    .phase-label { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--navy); margin-bottom: 8px; }
+    .phase-items { display: flex; flex-direction: column; gap: 6px; }
+    .phase-item { display: flex; gap: 10px; align-items: center; padding: 8px 12px; background: var(--gray-100); border-radius: 8px; font-size: 13px; border: 1px solid var(--gray-200); }
+    .phase-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--navy); flex-shrink: 0; }
+    .phase-dot.yellow { background: var(--yellow); }
+
+    /* STAT CARDS */
+    .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 14px 0; }
+    .stat-card { background: var(--navy); color: white; border-radius: 10px; padding: 14px; text-align: center; }
+    .stat-card .num { font-size: 22px; font-weight: 900; color: var(--yellow); }
+    .stat-card .lbl { font-size: 11px; color: rgba(255,255,255,0.7); margin-top: 2px; }
+
+    /* FOOTER */
+    .doc-footer { background: var(--navy); color: rgba(255,255,255,0.65); padding: 24px 64px; font-size: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+    .doc-footer strong { color: white; }
+
+    @media print {
+      body { font-size: 12px; }
+      .cover { padding: 40px 48px; }
+      .content { padding: 32px 48px 48px; }
+      .section { page-break-inside: avoid; }
+      .doc-footer { padding: 20px 48px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- PORTADA -->
+<div class="cover">
+  <div class="cover-top">
+    <div class="cover-logos">
+      <img src="/assets/logo-riesgo.png" alt="RiesGO!" />
+      <div class="cover-divider"></div>
+      <img src="/assets/logo-axa.png" alt="AXA Colpatria" />
+    </div>
+    <div class="cover-badge">Contrato IP-GP-2026-075</div>
+  </div>
+  <div>
+    <div class="cover-title">RiesGO! — Gamificación<br><em>aplicada a la cultura</em><br>de Seguridad y Salud en el Trabajo</div>
+    <div class="cover-sub">Propuesta de uso de RiesGO! como herramienta para ejecutar y soportar las actividades de capacitación y asesoría contempladas en el Anexo No. 1 del contrato suscrito entre AXA Colpatria y FORMACIÓN DE BRIGADAS DE EMERGENCIA S.A.S.</div>
+    <div class="cover-meta">
+      <div class="cover-meta-item"><strong>Presenta</strong>FORMACIÓN DE BRIGADAS DE EMERGENCIA S.A.S. (FORBE SAS)</div>
+      <div class="cover-meta-item"><strong>Representante legal</strong>María Susana Uribe Galeano</div>
+      <div class="cover-meta-item"><strong>Plataforma</strong>riesgo-backend-production.up.railway.app</div>
+      <div class="cover-meta-item"><strong>Fecha</strong>11 de junio de 2026</div>
+    </div>
+  </div>
+</div>
+
+<div class="content">
+
+  <!-- 1. RESUMEN -->
+  <div class="section">
+    <div class="section-num">01 · Resumen ejecutivo</div>
+    <div class="section-title">¿Qué es RiesGO!?</div>
+    <p><strong>RiesGO!</strong> es una aplicación web progresiva (PWA) de gamificación para Seguridad y Salud en el Trabajo, diseñada por FORBE SAS para que los trabajadores de obra refuercen, mediante juego, los conocimientos impartidos en las capacitaciones presenciales y virtuales del SG-SST.</p>
+    <p>Cada empresa afiliada recibe <strong>PINs de acceso individuales</strong>, que el trabajador canjea desde su celular. Al completar el módulo, el sistema emite de forma automática un <strong>certificado en PDF con código QR de verificación</strong>, y registra al participante en un <strong>listado de asistencia</strong> listo para soportar la facturación de las actividades del contrato.</p>
+    <div class="highlight">
+      <strong>Idea central de esta propuesta:</strong> RiesGO! no reemplaza la capacitación presencial — la complementa y, sobre todo, <strong>genera la evidencia documental</strong> (asistencia, evaluación, certificación) que el contrato exige para facturar las actividades del Anexo No. 1, con trazabilidad digital y verificable por QR.
+    </div>
+  </div>
+
+  <!-- 2. CONTEXTO -->
+  <div class="section">
+    <div class="section-num">02 · Contexto y problema</div>
+    <div class="section-title">El reto de la capacitación SST en obra</div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">Para el trabajador</div>
+        <p>Las charlas de SST suelen percibirse como un trámite. La retención del contenido es baja y no hay forma sencilla de reforzarlo entre una capacitación y otra.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Para la constructora</div>
+        <p>Debe demostrar ante la ARL y entes de control que sus trabajadores fueron capacitados, evaluados y son aptos — con soportes físicos que se pierden o diligencian de forma incompleta.</p>
+      </div>
+      <div class="card" style="margin-top:0">
+        <div class="card-title">Para FORBE SAS / AXA</div>
+        <p>Cada actividad facturable del Anexo No. 1 requiere: factura, orden de servicio y <strong>Formato de Listado de Asistencia ARL AXA Colpatria</strong>. Recolectar y diligenciar estos soportes manualmente toma tiempo y es propenso a errores.</p>
+      </div>
+      <div class="card" style="margin-top:0">
+        <div class="card-title">La oportunidad</div>
+        <p>Una herramienta digital que el trabajador usa desde su celular, que evalúa su conocimiento, certifica su aptitud y genera automáticamente los soportes de facturación.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. CÓMO FUNCIONA -->
+  <div class="section">
+    <div class="section-num">03 · Cómo funciona</div>
+    <div class="section-title">Flujo de uso, de principio a fin</div>
+    <div class="flow">
+      <div class="flow-step">
+        <div class="flow-num">1</div>
+        <div class="flow-step-body">
+          <h4>FORBE SAS genera PINs por empresa y módulo</h4>
+          <p>Desde el panel de administración, se generan lotes de códigos tipo <strong>RGO-XXXXXX</strong>, asociados a la constructora afiliada y al módulo a reforzar (p. ej. "Orden y Aseo").</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">2</div>
+        <div class="flow-step-body">
+          <h4>El trabajador ingresa con su PIN</h4>
+          <p>Desde su celular, ingresa cédula, nombre, cargo y celular, acepta la política de tratamiento de datos (Ley 1581 de 2012) y entra al módulo asignado.</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">3</div>
+        <div class="flow-step-body">
+          <h4>Juega y refuerza el conocimiento</h4>
+          <p>Niveles tipo arcade y trivia con retroalimentación inmediata sobre los conceptos clave del módulo (orden y aseo, ergonomía, etc.).</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">4</div>
+        <div class="flow-step-body">
+          <h4>Certificación automática</h4>
+          <p>Al aprobar, el sistema genera un certificado en PDF (con licencia FORBE SAS, logos, QR de verificación e intensidad horaria) y lo envía por correo al responsable SST de la empresa.</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">5</div>
+        <div class="flow-step-body">
+          <h4>Soporte de facturación listo</h4>
+          <p>FORBE SAS descarga desde el panel un <strong>Listado de Asistencia en Excel</strong>, pre-diligenciado con los datos del contrato, la empresa, el módulo y los participantes certificados.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. ESTADO ACTUAL -->
+  <div class="section">
+    <div class="section-num">04 · Estado actual de la plataforma</div>
+    <div class="section-title">Lo que ya está construido y operando</div>
+    <div class="stat-row">
+      <div class="stat-card"><div class="num">2</div><div class="lbl">Módulos de juego activos</div></div>
+      <div class="stat-card"><div class="num">100%</div><div class="lbl">Certificación + QR automáticos</div></div>
+      <div class="stat-card"><div class="num">PWA</div><div class="lbl">Instalable desde el celular</div></div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">Módulos disponibles hoy</div>
+        <ul class="styled">
+          <li>Orden y Aseo (5S) — trivia + arcade, 2 niveles</li>
+          <li>Manejo de Cargas y Ergonomía — trivia + reacción</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-title">Funcionalidades activas</div>
+        <ul class="styled">
+          <li>Acceso por PIN único, vinculado a empresa y módulo</li>
+          <li>Captura de cédula, cargo y celular del trabajador</li>
+          <li>Certificado PDF con QR de verificación pública</li>
+          <li>Panel admin: empresas, PINs, certificados, analítica</li>
+          <li>Generador de Listado de Asistencia (Excel) por empresa y módulo</li>
+          <li>Cumplimiento Ley 1581/2012 (consentimiento y política de datos)</li>
+        </ul>
+      </div>
+    </div>
+    <div class="highlight-yellow">
+      <strong>Demo en vivo:</strong> riesgo-backend-production.up.railway.app — disponible para que el equipo técnico de AXA Colpatria pruebe el flujo completo con un PIN de demostración.
+    </div>
+  </div>
+
+  <!-- 5. ALINEACIÓN CON EL CONTRATO -->
+  <div class="section">
+    <div class="section-num">05 · Alineación con el Anexo No. 1 del contrato</div>
+    <div class="section-title">Actividades que RiesGO! puede soportar</div>
+    <p>El Anexo No. 1 "Actividades y tarifas" del contrato IP-GP-2026-075 valora cada actividad a <strong>$75.000/hora</strong>. Los módulos actuales y en desarrollo de RiesGO! se mapean directamente a estos códigos, generando el soporte documental requerido para cada uno:</p>
+    <table class="tools">
+      <tr><th>Código AXA</th><th>Actividad</th><th>Módulo RiesGO!</th><th>Soporte generado</th></tr>
+      <tr><td><strong>SIG084</strong></td><td>CAP SG-SST ESP</td><td>Orden y Aseo (5S)</td><td>Certificado + Listado de Asistencia</td></tr>
+      <tr><td><strong>ERG053</strong></td><td>CAP PELIGRO BIOMECANICO ESP</td><td>Manejo de Cargas y Ergonomía</td><td>Certificado + Listado de Asistencia</td></tr>
+      <tr><td><strong>ERG054 / ERG052</strong></td><td>CAP HIGIENE POSTURAL / ASE PREV PELIGRO BIOMEC</td><td>Próximo módulo (ergonomía avanzada)</td><td>En diseño</td></tr>
+      <tr><td><strong>SEI629 / SEI635 / SEI638</strong></td><td>Plan de emergencias / CAP emergencias / simulacro</td><td>Próximo módulo (brigadas y emergencias)</td><td>En diseño</td></tr>
+      <tr><td><strong>BAS148 / BAS151</strong></td><td>ASE / CAP COPASST ESP</td><td>Próximo módulo (COPASST)</td><td>En diseño</td></tr>
+      <tr><td><strong>MED184 / MED185</strong></td><td>ASE / CAP PELIGRO BIOLÓGICO ESP</td><td>Próximo módulo (peligro biológico)</td><td>En diseño</td></tr>
+    </table>
+    <div class="highlight">
+      Cada certificado emitido y cada fila del Listado de Asistencia quedan asociados a la <strong>empresa afiliada (NIT)</strong>, lo que permite a FORBE SAS construir directamente la <strong>orden de servicio</strong> y la factura correspondiente a cada actividad ejecutada vía RiesGO!.
+    </div>
+  </div>
+
+  <!-- 6. PROPUESTA DE PILOTO -->
+  <div class="section">
+    <div class="section-num">06 · Propuesta de piloto</div>
+    <div class="section-title">Cómo arrancar sin fricción</div>
+    <p>Proponemos un piloto controlado con una o dos constructoras afiliadas a AXA Colpatria, usando los dos módulos ya activos, para validar adopción, tiempos de ejecución y calidad de los soportes generados antes de escalar a más empresas y módulos.</p>
+    <div class="steps-timeline">
+      <div class="timeline-phase">
+        <div class="phase-label">Semana 1 — Activación</div>
+        <div class="phase-items">
+          <div class="phase-item"><span class="phase-dot yellow"></span> AXA / FORBE seleccionan 1-2 constructoras y definen el módulo a aplicar</div>
+          <div class="phase-item"><span class="phase-dot yellow"></span> FORBE SAS registra la empresa en RiesGO! y genera los PINs (vía panel admin)</div>
+        </div>
+      </div>
+      <div class="timeline-phase">
+        <div class="phase-label">Semana 2 — Ejecución</div>
+        <div class="phase-items">
+          <div class="phase-item"><span class="phase-dot"></span> Entrega de PINs a los trabajadores (impresos, WhatsApp o cartelera de obra)</div>
+          <div class="phase-item"><span class="phase-dot"></span> Trabajadores completan el módulo y reciben su certificado por correo</div>
+        </div>
+      </div>
+      <div class="timeline-phase">
+        <div class="phase-label">Semana 3 — Cierre y soportes</div>
+        <div class="phase-items">
+          <div class="phase-item"><span class="phase-dot"></span> FORBE SAS descarga el Listado de Asistencia y consolida la evidencia</div>
+          <div class="phase-item"><span class="phase-dot"></span> Reunión de retroalimentación con AXA: ajustes y plan de escalamiento</div>
+        </div>
+      </div>
+    </div>
+    <div class="tags">
+      <span class="tag tag-green">Sin costo de implementación adicional</span>
+      <span class="tag">Plataforma ya operativa</span>
+      <span class="tag tag-yellow">Escalable a más módulos del Anexo 1</span>
+    </div>
+  </div>
+
+  <!-- 7. PRÓXIMOS PASOS -->
+  <div class="section">
+    <div class="section-num">07 · Próximos pasos</div>
+    <div class="section-title">Lo que necesitamos de AXA Colpatria</div>
+    <ul class="styled">
+      <li>Validar con el equipo técnico de prevención el alcance del piloto (empresas y módulo)</li>
+      <li>Confirmar el formato definitivo del Listado de Asistencia y de la orden de servicio asociada</li>
+      <li>Agendar una sesión de demostración en vivo del flujo completo (login → juego → certificado → listado)</li>
+    </ul>
+  </div>
+
+</div>
+
+<div class="doc-footer">
+  <div><strong>FORBE SAS</strong> — Licencia N° 2022060086556 (SST Nacional)</div>
+  <div>Contacto: consultoria@forbesas.com</div>
+</div>
+
+</body>
+</html>
