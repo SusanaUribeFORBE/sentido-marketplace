@@ -38,7 +38,7 @@ form.addEventListener('submit', async (e) => {
     sessionStorage.setItem('riesgo_empresa', data.nombre_empresa || '');
 
     showMessage('¡Acceso concedido! Cargando módulo...', 'success');
-    window.location.href = '/juego.html';
+    window.location.href = '/bienvenida.html';
   } catch (err) {
     showMessage('Error de conexión. Intenta de nuevo.', 'error');
   } finally {

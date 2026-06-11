@@ -18,8 +18,14 @@ const LICENCIA_FORBE =
   'acorde a los requisitos legales vigentes establecidos en Ley 1562 de 2012, Decreto 1072 de 2015, ' +
   'Resolución 0312 de 2019 y normatividad vigente en SST.';
 
+const POLITICA_DATOS =
+  'Los datos contenidos en este documento han sido tratados bajo la política de protección de datos ' +
+  'personales de FORBE SAS en cumplimiento de la Ley 1581 de 2012, con el único fin de certificar las ' +
+  'competencias del trabajador en el marco del SGSST.';
+
 const INTENSIDAD_HORARIA: Record<string, number> = {
   'Orden y Aseo': 4,
+  'Manejo de Cargas y Ergonomía': 4,
 };
 const INTENSIDAD_HORARIA_DEFAULT = 2;
 
@@ -213,6 +219,12 @@ function buildPdf(
       .font('Helvetica')
       .fontSize(6.5)
       .text(LICENCIA_FORBE, 40, footerY + 108, { width: W - 80, align: 'justify' });
+
+    doc
+      .fillColor(GRAY)
+      .font('Helvetica')
+      .fontSize(6)
+      .text(POLITICA_DATOS, 40, footerY + 130, { width: W - 80, align: 'justify' });
 
     doc.end();
   });

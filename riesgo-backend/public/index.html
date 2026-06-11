@@ -14,6 +14,12 @@
     <img src="/assets/logo-riesgo.png" alt="RiesGO!" class="logo" />
     <p class="subtitle">Programa de gamificación en Seguridad y Salud en el Trabajo</p>
 
+    <ul class="features">
+      <li>🏆 Aprende SST jugando</li>
+      <li>🎯 Acumula puntos y desbloquea insignias</li>
+      <li>📜 Obtén tu certificado digital</li>
+    </ul>
+
     <form id="login-form">
       <div class="field">
         <label for="codigo_pin">PIN de acceso</label>
@@ -27,6 +33,13 @@
         <label for="nombre_usuario">Nombre completo</label>
         <input type="text" id="nombre_usuario" name="nombre_usuario" placeholder="Nombre y apellido" required autocomplete="off" />
       </div>
+      <div class="field checkbox-field">
+        <label class="checkbox-label">
+          <input type="checkbox" id="acepto_terminos" name="acepto_terminos" required />
+          <span>Acepto de manera expresa los <a href="/privacidad.html" target="_blank" rel="noopener">Términos y Condiciones y la Política de Tratamiento de Datos Personales</a> de RiesGO! y FORBE SAS.</span>
+        </label>
+      </div>
+
       <button type="submit" id="submit-btn">Ingresar</button>
       <div id="message" class="message"></div>
     </form>

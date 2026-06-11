@@ -44,6 +44,58 @@ body {
   margin: 0 0 24px;
 }
 
+.features {
+  list-style: none;
+  margin: 0 0 24px;
+  padding: 12px 16px;
+  background: var(--light);
+  border-radius: 10px;
+  font-size: 13px;
+  color: var(--navy);
+}
+
+.features li {
+  padding: 4px 0;
+}
+
+.welcome-greeting {
+  text-align: center;
+  font-size: 18px;
+  color: var(--navy);
+  margin: 4px 0;
+}
+
+.welcome-modulo {
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--navy);
+  margin: 0 0 20px;
+}
+
+.welcome-info {
+  background: var(--light);
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 24px;
+}
+
+.welcome-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: var(--navy);
+  padding: 8px 0;
+  border-bottom: 1px solid #E3DDD0;
+  gap: 12px;
+}
+
+.welcome-info-row:last-child {
+  border-bottom: none;
+  text-align: right;
+}
+
 .field {
   margin-bottom: 16px;
 }
@@ -71,6 +123,31 @@ body {
   border-radius: 8px;
   font-size: 16px;
   background: #fff;
+}
+
+.checkbox-field {
+  margin-bottom: 16px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--gray);
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: auto;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.checkbox-label a {
+  color: var(--navy);
+  font-weight: 600;
 }
 
 .field input:focus {
@@ -120,6 +197,29 @@ button:hover:not(:disabled) {
   display: block;
   background: #E6F4EA;
   color: #1E7E34;
+}
+
+.policy-card {
+  max-width: 560px;
+}
+
+.policy-title {
+  font-size: 16px;
+  color: var(--navy);
+  text-align: center;
+  margin: 0 0 16px;
+}
+
+.policy-text {
+  font-size: 13px;
+  color: var(--gray);
+  line-height: 1.6;
+  text-align: justify;
+  margin: 0 0 14px;
+}
+
+.policy-text a {
+  color: var(--navy);
 }
 
 .install-btn {
@@ -530,4 +630,106 @@ th {
   border: 1px solid #D6D2C8;
   border-radius: 8px;
   resize: vertical;
+}
+
+/* ===== Nivel de reacción (tap/swipe) ===== */
+
+.reaccion-escena {
+  text-align: center;
+  background: var(--light);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  transition: background-color 0.15s;
+}
+
+.reaccion-escena.crack {
+  animation: crackShake 0.4s ease;
+  background-color: #FCE4E4;
+}
+
+.reaccion-avatar {
+  font-size: 40px;
+}
+
+.reaccion-emoji {
+  font-size: 48px;
+  margin: 4px 0;
+}
+
+.reaccion-situacion {
+  font-size: 14px;
+  color: var(--navy);
+  margin: 0 0 12px;
+}
+
+.reaccion-timer {
+  width: 100%;
+  height: 8px;
+  background: #EFEAE0;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.reaccion-timer-fill {
+  height: 100%;
+  width: 100%;
+  background: var(--yellow);
+  transition: width 0.05s linear;
+}
+
+.reaccion-zona {
+  min-height: 110px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  border: 2px dashed #D6D2C8;
+  border-radius: 10px;
+  touch-action: none;
+  user-select: none;
+}
+
+.reaccion-btn {
+  width: auto;
+  padding: 16px 24px;
+  font-size: 15px;
+  background: var(--yellow);
+  color: var(--navy);
+}
+
+.reaccion-btn.pulse {
+  animation: reaccionPulse 0.15s ease;
+}
+
+.reaccion-hint {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray);
+  padding: 12px;
+}
+
+.feedback-ok {
+  background: #E6F4EA;
+  color: #1E7E34;
+}
+
+.feedback-bad {
+  background: #FCE4E4;
+  color: #B42318;
+}
+
+@keyframes crackShake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+
+@keyframes reaccionPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.92); }
+  100% { transform: scale(1); }
 }

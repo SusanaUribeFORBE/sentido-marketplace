@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RiesGO! - Bienvenida</title>
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="icon" href="/icons/icon-192.png" />
+  <meta name="theme-color" content="#0B1F3A" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <div class="card">
+    <img src="/assets/logo-riesgo.png" alt="RiesGO!" class="logo" />
+    <p class="welcome-greeting">Hola <strong id="welcome-nombre"></strong> 👋</p>
+    <p class="subtitle">Bienvenido(a) a:</p>
+    <p class="welcome-modulo" id="welcome-modulo"></p>
+
+    <div class="welcome-info">
+      <div class="welcome-info-row">
+        <span>Duración estimada</span>
+        <strong>10 minutos</strong>
+      </div>
+      <div class="welcome-info-row">
+        <span>Puntaje máximo</span>
+        <strong>1000 puntos</strong>
+      </div>
+      <div class="welcome-info-row">
+        <span>Certificación</span>
+        <strong>Disponible al obtener 80 puntos o más</strong>
+      </div>
+    </div>
+
+    <button type="button" id="empezar-btn">▶ Comenzar misión</button>
+  </div>
+
+  <script src="/js/bienvenida.js"></script>
+</body>
+</html>

@@ -17,6 +17,8 @@ window.MotorJuego = {
       const ejecutor =
         nivel.tipo === 'trivia'
           ? window.MotorJuego.ejecutarNivelTrivia
+          : nivel.tipo === 'reaccion'
+          ? window.MotorJuego.ejecutarNivelReaccion
           : window.MotorJuego.ejecutarNivelObstaculos;
 
       ejecutor(container, nivel.config, (resultado, aciertos, total) => {
@@ -167,6 +169,164 @@ window.MotorJuego = {
     spawnObstaculo();
   },
 
+  // ===== Nivel tipo reacción (tap/swipe contra el reloj) =====
+  // config: { nombre, instrucciones, retos: [{ tipo: 'tap-repetido'|'swipe-abajo'|'swipe-lateral', emoji, situacion, accionTexto, tapsRequeridos?, exito, fallo }] }
+  ejecutarNivelReaccion(container, config, onFin) {
+    const VIDAS_INICIALES = 3;
+    const TIEMPO_LIMITE = 2000;
+
+    let vidas = VIDAS_INICIALES;
+    let indice = 0;
+    let aciertos = 0;
+    let activo = true;
+    let resuelto = false;
+    let tapsHechos = 0;
+    let rafId = null;
+    let inicioMs = 0;
+
+    render();
+
+    function actualizarVidas() {
+      const el = container.querySelector('.lives');
+      if (el) {
+        el.innerHTML = '❤️'.repeat(Math.max(vidas, 0)) + '🤍'.repeat(VIDAS_INICIALES - Math.max(vidas, 0));
+      }
+    }
+
+    function render() {
+      const reto = config.retos[indice];
+
+      container.innerHTML = `
+        <div class="lives">${'❤️'.repeat(vidas)}${'🤍'.repeat(VIDAS_INICIALES - vidas)}</div>
+        <div class="score-line">Reto ${indice + 1} de ${config.retos.length}</div>
+        <p class="arcade-instructions">${config.instrucciones}</p>
+        <div class="reaccion-escena" id="reaccion-escena">
+          <div class="reaccion-avatar" id="reaccion-avatar">🧍</div>
+          <div class="reaccion-emoji">${reto.emoji}</div>
+          <p class="reaccion-situacion">${reto.situacion}</p>
+          <div class="reaccion-timer"><div class="reaccion-timer-fill" id="timer-fill"></div></div>
+          <div class="reaccion-zona" id="reaccion-zona">
+            ${
+              reto.tipo === 'tap-repetido'
+                ? `<button type="button" class="reaccion-btn" id="reaccion-btn">${reto.accionTexto}</button>`
+                : `<div class="reaccion-hint">${reto.accionTexto}</div>`
+            }
+          </div>
+        </div>
+        <div class="feedback" id="feedback" style="display:none"></div>
+        <button class="next-btn" id="next-btn">Siguiente</button>
+      `;
+
+      iniciarReto(reto);
+    }
+
+    function iniciarReto(reto) {
+      resuelto = false;
+      tapsHechos = 0;
+      inicioMs = performance.now();
+
+      const timerFill = document.getElementById('timer-fill');
+      const zona = document.getElementById('reaccion-zona');
+
+      function tick() {
+        if (resuelto || !activo) return;
+        const transcurrido = performance.now() - inicioMs;
+        const restante = Math.max(0, 1 - transcurrido / TIEMPO_LIMITE);
+        timerFill.style.width = `${restante * 100}%`;
+
+        if (transcurrido >= TIEMPO_LIMITE) {
+          resolver(false);
+          return;
+        }
+
+        rafId = requestAnimationFrame(tick);
+      }
+      rafId = requestAnimationFrame(tick);
+
+      if (reto.tipo === 'tap-repetido') {
+        const btn = document.getElementById('reaccion-btn');
+        btn.addEventListener('pointerdown', () => {
+          if (resuelto) return;
+          tapsHechos += 1;
+          btn.classList.remove('pulse');
+          void btn.offsetWidth;
+          btn.classList.add('pulse');
+          if (tapsHechos >= (reto.tapsRequeridos || 5)) {
+            resolver(true);
+          }
+        });
+      } else {
+        let startX = 0;
+        let startY = 0;
+
+        zona.addEventListener('pointerdown', (e) => {
+          startX = e.clientX;
+          startY = e.clientY;
+        });
+
+        zona.addEventListener('pointerup', (e) => {
+          if (resuelto) return;
+          const dx = e.clientX - startX;
+          const dy = e.clientY - startY;
+
+          if (reto.tipo === 'swipe-abajo' && dy > 40 && Math.abs(dy) > Math.abs(dx)) {
+            resolver(true);
+          } else if (reto.tipo === 'swipe-lateral' && Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) {
+            resolver(true);
+          }
+        });
+      }
+    }
+
+    function resolver(exito) {
+      if (resuelto || !activo) return;
+      resuelto = true;
+      cancelAnimationFrame(rafId);
+
+      const reto = config.retos[indice];
+      const escena = document.getElementById('reaccion-escena');
+      const feedback = document.getElementById('feedback');
+
+      feedback.style.display = 'block';
+
+      if (exito) {
+        aciertos += 1;
+        feedback.textContent = `✅ ${reto.exito}`;
+        feedback.className = 'feedback feedback-ok';
+      } else {
+        vidas -= 1;
+        actualizarVidas();
+        escena.classList.add('crack');
+        reproducirCrack();
+        feedback.textContent = `💥 ¡Crack! ${reto.fallo}`;
+        feedback.className = 'feedback feedback-bad';
+      }
+
+      const nextBtn = document.getElementById('next-btn');
+      nextBtn.style.display = 'block';
+      nextBtn.textContent = vidas <= 0 ? 'Ver resultado' : 'Siguiente';
+      nextBtn.addEventListener('click', () => {
+        if (vidas <= 0) {
+          terminar('reprobado');
+          return;
+        }
+        indice += 1;
+        if (indice >= config.retos.length) {
+          terminar('aprobado');
+          return;
+        }
+        render();
+      });
+    }
+
+    function terminar(resultado) {
+      if (!activo) return;
+      activo = false;
+      cancelAnimationFrame(rafId);
+      onFin(resultado, aciertos, config.retos.length);
+    }
+  },
+
   // ===== Nivel tipo trivia (quiz de escenarios con vidas) =====
   // config: { nombre, preguntas: [{ emoji, texto, pregunta, opciones, correcta, explicacion }] }
   ejecutarNivelTrivia(container, config, onFin) {
@@ -246,6 +406,24 @@ window.MotorJuego = {
     }
   },
 };
+
+function reproducirCrack() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(140, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(40, ctx.currentTime + 0.18);
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.2);
+  } catch (err) {
+    // audio no disponible, se ignora
+  }
+}
 
 function mostrarTransicion(container, siguienteConfig, onContinuar) {
   container.innerHTML = `
