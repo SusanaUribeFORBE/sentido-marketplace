@@ -12,6 +12,7 @@ window.MODULOS['manejodecargasyergonomia'] = {
           instrucciones: '¡Reacciona en menos de 2 segundos a cada peligro del camino!',
           retos: [
             {
+              id: 'cargas-abrazar-bulto',
               tipo: 'tap-repetido',
               emoji: '🕳️🧱',
               situacion: 'Pisas una zona de terreno inestable y el bulto de cemento amenaza con separarse de tu pecho.',
@@ -21,6 +22,7 @@ window.MODULOS['manejodecargasyergonomia'] = {
               fallo: 'El bulto se separó de tu cuerpo y caminaste encorvado, dañando tu zona lumbar.',
             },
             {
+              id: 'cargas-agacharse-andamio',
               tipo: 'swipe-abajo',
               emoji: '🚧🔧',
               situacion: 'El camino pasa por debajo de un andamio o tubería baja.',
@@ -29,6 +31,7 @@ window.MODULOS['manejodecargasyergonomia'] = {
               fallo: 'Te doblaste por la cintura y golpeaste tu columna contra el tubo.',
             },
             {
+              id: 'cargas-rechazar-peso-extra',
               tipo: 'swipe-lateral',
               emoji: '👷📦',
               situacion: 'Un compañero quiere pasarte una caja extra que superaría el límite de carga manual.',
@@ -45,6 +48,7 @@ window.MODULOS['manejodecargasyergonomia'] = {
           nombre: 'Nivel 2: Trivia de Manejo de Cargas y Ergonomía',
           preguntas: [
             {
+              id: 'cargas-trivia-levantar-caja',
               emoji: '📦🦴',
               texto: 'Necesitas levantar una caja pesada que está en el piso.',
               pregunta: '¿Cuál es la forma correcta de levantarla?',
@@ -58,6 +62,7 @@ window.MODULOS['manejodecargasyergonomia'] = {
               explicacion: 'Para levantar cargas se deben flexionar las rodillas, mantener la espalda recta y acercar la carga al cuerpo, usando la fuerza de las piernas.',
             },
             {
+              id: 'cargas-trivia-pedir-ayuda',
               emoji: '🏋️⚠️',
               texto: 'Un material pesa más de lo que puedes cargar tú solo de forma segura.',
               pregunta: '¿Qué debes hacer?',
@@ -71,6 +76,7 @@ window.MODULOS['manejodecargasyergonomia'] = {
               explicacion: 'Cuando una carga supera tu capacidad segura, se debe solicitar ayuda o usar ayudas mecánicas para evitar lesiones musculoesqueléticas.',
             },
             {
+              id: 'cargas-trivia-girar-cuerpo',
               emoji: '🔄🧍',
               texto: 'Mientras cargas una caja, necesitas colocarla a un lado tuyo.',
               pregunta: '¿Cómo debes hacerlo correctamente?',
@@ -84,6 +90,7 @@ window.MODULOS['manejodecargasyergonomia'] = {
               explicacion: 'Para cambiar de dirección con una carga se deben mover los pies y girar todo el cuerpo, evitando torsiones de la columna.',
             },
             {
+              id: 'cargas-trivia-repisa-alta',
               emoji: '📚⬆️',
               texto: 'Debes guardar una caja pesada en una repisa que está por encima de tu cabeza.',
               pregunta: '¿Cuál es el riesgo principal de esta acción?',
@@ -97,6 +104,7 @@ window.MODULOS['manejodecargasyergonomia'] = {
               explicacion: 'Levantar o almacenar cargas por encima de los hombros aumenta el riesgo de lesiones en hombros, cuello y espalda. Los objetos pesados deben ubicarse a la altura de la cintura.',
             },
             {
+              id: 'cargas-trivia-pausas-activas',
               emoji: '🪑⏳',
               texto: 'Llevas más de una hora realizando una tarea agachado o en una postura forzada.',
               pregunta: '¿Qué debes hacer?',
@@ -110,6 +118,7 @@ window.MODULOS['manejodecargasyergonomia'] = {
               explicacion: 'Las pausas activas y los estiramientos periódicos previenen los trastornos musculoesqueléticos asociados a posturas prolongadas o forzadas.',
             },
             {
+              id: 'cargas-trivia-empujar-carretilla',
               emoji: '🛒↔️',
               texto: 'Tienes que mover una carretilla cargada de materiales por la obra.',
               pregunta: '¿Qué es más recomendable para tu cuerpo?',
@@ -123,6 +132,7 @@ window.MODULOS['manejodecargasyergonomia'] = {
               explicacion: 'Empujar una carga es generalmente menos lesivo para la espalda que halarla, además de dar mejor visibilidad del camino.',
             },
             {
+              id: 'cargas-trivia-levantamiento-pareja',
               emoji: '🤝📦',
               texto: 'Tú y un compañero van a levantar juntos una carga larga y pesada.',
               pregunta: '¿Qué deben hacer para hacerlo de forma segura?',
@@ -136,6 +146,7 @@ window.MODULOS['manejodecargasyergonomia'] = {
               explicacion: 'En levantamientos entre dos o más personas, la coordinación y comunicación constante evitan movimientos bruscos y lesiones.',
             },
             {
+              id: 'cargas-trivia-almacenamiento',
               emoji: '🗄️📏',
               texto: 'Estás organizando el almacenamiento de materiales pesados en la bodega.',
               pregunta: '¿Dónde deben ubicarse los elementos más pesados?',

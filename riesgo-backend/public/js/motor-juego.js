@@ -8,6 +8,7 @@ window.MotorJuego = {
     let idx = 0;
     let totalAciertos = 0;
     let totalItems = 0;
+    let detalleTotal = [];
 
     function jugarNivel() {
       const nivel = niveles[idx];
@@ -21,14 +22,20 @@ window.MotorJuego = {
           ? window.MotorJuego.ejecutarNivelReaccion
           : window.MotorJuego.ejecutarNivelObstaculos;
 
-      ejecutor(container, nivel.config, (resultado, aciertos, total) => {
+      ejecutor(container, nivel.config, (resultado, aciertos, total, detalle) => {
         totalAciertos += aciertos;
         totalItems += total;
+        if (detalle && detalle.length) {
+          detalleTotal = detalleTotal.concat(
+            detalle.map((d) => Object.assign({ nivel: nivel.config.nombre }, d))
+          );
+        }
 
         if (resultado === 'reprobado') {
           finalizar(
             'reprobado',
-            `No superaste "${nivel.config.nombre}". Acertaste ${totalAciertos} de ${totalItems} en total.`
+            `No superaste "${nivel.config.nombre}". Acertaste ${totalAciertos} de ${totalItems} en total.`,
+            detalleTotal
           );
           return;
         }
@@ -37,7 +44,8 @@ window.MotorJuego = {
         if (idx >= niveles.length) {
           finalizar(
             'aprobado',
-            `¡Superaste los ${niveles.length} niveles! Acertaste ${totalAciertos} de ${totalItems} en total.`
+            `¡Superaste los ${niveles.length} niveles! Acertaste ${totalAciertos} de ${totalItems} en total.`,
+            detalleTotal
           );
         } else {
           mostrarTransicion(container, niveles[idx].config, jugarNivel);
@@ -183,6 +191,7 @@ window.MotorJuego = {
     let tapsHechos = 0;
     let rafId = null;
     let inicioMs = 0;
+    const detalle = [];
 
     render();
 
@@ -289,6 +298,12 @@ window.MotorJuego = {
 
       feedback.style.display = 'block';
 
+      detalle.push({
+        pregunta_id: reto.id || `reto-${indice}`,
+        pregunta_texto: reto.situacion,
+        correcta: exito,
+      });
+
       if (exito) {
         aciertos += 1;
         feedback.textContent = `✅ ${reto.exito}`;
@@ -323,7 +338,7 @@ window.MotorJuego = {
       if (!activo) return;
       activo = false;
       cancelAnimationFrame(rafId);
-      onFin(resultado, aciertos, config.retos.length);
+      onFin(resultado, aciertos, config.retos.length, detalle);
     }
   },
 
@@ -336,6 +351,7 @@ window.MotorJuego = {
     let indice = 0;
     let vidas = VIDAS_INICIALES;
     let aciertos = 0;
+    const detalle = [];
 
     render();
 
@@ -372,6 +388,12 @@ window.MotorJuego = {
 
       const correcto = seleccion === p.correcta;
 
+      detalle.push({
+        pregunta_id: p.id || `pregunta-${indice}`,
+        pregunta_texto: p.pregunta,
+        correcta: correcto,
+      });
+
       botones[p.correcta].classList.add('correct');
       if (!correcto) {
         botones[seleccion].classList.add('incorrect');
@@ -393,12 +415,12 @@ window.MotorJuego = {
       nextBtn.textContent = vidas <= 0 ? 'Ver resultado' : 'Siguiente';
       nextBtn.addEventListener('click', () => {
         if (vidas <= 0) {
-          onFin('reprobado', aciertos, preguntas.length);
+          onFin('reprobado', aciertos, preguntas.length, detalle);
           return;
         }
         indice += 1;
         if (indice >= preguntas.length) {
-          onFin('aprobado', aciertos, preguntas.length);
+          onFin('aprobado', aciertos, preguntas.length, detalle);
           return;
         }
         render();

@@ -622,6 +622,12 @@ th {
   text-transform: uppercase;
 }
 
+.row-danger td {
+  background-color: rgba(180, 35, 24, 0.08);
+  color: #B42318;
+  font-weight: 600;
+}
+
 #pin-generados-texto {
   width: 100%;
   font-family: monospace;

@@ -203,6 +203,82 @@ adminRouter.get('/listado-asistencia', async (req, res) => {
   return res.send(Buffer.from(buffer));
 });
 
+adminRouter.get('/analitica-preguntas', async (req, res) => {
+  const { id_empresa, modulo } = req.query;
+
+  if (!modulo) {
+    return res.status(400).json({ error: 'Falta parámetro: modulo' });
+  }
+
+  let query = supabase
+    .from('resultados_preguntas')
+    .select('pregunta_id, pregunta_texto, nivel, cargo, correcta')
+    .eq('modulo', modulo);
+
+  if (id_empresa) {
+    query = query.eq('id_empresa', id_empresa);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    return res.status(500).json({ error: 'Error consultando resultados' });
+  }
+
+  type Grupo = { pregunta_id: string; pregunta_texto: string; nivel: string; intentos: number; fallos: number };
+  type GrupoCargo = Grupo & { cargo: string };
+
+  const porPregunta = new Map<string, Grupo>();
+  const porPreguntaCargo = new Map<string, GrupoCargo>();
+
+  for (const fila of data || []) {
+    const clave = fila.pregunta_id;
+    if (!porPregunta.has(clave)) {
+      porPregunta.set(clave, {
+        pregunta_id: fila.pregunta_id,
+        pregunta_texto: fila.pregunta_texto,
+        nivel: fila.nivel,
+        intentos: 0,
+        fallos: 0,
+      });
+    }
+    const grupo = porPregunta.get(clave)!;
+    grupo.intentos += 1;
+    if (!fila.correcta) grupo.fallos += 1;
+
+    const cargo = fila.cargo && fila.cargo.trim() ? fila.cargo.trim() : 'Sin especificar';
+    const claveCargo = `${clave}::${cargo}`;
+    if (!porPreguntaCargo.has(claveCargo)) {
+      porPreguntaCargo.set(claveCargo, {
+        pregunta_id: fila.pregunta_id,
+        pregunta_texto: fila.pregunta_texto,
+        nivel: fila.nivel,
+        cargo,
+        intentos: 0,
+        fallos: 0,
+      });
+    }
+    const grupoCargo = porPreguntaCargo.get(claveCargo)!;
+    grupoCargo.intentos += 1;
+    if (!fila.correcta) grupoCargo.fallos += 1;
+  }
+
+  const conPorcentaje = <T extends Grupo>(g: T) => ({
+    ...g,
+    porcentaje_fallo: Math.round((g.fallos / g.intentos) * 100),
+  });
+
+  const general = Array.from(porPregunta.values())
+    .map(conPorcentaje)
+    .sort((a, b) => b.porcentaje_fallo - a.porcentaje_fallo);
+
+  const porCargo = Array.from(porPreguntaCargo.values())
+    .map(conPorcentaje)
+    .sort((a, b) => b.porcentaje_fallo - a.porcentaje_fallo);
+
+  return res.json({ general, por_cargo: porCargo });
+});
+
 adminRouter.get('/analytics', async (_req, res) => {
   const [{ count: instalaciones, error: instError }, { data: pinsUsados, error: pinsError }] = await Promise.all([
     supabase.from('app_eventos').select('*', { count: 'exact', head: true }).eq('tipo', 'install'),

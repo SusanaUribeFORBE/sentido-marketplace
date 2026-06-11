@@ -23,6 +23,7 @@ window.MODULOS['ordenyaseo'] = {
           nombre: 'Nivel 2: Trivia de Orden y Aseo (5S)',
           preguntas: [
             {
+              id: 'aseo-trivia-clasificar-seiri',
               emoji: '🧰🔩🔧',
               texto: 'Encuentras herramientas que no usas hace meses regadas en tu área de trabajo.',
               pregunta: 'Según la metodología 5S, ¿qué debes hacer primero?',
@@ -36,6 +37,7 @@ window.MODULOS['ordenyaseo'] = {
               explicacion: 'La primera S (Seiri - Clasificar) consiste en separar lo necesario de lo innecesario en el puesto de trabajo.',
             },
             {
+              id: 'aseo-trivia-cables-enredados',
               emoji: '🪜⚡🔌',
               texto: 'Los cables eléctricos están enredados en el piso cerca de la escalera.',
               pregunta: '¿Cuál es el riesgo principal de esta situación?',
@@ -49,6 +51,7 @@ window.MODULOS['ordenyaseo'] = {
               explicacion: 'Los cables sueltos en zonas de tránsito son una causa común de caídas. Deben recogerse o señalizarse.',
             },
             {
+              id: 'aseo-trivia-residuos',
               emoji: '🗑️♻️',
               texto: 'Terminaste de usar materiales de construcción y quedan sobrantes y empaques.',
               pregunta: '¿Qué corresponde hacer con estos residuos?',
@@ -62,6 +65,7 @@ window.MODULOS['ordenyaseo'] = {
               explicacion: 'Los residuos deben separarse y disponerse en los puntos designados, manteniendo el orden y cuidando el ambiente.',
             },
             {
+              id: 'aseo-trivia-fin-turno',
               emoji: '🧹✨',
               texto: 'Está terminando tu turno de trabajo en la obra.',
               pregunta: '¿Cómo debe quedar tu zona de trabajo antes de irte?',
@@ -75,6 +79,7 @@ window.MODULOS['ordenyaseo'] = {
               explicacion: 'La S de Seiketsu/Seiso (Limpieza) es responsabilidad de cada trabajador en su propia área, todos los días.',
             },
             {
+              id: 'aseo-trivia-ordenar-seiton',
               emoji: '🏷️📍',
               texto: 'Las herramientas y equipos de tu cuadrilla se usan a diario.',
               pregunta: '¿Cómo deben organizarse para facilitar el orden?',
@@ -88,6 +93,7 @@ window.MODULOS['ordenyaseo'] = {
               explicacion: 'Seiton (Ordenar) implica un lugar fijo, identificado y de fácil acceso para cada herramienta o equipo.',
             },
             {
+              id: 'aseo-trivia-derrame-aceite',
               emoji: '🚧⚠️',
               texto: 'Ves un derrame de aceite en el piso del taller de mantenimiento.',
               pregunta: '¿Qué debes hacer al notarlo?',
@@ -101,6 +107,7 @@ window.MODULOS['ordenyaseo'] = {
               explicacion: 'Un derrame es un riesgo de caída y de incendio. Debe señalizarse, limpiarse y reportarse de inmediato.',
             },
             {
+              id: 'aseo-trivia-disciplina-shitsuke',
               emoji: '📋🔁',
               texto: 'Tu equipo mantiene el orden y aseo todos los días, no solo cuando hay visitas o auditorías.',
               pregunta: '¿A cuál de las 5S corresponde este hábito constante?',
@@ -114,6 +121,7 @@ window.MODULOS['ordenyaseo'] = {
               explicacion: 'Shitsuke (Disciplina) es convertir el orden y aseo en un hábito permanente, no en un esfuerzo ocasional.',
             },
             {
+              id: 'aseo-trivia-revisar-epp',
               emoji: '🧤👷',
               texto: 'Terminaste tu jornada y vas a guardar tus elementos de protección personal (casco, guantes, arnés).',
               pregunta: '¿Qué debes hacer antes de guardarlos?',

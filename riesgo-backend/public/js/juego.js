@@ -36,7 +36,7 @@ if (!modulo) {
 
 let finalizando = false;
 
-async function finalizar(resultado, resumenTexto) {
+async function finalizar(resultado, resumenTexto, detalle) {
   if (finalizando) return;
   finalizando = true;
 
@@ -46,7 +46,7 @@ async function finalizar(resultado, resumenTexto) {
     const res = await fetch('/api/finalizar', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ pin_id: pinId, resultado }),
+      body: JSON.stringify({ pin_id: pinId, resultado, detalle: detalle || [] }),
     });
 
     const data = await res.json();

@@ -34,6 +34,7 @@
       <button class="tab-btn" data-tab="empresas">Empresas</button>
       <button class="tab-btn" data-tab="pins">PINs</button>
       <button class="tab-btn" data-tab="certificados">Certificados</button>
+      <button class="tab-btn" data-tab="analitica">Analítica</button>
     </div>
 
     <section id="tab-resumen" class="tab-panel">
@@ -188,6 +189,57 @@
               <th>Módulo</th>
               <th>Emitido</th>
               <th>Certificado</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="tab-analitica" class="tab-panel" hidden>
+      <h2>Analítica por pregunta y cargo</h2>
+      <p class="subtitle">Identifica los riesgos específicos que el personal no está entendiendo, por módulo y por cargo/rol.</p>
+      <div class="field">
+        <label for="analitica-modulo-select">Módulo</label>
+        <select id="analitica-modulo-select">
+          <option value="Orden y Aseo">Orden y Aseo</option>
+          <option value="Manejo de Cargas y Ergonomía">Manejo de Cargas y Ergonomía</option>
+          <option value="Seguridad Vial">Seguridad Vial</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="analitica-empresa-select">Empresa</label>
+        <select id="analitica-empresa-select">
+          <option value="">Todas las empresas</option>
+        </select>
+      </div>
+      <button type="button" id="analitica-cargar-btn">Cargar analítica</button>
+      <div id="analitica-message" class="message"></div>
+
+      <h3>Preguntas/situaciones con mayor % de fallo</h3>
+      <div class="table-wrap">
+        <table id="tabla-analitica-general">
+          <thead>
+            <tr>
+              <th>Nivel</th>
+              <th>Pregunta / Situación</th>
+              <th>Intentos</th>
+              <th>% Fallo</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <h3>Por cargo</h3>
+      <div class="table-wrap">
+        <table id="tabla-analitica-cargo">
+          <thead>
+            <tr>
+              <th>Cargo</th>
+              <th>Pregunta / Situación</th>
+              <th>Intentos</th>
+              <th>% Fallo</th>
             </tr>
           </thead>
           <tbody></tbody>

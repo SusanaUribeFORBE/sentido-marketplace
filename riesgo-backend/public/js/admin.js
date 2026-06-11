@@ -126,6 +126,11 @@ async function cargarEmpresas() {
   certSelect.innerHTML =
     '<option value="">Todas las empresas</option>' +
     empresas.map((e) => `<option value="${e.id_empresa}">${e.nombre_constructora}</option>`).join('');
+
+  const analiticaSelect = document.getElementById('analitica-empresa-select');
+  analiticaSelect.innerHTML =
+    '<option value="">Todas las empresas</option>' +
+    empresas.map((e) => `<option value="${e.id_empresa}">${e.nombre_constructora}</option>`).join('');
 }
 
 document.getElementById('empresa-form').addEventListener('submit', async (e) => {
@@ -309,6 +314,72 @@ document.getElementById('pin-form').addEventListener('submit', async (e) => {
     message.className = 'message error';
   }
 });
+
+document.getElementById('analitica-cargar-btn').addEventListener('click', cargarAnalitica);
+
+async function cargarAnalitica() {
+  const message = document.getElementById('analitica-message');
+  message.className = 'message';
+
+  const modulo = document.getElementById('analitica-modulo-select').value;
+  const idEmpresa = document.getElementById('analitica-empresa-select').value;
+
+  const generalBody = document.querySelector('#tabla-analitica-general tbody');
+  const cargoBody = document.querySelector('#tabla-analitica-cargo tbody');
+
+  try {
+    const query = `?modulo=${encodeURIComponent(modulo)}${idEmpresa ? `&id_empresa=${idEmpresa}` : ''}`;
+    const res = await adminFetch(`/analitica-preguntas${query}`);
+    const data = await res.json();
+
+    if (!res.ok) {
+      message.textContent = data.error || 'No se pudo cargar la analítica';
+      message.className = 'message error';
+      generalBody.innerHTML = '';
+      cargoBody.innerHTML = '';
+      return;
+    }
+
+    if (!data.general.length) {
+      message.textContent = 'Aún no hay resultados registrados para este módulo.';
+      message.className = 'message';
+      generalBody.innerHTML = '';
+      cargoBody.innerHTML = '';
+      return;
+    }
+
+    message.textContent = '';
+
+    generalBody.innerHTML = data.general
+      .map(
+        (g) => `
+          <tr class="${g.porcentaje_fallo > 50 ? 'row-danger' : ''}">
+            <td>${g.nivel}</td>
+            <td>${g.pregunta_texto}</td>
+            <td>${g.intentos}</td>
+            <td>${g.porcentaje_fallo}%</td>
+          </tr>
+        `
+      )
+      .join('');
+
+    cargoBody.innerHTML = data.por_cargo
+      .map(
+        (g) => `
+          <tr class="${g.porcentaje_fallo > 50 ? 'row-danger' : ''}">
+            <td>${g.cargo}</td>
+            <td>${g.pregunta_texto}</td>
+            <td>${g.intentos}</td>
+            <td>${g.porcentaje_fallo}%</td>
+          </tr>
+        `
+      )
+      .join('');
+  } catch (err) {
+    message.textContent = 'Error de conexión.';
+    message.className = 'message error';
+  }
+}
 
 if (adminKey()) {
   showAdmin();

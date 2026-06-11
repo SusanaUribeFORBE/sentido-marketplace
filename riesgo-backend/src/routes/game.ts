@@ -5,7 +5,7 @@ import { generarCertificado } from '../services/certificado';
 export const gameRouter = Router();
 
 gameRouter.post('/finalizar', async (req, res) => {
-  const { pin_id, resultado } = req.body;
+  const { pin_id, resultado, detalle } = req.body;
 
   if (!pin_id || !resultado) {
     return res.status(400).json({ error: 'Faltan datos: pin_id, resultado' });
@@ -49,6 +49,24 @@ gameRouter.post('/finalizar', async (req, res) => {
 
   if (!updated) {
     return res.status(409).json({ error: 'El PIN ya fue finalizado' });
+  }
+
+  if (Array.isArray(detalle) && detalle.length > 0) {
+    const filas = detalle.map((d: any) => ({
+      pin_id: updated.id,
+      id_empresa: updated.id_empresa,
+      modulo: updated.modulo_asignado,
+      cargo: updated.cargo,
+      nivel: d.nivel || '',
+      pregunta_id: d.pregunta_id,
+      pregunta_texto: d.pregunta_texto,
+      correcta: !!d.correcta,
+    }));
+
+    const { error: detalleError } = await supabase.from('resultados_preguntas').insert(filas);
+    if (detalleError) {
+      console.error('Error guardando detalle de respuestas:', detalleError);
+    }
   }
 
   if (nuevoEstado !== 'Certificado') {

@@ -12,6 +12,7 @@ window.MODULOS['seguridadvial'] = {
           instrucciones: '¡Reacciona en menos de 2 segundos a cada situación del camino!',
           retos: [
             {
+              id: 'vial-casco-lluvia',
               tipo: 'tap-repetido',
               emoji: '🪖🏍️',
               situacion: 'Vas en moto hacia la obra y empieza a lloviznar.',
@@ -21,6 +22,7 @@ window.MODULOS['seguridadvial'] = {
               fallo: 'Seguiste con el casco suelto, aumentando el riesgo en caso de caída.',
             },
             {
+              id: 'vial-punto-ciego-retro',
               tipo: 'swipe-abajo',
               emoji: '🚧🚛',
               situacion: 'Te acercas a una zona donde una retroexcavadora está maniobrando en reversa.',
@@ -29,6 +31,7 @@ window.MODULOS['seguridadvial'] = {
               fallo: 'Avanzaste sin detenerte y entraste al punto ciego de la máquina.',
             },
             {
+              id: 'vial-cruce-peatonal',
               tipo: 'swipe-lateral',
               emoji: '🚸🚶',
               situacion: 'Debes cruzar la vía de acceso vehicular para llegar al frente de obra.',
@@ -45,6 +48,7 @@ window.MODULOS['seguridadvial'] = {
           nombre: 'Nivel 2: Trivia de Seguridad Vial',
           preguntas: [
             {
+              id: 'vial-trivia-casco-obligatorio',
               emoji: '🪖🏍️',
               texto: 'Te transportas en motocicleta hacia o desde la obra.',
               pregunta: '¿Qué elemento es obligatorio y no negociable para tu seguridad?',
@@ -58,6 +62,7 @@ window.MODULOS['seguridadvial'] = {
               explicacion: 'El casco correctamente abrochado es el elemento de protección más importante para reducir lesiones graves en caso de accidente en moto.',
             },
             {
+              id: 'vial-trivia-velocidad-obra',
               emoji: '🚗🛣️',
               texto: 'Conduces un vehículo dentro de la zona de obra.',
               pregunta: '¿Cuál es la velocidad más segura a la que debes circular?',
@@ -71,6 +76,7 @@ window.MODULOS['seguridadvial'] = {
               explicacion: 'Dentro de una obra siempre debe respetarse la velocidad señalizada (usualmente muy baja), ya que hay peatones, maquinaria y visibilidad reducida.',
             },
             {
+              id: 'vial-trivia-puntos-ciegos',
               emoji: '🚜👀',
               texto: 'Una maquinaria pesada (retroexcavadora, volqueta) está maniobrando cerca de ti.',
               pregunta: '¿Qué debes tener en cuenta sobre el operador?',
@@ -84,6 +90,7 @@ window.MODULOS['seguridadvial'] = {
               explicacion: 'La maquinaria pesada tiene zonas ciegas amplias. La regla básica es: si no puedes ver al operador, asume que él no te ve a ti.',
             },
             {
+              id: 'vial-trivia-chaleco-reflectivo',
               emoji: '🦺🚸',
               texto: 'Vas a caminar por una zona donde circulan vehículos de la obra.',
               pregunta: '¿Qué debes usar para ser visible?',
@@ -97,6 +104,7 @@ window.MODULOS['seguridadvial'] = {
               explicacion: 'El chaleco reflectivo permite que los conductores y operadores te identifiquen a tiempo, especialmente en zonas con poca luz o polvo.',
             },
             {
+              id: 'vial-trivia-celular-conduciendo',
               emoji: '📱🚗',
               texto: 'Recibes una llamada o mensaje mientras conduces.',
               pregunta: '¿Qué debes hacer?',
@@ -110,6 +118,7 @@ window.MODULOS['seguridadvial'] = {
               explicacion: 'Usar el celular mientras se conduce distrae la atención y aumenta drásticamente el riesgo de accidente. Siempre detente en un lugar seguro primero.',
             },
             {
+              id: 'vial-trivia-cero-alcohol',
               emoji: '🍺🚫',
               texto: 'Un compañero va a manejar después de haber consumido alcohol.',
               pregunta: '¿Cuál es la actitud correcta frente a la seguridad vial?',
@@ -123,6 +132,7 @@ window.MODULOS['seguridadvial'] = {
               explicacion: 'El consumo de alcohol afecta los reflejos y el juicio. La política de cero alcohol al conducir protege a quien maneja y a los demás.',
             },
             {
+              id: 'vial-trivia-distancia-seguridad',
               emoji: '🚙↔️🚙',
               texto: 'Vas en un vehículo y el de adelante frena de forma repentina.',
               pregunta: '¿Qué te protege de un choque por alcance?',
@@ -136,6 +146,7 @@ window.MODULOS['seguridadvial'] = {
               explicacion: 'Mantener una distancia de seguridad con el vehículo de adelante da tiempo de reacción suficiente para frenar sin colisionar.',
             },
             {
+              id: 'vial-trivia-cinturon',
               emoji: '🦺💺',
               texto: 'Te subes a una camioneta de la obra para un traslado corto.',
               pregunta: '¿Qué debes hacer antes de que el vehículo se mueva?',
