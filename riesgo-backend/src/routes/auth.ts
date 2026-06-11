@@ -4,7 +4,7 @@ import { supabase } from '../supabase';
 export const authRouter = Router();
 
 authRouter.post('/login', async (req, res) => {
-  const { codigo_pin, cedula_usuario, nombre_usuario } = req.body;
+  const { codigo_pin, cedula_usuario, nombre_usuario, cargo_usuario, celular_usuario } = req.body;
 
   if (!codigo_pin || !cedula_usuario || !nombre_usuario) {
     return res.status(400).json({ error: 'Faltan datos: codigo_pin, cedula_usuario, nombre_usuario' });
@@ -36,6 +36,8 @@ authRouter.post('/login', async (req, res) => {
       estado: 'En Juego',
       cedula_usuario,
       nombre_usuario,
+      cargo: cargo_usuario || null,
+      celular: celular_usuario || null,
       fecha_uso: new Date().toISOString(),
       ip_origen: req.ip,
       user_agent: req.headers['user-agent'] || null,

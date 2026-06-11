@@ -225,6 +225,48 @@ async function cargarCertificados() {
     .join('');
 }
 
+document.getElementById('asistencia-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const message = document.getElementById('asistencia-message');
+  message.className = 'message';
+
+  const idEmpresa = document.getElementById('pin-empresa-select').value;
+  if (!idEmpresa) {
+    message.textContent = 'Selecciona una empresa primero.';
+    message.className = 'message error';
+    return;
+  }
+
+  const modulo = document.getElementById('asistencia_modulo').value;
+
+  try {
+    const res = await adminFetch(`/listado-asistencia?id_empresa=${idEmpresa}&modulo=${encodeURIComponent(modulo)}`);
+
+    if (!res.ok) {
+      const data = await res.json();
+      message.textContent = data.error || 'No se pudo generar el listado';
+      message.className = 'message error';
+      return;
+    }
+
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `listado-asistencia-${modulo.replace(/\s+/g, '-')}.xlsx`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+
+    message.textContent = 'Listado descargado correctamente.';
+    message.className = 'message success';
+  } catch (err) {
+    message.textContent = 'Error de conexión.';
+    message.className = 'message error';
+  }
+});
+
 document.getElementById('pin-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   const message = document.getElementById('pin-message');

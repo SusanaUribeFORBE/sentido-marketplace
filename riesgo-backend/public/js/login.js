@@ -16,12 +16,14 @@ form.addEventListener('submit', async (e) => {
   const codigo_pin = document.getElementById('codigo_pin').value.trim();
   const cedula_usuario = document.getElementById('cedula_usuario').value.trim();
   const nombre_usuario = document.getElementById('nombre_usuario').value.trim();
+  const cargo_usuario = document.getElementById('cargo_usuario').value.trim();
+  const celular_usuario = document.getElementById('celular_usuario').value.trim();
 
   try {
     const res = await fetch('/api/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ codigo_pin, cedula_usuario, nombre_usuario }),
+      body: JSON.stringify({ codigo_pin, cedula_usuario, nombre_usuario, cargo_usuario, celular_usuario }),
     });
 
     const data = await res.json();

@@ -138,6 +138,19 @@
         <textarea id="pin-generados-texto" readonly rows="6"></textarea>
       </div>
 
+      <h2>Listado de Asistencia (soporte de facturación ARL)</h2>
+      <form id="asistencia-form">
+        <div class="field">
+          <label for="asistencia_modulo">Módulo</label>
+          <select id="asistencia_modulo">
+            <option value="Orden y Aseo">Orden y Aseo</option>
+            <option value="Manejo de Cargas y Ergonomía">Manejo de Cargas y Ergonomía</option>
+          </select>
+        </div>
+        <button type="submit">Descargar Excel</button>
+        <div id="asistencia-message" class="message"></div>
+      </form>
+
       <h2>Listado de PINs</h2>
       <div class="table-wrap">
         <table id="tabla-pins">

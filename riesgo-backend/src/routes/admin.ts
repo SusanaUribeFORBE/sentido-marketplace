@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { supabase } from '../supabase';
+import { generarListadoAsistencia } from '../services/listadoAsistencia';
 
 export const adminRouter = Router();
 
@@ -155,6 +156,51 @@ adminRouter.get('/certificados', async (req, res) => {
   }
 
   return res.json(data);
+});
+
+adminRouter.get('/listado-asistencia', async (req, res) => {
+  const { id_empresa, modulo } = req.query;
+
+  if (!id_empresa || !modulo) {
+    return res.status(400).json({ error: 'Faltan parámetros: id_empresa, modulo' });
+  }
+
+  const { data: empresa, error: empresaError } = await supabase
+    .from('empresas')
+    .select('nombre_constructora, nit')
+    .eq('id_empresa', id_empresa)
+    .maybeSingle();
+
+  if (empresaError || !empresa) {
+    return res.status(404).json({ error: 'Empresa no encontrada' });
+  }
+
+  const { data: pins, error: pinsError } = await supabase
+    .from('control_pins')
+    .select('nombre_usuario, cedula_usuario, cargo, celular, fecha_uso, estado')
+    .eq('id_empresa', id_empresa)
+    .eq('modulo_asignado', modulo)
+    .in('estado', ['Certificado', 'Quemado/Fallido'])
+    .order('fecha_uso', { ascending: true });
+
+  if (pinsError) {
+    return res.status(500).json({ error: 'Error consultando participantes' });
+  }
+
+  if (!pins || pins.length === 0) {
+    return res.status(404).json({ error: 'No hay participantes para esa empresa y módulo' });
+  }
+
+  const buffer = await generarListadoAsistencia({
+    nombreEmpresa: empresa.nombre_constructora,
+    nitEmpresa: empresa.nit,
+    modulo: String(modulo),
+    participantes: pins,
+  });
+
+  res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+  res.setHeader('Content-Disposition', 'attachment; filename="listado-asistencia.xlsx"');
+  return res.send(Buffer.from(buffer));
 });
 
 adminRouter.get('/analytics', async (_req, res) => {
