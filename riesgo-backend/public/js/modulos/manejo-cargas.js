@@ -9,7 +9,7 @@ window.MODULOS['manejodecargasyergonomia'] = {
         tipo: 'reaccion',
         config: {
           nombre: 'Nivel 1: La Ruta del Bulto Seguro',
-          instrucciones: '¡Reacciona en menos de 2 segundos a cada peligro del camino!',
+          instrucciones: '¡Lee la situación y reacciona a tiempo con el gesto indicado!',
           retos: [
             {
               id: 'cargas-abrazar-bulto',

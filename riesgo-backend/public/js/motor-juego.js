@@ -202,6 +202,16 @@ window.MotorJuego = {
       }
     }
 
+    function gestoInstruccion(reto) {
+      if (reto.tipo === 'tap-repetido') {
+        return `👉 Toca el botón rápido, varias veces (${reto.tapsRequeridos || 5} veces)`;
+      }
+      if (reto.tipo === 'swipe-abajo') {
+        return '👉 Dentro del recuadro, desliza el dedo (o el mouse) hacia abajo';
+      }
+      return '👉 Dentro del recuadro, desliza el dedo (o el mouse) de un lado al otro';
+    }
+
     function render() {
       const reto = config.retos[indice];
 
@@ -213,6 +223,7 @@ window.MotorJuego = {
           <div class="reaccion-avatar" id="reaccion-avatar">🧍</div>
           <div class="reaccion-emoji">${reto.emoji}</div>
           <p class="reaccion-situacion">${reto.situacion}</p>
+          <p class="reaccion-gesto">${gestoInstruccion(reto)}</p>
           <div class="reaccion-timer"><div class="reaccion-timer-fill" id="timer-fill"></div></div>
           <div class="reaccion-zona zona-llamada" id="reaccion-zona">
             ${

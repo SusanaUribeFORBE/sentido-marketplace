@@ -685,6 +685,17 @@ th {
   transition: width 0.05s linear;
 }
 
+.reaccion-gesto {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--navy);
+  background: var(--light);
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin: 8px 0;
+  text-align: center;
+}
+
 .reaccion-zona {
   min-height: 110px;
   display: flex;

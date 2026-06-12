@@ -9,7 +9,7 @@ window.MODULOS['seguridadvial'] = {
         tipo: 'reaccion',
         config: {
           nombre: 'Nivel 1: La Ruta Segura',
-          instrucciones: '¡Reacciona en menos de 2 segundos a cada situación del camino!',
+          instrucciones: '¡Lee la situación y reacciona a tiempo con el gesto indicado!',
           retos: [
             {
               id: 'vial-casco-lluvia',
