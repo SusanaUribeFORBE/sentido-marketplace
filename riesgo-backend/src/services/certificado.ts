@@ -10,7 +10,12 @@ const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
 
 const ASSETS_DIR = path.join(__dirname, '..', '..', 'assets');
 const LOGO_RIESGO = path.join(ASSETS_DIR, 'logo-riesgo.png');
+const LOGO_RIESGO_VIAL = path.join(ASSETS_DIR, 'logo-riesgovial.png');
 const LOGO_AXA = path.join(ASSETS_DIR, 'logo-axa.png');
+
+const LOGOS_MODULO: Record<string, string> = {
+  'Seguridad Vial': LOGO_RIESGO_VIAL,
+};
 
 const LICENCIA_FORBE =
   'FORBE SAS cuenta con Licencia N° 2022060086556 (23/07/2022) de la Secretaría Seccional de Salud y ' +
@@ -111,9 +116,10 @@ function buildPdf(
     doc.rect(20, 20, W - 40, H - 40).lineWidth(3).stroke(NAVY);
     doc.rect(28, 28, W - 56, H - 56).lineWidth(1).stroke(YELLOW);
 
-    // Encabezado: logo RiesGO! a la izquierda, AXA Colpatria a la derecha
-    if (fs.existsSync(LOGO_RIESGO)) {
-      doc.image(LOGO_RIESGO, 45, 35, { height: 50 });
+    // Encabezado: logo RiesGO! (o variante del módulo) a la izquierda, AXA Colpatria a la derecha
+    const logoModulo = LOGOS_MODULO[data.modulo] || LOGO_RIESGO;
+    if (fs.existsSync(logoModulo)) {
+      doc.image(logoModulo, 45, 35, { height: 50 });
     } else {
       doc.fillColor(NAVY).font('Helvetica-Bold').fontSize(18).text('RiesGO!', 45, 50);
     }

@@ -22,6 +22,14 @@ function normalizarClave(texto) {
 const moduloKey = normalizarClave(moduloAsignado);
 const modulo = (window.MODULOS || {})[moduloKey];
 
+const LOGOS_MODULO = {
+  seguridadvial: '/assets/logo-riesgovial.png',
+};
+
+if (LOGOS_MODULO[moduloKey]) {
+  document.querySelector('.game-header .logo').src = LOGOS_MODULO[moduloKey];
+}
+
 const gameContainer = document.getElementById('game-container');
 
 if (!modulo) {
