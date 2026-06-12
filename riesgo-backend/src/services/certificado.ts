@@ -12,11 +12,15 @@ const ASSETS_DIR = path.join(__dirname, '..', '..', 'assets');
 const LOGO_RIESGO = path.join(ASSETS_DIR, 'logo-riesgo.png');
 const LOGO_RIESGO_VIAL = path.join(ASSETS_DIR, 'logo-riesgovial.png');
 const LOGO_AXA = path.join(ASSETS_DIR, 'logo-axa.png');
+const LOGO_FORBE = path.join(ASSETS_DIR, 'logo-forbe.png');
 
 const LOGOS_MODULO: Record<string, string> = {
   'Seguridad Vial': LOGO_RIESGO_VIAL,
   'Riesgos Críticos Viales': LOGO_RIESGO_VIAL,
 };
+
+// Módulos que aún no cuentan con el aval de AXA Colpatria
+const MODULOS_SIN_AVAL_AXA = new Set(['Riesgos Críticos Viales']);
 
 const LICENCIA_FORBE =
   'FORBE SAS cuenta con Licencia N° 2022060086556 (23/07/2022) de la Secretaría Seccional de Salud y ' +
@@ -126,10 +130,14 @@ function buildPdf(
       doc.fillColor(NAVY).font('Helvetica-Bold').fontSize(18).text('RiesGO!', 45, 50);
     }
 
-    if (fs.existsSync(LOGO_AXA)) {
-      doc.image(LOGO_AXA, W - 165, 35, { fit: [120, 50] });
+    const avaladoPorAxa = !MODULOS_SIN_AVAL_AXA.has(data.modulo);
+    const logoDerecha = avaladoPorAxa ? LOGO_AXA : LOGO_FORBE;
+    const textoLogoDerecha = avaladoPorAxa ? 'AXA COLPATRIA' : 'FORBE SAS';
+
+    if (fs.existsSync(logoDerecha)) {
+      doc.image(logoDerecha, W - 165, 35, { fit: [120, 50] });
     } else {
-      doc.fillColor(NAVY).font('Helvetica-Bold').fontSize(12).text('AXA COLPATRIA', W - 165, 55, {
+      doc.fillColor(NAVY).font('Helvetica-Bold').fontSize(12).text(textoLogoDerecha, W - 165, 55, {
         width: 120,
         align: 'right',
       });
@@ -214,7 +222,12 @@ function buildPdf(
       .font('Helvetica')
       .fontSize(9)
       .fillColor(GRAY)
-      .text('Coordinador SST - Programa AXA Colpatria', sigX, footerY + 65, { width: 200, align: 'center' });
+      .text(
+        avaladoPorAxa ? 'Coordinador SST - Programa AXA Colpatria' : 'Coordinador SST - FORBE SAS',
+        sigX,
+        footerY + 65,
+        { width: 200, align: 'center' }
+      );
 
     // Pie legal
     doc
