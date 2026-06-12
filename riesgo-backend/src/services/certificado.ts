@@ -15,6 +15,7 @@ const LOGO_AXA = path.join(ASSETS_DIR, 'logo-axa.png');
 
 const LOGOS_MODULO: Record<string, string> = {
   'Seguridad Vial': LOGO_RIESGO_VIAL,
+  'Riesgos Críticos Viales': LOGO_RIESGO_VIAL,
 };
 
 const LICENCIA_FORBE =
@@ -32,6 +33,7 @@ const INTENSIDAD_HORARIA: Record<string, number> = {
   'Orden y Aseo': 4,
   'Manejo de Cargas y Ergonomía': 4,
   'Seguridad Vial': 2,
+  'Riesgos Críticos Viales': 4,
 };
 const INTENSIDAD_HORARIA_DEFAULT = 2;
 
