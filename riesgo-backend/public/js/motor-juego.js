@@ -181,7 +181,7 @@ window.MotorJuego = {
   // config: { nombre, instrucciones, retos: [{ tipo: 'tap-repetido'|'swipe-abajo'|'swipe-lateral', emoji, situacion, accionTexto, tapsRequeridos?, exito, fallo }] }
   ejecutarNivelReaccion(container, config, onFin) {
     const VIDAS_INICIALES = 3;
-    const TIEMPO_LIMITE = 2000;
+    const TIEMPO_LIMITE = 4500;
 
     let vidas = VIDAS_INICIALES;
     let indice = 0;
@@ -214,11 +214,11 @@ window.MotorJuego = {
           <div class="reaccion-emoji">${reto.emoji}</div>
           <p class="reaccion-situacion">${reto.situacion}</p>
           <div class="reaccion-timer"><div class="reaccion-timer-fill" id="timer-fill"></div></div>
-          <div class="reaccion-zona" id="reaccion-zona">
+          <div class="reaccion-zona zona-llamada" id="reaccion-zona">
             ${
               reto.tipo === 'tap-repetido'
-                ? `<button type="button" class="reaccion-btn" id="reaccion-btn">${reto.accionTexto}</button>`
-                : `<div class="reaccion-hint">${reto.accionTexto}</div>`
+                ? `<button type="button" class="reaccion-btn zona-llamada" id="reaccion-btn">${reto.accionTexto}</button>`
+                : `<div class="reaccion-hint zona-llamada">${reto.accionTexto}</div>`
             }
           </div>
         </div>
