@@ -224,8 +224,9 @@ window.MotorJuego = {
           <div class="reaccion-emoji">${reto.emoji}</div>
           <p class="reaccion-situacion">${reto.situacion}</p>
           <p class="reaccion-gesto">${gestoInstruccion(reto)}</p>
-          <div class="reaccion-timer"><div class="reaccion-timer-fill" id="timer-fill"></div></div>
-          <div class="reaccion-zona zona-llamada" id="reaccion-zona">
+          <button type="button" class="reaccion-listo-btn" id="reaccion-listo-btn">¡Listo! Empezar</button>
+          <div class="reaccion-timer" id="reaccion-timer" style="display:none"><div class="reaccion-timer-fill" id="timer-fill"></div></div>
+          <div class="reaccion-zona zona-llamada" id="reaccion-zona" style="display:none">
             ${
               reto.tipo === 'tap-repetido'
                 ? `<button type="button" class="reaccion-btn zona-llamada" id="reaccion-btn">${reto.accionTexto}</button>`
@@ -237,7 +238,12 @@ window.MotorJuego = {
         <button class="next-btn" id="next-btn">Siguiente</button>
       `;
 
-      iniciarReto(reto);
+      document.getElementById('reaccion-listo-btn').addEventListener('click', () => {
+        document.getElementById('reaccion-listo-btn').style.display = 'none';
+        document.getElementById('reaccion-timer').style.display = '';
+        document.getElementById('reaccion-zona').style.display = '';
+        iniciarReto(reto);
+      });
     }
 
     function iniciarReto(reto) {
