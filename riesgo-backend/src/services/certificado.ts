@@ -20,6 +20,7 @@ const LOGOS_MODULO: Record<string, string> = {
   'Antes de Arrancar': LOGO_RIESGO_VIAL,
   'Ruta Segura': LOGO_RIESGO_VIAL,
   'PAS Vial – Emergencias en Ruta': LOGO_RIESGO_VIAL,
+  'Liderazgo Vial': LOGO_RIESGO_VIAL,
 };
 
 // Módulos que aún no cuentan con el aval de AXA Colpatria
@@ -28,6 +29,7 @@ const MODULOS_SIN_AVAL_AXA = new Set([
   'Antes de Arrancar',
   'Ruta Segura',
   'PAS Vial – Emergencias en Ruta',
+  'Liderazgo Vial',
 ]);
 
 const LICENCIA_FORBE =
@@ -49,6 +51,7 @@ const INTENSIDAD_HORARIA: Record<string, number> = {
   'Antes de Arrancar': 2,
   'Ruta Segura': 2,
   'PAS Vial – Emergencias en Ruta': 4,
+  'Liderazgo Vial': 4,
 };
 const INTENSIDAD_HORARIA_DEFAULT = 2;
 
