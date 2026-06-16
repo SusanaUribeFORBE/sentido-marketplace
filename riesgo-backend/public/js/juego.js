@@ -25,6 +25,7 @@ const modulo = (window.MODULOS || {})[moduloKey];
 const LOGOS_MODULO = {
   seguridadvial: '/assets/logo-riesgovial.png',
   riesgoscriticosviales: '/assets/logo-riesgovial.png',
+  antesdearrancar: '/assets/logo-riesgovial.png',
 };
 
 if (LOGOS_MODULO[moduloKey]) {
