@@ -18,10 +18,11 @@ const LOGOS_MODULO: Record<string, string> = {
   'Seguridad Vial': LOGO_RIESGO_VIAL,
   'Riesgos Críticos Viales': LOGO_RIESGO_VIAL,
   'Antes de Arrancar': LOGO_RIESGO_VIAL,
+  'Ruta Segura': LOGO_RIESGO_VIAL,
 };
 
 // Módulos que aún no cuentan con el aval de AXA Colpatria
-const MODULOS_SIN_AVAL_AXA = new Set(['Riesgos Críticos Viales', 'Antes de Arrancar']);
+const MODULOS_SIN_AVAL_AXA = new Set(['Riesgos Críticos Viales', 'Antes de Arrancar', 'Ruta Segura']);
 
 const LICENCIA_FORBE =
   'FORBE SAS cuenta con Licencia N° 2022060086556 (23/07/2022) de la Secretaría Seccional de Salud y ' +
@@ -40,6 +41,7 @@ const INTENSIDAD_HORARIA: Record<string, number> = {
   'Seguridad Vial': 2,
   'Riesgos Críticos Viales': 4,
   'Antes de Arrancar': 2,
+  'Ruta Segura': 2,
 };
 const INTENSIDAD_HORARIA_DEFAULT = 2;
 
