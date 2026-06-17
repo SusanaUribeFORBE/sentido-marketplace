@@ -425,7 +425,10 @@ window.MotorJuego = {
 
       const feedback = document.getElementById('feedback');
       feedback.style.display = 'block';
-      feedback.textContent = (correcto ? '✅ ¡Correcto! ' : '❌ Incorrecto. ') + p.explicacion;
+      const iconoFeedback = correcto
+        ? '<lottie-player src="https://assets3.lottiefiles.com/packages/lf20_jbrw3hcz.json" background="transparent" speed="1.5" style="width:60px;height:60px;display:inline-block;vertical-align:middle" autoplay></lottie-player>'
+        : '<lottie-player src="https://assets9.lottiefiles.com/packages/lf20_qp1q7mct.json" background="transparent" speed="1.5" style="width:60px;height:60px;display:inline-block;vertical-align:middle" autoplay></lottie-player>';
+      feedback.innerHTML = iconoFeedback + ' ' + (correcto ? '¡Correcto! ' : 'Incorrecto. ') + p.explicacion;
 
       const nextBtn = document.getElementById('next-btn');
       nextBtn.style.display = 'block';

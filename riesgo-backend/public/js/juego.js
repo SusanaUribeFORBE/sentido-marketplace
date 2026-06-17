@@ -83,11 +83,21 @@ async function finalizar(resultado, resumenTexto, detalle) {
   }
 }
 
+// URL de animaciones Lottie — reemplaza con las que elijas en lottiefiles.com
+const LOTTIE = {
+  exito: 'https://assets10.lottiefiles.com/packages/lf20_touohxv0.json',
+  fallo: 'https://assets5.lottiefiles.com/packages/lf20_qp1q7mct.json',
+};
+
+function lottieTag(url, size) {
+  return `<lottie-player src="${url}" background="transparent" speed="1" style="width:${size}px;height:${size}px;margin:0 auto" autoplay></lottie-player>`;
+}
+
 function mostrarResultado(resultado, data, resumenTexto) {
   if (resultado === 'aprobado') {
     const cert = data.certificado;
     gameContainer.innerHTML = `
-      <div class="result-icon">🎉</div>
+      ${lottieTag(LOTTIE.exito, 180)}
       <p class="result-title">¡Módulo aprobado!</p>
       <p class="result-detail">${resumenTexto || ''}</p>
       ${
@@ -99,7 +109,7 @@ function mostrarResultado(resultado, data, resumenTexto) {
     `;
   } else {
     gameContainer.innerHTML = `
-      <div class="result-icon">😕</div>
+      ${lottieTag(LOTTIE.fallo, 140)}
       <p class="result-title">Módulo no aprobado</p>
       <p class="result-detail">${resumenTexto || ''}</p>
       <p class="result-detail">Solicita un nuevo PIN a tu coordinador SST para volver a intentarlo.</p>
