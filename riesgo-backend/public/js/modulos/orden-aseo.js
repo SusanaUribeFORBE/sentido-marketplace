@@ -13,7 +13,7 @@ window.MODULOS['ordenyaseo'] = {
           total: 14,
           intervalo: 1000,
           duracionCaida: 3000,
-          tipos: ['🔌', '💧', '🪵', '🧱', '🔩', '🪨', '🚛'],
+          tipos: ['🔌', '💧', '🪵', '🧱', '🔩', '🪨', '📦'],
           particulas: { '💧': '🟫' },
         },
       },
