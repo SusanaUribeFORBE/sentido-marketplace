@@ -13,6 +13,7 @@ const LOGO_RIESGO = path.join(ASSETS_DIR, 'logo-riesgo.png');
 const LOGO_RIESGO_VIAL = path.join(ASSETS_DIR, 'logo-riesgovial.png');
 const LOGO_AXA = path.join(ASSETS_DIR, 'logo-axa.png');
 const LOGO_FORBE = path.join(ASSETS_DIR, 'logo-forbe.png');
+const LOGO_ANDINA = path.join(ASSETS_DIR, 'logo andina.png');
 
 const LOGOS_MODULO: Record<string, string> = {
   'Seguridad Vial': LOGO_RIESGO_VIAL,
@@ -31,6 +32,26 @@ const MODULOS_SIN_AVAL_AXA = new Set([
   'PAS Vial – Emergencias en Ruta',
   'Liderazgo Vial',
 ]);
+
+// Módulos RiesGO! Vial con respaldo de contenido técnico de la Escuela Andina de Automovilismo
+const MODULOS_VIAL = new Set([
+  'Seguridad Vial',
+  'Riesgos Críticos Viales',
+  'Antes de Arrancar',
+  'Ruta Segura',
+  'PAS Vial – Emergencias en Ruta',
+  'Liderazgo Vial',
+]);
+
+const LEGAL_ANDINA =
+  'Escuela Andina de Automovilismo: Con el compromiso de mejoramiento continuo y la permanencia como los número uno ' +
+  'formando conductores en un mundo productivo nacional, globalizado y en permanente actualización, en 2010 nos ' +
+  'propusimos cumplir con los requerimientos exigidos por el Decreto 1500 y la Resolución 3245 de 2009 del ' +
+  'Ministerio de Transporte, y es por eso que el 7 de enero de 2011 obtuvimos el primer certificado de conformidad ' +
+  'de la entidad certificadora COTECNA, y el 25 de enero de 2011 la habilitación definitiva por parte del ' +
+  'Ministerio de Transporte como Centro de Enseñanza Automovilística, logrando con esto estar dentro de las ' +
+  'primeras escuelas habilitadas a nivel nacional, regional y municipal. El certificado de conformidad lo hemos ' +
+  'ido renovando año a año por el Instituto Colombiano de Certificación ICC, habiendo sido renovado en enero de 2026.';
 
 const LICENCIA_FORBE =
   'FORBE SAS cuenta con Licencia N° 2022060086556 (23/07/2022) de la Secretaría Seccional de Salud y ' +
@@ -157,6 +178,11 @@ function buildPdf(
       });
     }
 
+    const avaladoPorAndina = MODULOS_VIAL.has(data.modulo);
+    if (avaladoPorAndina && fs.existsSync(LOGO_ANDINA)) {
+      doc.image(LOGO_ANDINA, W / 2 - 55, 38, { fit: [110, 42] });
+    }
+
     doc
       .fillColor(GRAY)
       .font('Helvetica')
@@ -261,6 +287,14 @@ function buildPdf(
       .font('Helvetica')
       .fontSize(6)
       .text(POLITICA_DATOS, 40, footerY + 130, { width: W - 80, align: 'justify' });
+
+    if (avaladoPorAndina) {
+      doc
+        .fillColor(GRAY)
+        .font('Helvetica')
+        .fontSize(5.5)
+        .text(LEGAL_ANDINA, 40, doc.y + 4, { width: W - 80, align: 'justify' });
+    }
 
     doc.end();
   });
