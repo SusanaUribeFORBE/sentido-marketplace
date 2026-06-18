@@ -368,9 +368,19 @@ window.MotorJuego = {
     let indice = 0;
     let vidas = VIDAS_INICIALES;
     let aciertos = 0;
+    let ordenActual = [];
     const detalle = [];
 
     render();
+
+    function mezclar(array) {
+      const copia = array.slice();
+      for (let i = copia.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copia[i], copia[j]] = [copia[j], copia[i]];
+      }
+      return copia;
+    }
 
     function render() {
       const p = preguntas[indice];
@@ -388,11 +398,13 @@ window.MotorJuego = {
         <button class="next-btn" id="next-btn">Siguiente</button>
       `;
 
+      ordenActual = mezclar(p.opciones.map((_, i) => i));
+
       const opcionesEl = document.getElementById('opciones');
-      p.opciones.forEach((texto, i) => {
+      ordenActual.forEach((indiceOriginal, i) => {
         const btn = document.createElement('button');
         btn.className = 'option-btn';
-        btn.textContent = texto;
+        btn.textContent = p.opciones[indiceOriginal];
         btn.addEventListener('click', () => responder(i));
         opcionesEl.appendChild(btn);
       });
@@ -403,7 +415,8 @@ window.MotorJuego = {
       const botones = document.querySelectorAll('.option-btn');
       botones.forEach((b) => (b.disabled = true));
 
-      const correcto = seleccion === p.correcta;
+      const posicionCorrecta = ordenActual.indexOf(p.correcta);
+      const correcto = seleccion === posicionCorrecta;
 
       detalle.push({
         pregunta_id: p.id || `pregunta-${indice}`,
@@ -411,10 +424,10 @@ window.MotorJuego = {
         correcta: correcto,
       });
 
-      botones[p.correcta].classList.add('correct');
+      botones[posicionCorrecta].classList.add('correct');
       if (!correcto) {
         botones[seleccion].classList.add('incorrect');
-        botones[p.correcta].insertAdjacentHTML('beforeend', ' ✅');
+        botones[posicionCorrecta].insertAdjacentHTML('beforeend', ' ✅');
         vidas -= 1;
       } else {
         aciertos += 1;
