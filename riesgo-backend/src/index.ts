@@ -6,9 +6,11 @@ import { authRouter } from './routes/auth';
 import { gameRouter } from './routes/game';
 import { adminRouter } from './routes/admin';
 import { clienteRouter } from './routes/cliente';
+import { arlRouter } from './routes/arl';
 import { analyticsRouter } from './routes/analytics';
 import { adminAuth } from './middleware/adminAuth';
 import { clientAuth } from './middleware/clientAuth';
+import { arlAuth } from './middleware/arlAuth';
 
 const app = express();
 app.use(express.json());
@@ -39,6 +41,7 @@ app.use('/api', gameRouter);
 app.use('/api', analyticsRouter);
 app.use('/api/admin', adminAuth, adminRouter);
 app.use('/api/cliente', clientAuth, clienteRouter);
+app.use('/api/arl', arlAuth, arlRouter);
 
 app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   console.error(err);
