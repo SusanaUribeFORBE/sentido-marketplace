@@ -187,13 +187,13 @@ window.MODULOS['saludmental'] = {
               texto: 'Un compañero te dice, en tono serio, que ya no quiere seguir viviendo o que ha pensado en hacerse daño.',
               pregunta: '¿Cuál es la acción correcta e inmediata?',
               opciones: [
-                'Tomarlo en serio, no dejarlo solo, y buscar ayuda profesional de inmediato (línea de salud mental, EPS o urgencias)',
+                'Tomarlo en serio, no dejarlo solo, y buscar ayuda profesional de inmediato llamando a la Línea 106',
                 'Pensar que solo está exagerando para llamar la atención',
                 'Decirle que "eso no se dice" y cambiar de tema',
                 'Esperar a ver si se le pasa solo, sin decir nada',
               ],
               correcta: 0,
-              explicacion: 'Todo comentario sobre no querer vivir o hacerse daño debe tomarse en serio siempre, sin excepción. No dejar sola a la persona y buscar ayuda profesional inmediata puede salvar una vida. Nunca minimices ni esperes a que "se le pase".',
+              explicacion: 'Todo comentario sobre no querer vivir o hacerse daño debe tomarse en serio siempre, sin excepción. No dejes sola a la persona y llama a la Línea 106, habilitada a nivel nacional para primeros auxilios psicológicos y apoyo en crisis las 24 horas. Nunca minimices ni esperes a que "se le pase".',
             },
             {
               id: 'saludmental-cuando-derivar-profesional',
@@ -223,13 +223,13 @@ window.MODULOS['saludmental'] = {
               texto: 'Sientes que necesitas hablar con alguien sobre tu salud mental, fuera de tu círculo cercano.',
               pregunta: '¿Qué canal puedes usar en Colombia para buscar ese apoyo?',
               opciones: [
-                'La línea nacional de salud mental o el servicio de psicología de tu EPS',
+                'La Línea 106, habilitada a nivel nacional, o el servicio de psicología de tu EPS',
                 'No existen líneas de ayuda en Colombia',
                 'Solo puedes acudir a un familiar, no hay otra opción',
                 'Debes esperar a que la empresa te llame por iniciativa propia',
               ],
               correcta: 0,
-              explicacion: 'Colombia cuenta con líneas de atención en salud mental y con el servicio de psicología de las EPS, disponibles para cualquier persona que lo necesite. Consulta con tu coordinador SST el número vigente de la línea de atención.',
+              explicacion: 'La Línea 106 está habilitada a nivel nacional en Colombia para brindar primeros auxilios psicológicos, apoyo en crisis y orientación, las 24 horas. También puedes acceder al servicio de psicología de tu EPS.',
             },
             {
               id: 'saludmental-eps-psicologia',
