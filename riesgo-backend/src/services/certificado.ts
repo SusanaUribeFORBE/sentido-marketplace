@@ -67,6 +67,8 @@ const POLITICA_DATOS =
 const INTENSIDAD_HORARIA: Record<string, number> = {
   'Orden y Aseo': 4,
   'Manejo de Cargas y Ergonomía': 4,
+  'Trabajo en Alturas': 4,
+  'Espacios Confinados': 4,
   'Seguridad Vial': 2,
   'Riesgos Críticos Viales': 4,
   'Antes de Arrancar': 2,
