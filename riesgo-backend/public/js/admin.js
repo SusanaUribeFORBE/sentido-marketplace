@@ -112,10 +112,20 @@ async function cargarEmpresas() {
           <td>${e.arl_nombre || ''}</td>
           <td>${e.contacto_sst || ''}</td>
           <td>${e.email_sst || ''}</td>
+          <td><code>${e.codigo_acceso || ''}</code></td>
+          <td><button type="button" class="ghost-btn regenerar-codigo-btn" data-id="${e.id_empresa}">Regenerar</button></td>
         </tr>
       `
     )
     .join('');
+
+  document.querySelectorAll('.regenerar-codigo-btn').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      if (!confirm('¿Regenerar el código de acceso? El código anterior dejará de funcionar.')) return;
+      await adminFetch(`/empresas/${btn.dataset.id}/regenerar-codigo`, { method: 'POST' });
+      await cargarEmpresas();
+    });
+  });
 
   const select = document.getElementById('pin-empresa-select');
   select.innerHTML =
@@ -156,7 +166,7 @@ document.getElementById('empresa-form').addEventListener('submit', async (e) => 
       return;
     }
 
-    message.textContent = 'Empresa creada correctamente.';
+    message.textContent = `Empresa creada correctamente. Código de acceso cliente: ${data.codigo_acceso}`;
     message.className = 'message success';
     e.target.reset();
     await cargarEmpresas();

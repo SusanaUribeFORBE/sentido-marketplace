@@ -14,6 +14,14 @@ function generarCodigoPin(): string {
   return `RGO-${code}`;
 }
 
+function generarCodigoAcceso(): string {
+  let code = '';
+  for (let i = 0; i < 10; i++) {
+    code += PIN_CHARS[Math.floor(Math.random() * PIN_CHARS.length)];
+  }
+  return `CLI-${code}`;
+}
+
 adminRouter.post('/empresas', async (req, res) => {
   const { nombre_constructora, nit, arl_nombre, contacto_sst, email_sst } = req.body;
 
@@ -21,17 +29,62 @@ adminRouter.post('/empresas', async (req, res) => {
     return res.status(400).json({ error: 'Faltan datos: nombre_constructora, nit' });
   }
 
-  const { data, error } = await supabase
-    .from('empresas')
-    .insert({ nombre_constructora, nit, arl_nombre, contacto_sst, email_sst })
-    .select()
-    .single();
+  let data;
+  let intentos = 0;
+  while (!data && intentos < 5) {
+    intentos++;
+    const codigo_acceso = generarCodigoAcceso();
+    const { data: insertado, error } = await supabase
+      .from('empresas')
+      .insert({ nombre_constructora, nit, arl_nombre, contacto_sst, email_sst, codigo_acceso })
+      .select()
+      .single();
 
-  if (error) {
-    return res.status(500).json({ error: 'Error creando la empresa', detalle: error.message });
+    if (error) {
+      if (error.code === '23505' && error.message.includes('codigo_acceso')) {
+        continue; // colisión de codigo_acceso único, reintentar
+      }
+      return res.status(500).json({ error: 'Error creando la empresa', detalle: error.message });
+    }
+    data = insertado;
+  }
+
+  if (!data) {
+    return res.status(500).json({ error: 'No se pudo generar un código de acceso único' });
   }
 
   return res.status(201).json(data);
+});
+
+adminRouter.post('/empresas/:id_empresa/regenerar-codigo', async (req, res) => {
+  const { id_empresa } = req.params;
+
+  let data;
+  let intentos = 0;
+  while (!data && intentos < 5) {
+    intentos++;
+    const codigo_acceso = generarCodigoAcceso();
+    const { data: actualizado, error } = await supabase
+      .from('empresas')
+      .update({ codigo_acceso })
+      .eq('id_empresa', id_empresa)
+      .select()
+      .maybeSingle();
+
+    if (error) {
+      if (error.code === '23505') {
+        continue; // colisión de codigo_acceso único, reintentar
+      }
+      return res.status(500).json({ error: 'Error regenerando el código', detalle: error.message });
+    }
+    data = actualizado;
+  }
+
+  if (!data) {
+    return res.status(404).json({ error: 'Empresa no encontrada o no se pudo regenerar el código' });
+  }
+
+  return res.json(data);
 });
 
 adminRouter.get('/empresas', async (_req, res) => {
