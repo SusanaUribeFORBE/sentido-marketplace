@@ -1,0 +1,283 @@
+window.MODULOS = window.MODULOS || {};
+
+window.MODULOS['incendiosysismos'] = {
+  titulo: 'Incendios y Sismos',
+
+  iniciar(container, { finalizar }) {
+    const NIVELES = [
+      {
+        tipo: 'trivia',
+        config: {
+          nombre: 'Sub-nivel 1: Clases de Fuego y Extintores',
+          preguntas: [
+            {
+              id: 'incendios-clase-a',
+              emoji: '🔥📄',
+              texto: 'Se produce un fuego en una zona donde solo hay papel, cartón y madera ardiendo.',
+              pregunta: '¿A qué clase de fuego corresponde este caso?',
+              opciones: [
+                'Clase A: materiales sólidos comunes (papel, madera, cartón, tela)',
+                'Clase B: líquidos inflamables',
+                'Clase C: equipos eléctricos energizados',
+                'No existe clasificación para este tipo de fuego',
+              ],
+              correcta: 0,
+              explicacion: 'El fuego Clase A involucra materiales sólidos combustibles comunes como papel, madera, cartón o tela.',
+            },
+            {
+              id: 'incendios-clase-c-electrico',
+              emoji: '🔥⚡',
+              texto: 'Un computador o un tablero eléctrico empieza a arder mientras está energizado.',
+              pregunta: '¿Qué debes evitar usar para apagarlo?',
+              opciones: [
+                'Agua: puede conducir electricidad y causar una descarga',
+                'Un extintor adecuado para fuego eléctrico',
+                'Cortar la energía si es seguro hacerlo',
+                'Alejar materiales combustibles cercanos',
+              ],
+              correcta: 0,
+              explicacion: 'El agua conduce electricidad y puede causar una descarga grave a quien la use sobre un equipo eléctrico energizado. Para fuego Clase C se debe usar un extintor adecuado (CO2 o polvo químico seco) y, si es seguro, cortar la energía primero.',
+            },
+            {
+              id: 'incendios-extintor-multiproposito',
+              emoji: '🧯🅰️🅱️©️',
+              texto: 'En tu oficina ves un extintor marcado como "ABC".',
+              pregunta: '¿Qué significa esa marca?',
+              opciones: [
+                'Que es un extintor multipropósito, apto para fuegos de clase A, B y C',
+                'Que solo sirve para fuegos pequeños sin importar el tipo',
+                'Que es un extintor decorativo sin uso real',
+                'Que solo lo pueden usar los bomberos',
+              ],
+              correcta: 0,
+              explicacion: 'Un extintor de polvo químico seco tipo ABC es multipropósito: puede usarse en fuegos de materiales sólidos, líquidos inflamables y equipos eléctricos, lo que lo hace común en oficinas.',
+            },
+            {
+              id: 'incendios-agua-liquidos-inflamables',
+              emoji: '🚫💧🔥',
+              texto: 'Se derrama un líquido inflamable y se incendia.',
+              pregunta: '¿Por qué no se debe usar agua para apagar este tipo de fuego (Clase B)?',
+              opciones: [
+                'Porque el agua puede esparcir el líquido en llamas y propagar el incendio en vez de apagarlo',
+                'Porque el agua siempre apaga mejor que cualquier extintor',
+                'No hay ningún problema en usar agua en este caso',
+                'Porque el agua es más cara que el extintor',
+              ],
+              correcta: 0,
+              explicacion: 'El agua puede dispersar el líquido inflamable en llamas, propagando el fuego en lugar de controlarlo. Para fuegos de líquidos inflamables se debe usar un extintor adecuado.',
+            },
+            {
+              id: 'incendios-inspeccion-extintores',
+              emoji: '🔍🧯',
+              texto: 'Pasas frente a un extintor en el pasillo de tu oficina.',
+              pregunta: '¿Qué debes verificar sobre los extintores, aunque no seas tú quien los revisa periódicamente?',
+              opciones: [
+                'Que estén visibles, señalizados, accesibles y sin obstáculos delante',
+                'No es necesario fijarse en nada, ese tema no compete a ningún trabajador',
+                'Solo importa que existan, sin importar su estado',
+                'Solo se revisan una vez al momento de instalarlos',
+              ],
+              correcta: 0,
+              explicacion: 'Todo el personal debe estar atento a que los extintores permanezcan visibles, señalizados y sin obstáculos que impidan su acceso rápido en caso de emergencia, y reportar cualquier anomalía.',
+            },
+          ],
+        },
+      },
+      {
+        tipo: 'reaccion',
+        config: {
+          nombre: 'Sub-nivel 2: Uso de Extintor y Decisión de Evacuar',
+          instrucciones: '¡Lee la situación y reacciona a tiempo con el gesto indicado!',
+          retos: [
+            {
+              id: 'incendios-reaccion-dar-alarma-primero',
+              tipo: 'tap-repetido',
+              emoji: '🔔🔥',
+              situacion: 'Ves un inicio de fuego pequeño en una papelera de tu oficina.',
+              accionTexto: '¡DA LA ALARMA ANTES DE INTENTAR APAGARLO!',
+              tapsRequeridos: 5,
+              exito: 'Avisaste primero a otros y activaste la alarma: así, si el fuego crece, ya hay ayuda en camino.',
+              fallo: 'Intentaste apagarlo sin avisar a nadie: si el fuego crece, perderías tiempo valioso para pedir ayuda.',
+            },
+            {
+              id: 'incendios-reaccion-metodo-pass',
+              tipo: 'swipe-abajo',
+              emoji: '🧯👇',
+              situacion: 'Tienes el extintor en mano frente a un fuego pequeño y controlable: es momento de usarlo con el método PASS (Halar el seguro, Apuntar a la base, Apretar la palanca, barrer de lado a lado).',
+              accionTexto: '⬇️ Desliza para apuntar a la base del fuego, no a las llamas',
+              exito: 'Apuntaste a la base del fuego: ahí está el combustible, no en las llamas que se ven arriba.',
+              fallo: 'Apuntaste a las llamas en vez de a la base: así no se ataca la fuente real del fuego.',
+            },
+            {
+              id: 'incendios-reaccion-evacuar-vs-combatir',
+              tipo: 'swipe-lateral',
+              emoji: '🔥📈🏃',
+              situacion: 'Intentaste controlar el fuego, pero crece rápido y empieza a generar humo denso.',
+              accionTexto: '↔️ Desliza para abandonar el intento y evacuar de inmediato',
+              exito: 'Reconociste que el fuego superó tu capacidad de control y evacuaste a tiempo: ninguna situación material justifica arriesgar tu vida.',
+              fallo: 'Seguiste intentando apagar un fuego que ya estaba fuera de control, arriesgando tu seguridad innecesariamente.',
+            },
+          ],
+        },
+      },
+      {
+        tipo: 'trivia',
+        config: {
+          nombre: 'Sub-nivel 3: Protocolo Sísmico — Antes y Durante',
+          preguntas: [
+            {
+              id: 'sismos-preparacion-antes',
+              emoji: '🎒🏢',
+              texto: 'Colombia tiene un riesgo sísmico importante en buena parte de su territorio.',
+              pregunta: '¿Qué se debe hacer antes de que ocurra un sismo, como preparación?',
+              opciones: [
+                'Identificar zonas seguras del lugar de trabajo y participar en los simulacros que se realicen',
+                'No es necesario prepararse, los sismos son impredecibles',
+                'Solo prepararse justo cuando empieza a temblar',
+                'Es responsabilidad exclusiva de los bomberos',
+              ],
+              correcta: 0,
+              explicacion: 'Conocer las zonas seguras del lugar de trabajo y participar activamente en los simulacros permite reaccionar de forma más rápida y segura cuando ocurre un sismo real.',
+            },
+            {
+              id: 'sismos-durante-agacharse-cubrirse',
+              emoji: '🪑🙇',
+              texto: 'Empieza a temblar fuerte mientras estás en tu puesto de trabajo en una oficina.',
+              pregunta: '¿Qué debes hacer mientras dura el movimiento?',
+              opciones: [
+                'Agacharte, cubrirte bajo un escritorio resistente y alejarte de ventanas u objetos que puedan caer',
+                'Correr de inmediato hacia la salida mientras tiembla',
+                'Quedarte de pie junto a la ventana para ver qué pasa',
+                'Subirte a una silla para estar más alto',
+              ],
+              correcta: 0,
+              explicacion: 'Durante el movimiento sísmico, lo más seguro es agacharte, cubrirte bajo una estructura resistente (como un escritorio) y alejarte de vidrios o elementos que puedan caer, en vez de intentar correr.',
+            },
+            {
+              id: 'sismos-no-correr-escaleras',
+              emoji: '🚫🏃‍♂️🪜',
+              texto: 'Está temblando con fuerza y tu primer impulso es correr hacia las escaleras para salir lo antes posible.',
+              pregunta: '¿Es correcto hacerlo mientras dura el movimiento?',
+              opciones: [
+                'No: correr durante el movimiento aumenta el riesgo de caídas y lesiones; primero se protege en el sitio',
+                'Sí, siempre se debe correr de inmediato sin importar nada más',
+                'Sí, mientras se corra rápido no hay ningún riesgo',
+                'Sí, es la única opción válida en cualquier caso',
+              ],
+              correcta: 0,
+              explicacion: 'Correr durante el movimiento sísmico, especialmente por escaleras, aumenta el riesgo de caídas. Primero se debe proteger en el lugar y evacuar de forma ordenada cuando el movimiento termine.',
+            },
+            {
+              id: 'sismos-no-usar-ascensor-durante',
+              emoji: '🛗🚫',
+              texto: 'Durante el sismo, alguien sugiere usar el ascensor para bajar más rápido.',
+              pregunta: '¿Es correcto usar el ascensor en ese momento?',
+              opciones: [
+                'No: el ascensor puede quedar atrapado o sin energía durante o después de un sismo',
+                'Sí, es la forma más rápida y siempre segura de evacuar',
+                'Sí, mientras el ascensor sea nuevo',
+                'Sí, especialmente si hay muchas personas evacuando',
+              ],
+              correcta: 0,
+              explicacion: 'El ascensor nunca debe usarse durante un sismo ni inmediatamente después: puede quedar atrapado por fallas eléctricas o daños estructurales.',
+            },
+            {
+              id: 'sismos-proteger-cabeza-cuello',
+              emoji: '🧠🛡️',
+              texto: 'Estás agachado bajo tu escritorio mientras dura el sismo.',
+              pregunta: '¿Qué parte del cuerpo es prioritario proteger?',
+              opciones: [
+                'La cabeza y el cuello, usando los brazos o cualquier objeto disponible',
+                'No es necesario proteger ninguna parte en especial',
+                'Solo las manos, para poder sostenerse de algo',
+                'Solo los pies, para poder correr después',
+              ],
+              correcta: 0,
+              explicacion: 'Proteger la cabeza y el cuello reduce significativamente el riesgo de lesiones graves por objetos que puedan caer durante el movimiento sísmico.',
+            },
+          ],
+        },
+      },
+      {
+        tipo: 'trivia',
+        config: {
+          nombre: 'Sub-nivel 4: Protocolo Sísmico — Después del Sismo',
+          preguntas: [
+            {
+              id: 'sismos-evacuar-con-calma-despues',
+              emoji: '🚶🚪',
+              texto: 'El movimiento sísmico terminó y se da la indicación de evacuar el edificio.',
+              pregunta: '¿Cómo debes hacerlo?',
+              opciones: [
+                'Con calma y en orden, siguiendo la ruta de evacuación establecida',
+                'Corriendo lo más rápido posible sin ningún orden',
+                'Esperando a que todos los demás salgan primero',
+                'Buscando primero tus pertenencias antes de salir',
+              ],
+              correcta: 0,
+              explicacion: 'Después de que termina el movimiento, la evacuación debe hacerse con calma y siguiendo la ruta establecida, para evitar caídas o aglomeraciones peligrosas.',
+            },
+            {
+              id: 'sismos-no-ascensor-despues',
+              emoji: '🛗🚫',
+              texto: 'El sismo ya terminó y necesitas bajar varios pisos para evacuar.',
+              pregunta: '¿Debes usar el ascensor en ese momento?',
+              opciones: [
+                'No: el ascensor puede haber sufrido daños no visibles a simple vista; se debe usar la escalera',
+                'Sí, ya que el sismo terminó no hay ningún riesgo',
+                'Sí, es más rápido y siempre es seguro después de un sismo',
+                'Sí, mientras funcione cuando lo intentes',
+              ],
+              correcta: 0,
+              explicacion: 'Aunque el ascensor parezca funcionar, puede tener daños estructurales o eléctricos no visibles tras un sismo. Se debe evacuar siempre por las escaleras.',
+            },
+            {
+              id: 'sismos-alerta-replicas',
+              emoji: '⚠️🔁',
+              texto: 'Ya evacuaste tras un sismo y te encuentras en el punto de encuentro.',
+              pregunta: '¿Qué debes tener en cuenta sobre las réplicas?',
+              opciones: [
+                'Pueden ocurrir después del sismo principal, así que se debe permanecer alerta y en una zona segura',
+                'Nunca ocurren réplicas después de un sismo',
+                'Las réplicas son siempre más fuertes que el sismo principal',
+                'No es necesario seguir ninguna precaución una vez se evacuó',
+              ],
+              correcta: 0,
+              explicacion: 'Las réplicas son movimientos sísmicos que pueden ocurrir después del sismo principal. Por eso se debe permanecer en una zona segura y alerta, sin reingresar al edificio sin autorización.',
+            },
+            {
+              id: 'sismos-reportar-dano-estructural',
+              emoji: '🏚️📢',
+              texto: 'Antes de pensar en regresar al edificio después de un sismo, notas grietas visibles en una pared.',
+              pregunta: '¿Qué debes hacer con esa información?',
+              opciones: [
+                'Reportarla de inmediato a la brigada o al coordinador, antes de que alguien reingrese',
+                'No decir nada, seguramente no es importante',
+                'Reingresar tú mismo para revisar qué tan grave es',
+                'Esperar a que alguien más lo note primero',
+              ],
+              correcta: 0,
+              explicacion: 'Cualquier daño estructural visible debe reportarse de inmediato. El reingreso al edificio solo debe autorizarse después de una evaluación técnica que confirme que es seguro.',
+            },
+            {
+              id: 'sismos-seguir-instrucciones-reingreso',
+              emoji: '✅🧑‍✈️',
+              texto: 'Después de un sismo, algunas personas quieren regresar al edificio antes de que se dé la autorización oficial.',
+              pregunta: '¿Qué se debe hacer en ese caso?',
+              opciones: [
+                'Esperar la autorización del coordinador o la brigada antes de reingresar',
+                'Reingresar de todas formas si parece que no pasó nada grave',
+                'Seguir al primero que decida entrar',
+                'No tiene importancia quién autoriza el reingreso',
+              ],
+              correcta: 0,
+              explicacion: 'El reingreso a las instalaciones después de un sismo debe esperar la autorización formal del coordinador de emergencias o la brigada, tras confirmar que las condiciones son seguras.',
+            },
+          ],
+        },
+      },
+    ];
+
+    window.MotorJuego.iniciarSecuencia(container, NIVELES, finalizar);
+  },
+};
