@@ -26,6 +26,7 @@ const LOGOS_MODULO: Record<string, string> = {
   'Ruta Segura': LOGO_RIESGO_VIAL,
   'PAS Vial – Emergencias en Ruta': LOGO_RIESGO_VIAL,
   'Liderazgo Vial': LOGO_RIESGO_VIAL,
+  'Reto del Motero Auteco': LOGO_RIESGO_VIAL,
 };
 
 // Módulos que aún no cuentan con el aval de AXA Colpatria
@@ -45,6 +46,7 @@ const MODULOS_VIAL = new Set([
   'Ruta Segura',
   'PAS Vial – Emergencias en Ruta',
   'Liderazgo Vial',
+  'Reto del Motero Auteco',
 ]);
 
 const LEGAL_ANDINA =
