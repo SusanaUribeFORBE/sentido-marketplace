@@ -93,13 +93,27 @@ function lottieTag(url, size) {
   return `<lottie-player src="${url}" background="transparent" speed="1" style="width:${size}px;height:${size}px;margin:0 auto" autoplay></lottie-player>`;
 }
 
+function generarCodigoIncentivo(pinId) {
+  return 'AUTECO-' + pinId.replace(/-/g, '').slice(-6).toUpperCase();
+}
+
 function mostrarResultado(resultado, data, resumenTexto) {
   if (resultado === 'aprobado') {
     const cert = data.certificado;
+    const incentivo = modulo && modulo.incentivo;
     gameContainer.innerHTML = `
       ${lottieTag(LOTTIE.exito, 180)}
       <p class="result-title">¡Módulo aprobado!</p>
       <p class="result-detail">${resumenTexto || ''}</p>
+      ${
+        incentivo
+          ? `<div class="incentivo-box">
+               <p class="incentivo-titulo">${incentivo.titulo}</p>
+               <p class="incentivo-codigo">${generarCodigoIncentivo(pinId)}</p>
+               <p class="incentivo-detalle">${incentivo.descripcion}</p>
+             </div>`
+          : ''
+      }
       ${
         cert
           ? `<a class="result-link" href="${cert.url_pdf}" target="_blank" rel="noopener">Descargar certificado</a>

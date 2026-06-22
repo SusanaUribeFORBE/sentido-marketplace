@@ -14,6 +14,10 @@ const LOGO_RIESGO_VIAL = path.join(ASSETS_DIR, 'logo-riesgovial.png');
 const LOGO_AXA = path.join(ASSETS_DIR, 'logo-axa.png');
 const LOGO_FORBE = path.join(ASSETS_DIR, 'logo-forbe.png');
 const LOGO_ANDINA = path.join(ASSETS_DIR, 'logo andina.png');
+const LOGO_AUTECO = path.join(ASSETS_DIR, 'logo-auteco.png');
+
+// Módulo de campaña B2C (no es capacitación SST): "pasaporte" en vez de certificado de aprobación
+const MODULOS_AUTECO = new Set(['Reto del Motero Auteco']);
 
 const LOGOS_MODULO: Record<string, string> = {
   'Seguridad Vial': LOGO_RIESGO_VIAL,
@@ -171,9 +175,10 @@ function buildPdf(
       doc.fillColor(NAVY).font('Helvetica-Bold').fontSize(18).text('RiesGO!', 45, 50);
     }
 
-    const avaladoPorAxa = !MODULOS_SIN_AVAL_AXA.has(data.modulo);
-    const logoDerecha = avaladoPorAxa ? LOGO_AXA : LOGO_FORBE;
-    const textoLogoDerecha = avaladoPorAxa ? 'AXA COLPATRIA' : 'FORBE SAS';
+    const esAuteco = MODULOS_AUTECO.has(data.modulo);
+    const avaladoPorAxa = !esAuteco && !MODULOS_SIN_AVAL_AXA.has(data.modulo);
+    const logoDerecha = esAuteco ? LOGO_AUTECO : avaladoPorAxa ? LOGO_AXA : LOGO_FORBE;
+    const textoLogoDerecha = esAuteco ? 'AUTECO' : avaladoPorAxa ? 'AXA COLPATRIA' : 'FORBE SAS';
 
     if (fs.existsSync(logoDerecha)) {
       doc.image(logoDerecha, W - 165, 35, { fit: [120, 50] });
@@ -193,14 +198,21 @@ function buildPdf(
       .fillColor(GRAY)
       .font('Helvetica')
       .fontSize(9)
-      .text('Programa de gamificación en Seguridad y Salud en el Trabajo (SST)', 0, 90, { align: 'center' });
+      .text(
+        esAuteco
+          ? 'Reto de movilidad segura para motociclistas'
+          : 'Programa de gamificación en Seguridad y Salud en el Trabajo (SST)',
+        0,
+        90,
+        { align: 'center' }
+      );
 
     // Título
     doc
       .fillColor(NAVY)
       .font('Helvetica-Bold')
       .fontSize(28)
-      .text('CERTIFICADO DE APROBACIÓN', 0, 108, { align: 'center' });
+      .text(esAuteco ? 'PASAPORTE DE MOVILIDAD SEGURA' : 'CERTIFICADO DE APROBACIÓN', 0, 108, { align: 'center' });
 
     // Línea decorativa
     doc
@@ -224,22 +236,20 @@ function buildPdf(
       .fontSize(11)
       .text(`identificado(a) con cédula de ciudadanía No. ${data.cedulaUsuario}`, 0, 222, { align: 'center' });
 
-    doc.fontSize(12).text('aprobó satisfactoriamente el módulo', 0, 245, { align: 'center' });
+    doc
+      .fontSize(12)
+      .text(esAuteco ? 'completó satisfactoriamente' : 'aprobó satisfactoriamente el módulo', 0, 245, {
+        align: 'center',
+      });
 
     doc.fillColor(NAVY).font('Helvetica-Bold').fontSize(18).text(data.modulo, 0, 265, { align: 'center' });
 
     const horas = INTENSIDAD_HORARIA[data.modulo] ?? INTENSIDAD_HORARIA_DEFAULT;
+    const lineaFecha = esAuteco
+      ? `Aliado: ${data.nombreEmpresa}    |    Fecha: ${new Date().toLocaleDateString('es-CO')}`
+      : `Empresa: ${data.nombreEmpresa}    |    Fecha: ${new Date().toLocaleDateString('es-CO')}    |    Intensidad horaria: ${horas} horas`;
 
-    doc
-      .fillColor(GRAY)
-      .font('Helvetica')
-      .fontSize(10)
-      .text(
-        `Empresa: ${data.nombreEmpresa}    |    Fecha: ${new Date().toLocaleDateString('es-CO')}    |    Intensidad horaria: ${horas} horas`,
-        0,
-        298,
-        { align: 'center' }
-      );
+    doc.fillColor(GRAY).font('Helvetica').fontSize(10).text(lineaFecha, 0, 298, { align: 'center' });
 
     // Pie: QR a la izquierda, firma a la derecha
     const footerY = 340;
@@ -269,7 +279,11 @@ function buildPdf(
       .fontSize(9)
       .fillColor(GRAY)
       .text(
-        avaladoPorAxa ? 'Coordinador SST - Programa AXA Colpatria' : 'Coordinador SST - FORBE SAS',
+        esAuteco
+          ? 'Aliado de Movilidad Segura - AUTECO'
+          : avaladoPorAxa
+            ? 'Coordinador SST - Programa AXA Colpatria'
+            : 'Coordinador SST - FORBE SAS',
         sigX,
         footerY + 65,
         { width: 200, align: 'center' }
