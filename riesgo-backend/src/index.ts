@@ -13,6 +13,7 @@ import { clientAuth } from './middleware/clientAuth';
 import { arlAuth } from './middleware/arlAuth';
 
 const app = express();
+app.set('trust proxy', 1);
 app.use(express.json());
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
