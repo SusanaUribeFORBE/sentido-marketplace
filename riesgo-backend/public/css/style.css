@@ -3,6 +3,7 @@
   --yellow: #FFC727;
   --gray: #5C554A;
   --light: #F4F1EA;
+  --green: #2D9D5F;
 }
 
 * {
@@ -805,4 +806,148 @@ th {
 @keyframes zonaLlamada {
   0%, 100% { box-shadow: 0 0 0 0 rgba(255, 199, 39, 0); }
   50% { box-shadow: 0 0 0 8px rgba(255, 199, 39, 0.45); }
+}
+
+/* ===== Pasaporte de Movilidad Segura ===== */
+
+.pasaporte-card {
+  max-width: 420px;
+  padding: 0;
+  overflow: hidden;
+}
+
+.pasaporte-cover {
+  background: linear-gradient(160deg, var(--navy) 0%, #142b4f 100%);
+  color: #fff;
+  padding: 28px 24px 22px;
+  text-align: center;
+}
+
+.pasaporte-titulo-chico {
+  margin: 0;
+  font-size: 12px;
+  letter-spacing: 3px;
+  color: var(--yellow);
+  font-weight: 700;
+}
+
+.pasaporte-titulo-grande {
+  margin: 2px 0 14px;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.pasaporte-nombre {
+  margin: 0 0 10px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.pasaporte-nivel-badge {
+  display: inline-block;
+  background: var(--green);
+  color: #fff;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 6px 18px;
+  border-radius: 999px;
+}
+
+.pasaporte-progreso {
+  padding: 18px 24px 0;
+}
+
+.pasaporte-progreso-texto {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--gray);
+  margin-bottom: 6px;
+}
+
+.pasaporte-seccion-titulo {
+  margin: 18px 24px 10px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--navy);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.pasaporte-insignias {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding: 0 24px;
+}
+
+.insignia {
+  text-align: center;
+  padding: 10px 4px;
+  border-radius: 10px;
+  background: var(--light);
+  opacity: 0.4;
+}
+
+.insignia.unlocked {
+  opacity: 1;
+  background: #fff;
+  border: 2px solid var(--green);
+}
+
+.insignia-emoji {
+  font-size: 26px;
+  display: block;
+}
+
+.insignia-label {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--navy);
+  text-transform: uppercase;
+  display: block;
+  margin-top: 4px;
+  line-height: 1.2;
+}
+
+.pasaporte-niveles {
+  padding: 0 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.nivel-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: var(--light);
+  color: var(--gray);
+}
+
+.nivel-row.activo {
+  background: var(--navy);
+  color: var(--yellow);
+  font-weight: 700;
+}
+
+.pasaporte-aval {
+  margin-top: 18px;
+  padding: 14px 24px;
+  border-top: 1px solid #e5e1d8;
+  font-size: 11px;
+  color: var(--gray);
+  text-align: center;
+}
+
+#pasaporte-card.pasaporte-card {
+  padding-bottom: 8px;
+}
+
+#pasaporte-card #volver-btn {
+  margin: 18px 24px 0;
+  width: calc(100% - 48px);
 }

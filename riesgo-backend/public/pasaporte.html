@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pasaporte de Movilidad Segura - RiesGO! Vial</title>
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="icon" href="/icons/icon-192.png" />
+  <meta name="theme-color" content="#0B1F3A" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <div class="card" id="lookup-card">
+    <img src="/assets/logo-riesgovial.png" alt="RiesGO! Vial" class="logo" onerror="this.style.display='none'" />
+    <p class="subtitle">Pasaporte de Movilidad Segura</p>
+    <form id="lookup-form">
+      <div class="field">
+        <label for="cedula">Número de cédula</label>
+        <input type="text" id="cedula" placeholder="Ej: 1017234567" required autocomplete="off" inputmode="numeric" />
+      </div>
+      <button type="submit" id="lookup-btn">Ver mi pasaporte</button>
+      <div id="lookup-message" class="message"></div>
+    </form>
+  </div>
+
+  <div class="card pasaporte-card" id="pasaporte-card" hidden>
+    <div class="pasaporte-cover">
+      <p class="pasaporte-titulo-chico">PASAPORTE DE</p>
+      <p class="pasaporte-titulo-grande">MOVILIDAD SEGURA</p>
+      <p class="pasaporte-nombre" id="pp-nombre"></p>
+      <div class="pasaporte-nivel-badge" id="pp-nivel"></div>
+    </div>
+
+    <div class="pasaporte-progreso">
+      <div class="pasaporte-progreso-texto">
+        <span id="pp-puntos"></span>
+        <span id="pp-siguiente"></span>
+      </div>
+      <div class="progress-bar"><div class="progress-bar-fill" id="pp-progreso-fill" style="width:0%"></div></div>
+    </div>
+
+    <p class="pasaporte-seccion-titulo">Tus logros en movilidad segura</p>
+    <div class="pasaporte-insignias" id="pp-insignias"></div>
+
+    <p class="pasaporte-seccion-titulo">Niveles de movilidad</p>
+    <div class="pasaporte-niveles" id="pp-niveles"></div>
+
+    <button type="button" id="volver-btn" class="ghost-btn">Consultar otra cédula</button>
+
+    <div class="pasaporte-aval">
+      <span>Con el aval de:</span>
+      <strong>Escuela Andina de Automovilismo</strong> · <strong>Auteco</strong>
+    </div>
+  </div>
+
+  <script src="/js/pasaporte.js"></script>
+</body>
+</html>

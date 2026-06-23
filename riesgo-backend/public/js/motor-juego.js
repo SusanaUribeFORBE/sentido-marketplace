@@ -319,6 +319,7 @@ window.MotorJuego = {
         pregunta_id: reto.id || `reto-${indice}`,
         pregunta_texto: reto.situacion,
         correcta: exito,
+        categoria: reto.categoria || null,
       });
 
       if (exito) {
@@ -422,6 +423,7 @@ window.MotorJuego = {
         pregunta_id: p.id || `pregunta-${indice}`,
         pregunta_texto: p.pregunta,
         correcta: correcto,
+        categoria: p.categoria || null,
       });
 
       botones[posicionCorrecta].classList.add('correct');

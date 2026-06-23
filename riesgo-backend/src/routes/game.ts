@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { supabase } from '../supabase';
 import { generarCertificado } from '../services/certificado';
+import { actualizarPasaporte, obtenerPasaporte, MODULOS_CON_PASAPORTE } from '../services/pasaporteMotero';
 
 export const gameRouter = Router();
 
@@ -98,6 +99,21 @@ gameRouter.post('/finalizar', async (req, res) => {
       emailSst: empresa.email_sst,
     });
 
+    let pasaporte;
+    if (MODULOS_CON_PASAPORTE.has(updated.modulo_asignado) && Array.isArray(detalle) && detalle.length > 0) {
+      try {
+        pasaporte = await actualizarPasaporte({
+          cedula: updated.cedula_usuario,
+          nombre: updated.nombre_usuario,
+          celular: updated.celular,
+          idEmpresa: empresa.id_empresa,
+          detalle,
+        });
+      } catch (err) {
+        console.error('Error actualizando el pasaporte de movilidad:', err);
+      }
+    }
+
     return res.json({
       pin_id: updated.id,
       estado: updated.estado,
@@ -107,10 +123,23 @@ gameRouter.post('/finalizar', async (req, res) => {
         url_pdf: certificado.url_pdf,
         enviado_a: certificado.enviado_a,
       },
+      pasaporte,
     });
   } catch (err) {
     console.error('Error generando certificado:', err);
     return res.status(500).json({ error: 'PIN certificado pero falló la generación del certificado' });
+  }
+});
+
+gameRouter.get('/pasaporte/:cedula', async (req, res) => {
+  try {
+    const data = await obtenerPasaporte(req.params.cedula);
+    if (!data) {
+      return res.status(404).json({ error: 'No encontramos un pasaporte con esa cédula' });
+    }
+    return res.json(data);
+  } catch (err) {
+    return res.status(500).json({ error: 'Error consultando el pasaporte' });
   }
 });
 

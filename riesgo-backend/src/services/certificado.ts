@@ -14,7 +14,7 @@ const LOGO_RIESGO_VIAL = path.join(ASSETS_DIR, 'logo-riesgovial.png');
 const LOGO_AXA = path.join(ASSETS_DIR, 'logo-axa.png');
 const LOGO_FORBE = path.join(ASSETS_DIR, 'logo-forbe.png');
 const LOGO_ANDINA = path.join(ASSETS_DIR, 'logo andina.png');
-const LOGO_AUTECO = path.join(ASSETS_DIR, 'logo-auteco.png');
+const LOGO_AUTECO = path.join(ASSETS_DIR, 'logo-auteco.jpg');
 
 // Módulo de campaña B2C (no es capacitación SST): "pasaporte" en vez de certificado de aprobación
 const MODULOS_AUTECO = new Set(['Reto del Motero Auteco']);

@@ -19,6 +19,7 @@ window.MODULOS['retomoteroauteco'] = {
           retos: [
             {
               id: 'motero-punto-ciego-camion',
+              categoria: 'atencion',
               tipo: 'swipe-lateral',
               emoji: '🚛👁️',
               situacion: 'Vas a adelantar un camión grande en la vía y notas que no puedes ver su espejo retrovisor: estás en su punto ciego.',
@@ -28,6 +29,7 @@ window.MODULOS['retomoteroauteco'] = {
             },
             {
               id: 'motero-frenado-lluvia',
+              categoria: 'condiciones',
               tipo: 'tap-repetido',
               emoji: '🌧️🛑',
               situacion: 'La vía está mojada por la lluvia y el vehículo de adelante frena de repente.',
@@ -38,6 +40,7 @@ window.MODULOS['retomoteroauteco'] = {
             },
             {
               id: 'motero-zigzag',
+              categoria: 'normas',
               tipo: 'swipe-abajo',
               emoji: '🏍️↔️🚫',
               situacion: 'El tráfico está pesado y sientes la tentación de zigzaguear entre los carros para avanzar más rápido.',
@@ -47,6 +50,7 @@ window.MODULOS['retomoteroauteco'] = {
             },
             {
               id: 'motero-casco-correcto',
+              categoria: 'equipamiento',
               tipo: 'tap-repetido',
               emoji: '🪖✅',
               situacion: 'Antes de encender tu moto para tu primer recorrido, vas a ponerte el casco.',
@@ -65,6 +69,7 @@ window.MODULOS['retomoteroauteco'] = {
           preguntas: [
             {
               id: 'motero-distancia-seguimiento',
+              categoria: 'normas',
               emoji: '📏🏍️',
               texto: 'Vas conduciendo tu moto detrás de un carro en la vía.',
               pregunta: '¿Qué distancia de seguimiento es más segura mantener?',
@@ -79,6 +84,7 @@ window.MODULOS['retomoteroauteco'] = {
             },
             {
               id: 'motero-direccionales',
+              categoria: 'normas',
               emoji: '🔄💡',
               texto: 'Vas a cambiar de carril en una vía con tráfico.',
               pregunta: '¿Qué debes hacer antes de cambiar de carril?',
@@ -93,6 +99,7 @@ window.MODULOS['retomoteroauteco'] = {
             },
             {
               id: 'motero-visibilidad-noche',
+              categoria: 'equipamiento',
               emoji: '🌙🦺',
               texto: 'Vas a conducir tu moto de noche o con poca luz.',
               pregunta: '¿Qué te ayuda a que otros conductores te vean a tiempo?',
@@ -107,6 +114,7 @@ window.MODULOS['retomoteroauteco'] = {
             },
             {
               id: 'motero-no-me-ve',
+              categoria: 'atencion',
               emoji: '🚗❓🏍️',
               texto: 'Notas que un carro va a cambiar de carril hacia el espacio donde tú estás, como si no te hubiera visto.',
               pregunta: '¿Qué debes hacer?',
@@ -121,6 +129,7 @@ window.MODULOS['retomoteroauteco'] = {
             },
             {
               id: 'motero-velocidad-curvas',
+              categoria: 'normas',
               emoji: '🛣️〜',
               texto: 'Te acercas a una curva en la carretera.',
               pregunta: '¿Cuándo debes reducir la velocidad?',
@@ -132,6 +141,36 @@ window.MODULOS['retomoteroauteco'] = {
               ],
               correcta: 0,
               explicacion: 'Reducir la velocidad antes de entrar a la curva te permite mantener mejor control e inclinación durante el giro, en vez de frenar mientras ya estás girando.',
+            },
+            {
+              id: 'motero-mantenimiento-preventivo',
+              categoria: 'tumoto',
+              emoji: '🔧🏍️',
+              texto: 'Antes de salir a rodar, es buena práctica revisar el estado básico de tu moto.',
+              pregunta: '¿Qué debes revisar antes de cada recorrido largo?',
+              opciones: [
+                'Presión de llantas, frenos, luces y nivel de aceite',
+                'No es necesario revisar nada si la moto es nueva',
+                'Solo el nivel de gasolina',
+                'Solo revisarla una vez al año, sin importar el uso',
+              ],
+              correcta: 0,
+              explicacion: 'Una moto en buen estado (llantas, frenos, luces, aceite) reduce drásticamente el riesgo de una falla mecánica que cause un siniestro en plena vía.',
+            },
+            {
+              id: 'motero-respeto-peaton',
+              categoria: 'respeto',
+              emoji: '🚶🏍️❤️',
+              texto: 'Te acercas a un cruce peatonal donde una persona está esperando para cruzar.',
+              pregunta: '¿Qué debes hacer?',
+              opciones: [
+                'Ceder el paso al peatón y esperar a que cruce con seguridad',
+                'Acelerar para pasar antes de que el peatón empiece a cruzar',
+                'Tocar la bocina para que el peatón se aparte',
+                'Pasar muy cerca del peatón para no perder tiempo',
+              ],
+              correcta: 0,
+              explicacion: 'Ceder el paso a los peatones y compartir la vía con respeto hacia otros actores (peatones, ciclistas, otros conductores) es la base de una movilidad segura para todos.',
             },
           ],
         },

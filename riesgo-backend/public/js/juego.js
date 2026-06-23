@@ -97,14 +97,38 @@ function generarCodigoIncentivo(pinId) {
   return 'AUTECO-' + pinId.replace(/-/g, '').slice(-6).toUpperCase();
 }
 
+const INSIGNIA_LABELS = {
+  equipamiento: '🪖 Equipamiento que te protege',
+  normas: '🛣️ Normas que salvan',
+  atencion: '👁️ Atención que te adelanta',
+  tumoto: '🏍️ Tu moto en buen estado',
+  condiciones: '🌧️ Condiciones que importan',
+  respeto: '❤️ Respeto que nos une',
+};
+
 function mostrarResultado(resultado, data, resumenTexto) {
   if (resultado === 'aprobado') {
     const cert = data.certificado;
     const incentivo = modulo && modulo.incentivo;
+    const pasaporte = data.pasaporte;
     gameContainer.innerHTML = `
       ${lottieTag(LOTTIE.exito, 180)}
       <p class="result-title">¡Módulo aprobado!</p>
       <p class="result-detail">${resumenTexto || ''}</p>
+      ${
+        pasaporte
+          ? `<div class="incentivo-box">
+               <p class="incentivo-titulo">🪪 Pasaporte de Movilidad Segura: nivel ${pasaporte.nivel}</p>
+               <p class="incentivo-codigo">+${pasaporte.puntosGanados} pts (total: ${pasaporte.puntosTotal})</p>
+               ${
+                 pasaporte.insigniasNuevas && pasaporte.insigniasNuevas.length
+                   ? `<p class="incentivo-detalle">Nueva insignia: ${pasaporte.insigniasNuevas.map((i) => INSIGNIA_LABELS[i] || i).join(', ')}</p>`
+                   : ''
+               }
+               <a class="result-detail" href="/pasaporte.html" target="_blank" rel="noopener">Ver mi pasaporte completo →</a>
+             </div>`
+          : ''
+      }
       ${
         incentivo
           ? `<div class="incentivo-box">
