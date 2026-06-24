@@ -15,6 +15,7 @@ const LOGO_AXA = path.join(ASSETS_DIR, 'logo-axa.png');
 const LOGO_FORBE = path.join(ASSETS_DIR, 'logo-forbe.png');
 const LOGO_ANDINA = path.join(ASSETS_DIR, 'logo andina.png');
 const LOGO_AUTECO = path.join(ASSETS_DIR, 'logo-auteco.jpg');
+const LOGO_CESV = path.join(ASSETS_DIR, 'logo_CESV_png.jpg');
 
 // Módulo de campaña B2C (no es capacitación SST): "pasaporte" en vez de certificado de aprobación
 const MODULOS_AUTECO = new Set(['Reto del Motero Auteco']);
@@ -38,8 +39,10 @@ const MODULOS_SIN_AVAL_AXA = new Set([
   'Liderazgo Vial',
 ]);
 
-// Módulos RiesGO! Vial con respaldo de contenido técnico de la Escuela Andina de Automovilismo
-const MODULOS_VIAL = new Set([
+// Módulos RiesGO! Vial con respaldo de contenido técnico de la Escuela Andina de Automovilismo.
+// Es también el conjunto de módulos que alimentan el Pasaporte de Movilidad Segura (ver pasaporteMotero.ts),
+// avalado por el Comité Empresarial de Seguridad Vial (CESV) — no exclusivo de Auteco.
+export const MODULOS_VIAL = new Set([
   'Seguridad Vial',
   'Riesgos Críticos Viales',
   'Antes de Arrancar',
@@ -178,9 +181,10 @@ function buildPdf(
     }
 
     const esAuteco = MODULOS_AUTECO.has(data.modulo);
-    const avaladoPorAxa = !esAuteco && !MODULOS_SIN_AVAL_AXA.has(data.modulo);
-    const logoDerecha = esAuteco ? LOGO_AUTECO : avaladoPorAxa ? LOGO_AXA : LOGO_FORBE;
-    const textoLogoDerecha = esAuteco ? 'AUTECO' : avaladoPorAxa ? 'AXA COLPATRIA' : 'FORBE SAS';
+    const esPasaporte = MODULOS_VIAL.has(data.modulo);
+    const avaladoPorAxa = !esPasaporte && !MODULOS_SIN_AVAL_AXA.has(data.modulo);
+    const logoDerecha = esPasaporte ? LOGO_CESV : avaladoPorAxa ? LOGO_AXA : LOGO_FORBE;
+    const textoLogoDerecha = esPasaporte ? 'CESV' : avaladoPorAxa ? 'AXA COLPATRIA' : 'FORBE SAS';
 
     if (fs.existsSync(logoDerecha)) {
       doc.image(logoDerecha, W - 165, 35, { fit: [120, 50] });
@@ -191,7 +195,7 @@ function buildPdf(
       });
     }
 
-    const avaladoPorAndina = MODULOS_VIAL.has(data.modulo);
+    const avaladoPorAndina = esPasaporte;
     if (avaladoPorAndina && fs.existsSync(LOGO_ANDINA)) {
       doc.image(LOGO_ANDINA, W / 2 - 55, 38, { fit: [110, 42] });
     }
@@ -203,7 +207,9 @@ function buildPdf(
       .text(
         esAuteco
           ? 'Reto de movilidad segura para motociclistas'
-          : 'Programa de gamificación en Seguridad y Salud en el Trabajo (SST)',
+          : esPasaporte
+            ? 'Pasaporte de movilidad segura · Aval CESV y Escuela Andina de Automovilismo'
+            : 'Programa de gamificación en Seguridad y Salud en el Trabajo (SST)',
         0,
         90,
         { align: 'center' }
@@ -214,7 +220,7 @@ function buildPdf(
       .fillColor(NAVY)
       .font('Helvetica-Bold')
       .fontSize(28)
-      .text(esAuteco ? 'PASAPORTE DE MOVILIDAD SEGURA' : 'CERTIFICADO DE APROBACIÓN', 0, 108, { align: 'center' });
+      .text(esPasaporte ? 'PASAPORTE DE MOVILIDAD SEGURA' : 'CERTIFICADO DE APROBACIÓN', 0, 108, { align: 'center' });
 
     // Línea decorativa
     doc
@@ -282,10 +288,12 @@ function buildPdf(
       .fillColor(GRAY)
       .text(
         esAuteco
-          ? 'Aliado de Movilidad Segura - AUTECO'
-          : avaladoPorAxa
-            ? 'Coordinador SST - Programa AXA Colpatria'
-            : 'Coordinador SST - FORBE SAS',
+          ? 'Aval CESV · Aliado: Auteco'
+          : esPasaporte
+            ? 'Aprobado por el Comité Empresarial de Seguridad Vial (CESV)'
+            : avaladoPorAxa
+              ? 'Coordinador SST - Programa AXA Colpatria'
+              : 'Coordinador SST - FORBE SAS',
         sigX,
         footerY + 65,
         { width: 200, align: 'center' }

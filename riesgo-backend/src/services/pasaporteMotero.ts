@@ -1,8 +1,10 @@
 import { supabase } from '../supabase';
+import { MODULOS_VIAL } from './certificado';
 
 // Módulos que alimentan el Pasaporte de Movilidad Segura (perfil persistente por cédula,
-// a diferencia del resto de RiesGO! donde cada PIN es de un solo uso).
-export const MODULOS_CON_PASAPORTE = new Set(['Reto del Motero Auteco']);
+// a diferencia del resto de RiesGO! donde cada PIN es de un solo uso). Es toda la familia
+// RiesGO! Vial avalada por CESV y la Escuela Andina de Automovilismo, no solo Auteco.
+export const MODULOS_CON_PASAPORTE = MODULOS_VIAL;
 
 const PUNTOS_POR_ACIERTO = 50;
 
