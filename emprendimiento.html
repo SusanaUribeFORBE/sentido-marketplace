@@ -197,6 +197,7 @@
 <nav>
   <a class="nav-logo" href="index.html"><img src="logo_sentido.png" alt="SENTIDO" /></a>
   <div class="nav-back"><a href="marketplace.html">← Volver al marketplace</a></div>
+  <a href="mi-perfil.html" style="font-size:13px;color:var(--gray-400);margin-right:14px">Mi perfil</a>
   <button class="cart-btn" onclick="openCart()">
     🛒 Carrito
     <span class="cart-count hidden" id="cart-count">0</span>
@@ -308,7 +309,7 @@
 <script src="data.js"></script>
 <script>
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-const ADMIN_WA = '573XXXXXXXXX';
+const ADMIN_WA = '573244793388';
 
 let currentEmp = null;
 let cart = loadCart();
@@ -316,13 +317,11 @@ let cart = loadCart();
 async function initProfile() {
   const empId = new URLSearchParams(location.search).get('id');
 
-  // 1. Try local BASE_DATA first (fast, no network)
-  let emp = getEmpById(empId);
-
-  // 2. If not found locally, query Supabase (for newly added entrepreneurs)
-  if (!emp) {
+  // 1. Supabase es la fuente viva (los emprendedores editan su propio perfil ahí) — se intenta primero.
+  let emp = null;
+  if (db) {
     try {
-      const { data } = await db.from('entrepreneurs').select('*').eq('id', empId).single();
+      const { data } = await db.from('entrepreneurs').select('*').eq('id', empId).eq('active', true).maybeSingle();
       if (data) {
         emp = {
           id: data.id,
@@ -337,8 +336,11 @@ async function initProfile() {
           products: data.products || []
         };
       }
-    } catch (e) { console.warn('Supabase lookup failed', e); }
+    } catch (e) { console.warn('Supabase no disponible:', e.message); }
   }
+
+  // 2. Si Supabase no responde o no tiene ese id, cae al respaldo local (BASE_DATA / localStorage)
+  if (!emp) emp = getEmpById(empId);
 
   if (!emp) {
     document.body.innerHTML = '<div style="padding:60px;text-align:center"><h2>Emprendimiento no encontrado</h2><a href="marketplace.html" style="color:#2D5A3D">← Volver al marketplace</a></div>';

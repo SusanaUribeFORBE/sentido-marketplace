@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mi Perfil — SENTIDO</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --green: #2D5A3D; --green-dark: #1F3D2B; --green-light: #E8F0E9; --green-mid: #4A8A5D;
+    --copper: #C4895A; --copper-light: #F5EDE3; --copper-dark: #A8744A;
+    --cream: #F5F0E8; --cream-dark: #EDE8DB;
+    --gray-50: #F8F6F2; --gray-100: #F0EDE6; --gray-200: #E0DAD0;
+    --gray-400: #9C9488; --gray-600: #5C554A; --gray-700: #3D3830; --gray-900: #1F1C17;
+    --white: #ffffff;
+  }
+  body { font-family: 'Inter', sans-serif; background: var(--cream); color: var(--gray-900); }
+
+  nav { background: var(--green-dark); color: white; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 64px; }
+  nav a.nav-logo img { height: 36px; filter: brightness(0) invert(1); }
+  nav a.nav-link { color: rgba(255,255,255,0.75); font-size: 13px; text-decoration: none; margin-left: 18px; }
+  nav a.nav-link:hover { color: white; }
+
+  .wrap { max-width: 640px; margin: 0 auto; padding: 40px 20px 80px; }
+
+  .card { background: var(--white); border-radius: 16px; border: 1.5px solid var(--gray-200); padding: 32px; }
+  .card + .card { margin-top: 20px; }
+  .card-title { font-size: 20px; font-weight: 900; margin-bottom: 6px; }
+  .card-sub { font-size: 13px; color: var(--gray-400); margin-bottom: 22px; }
+
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-size: 12px; font-weight: 700; color: var(--gray-600); margin-bottom: 6px; }
+  .field input[type=text], .field input[type=email], .field input[type=tel], .field textarea {
+    width: 100%; padding: 11px 14px; border: 1.5px solid var(--gray-200); border-radius: 8px;
+    font-size: 14px; font-family: inherit; outline: none; resize: vertical;
+  }
+  .field input:focus, .field textarea:focus { border-color: var(--green-mid); }
+  .hint { font-size: 12px; color: var(--gray-400); margin-top: 4px; display: block; }
+
+  .btn { width: 100%; padding: 13px; background: var(--green); color: white; border: none; border-radius: 10px; font-size: 14px; font-weight: 800; cursor: pointer; }
+  .btn:hover { background: var(--green-dark); }
+  .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+  .btn-ghost { background: transparent; color: var(--gray-600); border: 1.5px solid var(--gray-200); }
+  .btn-ghost:hover { background: var(--gray-50); color: var(--gray-900); }
+  .btn-sm { width: auto; padding: 7px 14px; font-size: 12px; }
+
+  .message { font-size: 13px; margin-top: 12px; padding: 10px 14px; border-radius: 8px; display: none; }
+  .message.show { display: block; }
+  .message.ok { background: var(--green-light); color: var(--green-dark); }
+  .message.error { background: #fee2e2; color: #991b1b; }
+
+  .seals-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 4px; }
+  @media (max-width: 480px) { .seals-grid { grid-template-columns: 1fr; } }
+  .seal-check input { display: none; }
+  .seal-check label { display: flex; align-items: center; gap: 8px; padding: 9px 11px; border: 1.5px solid var(--gray-200); border-radius: 8px; font-size: 12px; cursor: pointer; }
+  .seal-check input:checked + label { background: var(--green-light); border-color: var(--green); color: var(--green-dark); font-weight: 700; }
+
+  .photo-row { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
+  .photo-preview { width: 120px; height: 64px; border-radius: 8px; object-fit: cover; background: var(--gray-100); border: 1.5px solid var(--gray-200); }
+
+  .product-row { border: 1.5px solid var(--gray-200); border-radius: 10px; padding: 14px; margin-bottom: 10px; position: relative; }
+  .product-row .field { margin-bottom: 10px; }
+  .product-row .field:last-child { margin-bottom: 0; }
+  .remove-product { position: absolute; top: 10px; right: 10px; background: none; border: none; color: var(--gray-400); font-size: 13px; cursor: pointer; font-weight: 700; }
+  .remove-product:hover { color: #ef4444; }
+
+  .hidden { display: none !important; }
+  .center-text { text-align: center; }
+  .big-icon { font-size: 40px; margin-bottom: 12px; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="index.html"><img src="logo_sentido.png" alt="SENTIDO" /></a>
+  <div>
+    <a class="nav-link" href="marketplace.html">Marketplace</a>
+    <a class="nav-link" href="index.html">Inicio</a>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <!-- 1. LOGIN -->
+  <div class="card" id="login-card">
+    <div class="card-title">🪪 Mi Perfil</div>
+    <div class="card-sub">Entra con el correo que usaste al postularte a SENTIDO. Te enviaremos un link mágico, sin contraseñas.</div>
+    <form id="login-form">
+      <div class="field">
+        <label for="login-email">Correo electrónico</label>
+        <input type="email" id="login-email" placeholder="tu@correo.com" required autocomplete="email" />
+      </div>
+      <button type="submit" class="btn" id="login-btn">Enviarme el link de acceso</button>
+    </form>
+    <div class="message" id="login-message"></div>
+  </div>
+
+  <!-- 2. ESPERANDO CLIC EN EL CORREO -->
+  <div class="card center-text hidden" id="sent-card">
+    <div class="big-icon">📩</div>
+    <div class="card-title">Revisa tu correo</div>
+    <div class="card-sub">Te enviamos un link a tu bandeja de entrada. Haz clic ahí para entrar — puede tardar un par de minutos y a veces llega a spam.</div>
+    <button class="btn btn-ghost" onclick="location.reload()">Volver</button>
+  </div>
+
+  <!-- 3. SIN PERFIL ACTIVO -->
+  <div class="card center-text hidden" id="noprofile-card">
+    <div class="big-icon">🤔</div>
+    <div class="card-title">Aún no encontramos tu perfil</div>
+    <div class="card-sub">Tu correo no está vinculado a ningún emprendimiento activo en SENTIDO todavía. Si ya te postulaste, escríbenos a <strong>sentidomercado@hotmail.com</strong>. Si no, puedes postularte aquí:</div>
+    <a class="btn" style="display:block;text-decoration:none;text-align:center" href="registro.html">Postular mi emprendimiento</a>
+  </div>
+
+  <!-- 4. PERFIL (logueado) -->
+  <div class="hidden" id="profile-view">
+    <div class="card">
+      <div class="card-title" id="profile-title">Tu perfil</div>
+      <div class="card-sub">Esta información se ve públicamente en tu página de SENTIDO. Edítala y dale guardar cuando quieras.</div>
+
+      <div class="photo-row">
+        <img class="photo-preview" id="photo-preview" src="" alt="Foto de portada" />
+        <div>
+          <input type="file" id="photo-input" accept="image/*" />
+          <div class="hint">Foto horizontal, buena luz, sin marcas de agua.</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="f-tagline">Qué hace tu emprendimiento (una oración)</label>
+        <textarea id="f-tagline" rows="2"></textarea>
+      </div>
+      <div class="field">
+        <label for="f-impact">Impacto (beneficiarios, cifras concretas)</label>
+        <textarea id="f-impact" rows="3"></textarea>
+      </div>
+      <div class="field">
+        <label for="f-whatsapp">WhatsApp (con código de país, ej: 573001234567)</label>
+        <input type="tel" id="f-whatsapp" />
+      </div>
+
+      <div class="field">
+        <label>Sellos de impacto</label>
+        <div class="seals-grid" id="seals-grid"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title" style="font-size:16px">Tus productos</div>
+      <div id="products-list"></div>
+      <button type="button" class="btn btn-ghost btn-sm" id="add-product-btn" style="margin-top:6px">+ Agregar producto</button>
+    </div>
+
+    <div class="card">
+      <button class="btn" id="save-btn">Guardar cambios</button>
+      <div class="message" id="save-message"></div>
+      <button class="btn btn-ghost btn-sm" id="logout-btn" style="margin-top:14px">Cerrar sesión</button>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="supabase-config.js"></script>
+<script>
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const SEALS = [
+  ['🌡️','Bienestar Consciente'], ['💜','Liderazgo que Inspira'], ['🏠','Jefatura de Hogar'],
+  ['♻️','Sello Economía Circular / Segunda Vida'], ['🌿','Producción Limpia & Eco-Friendly'],
+  ['🟤','Cero Plástico / Empaque Ecológico'], ['🌾','Origen Rural'],
+  ['🧡','Inclusión Económica & Empleo Digno'], ['🪡','Saberes Ancestrales & Artesanal'],
+  ['☀️','Comercio Justo Local'], ['🔬','Innovación Sostenible & Biotech'],
+  ['🍎','Origen Orgánico y Biocomercio'], ['👴','Adulto Mayor Activo'],
+];
+
+const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&h=400&fit=crop';
+
+const loginCard = document.getElementById('login-card');
+const sentCard = document.getElementById('sent-card');
+const noProfileCard = document.getElementById('noprofile-card');
+const profileView = document.getElementById('profile-view');
+
+let perfil = null;
+let pendingPhotoFile = null;
+
+document.getElementById('login-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const email = document.getElementById('login-email').value.trim();
+  const btn = document.getElementById('login-btn');
+  const msg = document.getElementById('login-message');
+  btn.disabled = true;
+  btn.textContent = 'Enviando...';
+  const { error } = await db.auth.signInWithOtp({
+    email,
+    options: { emailRedirectTo: window.location.origin + '/mi-perfil.html' }
+  });
+  btn.disabled = false;
+  btn.textContent = 'Enviarme el link de acceso';
+  if (error) {
+    msg.textContent = 'No pudimos enviar el link: ' + error.message;
+    msg.className = 'message error show';
+    return;
+  }
+  loginCard.classList.add('hidden');
+  sentCard.classList.remove('hidden');
+});
+
+document.getElementById('logout-btn').addEventListener('click', async () => {
+  await db.auth.signOut();
+  location.reload();
+});
+
+document.getElementById('photo-input').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  pendingPhotoFile = file;
+  document.getElementById('photo-preview').src = URL.createObjectURL(file);
+});
+
+document.getElementById('add-product-btn').addEventListener('click', () => {
+  addProductRow({ name: '', price: '', description: '' });
+});
+
+function addProductRow(p) {
+  const list = document.getElementById('products-list');
+  const row = document.createElement('div');
+  row.className = 'product-row';
+  row.innerHTML = `
+    <button type="button" class="remove-product" title="Quitar">✕</button>
+    <div class="field"><label>Nombre del producto</label><input type="text" class="p-name" value="${escapeHtml(p.name || '')}" /></div>
+    <div class="field"><label>Precio</label><input type="text" class="p-price" value="${escapeHtml(p.price || '')}" placeholder="$20.000" /></div>
+    <div class="field"><label>Descripción (opcional)</label><textarea class="p-desc" rows="2">${escapeHtml(p.description || '')}</textarea></div>
+  `;
+  row.querySelector('.remove-product').addEventListener('click', () => row.remove());
+  list.appendChild(row);
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function renderSeals(activeSeals) {
+  const grid = document.getElementById('seals-grid');
+  grid.innerHTML = SEALS.map(([icon, name], i) => {
+    const checked = activeSeals.some(s => s.includes(name.split(' ')[0]) || name.includes(s));
+    return `
+      <div class="seal-check">
+        <input type="checkbox" id="seal-${i}" value="${escapeHtml(name)}" ${checked ? 'checked' : ''} />
+        <label for="seal-${i}">${icon} ${name}</label>
+      </div>`;
+  }).join('');
+}
+
+async function loadPerfil(user) {
+  let { data: row } = await db.from('entrepreneurs').select('*').eq('user_id', user.id).maybeSingle();
+
+  if (!row) {
+    // Primer login: intenta reclamar el perfil que coincide con su correo
+    await db.from('entrepreneurs')
+      .update({ user_id: user.id })
+      .eq('email', (user.email || '').toLowerCase())
+      .is('user_id', null);
+
+    const retry = await db.from('entrepreneurs').select('*').eq('user_id', user.id).maybeSingle();
+    row = retry.data;
+  }
+
+  if (!row) {
+    noProfileCard.classList.remove('hidden');
+    return;
+  }
+
+  perfil = row;
+  document.getElementById('profile-title').textContent = row.name;
+  document.getElementById('photo-preview').src = row.photo_url || DEFAULT_PHOTO;
+  document.getElementById('f-tagline').value = row.tagline || '';
+  document.getElementById('f-impact').value = row.impact || '';
+  document.getElementById('f-whatsapp').value = row.whatsapp || '';
+
+  const activeSeals = (row.seals || '').split(';').map(s => s.trim()).filter(Boolean);
+  renderSeals(activeSeals);
+
+  const products = Array.isArray(row.products) ? row.products : [];
+  document.getElementById('products-list').innerHTML = '';
+  products.forEach(p => addProductRow(p));
+  if (products.length === 0) addProductRow({ name: '', price: '', description: '' });
+
+  profileView.classList.remove('hidden');
+}
+
+document.getElementById('save-btn').addEventListener('click', async () => {
+  const btn = document.getElementById('save-btn');
+  const msg = document.getElementById('save-message');
+  btn.disabled = true;
+  btn.textContent = 'Guardando...';
+
+  try {
+    let photoUrl = perfil.photo_url;
+    if (pendingPhotoFile) {
+      const { data: { user } } = await db.auth.getUser();
+      const ext = pendingPhotoFile.name.split('.').pop();
+      const path = `${user.id}/cover-${Date.now()}.${ext}`;
+      const { error: upErr } = await db.storage.from('fotos').upload(path, pendingPhotoFile, { upsert: true });
+      if (upErr) throw upErr;
+      photoUrl = db.storage.from('fotos').getPublicUrl(path).data.publicUrl;
+    }
+
+    const seals = Array.from(document.querySelectorAll('#seals-grid input:checked')).map(i => i.value).join(';');
+    const products = Array.from(document.querySelectorAll('.product-row')).map(row => ({
+      name: row.querySelector('.p-name').value.trim(),
+      price: row.querySelector('.p-price').value.trim(),
+      description: row.querySelector('.p-desc').value.trim(),
+    })).filter(p => p.name);
+
+    const { error } = await db.from('entrepreneurs').update({
+      tagline: document.getElementById('f-tagline').value.trim(),
+      impact: document.getElementById('f-impact').value.trim(),
+      whatsapp: document.getElementById('f-whatsapp').value.trim(),
+      seals,
+      products,
+      photo_url: photoUrl,
+      updated_at: new Date().toISOString(),
+    }).eq('id', perfil.id);
+
+    if (error) throw error;
+
+    perfil.photo_url = photoUrl;
+    pendingPhotoFile = null;
+    msg.textContent = '✓ Guardado. Los cambios ya se ven en tu perfil público.';
+    msg.className = 'message ok show';
+  } catch (err) {
+    msg.textContent = 'No se pudo guardar: ' + err.message;
+    msg.className = 'message error show';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Guardar cambios';
+  }
+});
+
+(async function init() {
+  const { data: { session } } = await db.auth.getSession();
+  if (session && session.user) {
+    loginCard.classList.add('hidden');
+    await loadPerfil(session.user);
+  }
+  db.auth.onAuthStateChange((event, session) => {
+    if (event === 'SIGNED_IN' && session && session.user) {
+      loginCard.classList.add('hidden');
+      sentCard.classList.add('hidden');
+      loadPerfil(session.user);
+    }
+  });
+})();
+</script>
+</body>
+</html>

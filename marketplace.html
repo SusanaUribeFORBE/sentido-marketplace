@@ -202,6 +202,7 @@
   <div class="nav-center">
     <a href="index.html">Inicio</a>
     <a href="registro.html">Únete</a>
+    <a href="mi-perfil.html">Mi perfil</a>
     <a href="admin.html" style="font-size:12px;color:var(--gray-400)">Admin</a>
   </div>
   <button class="cart-btn" onclick="openCart()">
@@ -312,7 +313,7 @@ try {
   }
 } catch(e) { console.warn('Supabase no disponible:', e.message); }
 
-const ADMIN_WA = '573XXXXXXXXX';
+const ADMIN_WA = '573244793388';
 
 let cart = loadCart();
 syncCartBadge();
@@ -436,28 +437,29 @@ let ALL_DATA = getAll();
 async function loadSupabaseData() {
   if (!db) return; // sin config.js válido, ya renderizamos con BASE_DATA
   try {
-    const { data } = await db.from('entrepreneurs')
+    const { data, error } = await db.from('entrepreneurs')
       .select('*')
       .eq('onboarding_complete', true)
       .eq('active', true);
 
+    if (error) throw error;
+
     if (data && data.length > 0) {
-      const adapted = data.map(e => ({
+      // Supabase es la fuente viva (los emprendedores editan su propio perfil ahí).
+      // BASE_DATA solo se usa como respaldo si Supabase no responde (catch abajo).
+      ALL_DATA = data.map(e => ({
         id: e.id, name: e.name, city: e.city || '',
         formal: e.formal || 'NO', tagline: e.tagline || '',
         seals: e.seals || '', impact: e.impact || '',
         photo: e.photo_url || 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&h=400&fit=crop',
         whatsapp: e.whatsapp || '', products: (e.products || [])
       }));
-      const baseIds = new Set(BASE_DATA.map(b => String(b.id)));
-      const newEmps = adapted.filter(e => !baseIds.has(String(e.id)));
-      if (newEmps.length > 0) {
-        ALL_DATA = [...getAll(), ...newEmps];
-        render(); // re-render con los nuevos de Supabase
-      }
+      const extra = getExtra();
+      if (extra.length) ALL_DATA = [...ALL_DATA, ...extra];
+      render();
     }
   } catch (err) {
-    console.warn('Supabase no disponible:', err.message);
+    console.warn('Supabase no disponible, usando datos de respaldo:', err.message);
   }
 }
 
