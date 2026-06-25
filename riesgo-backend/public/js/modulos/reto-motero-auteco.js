@@ -1,6 +1,6 @@
 window.MODULOS = window.MODULOS || {};
 
-window.MODULOS['retomoteroauteco'] = {
+window.MODULOS['retodelmoteroauteco'] = {
   titulo: 'Reto del Motero Auteco',
 
   // Al aprobar, juego.js muestra esta caja con un código de descuento para el concesionario.
