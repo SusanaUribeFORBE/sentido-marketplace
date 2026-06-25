@@ -1,6 +1,6 @@
 window.MODULOS = window.MODULOS || {};
 
-window.MODULOS['planemergenciasyevacuacion'] = {
+window.MODULOS['plandeemergenciasyevacuacion'] = {
   titulo: 'Plan de Emergencias y Evacuación',
 
   iniciar(container, { finalizar }) {

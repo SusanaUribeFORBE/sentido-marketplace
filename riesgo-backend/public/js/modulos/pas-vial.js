@@ -1,6 +1,6 @@
 window.MODULOS = window.MODULOS || {};
 
-window.MODULOS['pasvial'] = {
+window.MODULOS['pasvialemergenciasenruta'] = {
   titulo: 'PAS Vial – Emergencias en Ruta',
 
   iniciar(container, { finalizar }) {
