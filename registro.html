@@ -720,12 +720,10 @@
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="supabase-config.js"></script>
-<script src="config.js"></script>
 <script src="data.js"></script>
 <script>
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const ADMIN_WA = '573244793388';
-// GROQ_API_KEY y GROQ_MODEL se cargan desde config.js
 const ADMIN_EMAIL  = 'sentidomercado@hotmail.com';
 
 // ── CONFIGURACIÓN EMAILJS ─────────────────────────────────────────
@@ -827,44 +825,27 @@ async function submitForm() {
   await runGroqVerification(savedFormData);
 }
 
-// ── PASO 2: Llamar al agente Gemini ──────────────────────────────
+// ── PASO 2: Llamar al agente de verificación (vive en riesgo-backend,
+// la GROQ_API_KEY queda del lado del servidor, nunca en el navegador) ──
+const AGENTE_SENTIDO_URL = 'https://riesgo-backend-production.up.railway.app/api/sentido/verificar-postulacion';
+
 async function runGroqVerification(data) {
-  const prompt = buildGroqPrompt(data);
   try {
-    const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    const resp = await fetch(AGENTE_SENTIDO_URL, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${GROQ_API_KEY}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: GROQ_MODEL,
-        temperature: 0.2,
-        max_tokens: 900,
-        messages: [
-          { role: 'system', content: 'Eres el agente revisor oficial de SENTIDO. Responde SOLO con JSON válido, sin texto adicional.' },
-          { role: 'user', content: prompt }
-        ]
-      })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ data })
     });
 
-    if (!resp.ok) {
-      const err = await resp.json();
-      throw new Error(err.error?.message || `HTTP ${resp.status}`);
-    }
+    const ai = await resp.json();
+    if (!resp.ok) throw new Error(ai.error || `HTTP ${resp.status}`);
 
-    const result = await resp.json();
-    const text   = result.choices?.[0]?.message?.content || '';
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) throw new Error('La IA no devolvió JSON válido');
-
-    aiResult = JSON.parse(jsonMatch[0]);
+    aiResult = ai;
     showAiResults(aiResult);
 
   } catch (err) {
-    console.error('Error Groq:', err);
+    console.error('Error verificando con el agente SENTIDO:', err);
 
-    // Detectar causa raíz
     let causa = err.message || 'Error desconocido';
     let sugerencia = '';
     if (location.protocol === 'file:') {
@@ -872,8 +853,6 @@ async function runGroqVerification(data) {
       sugerencia = 'Abre los archivos con un servidor local: en VS Code instala "Live Server" y haz clic en "Go Live" (esquina inferior derecha).';
     } else if (causa.includes('Failed to fetch') || causa.includes('NetworkError')) {
       sugerencia = 'Verifica tu conexión a internet.';
-    } else if (causa.includes('401') || causa.includes('invalid_api_key')) {
-      sugerencia = 'La API key de Groq es inválida o expiró.';
     }
 
     aiResult = {
@@ -887,49 +866,6 @@ async function runGroqVerification(data) {
     };
     showAiResults(aiResult);
   }
-}
-
-function buildGroqPrompt(data) {
-  const products = data.products.map(p => `• ${p.name} — ${p.price}`).join('\n');
-  return `Analiza esta solicitud de registro para SENTIDO, un marketplace colombiano de emprendimientos con impacto social y ambiental verificado.
-
-CRITERIOS POR SELLO:
-• Bienestar Consciente: productos de salud física/mental libres de químicos nocivos, testeados éticamente
-• Liderazgo que Inspira: liderado por mujeres o comunidad LGBTI+, promueve equidad de género
-• Jefatura de Hogar: equipo principalmente de madres/padres cabeza de familia, único sustento del hogar
-• Sello Economía Circular / Segunda Vida: extiende ciclo de vida de materiales, segunda vida, residuo cero
-• Producción Limpia & Eco-Friendly: recursos naturales, tecnologías verdes, no contamina agua ni tierra
-• Cero Plástico / Empaque Ecológico: empaques 100% reutilizables, reciclables o compostables
-• Origen Rural: opera en zona rural o trabaja con comunidades campesinas fuera de centros urbanos
-• Inclusión Económica & Empleo Digno: emplea poblaciones vulnerables, excombatientes, víctimas del conflicto
-• Saberes Ancestrales & Artesanal: preserva técnicas tradicionales (crochet, tejidos, artesanías del territorio)
-• Comercio Justo Local: precios justos a productores locales, elimina explotación de intermediarios
-• Innovación Sostenible & Biotech: biotecnología o tecnología para productos útiles de bajo impacto
-• Origen Orgánico y Biocomercio: biodiversidad local, conservación y agricultura sostenible
-• Adulto Mayor Activo: 30%+ del equipo o fundador/a tiene 60 años o más
-
-SOLICITUD:
-Nombre: ${data.name}
-Ciudad: ${data.city}
-Categoría: ${data.category}
-Formalización: ${data.formal}
-Descripción: ${data.tagline}
-Impacto declarado: ${data.impact}
-Motivación: ${data.why_sentido || '—'}
-Sellos solicitados: ${data.seals.replace(/;/g, ', ')}
-Productos/servicios:
-${products || '— No especificados'}
-
-Responde SOLO con este JSON:
-{
-  "score": [0-100, basado en claridad y evidencia del impacto],
-  "recommendation": "APROBAR" | "REVISAR" | "RECHAZAR",
-  "verified_seals": ["sellos confirmados con evidencia clara del texto"],
-  "pending_seals": ["sellos que necesitan más información o verificación"],
-  "rejected_seals": ["sellos solicitados que NO se justifican en la información"],
-  "justification": "2-3 oraciones explicando la decisión, en español",
-  "admin_notes": "puntos específicos a verificar antes de aprobar, en español"
-}`;
 }
 
 // ── PASO 3: Mostrar resultados ───────────────────────────────────

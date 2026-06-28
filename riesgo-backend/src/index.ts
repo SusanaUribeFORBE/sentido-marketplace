@@ -8,6 +8,7 @@ import { adminRouter } from './routes/admin';
 import { clienteRouter } from './routes/cliente';
 import { arlRouter } from './routes/arl';
 import { analyticsRouter } from './routes/analytics';
+import { sentidoAgenteRouter } from './routes/sentidoAgente';
 import { adminAuth } from './middleware/adminAuth';
 import { clientAuth } from './middleware/clientAuth';
 import { arlAuth } from './middleware/arlAuth';
@@ -30,6 +31,12 @@ const pinLimiter = rateLimit({
   message: { error: 'Demasiados intentos. Espera 15 minutos.' }
 });
 
+const sentidoLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  message: { error: 'Demasiados intentos. Espera 15 minutos.' }
+});
+
 app.use(express.static(path.join(__dirname, '..', 'public')));
 app.use('/assets', express.static(path.join(__dirname, '..', 'assets')));
 
@@ -40,6 +47,7 @@ app.get('/api', (_req, res) => {
 app.use('/api', pinLimiter, authRouter);
 app.use('/api', gameRouter);
 app.use('/api', analyticsRouter);
+app.use('/api/sentido', sentidoLimiter, sentidoAgenteRouter);
 app.use('/api/admin', adminAuth, adminRouter);
 app.use('/api/cliente', clientAuth, clienteRouter);
 app.use('/api/arl', arlAuth, arlRouter);
