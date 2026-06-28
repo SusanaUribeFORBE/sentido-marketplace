@@ -945,9 +945,8 @@ async function confirmAndSave() {
     const rec   = ai.recommendation || 'REVISAR';
     const owner = savedFormData.owner_name || '';
 
-    // Ocultar formulario y vista IA
+    // Ocultar vista IA (los pasos 1-4 ya están ocultos desde submitForm())
     document.getElementById('ai-verify-view').classList.remove('active');
-    document.getElementById('form-container-wrap')?.classList?.add('hidden');
 
     // Mostrar pantalla de resultado según recomendación IA
     if (rec === 'APROBAR') {
