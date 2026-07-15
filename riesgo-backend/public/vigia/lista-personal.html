@@ -1,0 +1,384 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vigía 360 — Lista de personal</title>
+  <link rel="stylesheet" href="vigia.css" />
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="dashboard.html" style="display:flex;align-items:center;gap:10px;text-decoration:none">
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="36" viewBox="0 0 34 38">
+      <path d="M17 1L2 7V21C2 30 9 37 17 39C25 37 32 30 32 21V7Z" fill="rgba(255,255,255,0.15)" stroke="white" stroke-width="1.5"/>
+      <circle cx="12" cy="19" r="4.5" fill="white" opacity="0.9"/>
+      <circle cx="22" cy="19" r="4.5" fill="white" opacity="0.9"/>
+      <circle cx="12" cy="19" r="2" fill="rgba(26,58,92,0.8)"/>
+      <circle cx="22" cy="19" r="2" fill="rgba(26,58,92,0.8)"/>
+      <polygon points="15,25 17,28 19,25" fill="white" opacity="0.7"/>
+    </svg>
+    <span style="color:white;font-weight:800;font-size:17px;letter-spacing:0.5px">VIGÍA <span style="color:#4ADE80;font-weight:900">360</span></span>
+  </a>
+  <div class="nav-links">
+    <a href="dashboard.html" class="nav-link-fixed">Dashboard</a>
+
+    <!-- P — Planear -->
+    <div class="nav-dropdown" id="dd-P">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-P')">
+        <span class="phva-pill phva-P">P</span> Planear <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="perfil-responsable.html">🩺 Responsable SST</a>
+        <a href="responsabilidades.html">👥 Roles y Responsabilidades</a>
+        <a href="copasst.html">🤝 COPASST y Convivencia</a>
+        <a href="documentos-sst.html">📄 Documentos del SG-SST</a>
+        <a href="matriz-peligros.html">⚠️ Matriz de Peligros (GTC-45)</a>
+        <a href="plan-trabajo.html">📅 Plan de Trabajo Anual</a>
+        <a href="presupuesto-sgsst.html">💰 Presupuesto SG-SST</a>
+        <a href="profesiograma.html">💊 Profesiograma</a>
+      </div>
+    </div>
+
+    <!-- H — Hacer -->
+    <div class="nav-dropdown" id="dd-H">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-H')">
+        <span class="phva-pill phva-H">H</span> Hacer <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="epp.html">🦺 EPP</a>
+        <a href="capacitaciones.html">🎓 Capacitaciones</a>
+        <a href="emergencias.html">🚨 Emergencias y Brigada</a>
+        <a href="inspecciones.html">🔍 Inspecciones y Mantenimiento</a>
+        <a href="perfil-salud.html">🏥 Salud Ocupacional</a>
+        <div class="nav-dd-divider"></div>
+        <a href="lista-personal.html">👥 Lista de Personal</a>
+        <a href="subir.html">⬆️ Subir Examen</a>
+        <a href="subir-masivo.html">📦 Carga Masiva</a>
+        <a href="cartas-masivas.html">📄 Cartas Masivas</a>
+        <a href="reporte-examenes.html">📊 Cobertura de Exámenes</a>
+        <a href="informe-condiciones.html">📋 Informe de Condiciones</a>
+      </div>
+    </div>
+
+    <!-- V — Verificar -->
+    <div class="nav-dropdown" id="dd-V">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-V')">
+        <span class="phva-pill phva-V">V</span> Verificar <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="evaluacion-sst.html">📋 Evaluación (Res. 0312)</a>
+        <a href="investigaciones.html">🔍 AT / Incidentes</a>
+        <a href="ausentismo.html">📉 Ausentismo laboral</a>
+        <a href="indicadores-sgsst.html">📊 Indicadores SG-SST</a>
+        <a href="analisis-phva.html">📈 Análisis e Indicadores</a>
+      </div>
+    </div>
+
+    <!-- A — Actuar -->
+    <div class="nav-dropdown" id="dd-A">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-A')">
+        <span class="phva-pill phva-A">A</span> Actuar <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="mejoramiento.html">✅ Acciones de Mejoramiento</a>
+        <a href="evaluacion-sst.html">📝 Plan de Mejoramiento (F002)</a>
+      </div>
+    </div>
+
+    <a href="listado-maestro.html" class="nav-link-fixed">📁 Listado Maestro</a>
+    <span id="nav-empresa" style="color:#CBD8E6;font-size:13px;padding:6px 0"></span>
+    <button onclick="VigiaAPI.logout()"
+      style="background:none;border:1px solid rgba(255,255,255,.2);color:#CBD8E6;
+             border-radius:6px;padding:6px 12px;cursor:pointer;font-size:13px">Salir</button>
+  </div>
+</nav>
+
+<div class="page" style="max-width:900px">
+  <div class="page-header">
+    <h1>Lista de personal</h1>
+    <p>Carga el listado de tus empleados y verifica quiénes tienen examen médico ocupacional vigente y quiénes faltan.</p>
+  </div>
+
+  <!-- Instrucciones + carga -->
+  <div class="card" style="padding:28px;margin-bottom:20px">
+
+    <div style="background:#F0F4F8;border-radius:10px;padding:16px 20px;margin-bottom:24px;font-size:13px;color:var(--text)">
+      <strong style="color:var(--navy)">Formato CSV esperado</strong> — dos columnas separadas por coma o punto y coma:<br/>
+      <code style="display:block;margin-top:8px;background:white;padding:8px 12px;border-radius:6px;
+                   font-size:12px;color:var(--navy)">cc,nombre<br/>1007111063,ACEVEDO VELASQUEZ YIMMY<br/>1039473557,ACEVEDO VELASQUEZ YOMIN</code>
+      <span style="color:var(--muted);margin-top:6px;display:block">También puedes pegar solo las cédulas en el campo de texto, una por línea.</span>
+    </div>
+
+    <!-- Dropzone -->
+    <div class="upload-zone" id="drop-zone" style="cursor:pointer;margin-bottom:20px">
+      <div class="upload-icon">📋</div>
+      <h3>Arrastra el CSV aquí</h3>
+      <p>o haz clic para seleccionar el archivo</p>
+    </div>
+    <input type="file" id="file-input" accept=".csv,.txt" class="hidden" />
+
+    <div style="text-align:center;color:var(--muted);font-size:13px;margin-bottom:16px">— o —</div>
+
+    <div class="form-group" style="margin-bottom:20px">
+      <label>Pega las cédulas aquí (una por línea)</label>
+      <textarea id="txt-cedulas" rows="6"
+        style="width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;
+               font-size:14px;font-family:monospace;color:var(--text);background:var(--bg);resize:vertical"
+        placeholder="1007111063&#10;1039473557&#10;1036449041"></textarea>
+    </div>
+
+    <div class="flex gap-3 justify-between">
+      <a href="dashboard.html" class="btn btn-outline">← Volver</a>
+      <button class="btn btn-primary" id="btn-verificar" onclick="comparar()">
+        Verificar personal →
+      </button>
+    </div>
+  </div>
+
+  <!-- Resultados -->
+  <div id="resultados" class="hidden">
+
+    <!-- Stats -->
+    <div class="stats-bar" style="margin-bottom:20px">
+      <div class="stat-card">
+        <div class="stat-label">Total en lista</div>
+        <div class="stat-value" id="r-total">—</div>
+      </div>
+      <div class="stat-card stat-ok">
+        <div class="stat-label">✅ Examen vigente</div>
+        <div class="stat-value" id="r-vigente">—</div>
+      </div>
+      <div class="stat-card stat-advertencia">
+        <div class="stat-label">⚠️ Por vencer / restricciones</div>
+        <div class="stat-value" id="r-advertencia">—</div>
+      </div>
+      <div class="stat-card stat-critico">
+        <div class="stat-label">❌ Sin examen registrado</div>
+        <div class="stat-value" id="r-critico">—</div>
+      </div>
+    </div>
+
+    <!-- Filtro + tabla -->
+    <div class="empleados-table-wrap">
+      <div class="table-toolbar">
+        <h2>Resultado de verificación</h2>
+        <div class="flex gap-3 items-center">
+          <select id="filtro-estado" class="search-input" style="width:200px" onchange="renderResultados()">
+            <option value="">Todos</option>
+            <option value="sin_examen">Sin examen</option>
+            <option value="sin_examen">Sin examen</option>
+            <option value="advertencia">Por vencer / Restricciones</option>
+            <option value="vigente">Al día</option>
+          </select>
+        </div>
+      </div>
+      <div id="tabla-resultado"></div>
+    </div>
+
+    <div class="flex justify-end mt-4 gap-3">
+      <button class="btn btn-outline" onclick="reiniciar()">Nueva verificación</button>
+      <button class="btn btn-outline" onclick="descargarCSV()">Descargar reporte Excel</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="js/vigia-api.js"></script>
+<script>
+  let empleadosVigia = [];
+  let resultados     = [];
+
+  async function init() {
+    const ok = await VigiaAPI.requireAuth();
+    if (!ok) return;
+    empleadosVigia = await VigiaAPI.getEmpleados() || [];
+  }
+
+  // ── Drop zone ──────────────────────────────────────────────
+  const dropZone  = document.getElementById('drop-zone');
+  const fileInput = document.getElementById('file-input');
+
+  dropZone.addEventListener('click', () => fileInput.click());
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault(); dropZone.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file) leerArchivo(file);
+  });
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files[0]) leerArchivo(fileInput.files[0]);
+  });
+
+  function leerArchivo(file) {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      document.getElementById('txt-cedulas').value = ev.target.result;
+      dropZone.innerHTML = `
+        <div class="upload-icon">📋</div>
+        <h3>${file.name}</h3>
+        <p class="text-muted" style="font-size:13px">Archivo cargado — haz clic para cambiar</p>`;
+    };
+    reader.readAsText(file, 'UTF-8');
+  }
+
+  // ── Parsear CSV / texto ────────────────────────────────────
+  function parsearEntrada(texto) {
+    const lineas = texto.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+    const lista  = [];
+
+    for (const linea of lineas) {
+      if (linea.toLowerCase().startsWith('cc')) continue; // saltar encabezado
+
+      // Detectar separador: coma, punto y coma, tabulador
+      const sep = linea.includes(';') ? ';' : linea.includes('\t') ? '\t' : ',';
+      const partes = linea.split(sep).map(p => p.trim().replace(/^"|"$/g, ''));
+
+      const cc     = partes[0]?.replace(/\D/g, ''); // solo dígitos
+      const nombre = partes[1] || '';
+
+      if (cc) lista.push({ cc, nombre });
+    }
+    return lista;
+  }
+
+  // ── Determinar estado ──────────────────────────────────────
+  function estadoEmpleado(empVigia) {
+    if (!empVigia) return { estado: 'sin_examen', label: 'Sin examen registrado', icono: '❌', clase: 'badge-critico' };
+    const n = empVigia.alerta_nivel || 'OK';
+    if (n === 'ADVERTENCIA') return { estado: 'advertencia', label: 'Examen próximo a vencer', icono: '⚠️', clase: 'badge-advertencia' };
+    return                          { estado: 'vigente',     label: 'Tiene examen registrado', icono: '✅', clase: 'badge-ok' };
+  }
+
+  // ── Comparar ───────────────────────────────────────────────
+  async function comparar() {
+    const texto = document.getElementById('txt-cedulas').value.trim();
+    if (!texto) { mostrarToast('Ingresa o carga un listado de cédulas', 'error'); return; }
+
+    const lista = parsearEntrada(texto);
+    if (!lista.length) { mostrarToast('No se encontraron cédulas válidas', 'error'); return; }
+
+    // Mapa de empleados en Vigía por CC
+    const mapaVigia = new Map(empleadosVigia.map(e => [e.cc?.trim(), e]));
+
+    resultados = lista.map(({ cc, nombre }) => {
+      const empVigia = mapaVigia.get(cc);
+      const est      = estadoEmpleado(empVigia);
+      return {
+        cc,
+        nombre:      empVigia?.nombre || nombre || '(desconocido)',
+        cargo:       empVigia?.cargo  || '—',
+        arl:         empVigia?.arl    || '—',
+        empId:       empVigia?.id     || null,
+        ...est,
+      };
+    });
+
+    // Stats
+    const total      = resultados.length;
+    const vigentes   = resultados.filter(r => r.estado === 'vigente').length;
+    const advertencia= resultados.filter(r => r.estado === 'advertencia').length;
+    const criticos   = resultados.filter(r => r.estado === 'sin_examen').length;
+
+    document.getElementById('r-total').textContent      = total;
+    document.getElementById('r-vigente').textContent    = vigentes;
+    document.getElementById('r-advertencia').textContent= advertencia;
+    document.getElementById('r-critico').textContent    = criticos;
+
+    document.getElementById('resultados').classList.remove('hidden');
+    renderResultados();
+  }
+
+  // ── Render tabla ───────────────────────────────────────────
+  function renderResultados() {
+    const filtro = document.getElementById('filtro-estado').value;
+    let lista = resultados;
+    if (filtro) lista = lista.filter(r => r.estado === filtro);
+
+    const orden = { sin_examen: 0, vencido: 1, advertencia: 2, vigente: 3 };
+    lista.sort((a, b) => (orden[a.estado] ?? 4) - (orden[b.estado] ?? 4));
+
+    const tbody = document.getElementById('tabla-resultado');
+
+    if (!lista.length) {
+      tbody.innerHTML = `<div class="empty-state"><p class="text-muted">Sin resultados para este filtro.</p></div>`;
+      return;
+    }
+
+    tbody.innerHTML = `
+      <table>
+        <thead><tr>
+          <th>Estado</th>
+          <th>Cédula</th>
+          <th>Nombre</th>
+          <th>Cargo</th>
+          <th></th>
+        </tr></thead>
+        <tbody>
+          ${lista.map(r => `
+            <tr>
+              <td><span class="badge ${r.clase}">${r.icono} ${r.label}</span></td>
+              <td style="font-size:14px;color:var(--muted)">${r.cc}</td>
+              <td style="font-weight:600;color:var(--navy)">${r.nombre}</td>
+              <td style="font-size:13px;color:var(--muted)">${r.cargo}</td>
+              <td>${r.empId
+                ? `<a href="empleado.html?id=${r.empId}" class="btn btn-outline btn-sm" target="_blank">Ver →</a>`
+                : `<a href="subir.html" class="btn btn-primary btn-sm">Subir examen</a>`}
+              </td>
+            </tr>`).join('')}
+        </tbody>
+      </table>`;
+  }
+
+  // ── Descargar reporte Excel ────────────────────────────────
+  function descargarCSV() {
+    const filas = [['CC', 'Nombre', 'Cargo', 'Estado', 'ARL']];
+    resultados.forEach(r => filas.push([r.cc, r.nombre, r.cargo, r.label, r.arl]));
+
+    const filas_html = filas.map((f, i) =>
+      `<tr>${f.map(v =>
+        i === 0
+          ? `<th style="background:#1A3A5C;color:white;font-weight:bold;padding:6px 10px">${v}</th>`
+          : `<td style="padding:5px 10px;border:1px solid #ddd">${v}</td>`
+      ).join('')}</tr>`
+    ).join('');
+
+    const html = `
+      <html xmlns:o="urn:schemas-microsoft-com:office:office"
+            xmlns:x="urn:schemas-microsoft-com:office:excel">
+      <head><meta charset="UTF-8">
+      <style>table{border-collapse:collapse}</style></head>
+      <body><table>${filas_html}</table></body></html>`;
+
+    const blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url; a.download = 'reporte-examenes-vigia.xls'; a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function reiniciar() {
+    document.getElementById('resultados').classList.add('hidden');
+    document.getElementById('txt-cedulas').value = '';
+    fileInput.value = '';
+    dropZone.innerHTML = `
+      <div class="upload-icon">📋</div>
+      <h3>Arrastra el CSV aquí</h3>
+      <p>o haz clic para seleccionar el archivo</p>`;
+  }
+
+  function mostrarToast(msg, tipo = 'ok') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = `toast toast-${tipo} show`;
+    setTimeout(() => t.classList.remove('show'), 3500);
+  }
+
+  init();
+</script>
+<script src="js/vigia-chat.js"></script>
+</body>
+</html>
+

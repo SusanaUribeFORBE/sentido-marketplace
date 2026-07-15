@@ -1,0 +1,874 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vigía 360 — Matriz de Peligros SG-SST</title>
+  <link rel="stylesheet" href="vigia.css" />
+  <style>
+    /* ── Tabla de peligros ───── */
+    .tabla-peligros { width:100%; border-collapse:collapse; font-size:13px }
+    .tabla-peligros th {
+      background:var(--navy); color:white;
+      padding:10px 12px; text-align:left; font-weight:600;
+      font-size:11px; text-transform:uppercase; letter-spacing:.5px;
+      white-space:nowrap;
+    }
+    .tabla-peligros td { padding:10px 12px; border-bottom:1px solid var(--border); vertical-align:top }
+    .tabla-peligros tr:hover td { background:#F8FAFC }
+    .tabla-peligros tr:last-child td { border-bottom:none }
+
+    /* ── Badges de clase ─────── */
+    .clase-badge { display:inline-flex; align-items:center; gap:4px;
+      font-size:11px; font-weight:600; padding:2px 7px; border-radius:4px;
+      white-space:nowrap }
+    .clase-BIOLOGICO    { background:#FDE8F0; color:#9B2335 }
+    .clase-FISICO       { background:#EFF6FF; color:#1E40AF }
+    .clase-QUIMICO      { background:#FEF3C7; color:#92400E }
+    .clase-PSICOSOCIAL  { background:#F5F3FF; color:#5B21B6 }
+    .clase-BIOMECANICO  { background:#ECFDF5; color:#065F46 }
+    .clase-SEGURIDAD    { background:#FFF7ED; color:#C2410C }
+    .clase-FENOMENO_NATURAL { background:#F0F9FF; color:#075985 }
+
+    /* ── Badges de nivel GTC-45 ─ */
+    .nivel-I   { background:#FDECEA; color:#C0392B; border:1px solid #FABEC2; font-weight:700; padding:3px 9px; border-radius:5px; font-size:12px }
+    .nivel-II  { background:#FEF3C7; color:#D97706; border:1px solid #FCD34D; font-weight:700; padding:3px 9px; border-radius:5px; font-size:12px }
+    .nivel-III { background:#FFFBEB; color:#B45309; border:1px solid #FDE68A; font-weight:700; padding:3px 9px; border-radius:5px; font-size:12px }
+    .nivel-IV  { background:#ECFDF5; color:#065F46; border:1px solid #6EE7B7; font-weight:700; padding:3px 9px; border-radius:5px; font-size:12px }
+    .nivel-    { background:#F1F5F9; color:var(--muted); padding:3px 9px; border-radius:5px; font-size:12px }
+
+    /* ── Estado peligro ────────── */
+    .estado-PENDIENTE     { color:#D97706; font-weight:600; font-size:12px }
+    .estado-EN_PROCESO    { color:#2E86AB; font-weight:600; font-size:12px }
+    .estado-IMPLEMENTADO  { color:#27AE60; font-weight:600; font-size:12px }
+
+    /* ── Valoración visual ────── */
+    .val-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px }
+    .val-col label { font-size:11px; font-weight:700; color:var(--navy);
+      text-transform:uppercase; letter-spacing:.4px; margin-bottom:6px; display:block }
+    .val-opt { display:flex; align-items:flex-start; gap:8px; padding:7px 10px;
+      border:1.5px solid var(--border); border-radius:7px; cursor:pointer;
+      margin-bottom:5px; transition:all .15s }
+    .val-opt:hover { border-color:var(--blue); background:var(--bg) }
+    .val-opt input[type=radio] { margin-top:2px; flex-shrink:0; accent-color:var(--blue) }
+    .val-opt.selected { border-color:var(--blue); background:#EFF6FF }
+    .val-opt-label { font-size:13px; font-weight:600; color:var(--text) }
+    .val-opt-desc  { font-size:11px; color:var(--muted); margin-top:1px; line-height:1.4 }
+    .val-opt-num   { font-size:15px; font-weight:800; color:var(--blue); margin-left:auto; flex-shrink:0; align-self:center }
+
+    /* ── Resultado GTC-45 ─────── */
+    .result-box { border-radius:10px; padding:16px; text-align:center; margin-top:14px }
+    .result-box .nr-num { font-size:32px; font-weight:800; line-height:1 }
+    .result-box .nr-label { font-size:12px; color:var(--muted); margin-top:2px }
+    .result-box .nivel-badge { font-size:13px; font-weight:700; margin-top:8px;
+      display:inline-block; padding:4px 12px; border-radius:6px }
+    .result-I   { background:#FDECEA }
+    .result-II  { background:#FEF3C7 }
+    .result-III { background:#FFFBEB }
+    .result-IV  { background:#ECFDF5 }
+    .result-    { background:#F1F5F9 }
+
+    /* ── Medidas (jerarquía) ──── */
+    .jerarquia-section { border-left:3px solid var(--border); padding-left:12px; margin-bottom:8px }
+    .jerarquia-label { font-size:11px; font-weight:700; color:var(--muted);
+      text-transform:uppercase; letter-spacing:.4px; margin-bottom:3px }
+
+    /* ── Filtros ─────────────── */
+    .filtros-row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:18px }
+    .filtros-row select { padding:7px 12px; border:1.5px solid var(--border);
+      border-radius:7px; font-size:13px; background:white; color:var(--text); cursor:pointer }
+    .filtros-row select:focus { outline:none; border-color:var(--blue) }
+
+    /* ── Summary cards ────────── */
+    .summary-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:12px; margin-bottom:20px }
+    @media(max-width:700px){.summary-grid{grid-template-columns:repeat(3,1fr)}}
+    .summary-card { background:white; border:1.5px solid var(--border);
+      border-radius:10px; padding:14px 16px; text-align:center }
+    .summary-card .num { font-size:26px; font-weight:800; color:var(--navy) }
+    .summary-card .lbl { font-size:11px; color:var(--muted); margin-top:2px }
+
+    /* ── Overflow table wrapper ── */
+    .tabla-wrap { overflow-x:auto }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="dashboard.html" style="display:flex;align-items:center;gap:10px;text-decoration:none">
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="36" viewBox="0 0 34 38">
+      <path d="M17 1L2 7V21C2 30 9 37 17 39C25 37 32 30 32 21V7Z" fill="rgba(255,255,255,0.15)" stroke="white" stroke-width="1.5"/>
+      <circle cx="12" cy="19" r="4.5" fill="white" opacity="0.9"/>
+      <circle cx="22" cy="19" r="4.5" fill="white" opacity="0.9"/>
+      <circle cx="12" cy="19" r="2" fill="rgba(26,58,92,0.8)"/>
+      <circle cx="22" cy="19" r="2" fill="rgba(26,58,92,0.8)"/>
+      <polygon points="15,25 17,28 19,25" fill="white" opacity="0.7"/>
+    </svg>
+    <span style="color:white;font-weight:800;font-size:17px;letter-spacing:0.5px">VIGÍA <span style="color:#4ADE80;font-weight:900">360</span></span>
+  </a>
+  <div class="nav-links">
+    <a href="dashboard.html" class="nav-link-fixed">Dashboard</a>
+
+    <!-- P — Planear -->
+    <div class="nav-dropdown" id="dd-P">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-P')">
+        <span class="phva-pill phva-P">P</span> Planear <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="perfil-responsable.html">🩺 Responsable SST</a>
+        <a href="responsabilidades.html">👥 Roles y Responsabilidades</a>
+        <a href="copasst.html">🤝 COPASST y Convivencia</a>
+        <a href="documentos-sst.html">📄 Documentos del SG-SST</a>
+        <a href="matriz-peligros.html">⚠️ Matriz de Peligros (GTC-45)</a>
+        <a href="plan-trabajo.html">📅 Plan de Trabajo Anual</a>
+        <a href="presupuesto-sgsst.html">💰 Presupuesto SG-SST</a>
+        <a href="profesiograma.html">💊 Profesiograma</a>
+      </div>
+    </div>
+
+    <!-- H — Hacer -->
+    <div class="nav-dropdown" id="dd-H">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-H')">
+        <span class="phva-pill phva-H">H</span> Hacer <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="epp.html">🦺 EPP</a>
+        <a href="capacitaciones.html">🎓 Capacitaciones</a>
+        <a href="emergencias.html">🚨 Emergencias y Brigada</a>
+        <a href="inspecciones.html">🔍 Inspecciones y Mantenimiento</a>
+        <a href="perfil-salud.html">🏥 Salud Ocupacional</a>
+        <div class="nav-dd-divider"></div>
+        <a href="lista-personal.html">👥 Lista de Personal</a>
+        <a href="subir.html">⬆️ Subir Examen</a>
+        <a href="subir-masivo.html">📦 Carga Masiva</a>
+        <a href="cartas-masivas.html">📄 Cartas Masivas</a>
+        <a href="reporte-examenes.html">📊 Cobertura de Exámenes</a>
+        <a href="informe-condiciones.html">📋 Informe de Condiciones</a>
+      </div>
+    </div>
+
+    <!-- V — Verificar -->
+    <div class="nav-dropdown" id="dd-V">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-V')">
+        <span class="phva-pill phva-V">V</span> Verificar <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="evaluacion-sst.html">📋 Evaluación (Res. 0312)</a>
+        <a href="investigaciones.html">🔍 AT / Incidentes</a>
+        <a href="ausentismo.html">📉 Ausentismo laboral</a>
+        <a href="indicadores-sgsst.html">📊 Indicadores SG-SST</a>
+        <a href="analisis-phva.html">📈 Análisis e Indicadores</a>
+      </div>
+    </div>
+
+    <!-- A — Actuar -->
+    <div class="nav-dropdown" id="dd-A">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-A')">
+        <span class="phva-pill phva-A">A</span> Actuar <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="mejoramiento.html">✅ Acciones de Mejoramiento</a>
+        <a href="evaluacion-sst.html">📝 Plan de Mejoramiento (F002)</a>
+      </div>
+    </div>
+
+    <a href="listado-maestro.html" class="nav-link-fixed">📁 Listado Maestro</a>
+    <span id="nav-empresa" style="color:#CBD8E6;font-size:13px;padding:6px 0"></span>
+    <button onclick="VigiaAPI.logout()"
+      style="background:none;border:1px solid rgba(255,255,255,.2);color:#CBD8E6;
+             border-radius:6px;padding:6px 12px;cursor:pointer;font-size:13px">Salir</button>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="doc-header">
+    <div class="doc-header-logo-col">
+      <img class="doc-logo-img" src="" alt="" onerror="this.style.display='none'" />
+    </div>
+    <div class="doc-header-title-col">Matriz de Identificación de Peligros<br>y Valoración de Riesgos — GTC-45</div>
+    <div class="doc-header-code-col">
+      <span class="doc-header-code-line"><strong>CÓDIGO:</strong> <span class="doc-codigo" data-sufijo="M001">SG-SST M001</span></span>
+      <span class="doc-header-code-line"><strong>VERSIÓN</strong> 1</span>
+      <span class="doc-header-code-line"><strong>FECHA DE VIGENCIA:</strong><br><span class="doc-fecha"></span></span>
+    </div>
+  </div>
+  <div id="cargando" class="empty-state mt-8">
+    <div class="spinner" style="margin:0 auto 16px;border-color:rgba(46,134,171,.2);border-top-color:var(--blue)"></div>
+    <p class="text-muted">Cargando matriz de peligros…</p>
+  </div>
+
+  <div id="contenido" style="display:none">
+    <div class="flex justify-between items-center mb-4">
+      <div>
+        <h2 style="font-size:20px;font-weight:800;color:var(--navy)">Matriz de Peligros SG-SST</h2>
+        <p class="text-muted text-sm" id="subtitulo-empresa">GTC-45 — Decreto 1072/2015</p>
+      </div>
+      <button class="btn btn-navy" onclick="abrirFormulario(null)">+ Agregar peligro</button>
+    </div>
+
+    <!-- Resumen por nivel -->
+    <div class="summary-grid" id="summary-cards"></div>
+
+    <!-- Filtros -->
+    <div class="filtros-row">
+      <select id="f-proceso" onchange="renderTabla()"><option value="">Todos los procesos</option></select>
+      <select id="f-clase" onchange="renderTabla()">
+        <option value="">Todas las clases</option>
+        <option value="BIOLOGICO">🦠 Biológico</option>
+        <option value="FISICO">⚡ Físico</option>
+        <option value="QUIMICO">☢️ Químico</option>
+        <option value="PSICOSOCIAL">🧠 Psicosocial</option>
+        <option value="BIOMECANICO">🦴 Biomecánico</option>
+        <option value="SEGURIDAD">🔒 Seguridad</option>
+        <option value="FENOMENO_NATURAL">🌪️ Fenómeno natural</option>
+      </select>
+      <select id="f-nivel" onchange="renderTabla()">
+        <option value="">Todos los niveles</option>
+        <option value="I">Nivel I — No Aceptable</option>
+        <option value="II">Nivel II — No Aceptable/Mejorable</option>
+        <option value="III">Nivel III — Mejorable</option>
+        <option value="IV">Nivel IV — Aceptable</option>
+        <option value="">Sin valorar</option>
+      </select>
+      <select id="f-estado" onchange="renderTabla()">
+        <option value="">Todos los estados</option>
+        <option value="PENDIENTE">Pendiente</option>
+        <option value="EN_PROCESO">En proceso</option>
+        <option value="IMPLEMENTADO">Implementado</option>
+      </select>
+    </div>
+
+    <!-- Tabla -->
+    <div class="card" style="padding:0;overflow:hidden">
+      <div class="tabla-wrap">
+        <table class="tabla-peligros" id="tabla-peligros">
+          <thead>
+            <tr>
+              <th style="width:36px">#</th>
+              <th>Proceso · Zona</th>
+              <th>Peligro</th>
+              <th>Controles existentes</th>
+              <th style="text-align:center">NR</th>
+              <th style="text-align:center">Nivel</th>
+              <th>Medidas propuestas</th>
+              <th>Responsable</th>
+              <th style="text-align:center">Estado</th>
+              <th style="width:72px"></th>
+            </tr>
+          </thead>
+          <tbody id="tbody-peligros"></tbody>
+        </table>
+      </div>
+      <div id="tabla-empty" style="display:none;padding:40px;text-align:center">
+        <div style="font-size:36px;margin-bottom:10px">⚠️</div>
+        <p style="font-weight:600;color:var(--navy)">Sin peligros registrados</p>
+        <p class="text-muted text-sm mt-4">Haz clic en "+ Agregar peligro" para comenzar la identificación según GTC-45.</p>
+      </div>
+    </div>
+
+    <p class="text-muted text-sm mt-4" style="text-align:right">
+      Ref: GTC-45 · Res. 0312/2019 · Decreto 1072/2015 Art. 2.2.4.6.15
+    </p>
+  </div>
+</div>
+
+<!-- ══ MODAL AGREGAR / EDITAR PELIGRO ════════════════════════════════════════ -->
+<div id="modal-peligro" class="hidden"
+     style="position:fixed;inset:0;background:rgba(0,0,0,.48);z-index:500;
+            display:flex;align-items:flex-start;justify-content:center;padding:20px 16px;overflow-y:auto">
+  <div class="card" style="padding:28px;width:100%;max-width:780px">
+
+    <div class="flex justify-between items-center" style="margin-bottom:22px">
+      <div>
+        <h3 style="color:var(--navy)" id="modal-titulo">Agregar peligro</h3>
+        <p class="text-muted text-sm">GTC-45 — Identificación, evaluación y valoración de riesgos</p>
+      </div>
+      <button onclick="cerrarFormulario()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--muted)">✕</button>
+    </div>
+
+    <form id="form-peligro" onsubmit="guardarPeligro(event)">
+
+      <!-- 1 ─ Contexto ──────────────────────────────────────────── -->
+      <div style="margin-bottom:22px">
+        <div style="font-size:12px;font-weight:700;color:var(--blue);text-transform:uppercase;
+                    letter-spacing:.6px;margin-bottom:12px;padding-bottom:6px;
+                    border-bottom:2px solid var(--blue)">1. Contexto</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+          <div>
+            <label class="label">Proceso / Área</label>
+            <input type="text" id="p-proceso" class="input" placeholder="Ej: Producción, Administración">
+          </div>
+          <div>
+            <label class="label">Zona / Lugar de trabajo</label>
+            <input type="text" id="p-zona" class="input" placeholder="Ej: Bodega, Oficina, Planta">
+          </div>
+          <div>
+            <label class="label">Tipo de actividad</label>
+            <select id="p-actividad-tipo" class="input">
+              <option value="">Seleccionar…</option>
+              <option value="RUTINARIA">Rutinaria</option>
+              <option value="NO_RUTINARIA">No rutinaria</option>
+            </select>
+          </div>
+        </div>
+        <div style="margin-top:12px">
+          <label class="label">Tarea</label>
+          <input type="text" id="p-tarea" class="input" placeholder="Ej: Carga y descarga de mercancía">
+        </div>
+      </div>
+
+      <!-- 2 ─ Identificación del peligro ───────────────────────── -->
+      <div style="margin-bottom:22px">
+        <div style="font-size:12px;font-weight:700;color:var(--blue);text-transform:uppercase;
+                    letter-spacing:.6px;margin-bottom:12px;padding-bottom:6px;
+                    border-bottom:2px solid var(--blue)">2. Identificación del peligro</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+          <div>
+            <label class="label">Clasificación del peligro</label>
+            <select id="p-clase" class="input">
+              <option value="">Seleccionar clase…</option>
+              <option value="BIOLOGICO">🦠 Biológico</option>
+              <option value="FISICO">⚡ Físico (ruido, vibración, temperatura, iluminación…)</option>
+              <option value="QUIMICO">☢️ Químico (gases, polvos, solventes…)</option>
+              <option value="PSICOSOCIAL">🧠 Psicosocial (estrés, carga mental, acoso…)</option>
+              <option value="BIOMECANICO">🦴 Biomecánico (posturas, esfuerzo, movimiento repetitivo…)</option>
+              <option value="SEGURIDAD">🔒 Condiciones de seguridad (mecánico, eléctrico, locativo…)</option>
+              <option value="FENOMENO_NATURAL">🌪️ Fenómeno natural (sismo, inundación, ventisca…)</option>
+            </select>
+          </div>
+          <div>
+            <label class="label">Efectos posibles</label>
+            <input type="text" id="p-efectos" class="input" placeholder="Ej: Lumbalgia, hipoacusia, heridas…">
+          </div>
+        </div>
+        <div>
+          <label class="label">Descripción del peligro</label>
+          <textarea id="p-descripcion" class="input" rows="2" style="resize:vertical"
+            placeholder="Descripción detallada del peligro identificado"></textarea>
+        </div>
+      </div>
+
+      <!-- 3 ─ Controles existentes ──────────────────────────────── -->
+      <div style="margin-bottom:22px">
+        <div style="font-size:12px;font-weight:700;color:var(--blue);text-transform:uppercase;
+                    letter-spacing:.6px;margin-bottom:12px;padding-bottom:6px;
+                    border-bottom:2px solid var(--blue)">3. Controles existentes</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+          <div>
+            <label class="label">Fuente</label>
+            <input type="text" id="p-ctrl-fuente" class="input" placeholder="Ej: Mantenimiento preventivo">
+          </div>
+          <div>
+            <label class="label">Medio</label>
+            <input type="text" id="p-ctrl-medio" class="input" placeholder="Ej: Aislamiento acústico">
+          </div>
+          <div>
+            <label class="label">Individuo</label>
+            <input type="text" id="p-ctrl-individuo" class="input" placeholder="Ej: Tapones auditivos">
+          </div>
+        </div>
+      </div>
+
+      <!-- 4 ─ Valoración GTC-45 ─────────────────────────────────── -->
+      <div style="margin-bottom:22px">
+        <div style="font-size:12px;font-weight:700;color:var(--blue);text-transform:uppercase;
+                    letter-spacing:.6px;margin-bottom:12px;padding-bottom:6px;
+                    border-bottom:2px solid var(--blue)">4. Valoración del riesgo — GTC-45</div>
+        <div class="val-grid">
+          <!-- ND -->
+          <div>
+            <label class="val-col"><span class="label" style="margin-bottom:6px">Nivel de Deficiencia (ND)</span></label>
+            <label class="val-opt" onclick="selectOpt(this,'nd')">
+              <input type="radio" name="p-nd" value="10" onchange="calcRiesgo()">
+              <div><div class="val-opt-label">Muy Alto</div><div class="val-opt-desc">Peligros determinan posible generación de incidentes con consecuencias muy significativas</div></div>
+              <span class="val-opt-num">10</span>
+            </label>
+            <label class="val-opt" onclick="selectOpt(this,'nd')">
+              <input type="radio" name="p-nd" value="6" onchange="calcRiesgo()">
+              <div><div class="val-opt-label">Alto</div><div class="val-opt-desc">Se han detectado peligros que pueden dar lugar a consecuencias significativas</div></div>
+              <span class="val-opt-num">6</span>
+            </label>
+            <label class="val-opt" onclick="selectOpt(this,'nd')">
+              <input type="radio" name="p-nd" value="4" onchange="calcRiesgo()">
+              <div><div class="val-opt-label">Medio</div><div class="val-opt-desc">Peligros con consecuencias poco significativas; las medidas preventivas son aceptables</div></div>
+              <span class="val-opt-num">4</span>
+            </label>
+            <label class="val-opt" onclick="selectOpt(this,'nd')">
+              <input type="radio" name="p-nd" value="2" onchange="calcRiesgo()">
+              <div><div class="val-opt-label">Bajo</div><div class="val-opt-desc">No se han detectado anomalías destacables; el riesgo está controlado</div></div>
+              <span class="val-opt-num">2</span>
+            </label>
+          </div>
+          <!-- NE -->
+          <div>
+            <label class="val-col"><span class="label" style="margin-bottom:6px">Nivel de Exposición (NE)</span></label>
+            <label class="val-opt" onclick="selectOpt(this,'ne')">
+              <input type="radio" name="p-ne" value="4" onchange="calcRiesgo()">
+              <div><div class="val-opt-label">Continua</div><div class="val-opt-desc">La situación de exposición se presenta sin interrupción o varias veces con tiempo prolongado</div></div>
+              <span class="val-opt-num">4</span>
+            </label>
+            <label class="val-opt" onclick="selectOpt(this,'ne')">
+              <input type="radio" name="p-ne" value="3" onchange="calcRiesgo()">
+              <div><div class="val-opt-label">Frecuente</div><div class="val-opt-desc">Varias veces en la jornada laboral aunque sea por tiempos cortos</div></div>
+              <span class="val-opt-num">3</span>
+            </label>
+            <label class="val-opt" onclick="selectOpt(this,'ne')">
+              <input type="radio" name="p-ne" value="2" onchange="calcRiesgo()">
+              <div><div class="val-opt-label">Ocasional</div><div class="val-opt-desc">Alguna vez en la jornada laboral y por un período corto de tiempo</div></div>
+              <span class="val-opt-num">2</span>
+            </label>
+            <label class="val-opt" onclick="selectOpt(this,'ne')">
+              <input type="radio" name="p-ne" value="1" onchange="calcRiesgo()">
+              <div><div class="val-opt-label">Esporádica</div><div class="val-opt-desc">Irregularmente; pocas veces en un período de tiempo</div></div>
+              <span class="val-opt-num">1</span>
+            </label>
+          </div>
+          <!-- NC + resultado -->
+          <div>
+            <label class="val-col"><span class="label" style="margin-bottom:6px">Nivel de Consecuencia (NC)</span></label>
+            <label class="val-opt" onclick="selectOpt(this,'nc')">
+              <input type="radio" name="p-nc" value="100" onchange="calcRiesgo()">
+              <div><div class="val-opt-label">Mortal / Catastrófico</div><div class="val-opt-desc">Una muerte o más. Daño a la salud irreversible</div></div>
+              <span class="val-opt-num">100</span>
+            </label>
+            <label class="val-opt" onclick="selectOpt(this,'nc')">
+              <input type="radio" name="p-nc" value="60" onchange="calcRiesgo()">
+              <div><div class="val-opt-label">Muy Grave</div><div class="val-opt-desc">Lesiones o enfermedades graves irreparables; incapacidad laboral permanente parcial</div></div>
+              <span class="val-opt-num">60</span>
+            </label>
+            <label class="val-opt" onclick="selectOpt(this,'nc')">
+              <input type="radio" name="p-nc" value="25" onchange="calcRiesgo()">
+              <div><div class="val-opt-label">Grave</div><div class="val-opt-desc">Lesiones o enfermedades con incapacidad laboral temporal; atención médica requerida</div></div>
+              <span class="val-opt-num">25</span>
+            </label>
+            <label class="val-opt" onclick="selectOpt(this,'nc')">
+              <input type="radio" name="p-nc" value="10" onchange="calcRiesgo()">
+              <div><div class="val-opt-label">Leve</div><div class="val-opt-desc">No hay incapacidad; pequeñas lesiones o molestias que no requieren incapacidad</div></div>
+              <span class="val-opt-num">10</span>
+            </label>
+
+            <!-- Resultado automático -->
+            <div id="result-box" class="result-box result-" style="margin-top:14px">
+              <div class="nr-label">NP = ND × NE</div>
+              <div id="r-np" class="nr-num" style="font-size:18px;color:var(--navy)">—</div>
+              <div class="nr-label" style="margin-top:8px">NR = NP × NC</div>
+              <div id="r-nr" class="nr-num">—</div>
+              <div id="r-nivel" style="display:inline-block;padding:4px 14px;border-radius:6px;
+                font-size:13px;font-weight:700;margin-top:8px">Sin valorar</div>
+              <div id="r-label" class="nr-label" style="margin-top:4px"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5 ─ Medidas de intervención ────────────────────────────── -->
+      <div style="margin-bottom:22px">
+        <div style="font-size:12px;font-weight:700;color:var(--blue);text-transform:uppercase;
+                    letter-spacing:.6px;margin-bottom:12px;padding-bottom:6px;
+                    border-bottom:2px solid var(--blue)">5. Medidas de intervención propuestas</div>
+        <p class="text-muted text-sm" style="margin-bottom:10px">Según jerarquía de controles (Decreto 1072/2015 Art. 2.2.4.6.24)</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="jerarquia-section" style="border-color:#C0392B">
+            <div class="jerarquia-label" style="color:#C0392B">1. Eliminación</div>
+            <input type="text" id="p-m-elim" class="input" placeholder="Suprimir el peligro">
+          </div>
+          <div class="jerarquia-section" style="border-color:#E67E22">
+            <div class="jerarquia-label" style="color:#E67E22">2. Sustitución</div>
+            <input type="text" id="p-m-sust" class="input" placeholder="Reemplazar por algo menos riesgoso">
+          </div>
+          <div class="jerarquia-section" style="border-color:#F59E0B">
+            <div class="jerarquia-label" style="color:#B45309">3. Controles de ingeniería</div>
+            <input type="text" id="p-m-ing" class="input" placeholder="Ej: Aislamiento, ventilación localizada">
+          </div>
+          <div class="jerarquia-section" style="border-color:#2E86AB">
+            <div class="jerarquia-label" style="color:#2E86AB">4. Controles administrativos</div>
+            <input type="text" id="p-m-adm" class="input" placeholder="Ej: Rotación de personal, señalización">
+          </div>
+          <div class="jerarquia-section" style="border-color:#27AE60">
+            <div class="jerarquia-label" style="color:#27AE60">5. EPP</div>
+            <input type="text" id="p-m-epp" class="input" placeholder="Ej: Tapones, guantes, gafas de seguridad">
+          </div>
+        </div>
+      </div>
+
+      <!-- 6 ─ Seguimiento ────────────────────────────────────────── -->
+      <div style="margin-bottom:22px">
+        <div style="font-size:12px;font-weight:700;color:var(--blue);text-transform:uppercase;
+                    letter-spacing:.6px;margin-bottom:12px;padding-bottom:6px;
+                    border-bottom:2px solid var(--blue)">6. Seguimiento</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+          <div>
+            <label class="label">Responsable de control</label>
+            <input type="text" id="p-responsable" class="input" placeholder="Nombre o cargo">
+          </div>
+          <div>
+            <label class="label">Fecha de implementación</label>
+            <input type="date" id="p-fecha-impl" class="input">
+          </div>
+          <div>
+            <label class="label">Estado de intervención</label>
+            <select id="p-estado" class="input">
+              <option value="PENDIENTE">⏳ Pendiente</option>
+              <option value="EN_PROCESO">🔄 En proceso</option>
+              <option value="IMPLEMENTADO">✅ Implementado</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div id="form-error" style="display:none;color:var(--critico);font-size:13px;margin-bottom:12px;
+        padding:8px 12px;background:#FDECEA;border-radius:6px"></div>
+
+      <div class="flex gap-3 justify-between">
+        <button type="button" class="btn btn-outline" onclick="cerrarFormulario()">Cancelar</button>
+        <button type="submit" class="btn btn-navy" id="btn-guardar-peligro">Guardar peligro →</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="js/vigia-api.js"></script>
+<script>
+  let peligros = [];
+  let editandoId = null;
+
+  // ── Inicio ─────────────────────────────────────────────────
+  async function init() {
+    const ok = await VigiaAPI.requireAuth();
+    if (!ok) return;
+    VigiaAPI.initDocHeader();
+    await cargarPeligros();
+    document.getElementById('cargando').style.display = 'none';
+    document.getElementById('contenido').style.display = '';
+  }
+
+  async function cargarPeligros() {
+    const empresaId = VigiaAPI.esAdmin() ? VigiaAPI.empresaId() : null;
+    peligros = await VigiaAPI.getPeligros(empresaId) || [];
+    renderSummary();
+    renderProcesos();
+    renderTabla();
+  }
+
+  // ── Summary cards ───────────────────────────────────────────
+  function renderSummary() {
+    const total = peligros.length;
+    const cI    = peligros.filter(p => calcNivel(p.nivel_deficiencia, p.nivel_exposicion, p.nivel_consecuencia).nivel === 'I').length;
+    const cII   = peligros.filter(p => calcNivel(p.nivel_deficiencia, p.nivel_exposicion, p.nivel_consecuencia).nivel === 'II').length;
+    const cIII  = peligros.filter(p => calcNivel(p.nivel_deficiencia, p.nivel_exposicion, p.nivel_consecuencia).nivel === 'III').length;
+    const cIV   = peligros.filter(p => calcNivel(p.nivel_deficiencia, p.nivel_exposicion, p.nivel_consecuencia).nivel === 'IV').length;
+    document.getElementById('summary-cards').innerHTML = `
+      <div class="summary-card"><div class="num">${total}</div><div class="lbl">Total peligros</div></div>
+      <div class="summary-card" style="border-color:#FABEC2">
+        <div class="num" style="color:#C0392B">${cI}</div>
+        <div class="lbl">Nivel I — No Aceptable</div>
+      </div>
+      <div class="summary-card" style="border-color:#FCD34D">
+        <div class="num" style="color:#D97706">${cII}</div>
+        <div class="lbl">Nivel II — Mejorable</div>
+      </div>
+      <div class="summary-card" style="border-color:#FDE68A">
+        <div class="num" style="color:#B45309">${cIII}</div>
+        <div class="lbl">Nivel III — Mejorable</div>
+      </div>
+      <div class="summary-card" style="border-color:#6EE7B7">
+        <div class="num" style="color:#065F46">${cIV}</div>
+        <div class="lbl">Nivel IV — Aceptable</div>
+      </div>`;
+  }
+
+  // ── Filtro de procesos ──────────────────────────────────────
+  function renderProcesos() {
+    const sel = document.getElementById('f-proceso');
+    const actual = sel.value;
+    const procesos = [...new Set(peligros.map(p => p.proceso).filter(Boolean))].sort();
+    sel.innerHTML = '<option value="">Todos los procesos</option>' +
+      procesos.map(p => `<option value="${p}"${p===actual?'selected':''}>${p}</option>`).join('');
+  }
+
+  // ── Tabla ───────────────────────────────────────────────────
+  function renderTabla() {
+    const fProceso = document.getElementById('f-proceso').value;
+    const fClase   = document.getElementById('f-clase').value;
+    const fNivel   = document.getElementById('f-nivel').value;
+    const fEstado  = document.getElementById('f-estado').value;
+
+    let filtrados = peligros.filter(p => {
+      const nv = calcNivel(p.nivel_deficiencia, p.nivel_exposicion, p.nivel_consecuencia);
+      if (fProceso && p.proceso !== fProceso) return false;
+      if (fClase   && p.peligro_clase !== fClase) return false;
+      if (fNivel === '' && nv.nivel !== '') return false;
+      if (fNivel   && fNivel !== '' && nv.nivel !== fNivel) return false;
+      if (fEstado  && p.estado !== fEstado) return false;
+      return true;
+    });
+
+    // Ordenar por nivel de riesgo (I primero)
+    const ordenNivel = { 'I':0, 'II':1, 'III':2, 'IV':3, '':4 };
+    filtrados.sort((a,b) => {
+      const na = calcNivel(a.nivel_deficiencia, a.nivel_exposicion, a.nivel_consecuencia).nivel;
+      const nb = calcNivel(b.nivel_deficiencia, b.nivel_exposicion, b.nivel_consecuencia).nivel;
+      return (ordenNivel[na]||4) - (ordenNivel[nb]||4);
+    });
+
+    const tbody = document.getElementById('tbody-peligros');
+    const empty = document.getElementById('tabla-empty');
+
+    if (filtrados.length === 0) {
+      tbody.innerHTML = '';
+      empty.style.display = '';
+      return;
+    }
+    empty.style.display = 'none';
+
+    tbody.innerHTML = filtrados.map((p, i) => {
+      const nv = calcNivel(p.nivel_deficiencia, p.nivel_exposicion, p.nivel_consecuencia);
+      const nr = (p.nivel_deficiencia && p.nivel_exposicion && p.nivel_consecuencia)
+        ? p.nivel_deficiencia * p.nivel_exposicion * p.nivel_consecuencia : null;
+
+      const claseIco  = CLASE_ICO[p.peligro_clase] || '❓';
+      const medidas   = [p.medida_eliminacion, p.medida_sustitucion, p.medida_ingenieria, p.medida_administrativa, p.medida_epp]
+                          .filter(Boolean).join(' · ') || '—';
+      const controles = [p.control_fuente, p.control_medio, p.control_individuo].filter(Boolean).join(' · ') || '—';
+
+      return `<tr>
+        <td style="color:var(--muted);font-size:12px">${i+1}</td>
+        <td>
+          <div style="font-weight:600;font-size:13px">${p.proceso || '—'}</div>
+          ${p.zona ? `<div class="text-muted text-sm">${p.zona}</div>` : ''}
+          ${p.tarea ? `<div class="text-muted text-sm" style="font-style:italic">${p.tarea}</div>` : ''}
+        </td>
+        <td>
+          <div style="margin-bottom:4px">
+            <span class="clase-badge clase-${p.peligro_clase||''}">${claseIco} ${CLASE_LABEL[p.peligro_clase]||p.peligro_clase||'—'}</span>
+          </div>
+          <div style="font-size:13px;color:var(--text)">${p.peligro_descripcion || '—'}</div>
+          ${p.efectos_posibles ? `<div class="text-muted text-sm">⚡ ${p.efectos_posibles}</div>` : ''}
+        </td>
+        <td style="font-size:12px;color:var(--muted);max-width:140px">${controles}</td>
+        <td style="text-align:center;white-space:nowrap">
+          ${nr !== null ? `<span style="font-weight:700;font-size:15px;color:${nv.color||'var(--navy)'}">${nr}</span>` : '<span class="text-muted">—</span>'}
+        </td>
+        <td style="text-align:center">
+          <span class="nivel-${nv.nivel}">${nv.nivel ? 'Nivel '+nv.nivel : '—'}</span>
+        </td>
+        <td style="font-size:12px;color:var(--muted);max-width:160px">${medidas}</td>
+        <td style="font-size:12px">${p.responsable||'—'}</td>
+        <td style="text-align:center">
+          <span class="estado-${p.estado}">${ESTADO_LABEL[p.estado]||p.estado||'—'}</span>
+        </td>
+        <td>
+          <div class="flex gap-2">
+            <button onclick="abrirFormulario('${p.id}')"
+              style="background:none;border:none;cursor:pointer;font-size:16px;padding:4px"
+              title="Editar">✏️</button>
+            <button onclick="eliminarPeligro('${p.id}')"
+              style="background:none;border:none;cursor:pointer;font-size:16px;padding:4px"
+              title="Eliminar">🗑</button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  // ── Constantes ──────────────────────────────────────────────
+  const CLASE_ICO = {
+    BIOLOGICO:'🦠', FISICO:'⚡', QUIMICO:'☢️',
+    PSICOSOCIAL:'🧠', BIOMECANICO:'🦴', SEGURIDAD:'🔒', FENOMENO_NATURAL:'🌪️',
+  };
+  const CLASE_LABEL = {
+    BIOLOGICO:'Biológico', FISICO:'Físico', QUIMICO:'Químico',
+    PSICOSOCIAL:'Psicosocial', BIOMECANICO:'Biomecánico',
+    SEGURIDAD:'Seguridad', FENOMENO_NATURAL:'Fenómeno natural',
+  };
+  const ESTADO_LABEL = {
+    PENDIENTE:'⏳ Pendiente', EN_PROCESO:'🔄 En proceso', IMPLEMENTADO:'✅ Implementado',
+  };
+
+  // ── Cálculo GTC-45 ──────────────────────────────────────────
+  function calcNivel(nd, ne, nc) {
+    if (!nd || !ne || !nc) return { nivel:'', color:'', label:'Sin valorar', nr: null };
+    const np = nd * ne;
+    const nr = np * nc;
+    if (nr >= 600) return { nivel:'I',   color:'#C0392B', label:'No Aceptable',             np, nr };
+    if (nr >= 150) return { nivel:'II',  color:'#D97706', label:'No Aceptable / Mejorable', np, nr };
+    if (nr >= 40)  return { nivel:'III', color:'#B45309', label:'Mejorable',                np, nr };
+    return               { nivel:'IV',  color:'#065F46', label:'Aceptable',                np, nr };
+  }
+
+  // ── Valoración en tiempo real ────────────────────────────────
+  function calcRiesgo() {
+    const nd = parseInt(document.querySelector('input[name="p-nd"]:checked')?.value||'0');
+    const ne = parseInt(document.querySelector('input[name="p-ne"]:checked')?.value||'0');
+    const nc = parseInt(document.querySelector('input[name="p-nc"]:checked')?.value||'0');
+    const box = document.getElementById('result-box');
+    box.className = 'result-box result-';
+
+    if (!nd || !ne || !nc) {
+      document.getElementById('r-np').textContent = '—';
+      document.getElementById('r-nr').textContent = '—';
+      document.getElementById('r-nivel').textContent = 'Sin valorar';
+      document.getElementById('r-nivel').style.cssText = 'display:inline-block;padding:4px 14px;border-radius:6px;font-size:13px;font-weight:700;margin-top:8px;background:#E2E8F0;color:var(--muted)';
+      document.getElementById('r-label').textContent = '';
+      return;
+    }
+
+    const res = calcNivel(nd, ne, nc);
+    document.getElementById('r-np').textContent = res.np;
+    document.getElementById('r-nr').textContent = res.nr;
+    box.className = `result-box result-${res.nivel}`;
+    const niv = document.getElementById('r-nivel');
+    niv.textContent = `Nivel ${res.nivel} — ${res.label}`;
+    niv.style.cssText = `display:inline-block;padding:4px 14px;border-radius:6px;font-size:13px;font-weight:700;margin-top:8px;background:white;color:${res.color}`;
+    document.getElementById('r-label').textContent = intervencionLabel(res.nivel);
+  }
+
+  function intervencionLabel(nivel) {
+    if (nivel==='I')   return 'No se debe comenzar ni continuar el trabajo. Corrección inmediata.';
+    if (nivel==='II')  return 'No debe comenzarse el trabajo sin adoptar medidas de control. Atención urgente.';
+    if (nivel==='III') return 'Esfuerzo para reducir el riesgo. Implementar mejoras en período definido.';
+    if (nivel==='IV')  return 'Riesgo tolerable. Mantener controles existentes y verificar periódicamente.';
+    return '';
+  }
+
+  function selectOpt(label, grupo) {
+    document.querySelectorAll(`.val-opt`).forEach(l => {
+      if (l.querySelector(`input[name="p-${grupo}"]`)) l.classList.remove('selected');
+    });
+    label.classList.add('selected');
+  }
+
+  // ── Modal formulario ─────────────────────────────────────────
+  function abrirFormulario(id) {
+    editandoId = id;
+    document.getElementById('modal-titulo').textContent = id ? 'Editar peligro' : 'Agregar peligro';
+    document.getElementById('form-error').style.display = 'none';
+    document.getElementById('btn-guardar-peligro').textContent = 'Guardar peligro →';
+    document.getElementById('btn-guardar-peligro').disabled = false;
+
+    // Limpiar valoración
+    document.querySelectorAll('.val-opt').forEach(l => l.classList.remove('selected'));
+
+    if (id) {
+      const p = peligros.find(x => x.id === id);
+      if (!p) return;
+      document.getElementById('p-proceso').value        = p.proceso || '';
+      document.getElementById('p-zona').value           = p.zona || '';
+      document.getElementById('p-actividad-tipo').value = p.actividad_tipo || '';
+      document.getElementById('p-tarea').value          = p.tarea || '';
+      document.getElementById('p-clase').value          = p.peligro_clase || '';
+      document.getElementById('p-descripcion').value    = p.peligro_descripcion || '';
+      document.getElementById('p-efectos').value        = p.efectos_posibles || '';
+      document.getElementById('p-ctrl-fuente').value    = p.control_fuente || '';
+      document.getElementById('p-ctrl-medio').value     = p.control_medio || '';
+      document.getElementById('p-ctrl-individuo').value = p.control_individuo || '';
+      document.getElementById('p-m-elim').value         = p.medida_eliminacion || '';
+      document.getElementById('p-m-sust').value         = p.medida_sustitucion || '';
+      document.getElementById('p-m-ing').value          = p.medida_ingenieria || '';
+      document.getElementById('p-m-adm').value          = p.medida_administrativa || '';
+      document.getElementById('p-m-epp').value          = p.medida_epp || '';
+      document.getElementById('p-responsable').value    = p.responsable || '';
+      document.getElementById('p-fecha-impl').value     = p.fecha_implementacion || '';
+      document.getElementById('p-estado').value         = p.estado || 'PENDIENTE';
+
+      // Radios GTC-45
+      if (p.nivel_deficiencia) {
+        const r = document.querySelector(`input[name="p-nd"][value="${p.nivel_deficiencia}"]`);
+        if (r) { r.checked = true; r.closest('.val-opt').classList.add('selected'); }
+      }
+      if (p.nivel_exposicion) {
+        const r = document.querySelector(`input[name="p-ne"][value="${p.nivel_exposicion}"]`);
+        if (r) { r.checked = true; r.closest('.val-opt').classList.add('selected'); }
+      }
+      if (p.nivel_consecuencia) {
+        const r = document.querySelector(`input[name="p-nc"][value="${p.nivel_consecuencia}"]`);
+        if (r) { r.checked = true; r.closest('.val-opt').classList.add('selected'); }
+      }
+      calcRiesgo();
+    } else {
+      document.getElementById('form-peligro').reset();
+      calcRiesgo();
+    }
+
+    document.getElementById('modal-peligro').classList.remove('hidden');
+    window.scrollTo(0, 0);
+  }
+
+  function cerrarFormulario() {
+    editandoId = null;
+    document.getElementById('modal-peligro').classList.add('hidden');
+  }
+
+  async function guardarPeligro(event) {
+    event.preventDefault();
+    const btn = document.getElementById('btn-guardar-peligro');
+    btn.textContent = 'Guardando…'; btn.disabled = true;
+    document.getElementById('form-error').style.display = 'none';
+
+    const datos = {
+      proceso:              document.getElementById('p-proceso').value.trim(),
+      zona:                 document.getElementById('p-zona').value.trim(),
+      actividad_tipo:       document.getElementById('p-actividad-tipo').value || null,
+      tarea:                document.getElementById('p-tarea').value.trim(),
+      peligro_clase:        document.getElementById('p-clase').value || null,
+      peligro_descripcion:  document.getElementById('p-descripcion').value.trim(),
+      efectos_posibles:     document.getElementById('p-efectos').value.trim(),
+      control_fuente:       document.getElementById('p-ctrl-fuente').value.trim(),
+      control_medio:        document.getElementById('p-ctrl-medio').value.trim(),
+      control_individuo:    document.getElementById('p-ctrl-individuo').value.trim(),
+      nivel_deficiencia:    document.querySelector('input[name="p-nd"]:checked')?.value || null,
+      nivel_exposicion:     document.querySelector('input[name="p-ne"]:checked')?.value || null,
+      nivel_consecuencia:   document.querySelector('input[name="p-nc"]:checked')?.value || null,
+      medida_eliminacion:   document.getElementById('p-m-elim').value.trim(),
+      medida_sustitucion:   document.getElementById('p-m-sust').value.trim(),
+      medida_ingenieria:    document.getElementById('p-m-ing').value.trim(),
+      medida_administrativa: document.getElementById('p-m-adm').value.trim(),
+      medida_epp:           document.getElementById('p-m-epp').value.trim(),
+      responsable:          document.getElementById('p-responsable').value.trim(),
+      fecha_implementacion: document.getElementById('p-fecha-impl').value || null,
+      estado:               document.getElementById('p-estado').value,
+    };
+
+    try {
+      if (editandoId) {
+        await VigiaAPI.editarPeligro(editandoId, datos);
+      } else {
+        await VigiaAPI.crearPeligro(datos);
+      }
+      cerrarFormulario();
+      await cargarPeligros();
+      mostrarToast(editandoId ? 'Peligro actualizado' : 'Peligro registrado', 'ok');
+    } catch (err) {
+      const errDiv = document.getElementById('form-error');
+      errDiv.textContent = err.message;
+      errDiv.style.display = 'block';
+      btn.textContent = 'Guardar peligro →'; btn.disabled = false;
+    }
+  }
+
+  async function eliminarPeligro(id) {
+    const p = peligros.find(x => x.id === id);
+    if (!confirm(`¿Eliminar este peligro?\n${p?.peligro_descripcion || ''}\n\nEsta acción no se puede deshacer.`)) return;
+    try {
+      await VigiaAPI.eliminarPeligro(id);
+      await cargarPeligros();
+      mostrarToast('Peligro eliminado', 'ok');
+    } catch (err) {
+      mostrarToast('Error: ' + err.message, 'error');
+    }
+  }
+
+  function mostrarToast(msg, tipo = 'ok') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = `toast toast-${tipo} show`;
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  init();
+</script>
+<script src="js/vigia-chat.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,403 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vigía 360 — Roles y Responsabilidades SG-SST</title>
+  <link rel="stylesheet" href="vigia.css" />
+  <style>
+    /* ── Tabla de responsabilidades ─────────────────── */
+    .resp-table { width:100%;border-collapse:collapse;font-size:11px;margin-top:16px }
+    .resp-table th { background:#1A3A5C;color:#fff;padding:7px 10px;text-align:left;
+      font-size:11px;font-weight:700;vertical-align:middle }
+    .resp-table td { border:1px solid #CBD5E1;padding:7px 10px;vertical-align:top;
+      font-size:11px;line-height:1.55 }
+    .resp-table tr:nth-child(even) td { background:#F8FAFC }
+    .resp-table td.rol { font-weight:800;color:#1A3A5C;white-space:nowrap }
+    .resp-table td.quien { font-size:10px;color:#475569 }
+    .resp-table td ul { margin:0;padding-left:14px }
+    .resp-table td li { margin-bottom:2px }
+    .resp-table td.rendicion { font-size:10px;color:#475569 }
+    .resp-table td.rendicion ul { margin:0;padding-left:14px }
+
+    /* ── Print ──────────────────────────────────────── */
+    @media print {
+      nav, .no-print { display:none !important }
+      @page { size:A4 landscape;margin:8mm }
+      body { font-size:9px }
+      .page { padding:0 }
+      .doc-header { margin-bottom:8px }
+      .resp-table { font-size:8.5px }
+      .resp-table th { font-size:8.5px;padding:4px 6px }
+      .resp-table td { padding:4px 6px }
+    }
+    @media screen {
+      .print-only { display:none }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="dashboard.html" style="display:flex;align-items:center;gap:10px;text-decoration:none">
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="36" viewBox="0 0 34 38">
+      <path d="M17 1L2 7V21C2 30 9 37 17 39C25 37 32 30 32 21V7Z" fill="rgba(255,255,255,0.15)" stroke="white" stroke-width="1.5"/>
+      <circle cx="12" cy="19" r="4.5" fill="white" opacity="0.9"/>
+      <circle cx="22" cy="19" r="4.5" fill="white" opacity="0.9"/>
+      <circle cx="12" cy="19" r="2" fill="rgba(26,58,92,0.8)"/>
+      <circle cx="22" cy="19" r="2" fill="rgba(26,58,92,0.8)"/>
+      <polygon points="15,25 17,28 19,25" fill="white" opacity="0.7"/>
+    </svg>
+    <span style="color:white;font-weight:800;font-size:17px;letter-spacing:0.5px">VIGÍA <span style="color:#4ADE80;font-weight:900">360</span></span>
+  </a>
+  <div class="nav-links">
+    <a href="dashboard.html" class="nav-link-fixed">Dashboard</a>
+
+    <!-- P — Planear -->
+    <div class="nav-dropdown" id="dd-P">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-P')">
+        <span class="phva-pill phva-P">P</span> Planear <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="perfil-responsable.html">🩺 Responsable SST</a>
+        <a href="responsabilidades.html">👥 Roles y Responsabilidades</a>
+        <a href="copasst.html">🤝 COPASST y Convivencia</a>
+        <a href="documentos-sst.html">📄 Documentos del SG-SST</a>
+        <a href="matriz-peligros.html">⚠️ Matriz de Peligros (GTC-45)</a>
+        <a href="plan-trabajo.html">📅 Plan de Trabajo Anual</a>
+        <a href="presupuesto-sgsst.html">💰 Presupuesto SG-SST</a>
+        <a href="profesiograma.html">💊 Profesiograma</a>
+      </div>
+    </div>
+
+    <!-- H — Hacer -->
+    <div class="nav-dropdown" id="dd-H">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-H')">
+        <span class="phva-pill phva-H">H</span> Hacer <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="epp.html">🦺 EPP</a>
+        <a href="capacitaciones.html">🎓 Capacitaciones</a>
+        <a href="emergencias.html">🚨 Emergencias y Brigada</a>
+        <a href="inspecciones.html">🔍 Inspecciones y Mantenimiento</a>
+        <a href="perfil-salud.html">🏥 Salud Ocupacional</a>
+        <div class="nav-dd-divider"></div>
+        <a href="lista-personal.html">👥 Lista de Personal</a>
+        <a href="subir.html">⬆️ Subir Examen</a>
+        <a href="subir-masivo.html">📦 Carga Masiva</a>
+        <a href="cartas-masivas.html">📄 Cartas Masivas</a>
+        <a href="reporte-examenes.html">📊 Cobertura de Exámenes</a>
+        <a href="informe-condiciones.html">📋 Informe de Condiciones</a>
+      </div>
+    </div>
+
+    <!-- V — Verificar -->
+    <div class="nav-dropdown" id="dd-V">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-V')">
+        <span class="phva-pill phva-V">V</span> Verificar <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="evaluacion-sst.html">📋 Evaluación (Res. 0312)</a>
+        <a href="investigaciones.html">🔍 AT / Incidentes</a>
+        <a href="auditoria.html">🗒️ Auditoría Interna</a>
+        <a href="ausentismo.html">📉 Ausentismo laboral</a>
+        <a href="indicadores-sgsst.html">📊 Indicadores SG-SST</a>
+        <a href="analisis-phva.html">📈 Análisis e Indicadores</a>
+      </div>
+    </div>
+
+    <!-- A — Actuar -->
+    <div class="nav-dropdown" id="dd-A">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-A')">
+        <span class="phva-pill phva-A">A</span> Actuar <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="mejoramiento.html">✅ Acciones de Mejoramiento</a>
+        <a href="evaluacion-sst.html">📝 Plan de Mejoramiento (F002)</a>
+      </div>
+    </div>
+
+    <a href="listado-maestro.html" class="nav-link-fixed">📁 Listado Maestro</a>
+    <span id="nav-empresa" style="color:#CBD8E6;font-size:13px;padding:6px 0"></span>
+    <button onclick="VigiaAPI.logout()"
+      style="background:none;border:1px solid rgba(255,255,255,.2);color:#CBD8E6;
+             border-radius:6px;padding:6px 12px;cursor:pointer;font-size:13px">Salir</button>
+  </div>
+</nav>
+
+<div class="page">
+
+  <!-- Doc header M003 -->
+  <div class="doc-header">
+    <div class="doc-header-logo-col">
+      <img class="doc-logo-img" src="" alt="" onerror="this.style.display='none'" />
+    </div>
+    <div class="doc-header-title-col">MATRIZ DE ROLES Y<br>RESPONSABILIDADES EN EL SG-SST</div>
+    <div class="doc-header-code-col">
+      <span class="doc-header-code-line"><strong>CÓDIGO:</strong> <span class="doc-codigo" data-sufijo="M003">SG-SST M003</span></span>
+      <span class="doc-header-code-line"><strong>VERSIÓN</strong> 1</span>
+      <span class="doc-header-code-line"><strong>FECHA DE VIGENCIA:</strong><br><span class="doc-fecha"></span></span>
+    </div>
+  </div>
+
+  <div class="flex justify-between items-center mt-4 mb-2 no-print" style="flex-wrap:wrap;gap:10px">
+    <p style="font-size:12px;color:var(--muted);margin:0">
+      Cumplimiento de la Resolución 0312/2019 estándar 1.1.2 · Decreto 1072/2015 Art. 2.2.4.1
+    </p>
+    <button class="btn btn-outline" onclick="window.print()" style="font-size:12px">🖨️ Imprimir / Guardar PDF</button>
+  </div>
+
+  <table class="resp-table">
+    <thead>
+      <tr>
+        <th style="width:13%">ROL</th>
+        <th style="width:13%">QUIÉN ASUME EL ROL</th>
+        <th style="width:55%">RESPONSABILIDADES EN EL SG-SST</th>
+        <th style="width:19%">RENDICIÓN DE CUENTAS</th>
+      </tr>
+    </thead>
+    <tbody>
+
+      <!-- ── Alta Dirección ─────────────────────────────────── -->
+      <tr>
+        <td class="rol">Alta Dirección</td>
+        <td class="quien">Representante Legal /<br>Gerente General</td>
+        <td>
+          <ul>
+            <li>Definir y aprobar la política de Seguridad y Salud en el Trabajo.</li>
+            <li>Aprobar las responsabilidades asignadas y comunicarlas a todos los niveles de la organización.</li>
+            <li>Definir y asignar los recursos financieros, técnicos y de personal necesarios para el diseño, implementación, revisión y mejora de las medidas de prevención del SG-SST.</li>
+            <li>Aprobar el Plan de Trabajo Anual en SST.</li>
+            <li>Garantizar la consulta y participación de los trabajadores en la identificación de peligros y control de riesgos.</li>
+            <li>Garantizar la disponibilidad de personal competente para liderar y controlar el SG-SST.</li>
+            <li>Garantizar un programa de inducción y entrenamiento para todos los empleados que ingresen a la empresa.</li>
+            <li>Garantizar información oportuna sobre la gestión de la seguridad y salud en el trabajo.</li>
+            <li>Realizar y ejecutar el plan de auditorías mínimo una vez al año.</li>
+            <li>Brindar rendición de cuentas anualmente sobre el desempeño del SG-SST.</li>
+          </ul>
+        </td>
+        <td class="rendicion">
+          <ul>
+            <li>Actas de reunión de revisión por la dirección.</li>
+            <li>Informe anual de gestión SST.</li>
+          </ul>
+        </td>
+      </tr>
+
+      <!-- ── Responsable SG-SST ─────────────────────────────── -->
+      <tr>
+        <td class="rol">Responsable del SG-SST</td>
+        <td class="quien" id="td-resp-quien">Profesional con Licencia vigente en SST</td>
+        <td>
+          <ul>
+            <li>Planear, organizar, dirigir y controlar el SG-SST de acuerdo a la evaluación inicial.</li>
+            <li>Hacer seguimiento a las medidas de intervención establecidas en las inspecciones, investigaciones de incidentes y accidentes, y autoreporte de condiciones inseguras.</li>
+            <li>Definir el plan de emergencias y gestionar su implementación.</li>
+            <li>Garantizar la investigación de todos los incidentes, accidentes y enfermedades laborales.</li>
+            <li>Definir los indicadores de estructura, proceso y resultado del SG-SST.</li>
+            <li>Garantizar que se realice la evaluación al SG-SST mínimo una vez al año e informar a la alta dirección los resultados.</li>
+            <li>Asignar responsabilidades en materia de SST a todos los niveles de la organización.</li>
+            <li>Establecer el programa de formación y garantizar su ejecución para todos los miembros de la empresa.</li>
+            <li>Coordinar las necesidades de capacitación en SST según los riesgos prioritarios.</li>
+            <li>Gestionar los recursos para cumplir con el plan de SST y hacer seguimiento a los indicadores.</li>
+            <li>Implementar, mantener y mejorar continuamente el SG-SST.</li>
+          </ul>
+        </td>
+        <td class="rendicion">
+          <ul>
+            <li>Indicadores del SG-SST (estructura, proceso y resultado).</li>
+            <li>Informe de gestión semestral o anual.</li>
+            <li>Registro de actividades ejecutadas.</li>
+          </ul>
+        </td>
+      </tr>
+
+      <!-- ── Vigía SST / COPASST ────────────────────────────── -->
+      <tr id="fila-vigia-copasst">
+        <td class="rol" id="td-rol-vc">Vigía SST</td>
+        <td class="quien" id="td-quien-vc">Trabajador designado por el empleador</td>
+        <td>
+          <ul>
+            <li>Conocer y retroalimentar el plan de trabajo anual, el plan de capacitaciones y el presupuesto asignado en SST.</li>
+            <li>Participar en las investigaciones de accidentes de trabajo e inspecciones de seguridad, haciendo seguimiento a los planes de acción.</li>
+            <li>Elaborar y ejecutar un plan de trabajo propio para el período de su designación.</li>
+            <li>Proponer al Responsable del SG-SST la adopción de medidas y el desarrollo de actividades que promuevan la salud y seguridad en el trabajo.</li>
+            <li>Servir como organismo de coordinación entre el empleador y los trabajadores en la solución de problemas relativos a SST.</li>
+            <li>Solicitar periódicamente informes sobre accidentalidad y enfermedades laborales.</li>
+            <li>Participar en la planificación de las auditorías del SG-SST.</li>
+            <li>Estudiar y considerar las sugerencias que presenten los trabajadores en materia de seguridad y salud.</li>
+          </ul>
+        </td>
+        <td class="rendicion">
+          <ul>
+            <li>Cumplimiento del Plan de Trabajo del Vigía / COPASST.</li>
+            <li>Actas de reunión periódica.</li>
+            <li>Informe de gestión mínimo una vez al año.</li>
+          </ul>
+        </td>
+      </tr>
+
+      <!-- ── Vigía de Convivencia Laboral ──────────────────── -->
+      <tr id="fila-convivencia">
+        <td class="rol" id="td-rol-conv">Vigía de Convivencia Laboral</td>
+        <td class="quien">Trabajador designado por el empleador<br><em style="font-size:9px;color:#94A3B8">(Ver procedimiento de conformación)</em></td>
+        <td>
+          <ul>
+            <li>Ejecutar reuniones trimestrales para la prevención y manejo del acoso laboral.</li>
+            <li>Divulgar el formato de solicitud de revisión de caso para el reporte de quejas de acoso laboral.</li>
+            <li>Definir un plan de trabajo para el período de su gestión.</li>
+            <li>Recibir y dar trámite a las quejas presentadas por los trabajadores relacionadas con acoso laboral.</li>
+            <li>Escuchar a las partes involucradas de manera individual sobre los hechos que dieron lugar a la queja.</li>
+            <li>Adelantar acciones de sensibilización, capacitación y divulgación sobre la convivencia laboral.</li>
+          </ul>
+        </td>
+        <td class="rendicion">
+          <ul>
+            <li>Cumplimiento del Plan de Trabajo.</li>
+            <li>Informe de gestión mínimo una vez al año.</li>
+            <li>Informe trimestral si existen casos de acoso laboral.</li>
+          </ul>
+        </td>
+      </tr>
+
+      <!-- ── Empleados ──────────────────────────────────────── -->
+      <tr>
+        <td class="rol">Empleados /<br>Trabajadores</td>
+        <td class="quien">Todos los trabajadores de la organización</td>
+        <td>
+          <ul>
+            <li>Procurar el cuidado integral de su salud.</li>
+            <li>Suministrar información clara, veraz y completa sobre su estado de salud.</li>
+            <li>Informar oportunamente a su jefe inmediato sobre los riesgos y peligros latentes en su puesto de trabajo.</li>
+            <li>Conocer y cumplir las normas, reglamentos e instrucciones en SST de la empresa.</li>
+            <li>Participar en todas las actividades de formación en SST definidas en el plan anual de capacitación.</li>
+            <li>Participar en la elección y en las actividades del Vigía SST / COPASST.</li>
+            <li>Conocer y aplicar la política de Seguridad y Salud en el Trabajo.</li>
+            <li>Reportar inmediatamente todo accidente de trabajo, incidente o enfermedad laboral.</li>
+            <li>Usar y mantener adecuadamente los elementos de protección personal asignados.</li>
+          </ul>
+        </td>
+        <td class="rendicion">
+          <ul>
+            <li>Evidencia de uso adecuado de los EPP.</li>
+            <li>Cumplimiento a las recomendaciones médico-laborales.</li>
+            <li>Autoreporte de condiciones inseguras.</li>
+          </ul>
+        </td>
+      </tr>
+
+      <!-- ── Comité de Emergencias ──────────────────────────── -->
+      <tr>
+        <td class="rol">Comité de<br>Emergencias</td>
+        <td class="quien">Miembros designados en el Acta de Conformación del Comité</td>
+        <td>
+          <ul>
+            <li>Planificar, organizar y gestionar los recursos humanos, materiales y económicos para la atención de emergencias.</li>
+            <li>Coordinar y dirigir la preparación, respuesta y rehabilitación ante situaciones de emergencia.</li>
+            <li>Brindar acompañamiento a la Brigada de Emergencias.</li>
+            <li>Participar en capacitaciones y entrenamientos frente a las emergencias.</li>
+            <li>Evaluar el desarrollo de las actividades contempladas en el Plan de Emergencias después de cada simulacro o evento.</li>
+            <li>Actualizar anualmente el Plan de Emergencias.</li>
+          </ul>
+        </td>
+        <td class="rendicion">
+          <ul>
+            <li>Informe del simulacro de evacuación.</li>
+            <li>Actualización anual del Plan de Emergencias.</li>
+            <li>Actas de reunión del Comité.</li>
+          </ul>
+        </td>
+      </tr>
+
+      <!-- ── Brigada de Emergencias ─────────────────────────── -->
+      <tr>
+        <td class="rol">Brigada de<br>Emergencias</td>
+        <td class="quien">Trabajadores voluntarios capacitados, designados en el Acta de Conformación</td>
+        <td>
+          <ul>
+            <li>Participar en capacitaciones que brinden competencias para la atención de emergencias (primeros auxilios, evacuación, control de incendios).</li>
+            <li>Actuar rápidamente cuando ocurra una emergencia, realizando actividades para la atención y control de la misma.</li>
+            <li>Reconocer su rol dentro de la brigada y actuar conforme a las directrices del Comité de Emergencias.</li>
+            <li>Servir como apoyo de los organismos de socorro externos.</li>
+            <li>Investigar e informar los resultados al Comité de Emergencia sobre las causas de la emergencia y la actuación de la brigada.</li>
+          </ul>
+        </td>
+        <td class="rendicion">
+          <ul>
+            <li>Informe de Gestión de la Brigada: capacitaciones, atención de emergencias, actividades de prevención.</li>
+            <li>Participación en simulacros documentada.</li>
+          </ul>
+        </td>
+      </tr>
+
+      <!-- ── Auditoría Interna ───────────────────────────────── -->
+      <tr>
+        <td class="rol">Auditoría Interna</td>
+        <td class="quien">Responsable SG-SST u auditor interno designado</td>
+        <td>
+          <ul>
+            <li>Planificar y ejecutar auditorías internas al SG-SST mínimo una vez al año.</li>
+            <li>Generar el informe de auditoría con los hallazgos, no conformidades y oportunidades de mejora.</li>
+            <li>Presentar los resultados a la Gerencia y al Vigía SST / COPASST.</li>
+            <li>Hacer seguimiento al cierre de las no conformidades identificadas.</li>
+          </ul>
+        </td>
+        <td class="rendicion">
+          <ul>
+            <li>Informe de Auditoría Interna al SG-SST, por lo menos una (1) vez al año.</li>
+            <li>Registro de cierre de no conformidades.</li>
+          </ul>
+        </td>
+      </tr>
+
+    </tbody>
+  </table>
+
+  <!-- Firma de aprobación (print) ─────────────────────────── -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:80px;margin-top:40px">
+    <div style="border-top:1.5px solid #1A3A5C;padding-top:8px;text-align:center;font-size:11px">
+      <strong>ELABORÓ — RESPONSABLE SG-SST</strong><br>
+      <span style="color:#64748B;font-size:10px">Nombre y firma</span>
+      <div style="height:40px"></div>
+    </div>
+    <div style="border-top:1.5px solid #1A3A5C;padding-top:8px;text-align:center;font-size:11px">
+      <strong>APROBÓ — REPRESENTANTE LEGAL</strong><br>
+      <span style="color:#64748B;font-size:10px">Nombre y firma</span>
+      <div style="height:40px"></div>
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+<div class="toast" id="toast"></div>
+<script src="js/vigia-api.js"></script>
+<script>
+async function init() {
+  const ok = await VigiaAPI.requireAuth();
+  if (!ok) return;
+  VigiaAPI.initDocHeader();
+
+  const n = localStorage.getItem('vigia_empresa_nombre') || '';
+  if (n) document.getElementById('nav-empresa').textContent = n;
+
+  // Determinar Vigía SST vs COPASST
+  const nt = VigiaAPI.numTrabajadores();
+  const esCopasst = nt !== null && nt >= 10;
+  document.getElementById('td-rol-vc').textContent   = esCopasst ? 'COPASST' : 'Vigía SST';
+  document.getElementById('td-quien-vc').innerHTML   = esCopasst
+    ? 'Comité Paritario de Seguridad y Salud en el Trabajo<br><em style="font-size:9px;color:#94A3B8">(Representantes empleador y trabajadores)</em>'
+    : 'Trabajador designado por el empleador';
+
+  // Determinar Vigía vs Comité de Convivencia Laboral (umbral: 20 trabajadores)
+  const esComiteConv = nt !== null && nt >= 20;
+  document.getElementById('td-rol-conv').textContent = esComiteConv
+    ? 'Comité de Convivencia Laboral'
+    : 'Vigía de Convivencia Laboral';
+}
+
+init();
+</script>
+<script src="js/vigia-chat.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,555 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vigía 360 — Plan de Emergencias</title>
+  <link rel="stylesheet" href="vigia.css" />
+  <style>
+    .tabs { display:flex;gap:4px;margin-bottom:20px;flex-wrap:wrap }
+    .tab  { padding:8px 18px;border-radius:8px;border:1.5px solid var(--border);
+            background:var(--card);cursor:pointer;font-size:13px;font-weight:600;color:var(--muted);
+            transition:all .15s }
+    .tab.active { background:var(--blue);color:#fff;border-color:var(--blue) }
+
+    .nivel-ALTO   { background:#FDECEA;color:#C0392B;border:1.5px solid #FABEC2 }
+    .nivel-MEDIO  { background:#FEF3C7;color:#D97706;border:1.5px solid #FCD34D }
+    .nivel-BAJO   { background:#ECFDF5;color:#065F46;border:1.5px solid #6EE7B7 }
+    .nivel-chip   { padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700 }
+
+    .brigada-PRIMEROS_AUXILIOS { background:#EFF6FF;color:#2563EB }
+    .brigada-CONTRAINCENDIOS   { background:#FFF7ED;color:#C2410C }
+    .brigada-EVACUACION        { background:#F3E8FF;color:#7C3AED }
+    .brigada-COMUNICACIONES    { background:#ECFDF5;color:#059669 }
+    .brigada-chip { padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700 }
+
+    .amenaza-card { border:1.5px solid var(--border);border-radius:10px;padding:16px;margin-bottom:10px }
+    .simulacro-row td { font-size:13px;padding:10px 12px;vertical-align:middle }
+    .brigada-row  td { font-size:13px;padding:10px 12px;vertical-align:middle }
+
+    .stat-box { background:var(--card);border:1.5px solid var(--border);border-radius:10px;
+                padding:16px;text-align:center }
+    .stat-num { font-size:28px;font-weight:800;color:var(--blue) }
+    .stat-lbl { font-size:12px;color:var(--muted);margin-top:2px }
+    .stats-row { display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px }
+    @media(max-width:600px){ .stats-row { grid-template-columns:repeat(2,1fr) } }
+
+    @media print {
+      nav,.tabs,.btn,.btn-xs,button { display:none!important }
+      .amenaza-card { break-inside:avoid }
+    }
+  </style>
+</head>
+<body>
+<nav class="navbar">
+  <a href="dashboard.html" class="nav-brand">
+    <span class="brand-vigia">Vigía</span><span class="brand-sst">360</span>
+  </a>
+  <div class="nav-links">
+    <a href="dashboard.html" class="nav-link-fixed">Dashboard</a>
+    <div class="nav-dropdown" id="dd-P">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-P')">
+        <span class="phva-pill phva-P">P</span> Planear <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="perfil-responsable.html">🩺 Responsable SST</a>
+        <a href="responsabilidades.html">👥 Roles y Responsabilidades</a>
+        <a href="copasst.html">🤝 COPASST y Convivencia</a>
+        <a href="documentos-sst.html">📄 Documentos del SG-SST</a>
+        <a href="matriz-peligros.html">⚠️ Matriz de Peligros (GTC-45)</a>
+        <a href="plan-trabajo.html">📅 Plan de Trabajo Anual</a>
+        <a href="presupuesto-sgsst.html">💰 Presupuesto SG-SST</a>
+        <a href="profesiograma.html">💊 Profesiograma</a>
+      </div>
+    </div>
+    <div class="nav-dropdown" id="dd-H">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-H')">
+        <span class="phva-pill phva-H">H</span> Hacer <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="epp.html">🦺 EPP</a>
+        <a href="capacitaciones.html">🎓 Capacitaciones</a>
+        <a href="emergencias.html">🚨 Emergencias y Brigada</a>
+        <a href="inspecciones.html">🔍 Inspecciones y Mantenimiento</a>
+        <a href="perfil-salud.html">🏥 Salud Ocupacional</a>
+        <div class="nav-dd-divider"></div>
+        <a href="lista-personal.html">👥 Lista de Personal</a>
+        <a href="subir.html">⬆️ Subir Examen</a>
+        <a href="subir-masivo.html">📦 Carga Masiva</a>
+        <a href="cartas-masivas.html">📄 Cartas Masivas</a>
+        <a href="reporte-examenes.html">📊 Cobertura de Exámenes</a>
+        <a href="informe-condiciones.html">📋 Informe de Condiciones</a>
+      </div>
+    </div>
+    <div class="nav-dropdown" id="dd-V">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-V')">
+        <span class="phva-pill phva-V">V</span> Verificar <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="evaluacion-sst.html">📋 Evaluación (Res. 0312)</a>
+        <a href="investigaciones.html">🔍 AT / Incidentes</a>
+        <a href="auditoria.html">🗒️ Auditoría Interna</a>
+        <a href="ausentismo.html">📉 Ausentismo laboral</a>
+        <a href="indicadores-sgsst.html">📊 Indicadores SG-SST</a>
+        <a href="analisis-phva.html">📈 Análisis e Indicadores</a>
+      </div>
+    </div>
+    <div class="nav-dropdown" id="dd-A">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-A')">
+        <span class="phva-pill phva-A">A</span> Actuar <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="mejoramiento.html">✅ Acciones de Mejoramiento</a>
+        <a href="evaluacion-sst.html">📝 Plan de Mejoramiento (F002)</a>
+      </div>
+    </div>
+    <a href="listado-maestro.html" class="nav-link-fixed">📁 Listado Maestro</a>
+    <span id="nav-empresa" style="color:#CBD8E6;font-size:13px;padding:6px 0"></span>
+    <button onclick="VigiaAPI.logout()"
+      style="background:none;border:1px solid rgba(255,255,255,.2);color:#CBD8E6;
+             border-radius:6px;padding:6px 12px;cursor:pointer;font-size:13px">Salir</button>
+  </div>
+</nav>
+
+<div class="page">
+  <!-- Encabezado de documento -->
+  <div class="doc-header" style="display:flex;align-items:center;gap:16px;margin-bottom:20px;padding:12px 16px;
+       border:1.5px solid var(--border);border-radius:10px;background:var(--card)">
+    <img class="doc-logo-img" alt="Logo" style="max-height:48px;max-width:120px;object-fit:contain">
+    <div style="flex:1">
+      <div style="font-size:16px;font-weight:800;color:var(--navy)">Plan de Prevención, Preparación y Respuesta ante Emergencias</div>
+      <div style="font-size:12px;color:var(--muted)">Res. 0312/2019 · Est. 5.1.1 · 5.1.2 · Decreto 1072/2015</div>
+    </div>
+    <div style="text-align:right;font-size:12px;color:var(--muted)">
+      <div class="doc-codigo" data-sufijo="M016"></div>
+      <div class="doc-fecha"></div>
+    </div>
+  </div>
+
+  <div class="stats-row" id="stats-row">
+    <div class="stat-box"><div class="stat-num" id="st-amenazas">–</div><div class="stat-lbl">Amenazas identificadas</div></div>
+    <div class="stat-box"><div class="stat-num" id="st-simulacros">–</div><div class="stat-lbl">Simulacros realizados</div></div>
+    <div class="stat-box"><div class="stat-num" id="st-brigadistas">–</div><div class="stat-lbl">Brigadistas activos</div></div>
+    <div class="stat-box"><div class="stat-num" id="st-ultimo-sim">–</div><div class="stat-lbl">Último simulacro</div></div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="mostrarTab('amenazas',this)">⚠️ Amenazas y Vulnerabilidad</button>
+    <button class="tab" onclick="mostrarTab('simulacros',this)">🔁 Simulacros</button>
+    <button class="tab" onclick="mostrarTab('brigada',this)">🚒 Brigada de Emergencias</button>
+  </div>
+
+  <!-- TAB: Amenazas -->
+  <div id="tab-amenazas">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <h3 style="margin:0;font-size:15px;color:var(--navy)">Amenazas identificadas</h3>
+      <button class="btn" onclick="abrirModalAmenaza()">+ Nueva amenaza</button>
+    </div>
+    <div id="lista-amenazas"><p class="empty-msg">Cargando…</p></div>
+  </div>
+
+  <!-- TAB: Simulacros -->
+  <div id="tab-simulacros" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <h3 style="margin:0;font-size:15px;color:var(--navy)">Registro de simulacros</h3>
+      <button class="btn" onclick="abrirModalSimulacro()">+ Registrar simulacro</button>
+    </div>
+    <table class="data-table" style="width:100%">
+      <thead><tr><th>Fecha</th><th>Tipo</th><th>Duración (min)</th><th>Participantes</th><th>Resultado</th><th></th></tr></thead>
+      <tbody id="tbody-simulacros"><tr><td colspan="6" style="text-align:center;color:var(--muted)">Cargando…</td></tr></tbody>
+    </table>
+  </div>
+
+  <!-- TAB: Brigada -->
+  <div id="tab-brigada" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <h3 style="margin:0;font-size:15px;color:var(--navy)">Conformación de la brigada</h3>
+      <button class="btn" onclick="abrirModalBrigadista()">+ Agregar brigadista</button>
+    </div>
+    <table class="data-table" style="width:100%">
+      <thead><tr><th>Nombre</th><th>Cargo empresa</th><th>Tipo brigada</th><th>Fecha ingreso</th><th></th></tr></thead>
+      <tbody id="tbody-brigada"><tr><td colspan="5" style="text-align:center;color:var(--muted)">Cargando…</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- MODAL amenaza -->
+<div class="modal-overlay" id="modal-amenaza" style="display:none">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-header">
+      <span id="modal-amenaza-titulo" class="modal-title">Nueva amenaza</span>
+      <button class="modal-close" onclick="cerrarModal('modal-amenaza')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="am-id">
+      <div class="form-group">
+        <label>Amenaza / Peligro *</label>
+        <input id="am-amenaza" class="form-control" placeholder="Sismo, incendio, inundación…">
+      </div>
+      <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="form-group">
+          <label>Nivel de riesgo</label>
+          <select id="am-nivel" class="form-control">
+            <option value="ALTO">ALTO</option>
+            <option value="MEDIO" selected>MEDIO</option>
+            <option value="BAJO">BAJO</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Probabilidad</label>
+          <select id="am-probabilidad" class="form-control">
+            <option value="">Seleccionar…</option>
+            <option>Alta</option><option>Media</option><option>Baja</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Impacto potencial</label>
+        <textarea id="am-impacto" class="form-control" rows="2" placeholder="Daños a personas, instalaciones…"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Medidas de prevención / control</label>
+        <textarea id="am-medidas" class="form-control" rows="3" placeholder="Acciones para reducir la amenaza…"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="cerrarModal('modal-amenaza')">Cancelar</button>
+      <button class="btn" onclick="guardarAmenaza()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL simulacro -->
+<div class="modal-overlay" id="modal-simulacro" style="display:none">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-header">
+      <span class="modal-title">Registrar simulacro</span>
+      <button class="modal-close" onclick="cerrarModal('modal-simulacro')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="form-group">
+          <label>Fecha *</label>
+          <input type="date" id="sim-fecha" class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Tipo *</label>
+          <select id="sim-tipo" class="form-control">
+            <option value="evacuacion">Evacuación</option>
+            <option value="contraincendios">Contraincendios</option>
+            <option value="primeros auxilios">Primeros auxilios</option>
+            <option value="sismo">Sismo</option>
+            <option value="general">General (integral)</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="form-group">
+          <label>Duración (min)</label>
+          <input type="number" id="sim-duracion" class="form-control" min="1">
+        </div>
+        <div class="form-group">
+          <label>N° participantes</label>
+          <input type="number" id="sim-participantes" class="form-control" min="0">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Resultado / Evaluación</label>
+        <textarea id="sim-resultado" class="form-control" rows="2"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Observaciones / Mejoras identificadas</label>
+        <textarea id="sim-obs" class="form-control" rows="2"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Enlace a evidencia (URL)</label>
+        <input id="sim-evidencia" class="form-control" placeholder="https://…">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="cerrarModal('modal-simulacro')">Cancelar</button>
+      <button class="btn" onclick="guardarSimulacro()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL brigadista -->
+<div class="modal-overlay" id="modal-brigadista" style="display:none">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-header">
+      <span id="modal-brig-titulo" class="modal-title">Agregar brigadista</span>
+      <button class="modal-close" onclick="cerrarModal('modal-brigadista')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="br-id">
+      <div class="form-group">
+        <label>Nombre completo *</label>
+        <input id="br-nombre" class="form-control">
+      </div>
+      <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="form-group">
+          <label>Cargo en la empresa</label>
+          <input id="br-cargo" class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Tipo de brigada *</label>
+          <select id="br-tipo" class="form-control">
+            <option value="PRIMEROS_AUXILIOS">Primeros Auxilios</option>
+            <option value="CONTRAINCENDIOS">Contraincendios</option>
+            <option value="EVACUACION">Evacuación</option>
+            <option value="COMUNICACIONES">Comunicaciones</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Fecha de ingreso a la brigada</label>
+        <input type="date" id="br-fecha" class="form-control">
+      </div>
+      <div class="form-group">
+        <label>Enlace a certificados de formación (URL)</label>
+        <input id="br-cert" class="form-control" placeholder="https://…">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="cerrarModal('modal-brigadista')">Cancelar</button>
+      <button class="btn" onclick="guardarBrigadista()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/vigia-api.js"></script>
+<script>
+let _datos = { amenazas: [], simulacros: [], brigada: [] };
+let _tabActual = 'amenazas';
+
+function mostrarTab(tab, btn) {
+  _tabActual = tab;
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  ['amenazas','simulacros','brigada'].forEach(t => {
+    document.getElementById(`tab-${t}`).style.display = t === tab ? '' : 'none';
+  });
+}
+
+function cerrarModal(id) { document.getElementById(id).style.display = 'none'; }
+function abrirModal(id)  { document.getElementById(id).style.display = 'flex'; }
+
+async function cargar() {
+  const d = await VigiaAPI.getEmergencias();
+  _datos = d || { amenazas: [], simulacros: [], brigada: [] };
+  renderStats();
+  renderAmenazas();
+  renderSimulacros();
+  renderBrigada();
+}
+
+function renderStats() {
+  document.getElementById('st-amenazas').textContent   = _datos.amenazas.length;
+  document.getElementById('st-simulacros').textContent = _datos.simulacros.length;
+  document.getElementById('st-brigadistas').textContent= _datos.brigada.length;
+  const ultimo = _datos.simulacros[0]?.fecha;
+  document.getElementById('st-ultimo-sim').textContent = ultimo
+    ? new Date(ultimo+'T12:00:00').toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'})
+    : 'N/A';
+}
+
+function renderAmenazas() {
+  const cont = document.getElementById('lista-amenazas');
+  if (!_datos.amenazas.length) { cont.innerHTML = '<p class="empty-msg">No hay amenazas registradas. Agrega las amenazas identificadas.</p>'; return; }
+  cont.innerHTML = _datos.amenazas.map(a => `
+    <div class="amenaza-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div>
+          <span style="font-weight:800;font-size:15px;color:var(--navy)">${a.amenaza}</span>
+          <span class="nivel-chip nivel-${a.nivel_riesgo}" style="margin-left:10px">${a.nivel_riesgo}</span>
+          ${a.probabilidad ? `<span style="font-size:12px;color:var(--muted);margin-left:8px">Prob: ${a.probabilidad}</span>` : ''}
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="btn-xs" onclick="editarAmenaza('${a.id}')">Editar</button>
+          <button class="btn-xs del" onclick="eliminarAmenaza('${a.id}')">Eliminar</button>
+        </div>
+      </div>
+      ${a.impacto ? `<div style="margin-top:10px"><span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase">Impacto</span><p style="margin:4px 0 0;font-size:13px">${a.impacto}</p></div>` : ''}
+      ${a.medidas ? `<div style="margin-top:8px"><span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase">Medidas</span><p style="margin:4px 0 0;font-size:13px">${a.medidas}</p></div>` : ''}
+    </div>`).join('');
+}
+
+function renderSimulacros() {
+  const tbody = document.getElementById('tbody-simulacros');
+  if (!_datos.simulacros.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty-msg">Sin simulacros registrados.</td></tr>'; return; }
+  tbody.innerHTML = _datos.simulacros.map(s => `
+    <tr class="simulacro-row">
+      <td>${new Date(s.fecha+'T12:00:00').toLocaleDateString('es-CO')}</td>
+      <td style="text-transform:capitalize">${s.tipo}</td>
+      <td>${s.duracion_min ?? '–'}</td>
+      <td>${s.participantes ?? '–'}</td>
+      <td>${s.resultado || '–'}</td>
+      <td><button class="btn-xs del" onclick="eliminarSimulacro('${s.id}')">Eliminar</button></td>
+    </tr>`).join('');
+}
+
+function renderBrigada() {
+  const LABELS = { PRIMEROS_AUXILIOS:'Primeros Auxilios', CONTRAINCENDIOS:'Contraincendios', EVACUACION:'Evacuación', COMUNICACIONES:'Comunicaciones' };
+  const tbody = document.getElementById('tbody-brigada');
+  if (!_datos.brigada.length) { tbody.innerHTML = '<tr><td colspan="5" class="empty-msg">Sin brigadistas registrados.</td></tr>'; return; }
+  tbody.innerHTML = _datos.brigada.map(b => `
+    <tr class="brigada-row">
+      <td style="font-weight:700">${b.nombre}</td>
+      <td>${b.cargo || '–'}</td>
+      <td><span class="brigada-chip brigada-${b.tipo_brigada}">${LABELS[b.tipo_brigada]||b.tipo_brigada}</span></td>
+      <td>${b.fecha_ingreso ? new Date(b.fecha_ingreso+'T12:00:00').toLocaleDateString('es-CO') : '–'}</td>
+      <td>
+        <button class="btn-xs" onclick="editarBrigadista('${b.id}')">Editar</button>
+        <button class="btn-xs del" onclick="eliminarBrigadista('${b.id}')">Retirar</button>
+      </td>
+    </tr>`).join('');
+}
+
+// ── Amenazas ──
+function abrirModalAmenaza(id) {
+  document.getElementById('am-id').value = '';
+  document.getElementById('am-amenaza').value = '';
+  document.getElementById('am-nivel').value = 'MEDIO';
+  document.getElementById('am-probabilidad').value = '';
+  document.getElementById('am-impacto').value = '';
+  document.getElementById('am-medidas').value = '';
+  document.getElementById('modal-amenaza-titulo').textContent = 'Nueva amenaza';
+  abrirModal('modal-amenaza');
+}
+
+function editarAmenaza(id) {
+  const a = _datos.amenazas.find(x => x.id === id); if (!a) return;
+  document.getElementById('am-id').value = id;
+  document.getElementById('am-amenaza').value = a.amenaza || '';
+  document.getElementById('am-nivel').value = a.nivel_riesgo || 'MEDIO';
+  document.getElementById('am-probabilidad').value = a.probabilidad || '';
+  document.getElementById('am-impacto').value = a.impacto || '';
+  document.getElementById('am-medidas').value = a.medidas || '';
+  document.getElementById('modal-amenaza-titulo').textContent = 'Editar amenaza';
+  abrirModal('modal-amenaza');
+}
+
+async function guardarAmenaza() {
+  const amenaza = document.getElementById('am-amenaza').value.trim();
+  if (!amenaza) { alert('Nombre de la amenaza requerido.'); return; }
+  const datos = {
+    amenaza,
+    nivel_riesgo:  document.getElementById('am-nivel').value,
+    probabilidad:  document.getElementById('am-probabilidad').value || null,
+    impacto:       document.getElementById('am-impacto').value.trim() || null,
+    medidas:       document.getElementById('am-medidas').value.trim() || null,
+  };
+  const id = document.getElementById('am-id').value;
+  try {
+    if (id) await VigiaAPI.editarAmenaza(id, datos);
+    else    await VigiaAPI.crearAmenaza(datos);
+    cerrarModal('modal-amenaza');
+    await cargar();
+  } catch(e) { alert('Error: ' + e.message); }
+}
+
+async function eliminarAmenaza(id) {
+  if (!confirm('¿Eliminar esta amenaza?')) return;
+  await VigiaAPI.eliminarAmenaza(id);
+  await cargar();
+}
+
+// ── Simulacros ──
+function abrirModalSimulacro() {
+  document.getElementById('sim-fecha').value = new Date().toISOString().slice(0,10);
+  document.getElementById('sim-tipo').value = 'evacuacion';
+  document.getElementById('sim-duracion').value = '';
+  document.getElementById('sim-participantes').value = '';
+  document.getElementById('sim-resultado').value = '';
+  document.getElementById('sim-obs').value = '';
+  document.getElementById('sim-evidencia').value = '';
+  abrirModal('modal-simulacro');
+}
+
+async function guardarSimulacro() {
+  const fecha = document.getElementById('sim-fecha').value;
+  if (!fecha) { alert('Fecha requerida.'); return; }
+  const datos = {
+    fecha,
+    tipo:          document.getElementById('sim-tipo').value,
+    duracion_min:  parseInt(document.getElementById('sim-duracion').value)||null,
+    participantes: parseInt(document.getElementById('sim-participantes').value)||null,
+    resultado:     document.getElementById('sim-resultado').value.trim()||null,
+    observaciones: document.getElementById('sim-obs').value.trim()||null,
+    evidencia_url: document.getElementById('sim-evidencia').value.trim()||null,
+  };
+  try {
+    await VigiaAPI.crearSimulacro(datos);
+    cerrarModal('modal-simulacro');
+    await cargar();
+  } catch(e) { alert('Error: ' + e.message); }
+}
+
+async function eliminarSimulacro(id) {
+  if (!confirm('¿Eliminar este simulacro?')) return;
+  await VigiaAPI.eliminarSimulacro(id);
+  await cargar();
+}
+
+// ── Brigada ──
+function abrirModalBrigadista() {
+  document.getElementById('br-id').value = '';
+  document.getElementById('br-nombre').value = '';
+  document.getElementById('br-cargo').value = '';
+  document.getElementById('br-tipo').value = 'PRIMEROS_AUXILIOS';
+  document.getElementById('br-fecha').value = '';
+  document.getElementById('br-cert').value = '';
+  document.getElementById('modal-brig-titulo').textContent = 'Agregar brigadista';
+  abrirModal('modal-brigadista');
+}
+
+function editarBrigadista(id) {
+  const b = _datos.brigada.find(x => x.id === id); if (!b) return;
+  document.getElementById('br-id').value = id;
+  document.getElementById('br-nombre').value = b.nombre || '';
+  document.getElementById('br-cargo').value = b.cargo || '';
+  document.getElementById('br-tipo').value = b.tipo_brigada || 'PRIMEROS_AUXILIOS';
+  document.getElementById('br-fecha').value = b.fecha_ingreso || '';
+  document.getElementById('br-cert').value = b.cert_url || '';
+  document.getElementById('modal-brig-titulo').textContent = 'Editar brigadista';
+  abrirModal('modal-brigadista');
+}
+
+async function guardarBrigadista() {
+  const nombre = document.getElementById('br-nombre').value.trim();
+  if (!nombre) { alert('Nombre requerido.'); return; }
+  const datos = {
+    nombre,
+    cargo:        document.getElementById('br-cargo').value.trim()||null,
+    tipo_brigada: document.getElementById('br-tipo').value,
+    fecha_ingreso:document.getElementById('br-fecha').value||null,
+    cert_url:     document.getElementById('br-cert').value.trim()||null,
+  };
+  const id = document.getElementById('br-id').value;
+  try {
+    if (id) await VigiaAPI.editarBrigadista(id, datos);
+    else    await VigiaAPI.crearBrigadista(datos);
+    cerrarModal('modal-brigadista');
+    await cargar();
+  } catch(e) { alert('Error: ' + e.message); }
+}
+
+async function eliminarBrigadista(id) {
+  if (!confirm('¿Retirar este brigadista de la brigada?')) return;
+  await VigiaAPI.eliminarBrigadista(id);
+  await cargar();
+}
+
+async function init() {
+  const ok = await VigiaAPI.requireAuth(); if (!ok) return;
+  document.getElementById('nav-empresa').textContent = localStorage.getItem('vigia_nombre_empresa') || '';
+  VigiaAPI.initDocHeader();
+  await cargar();
+}
+
+init();
+</script>
+<script src="js/vigia-chat.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vigía 360 — Cartas de Recomendaciones (Masivo)</title>
+  <link rel="stylesheet" href="vigia.css" />
+  <style>
+    /* ── Config panel ────────────────────────────── */
+    #panel-config { max-width: 860px; margin: 0 auto; padding: 24px 16px; }
+    .emp-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 14px; border-radius: 8px;
+      border: 1px solid var(--border); background: var(--card);
+      margin-bottom: 8px; cursor: pointer;
+    }
+    .emp-row:hover { border-color: var(--blue); }
+    .emp-row input[type=checkbox] { width: 17px; height: 17px; cursor: pointer; accent-color: var(--navy); }
+    .emp-info { flex: 1; }
+    .emp-info strong { display: block; font-size: 14px; color: var(--navy); }
+    .emp-info span   { font-size: 12px; color: var(--muted); }
+    .emp-badge { font-size: 11px; padding: 3px 9px; border-radius: 20px; white-space: nowrap; }
+    .badge-ok   { background: #D1FAE5; color: #065F46; }
+    .badge-warn { background: #FEF3C7; color: #92400E; }
+    .badge-crit { background: #FEE2E2; color: #991B1B; }
+    .badge-seg  { background: #DBEAFE; color: #1E40AF; }
+
+    /* ── Carta CSS (se activa en modo impresión/render) ── */
+    .carta-wrap {
+      display: none;
+      font-family: Arial, sans-serif;
+      font-size: 10.5pt;
+      color: #000;
+    }
+    .carta-wrap.visible { display: block; }
+
+    .carta {
+      max-width: 210mm;
+      margin: 24px auto;
+      background: #fff;
+      padding: 24px 28px;
+      box-shadow: 0 4px 20px rgba(0,0,0,.12);
+      page-break-before: always;
+    }
+    .carta:first-child { page-break-before: avoid; }
+
+    .header-table { width: 100%; border-collapse: collapse; margin-bottom: 18px; }
+    .header-table td { border: 1.5px solid #000; padding: 6px 10px; vertical-align: middle; }
+    .h-empresa { width: 22%; text-align: center; font-weight: 800; font-size: 12pt; line-height: 1.2; }
+    .h-titulo  { width: 50%; text-align: center; font-weight: 700; font-size: 10.5pt; line-height: 1.6; }
+    .h-codigo  { width: 28%; font-size: 9pt; line-height: 1.6; }
+
+    .fecha       { font-weight: 700; margin: 14px 0 10px; }
+    .destinatario { margin-bottom: 12px; line-height: 1.7; }
+    .emp-nombre  { font-weight: 800; font-size: 11pt; }
+    p.cuerpo     { margin: 10px 0; line-height: 1.6; }
+    .seccion     { font-weight: 700; font-size: 10.5pt; margin: 14px 0 6px; text-transform: uppercase; }
+    .concepto-resaltado { font-weight: 700; text-decoration: underline; font-size: 11pt; }
+
+    .sve-table   { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 9pt; }
+    .sve-table th, .sve-table td { border: 1px solid #000; padding: 5px 7px; vertical-align: top; }
+    .th-main { text-align: center; font-weight: 700; background: #f0f0f0; font-size: 10pt; }
+    .th-sub  { text-align: center; font-weight: 700; background: #f8f8f8; }
+    .td-sve  { width: 22%; font-weight: 600; font-size: 8.5pt; }
+    .td-rec  { width: 36%; }
+    .td-res  { width: 13%; text-align: center; }
+    .td-int  { width: 29%; font-size: 8pt; line-height: 1.4; }
+
+    .restricciones-list { list-style: disc; margin-left: 22px; margin-top: 5px; line-height: 1.7; }
+
+    .page-break { page-break-before: always; padding-top: 2px; }
+
+    .firmas-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 36px; }
+    .firma-linea { border-bottom: 1.5px solid #000; margin-bottom: 6px; height: 28px; }
+    .firma-label { font-size: 8.5pt; font-weight: 700; line-height: 1.4; margin-bottom: 18px; }
+    .pagina-num  { text-align: right; font-size: 8pt; color: #555; margin-top: 28px; }
+
+    /* ── Barra superior ─────────────────────────── */
+    #barra-print {
+      display: none;
+      background: var(--navy);
+      padding: 12px 24px;
+      gap: 12px;
+      align-items: center;
+      position: sticky; top: 0; z-index: 100;
+    }
+    #barra-print.visible { display: flex; }
+    #barra-print .btn-print { background: #fff; color: var(--navy); border: none; border-radius: 6px; padding: 8px 20px; font-size: 13px; font-weight: 700; cursor: pointer; }
+    #barra-print .btn-back  { background: rgba(255,255,255,.15); color: #fff; border: 1px solid rgba(255,255,255,.3); border-radius: 6px; padding: 8px 16px; font-size: 13px; cursor: pointer; }
+    #barra-print .info-txt  { color: rgba(255,255,255,.85); font-size: 13px; flex: 1; }
+
+    @media print {
+      #panel-config, #barra-print,
+      nav, .toast, #loading,
+      #vigia-chat-btn, #vigia-chat-panel { display: none !important; }
+      .carta-wrap { display: block !important; }
+      .carta { margin: 0; box-shadow: none; padding: 0; max-width: 100%; }
+      body { background: #fff; }
+      @page { size: A4; margin: 1.8cm 2cm; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="dashboard.html" style="display:flex;align-items:center;gap:10px;text-decoration:none">
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="36" viewBox="0 0 34 38">
+      <path d="M17 1L2 7V21C2 30 9 37 17 39C25 37 32 30 32 21V7Z" fill="rgba(255,255,255,0.15)" stroke="white" stroke-width="1.5"/>
+      <circle cx="12" cy="19" r="4.5" fill="white" opacity="0.9"/>
+      <circle cx="22" cy="19" r="4.5" fill="white" opacity="0.9"/>
+      <circle cx="12" cy="19" r="2" fill="rgba(26,58,92,0.8)"/>
+      <circle cx="22" cy="19" r="2" fill="rgba(26,58,92,0.8)"/>
+      <polygon points="15,25 17,28 19,25" fill="white" opacity="0.7"/>
+    </svg>
+    <span style="color:white;font-weight:800;font-size:17px;letter-spacing:0.5px">VIGÍA <span style="color:#4ADE80;font-weight:900">360</span></span>
+  </a>
+  <div class="nav-links">
+    <a href="dashboard.html" class="nav-link-fixed">Dashboard</a>
+    <div class="nav-dropdown" id="dd-H">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-H')">
+        <span class="phva-pill phva-H">H</span> Hacer <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="lista-personal.html">👥 Lista de Personal</a>
+        <a href="subir.html">⬆️ Subir Examen</a>
+        <a href="subir-masivo.html">📦 Carga Masiva</a>
+        <a href="reporte-examenes.html">📊 Cobertura de Exámenes</a>
+        <a href="cartas-masivas.html">📄 Cartas Masivas</a>
+        <a href="informe-condiciones.html">📋 Informe de Condiciones</a>
+      </div>
+    </div>
+  </div>
+  <div class="nav-actions">
+    <span id="nav-empresa" class="nav-empresa"></span>
+    <button class="btn btn-outline btn-sm" onclick="VigiaAPI.logout()">Salir</button>
+  </div>
+</nav>
+
+<!-- ── Panel de configuración ─────────────────────────────── -->
+<div id="panel-config">
+  <div class="page-header">
+    <h1>📄 Cartas de Recomendaciones — Generación Masiva</h1>
+    <p>Selecciona los empleados y genera todas las cartas en un solo PDF para imprimir.</p>
+  </div>
+
+  <!-- Selector empresa (admin) -->
+  <div id="empresa-selector" class="hidden card" style="padding:16px;margin-bottom:20px">
+    <label class="label">Empresa</label>
+    <select id="sel-empresa" class="input" style="max-width:400px" onchange="cargarEmpleados()">
+      <option value="">— Seleccionar empresa —</option>
+    </select>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="flex justify-between items-center mb-3">
+    <div class="flex gap-2">
+      <button class="btn btn-outline btn-sm" onclick="seleccionarTodos(true)">✅ Seleccionar todos</button>
+      <button class="btn btn-outline btn-sm" onclick="seleccionarTodos(false)">☐ Desmarcar todos</button>
+    </div>
+    <span id="txt-seleccionados" class="text-sm text-muted"></span>
+  </div>
+
+  <div id="lista-empleados">
+    <p class="text-muted text-sm">Cargando empleados…</p>
+  </div>
+
+  <div class="flex justify-end mt-5 gap-3">
+    <button class="btn btn-outline" id="btn-separados" onclick="descargarZip()" disabled>
+      📦 Descargar ZIP (PDFs individuales)
+    </button>
+    <button class="btn btn-navy" id="btn-generar" onclick="generarCartas()" disabled>
+      📄 Generar e imprimir (todos juntos)
+    </button>
+  </div>
+</div>
+
+<!-- ── Barra de impresión (visible tras generar) ─────────── -->
+<div id="barra-print">
+  <button class="btn-back" onclick="volver()">← Volver</button>
+  <span class="info-txt" id="info-print"></span>
+  <button class="btn-print" onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>
+</div>
+
+<!-- ── Cartas generadas ───────────────────────────────────── -->
+<div class="carta-wrap" id="cartas-container"></div>
+
+<div class="loading-overlay" id="loading"><div class="spinner"></div><p id="loading-msg">Generando cartas…</p></div>
+<div class="toast" id="toast"></div>
+
+<script src="js/vigia-api.js"></script>
+<script>
+const API = 'https://riesgo-backend-production.up.railway.app/api/vigia';
+
+let empleadosData = [];  // [{id, nombre, cc, tipo_doc, cargo, alerta_nivel, examenes_count}]
+
+// ── Helpers ────────────────────────────────────────────────
+const SVE_KW = {
+  'AUDIOMETRÍA':       ['audio'],
+  'ESPIROMETRÍA':      ['espiro','pulmon','respirat'],
+  'VISOMETRÍA':        ['viso','visual','visión','vision','optomet','lente','refract'],
+  'OSTEOMUSCULAR':     ['osteo','musculo','muscul','articular','osteomuscul'],
+  'EXAMEN MÉDICO':     ['médico','medico','físico','fisico','general','clínico'],
+  'LABORATORIO':       ['laborat','hemato','sangre','glucos'],
+  'ELECTROCARDIOGRAMA':['electro','cardio','ecg'],
+  'RADIOGRAFÍA':       ['radio','rayos','torax','tórax'],
+};
+
+function matchRec(sveNombre, recomendaciones) {
+  const kws = Object.entries(SVE_KW).find(([k]) => k === sveNombre.toUpperCase())?.[1] || [];
+  return recomendaciones.filter(r => kws.some(kw => r.toLowerCase().includes(kw)));
+}
+
+function formatFecha(f) {
+  if (!f) return '—';
+  const [y,m,d] = f.split('-');
+  const M = ['enero','febrero','marzo','abril','mayo','junio',
+             'julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  return `${parseInt(d)} de ${M[+m-1]} de ${y}`;
+}
+
+function tipoLabel(tipo) {
+  return { 'PRE-INGRESO':'preocupacional','PERIODICO':'periódico',
+           'RETIRO':'de retiro','POST-INCAPACIDAD':'post-incapacidad' }[tipo]
+         || (tipo||'').toLowerCase();
+}
+
+function renderHeader(empresa, prefijoDocs, vigenciaDesde) {
+  const prefijo = prefijoDocs || localStorage.getItem('vigia_prefijo_docs') || 'SG-SST';
+  const vigencia = (() => {
+    const raw = vigenciaDesde || localStorage.getItem('vigia_vigencia_desde') || '';
+    if (!raw) return '—';
+    const [y,m,d] = raw.split('-');
+    return `${d}/${m}/${y}`;
+  })();
+  return `
+    <table class="header-table">
+      <tr>
+        <td class="h-empresa">${empresa.toUpperCase()}</td>
+        <td class="h-titulo">CARTA<br>RECOMENDACIONES<br>MÉDICAS LABORALES Y<br>COMPROMISO DE CUMPLIMIENTO</td>
+        <td class="h-codigo">
+          CÓDIGO: ${prefijo} F005<br>
+          VERSIÓN 1<br>
+          FECHA DE VIGENCIA: ${vigencia}
+        </td>
+      </tr>
+    </table>`;
+}
+
+function renderSVETable(sveLista, recomendaciones) {
+  const used = new Set();
+  const rows = (sveLista.length ? sveLista : ['EXAMEN MÉDICO']).map(sve => {
+    const matched = matchRec(sve, recomendaciones).filter(r => !used.has(r));
+    matched.forEach(r => used.add(r));
+    const recTxt = matched.length
+      ? matched.map(r => `• ${r}`).join('<br>')
+      : 'Control periódico teniendo en cuenta hallazgos del examen.';
+    return `<tr>
+      <td class="td-sve">${sve.toUpperCase()}</td>
+      <td class="td-rec">${recTxt}</td>
+      <td class="td-res">Ninguna</td>
+      <td class="td-int">Resultado normal y adecuado para el cargo.</td>
+    </tr>`;
+  });
+  return `
+    <table class="sve-table">
+      <thead>
+        <tr><th colspan="4" class="th-main">Concepto médico de aptitud laboral</th></tr>
+        <tr>
+          <th class="th-sub">S.V.E</th>
+          <th class="th-sub">Recomendaciones</th>
+          <th class="th-sub">Restricciones</th>
+          <th class="th-sub">Interpretación del resultado para el cargo</th>
+        </tr>
+      </thead>
+      <tbody>${rows.join('')}</tbody>
+    </table>`;
+}
+
+/* Combina todos los exámenes del mismo día en un solo objeto */
+function mergeExamenesMismaFecha(examenes) {
+  if (!examenes || !examenes.length) return null;
+  const byDate = {};
+  examenes.forEach(ex => {
+    const f = ex.fecha || 'sin-fecha';
+    if (!byDate[f]) byDate[f] = [];
+    byDate[f].push(ex);
+  });
+  const fecha = Object.keys(byDate).sort().reverse()[0];
+  const grupo = byDate[fecha];
+  if (grupo.length === 1) return grupo[0];
+  const allSVEs = [...new Set(grupo.flatMap(ex => ex.examenes_realizados || []))];
+  const allRecs = [...new Set(grupo.flatMap(ex => ex.recomendaciones     || []))];
+  const allRest = [...new Set(grupo.flatMap(ex => ex.restricciones       || []))];
+  const prio = { 'NO APTO': 3, 'APTO CON RESTRICCIONES': 2, 'APTO SIN RESTRICCIONES': 1 };
+  const principal  = grupo.find(ex => ex.medico || ex.ips) || grupo[0];
+  const conceptoFinal = grupo.reduce((best, ex) => {
+    return (prio[ex.concepto_aptitud] ?? 0) > (prio[best] ?? 0) ? ex.concepto_aptitud : best;
+  }, principal.concepto_aptitud);
+  const ipsList  = [...new Set(grupo.map(ex => ex.ips).filter(Boolean))];
+  const medList  = [...new Set(grupo.map(ex => ex.medico).filter(Boolean))];
+  return {
+    ...principal,
+    examenes_realizados: allSVEs,
+    recomendaciones: allRecs,
+    restricciones: allRest,
+    concepto_aptitud: conceptoFinal,
+    ips: ipsList.join(' / '),
+    medico: medList.join(' / '),
+  };
+}
+
+function renderCarta(emp, examen) {
+  const empresa         = emp.vigia_empresas?.nombre || 'Empresa';
+  const prefijoDocs     = emp.vigia_empresas?.prefijo_docs || null;
+  const vigenciaDesde   = emp.vigia_empresas?.vigencia_docs_desde || null;
+  const recomendaciones = examen.recomendaciones     || [];
+  const restricciones   = examen.restricciones       || [];
+  const sveLista        = examen.examenes_realizados  || [];
+
+  const usadas = new Set();
+  sveLista.forEach(sve => matchRec(sve, recomendaciones).forEach(r => usadas.add(r)));
+  const remisiones = recomendaciones.filter(r => !usadas.has(r));
+
+  return `
+    <div class="carta">
+
+      ${renderHeader(empresa, prefijoDocs, vigenciaDesde)}
+
+      <p class="fecha">Medellín, ${formatFecha(examen.fecha)}</p>
+
+      <div class="destinatario">
+        <p>${emp.sexo === 'FEMENINO' ? 'Señora' : 'Señor'}</p>
+        <p class="emp-nombre">${emp.nombre}</p>
+        <p>ASUNTO: Concepto Médico Examen médico ${tipoLabel(examen.tipo)}</p>
+      </div>
+
+      <p class="cuerpo">Cordial Saludo,</p>
+
+      <p class="cuerpo">Teniendo como referencia el concepto médico emitido el
+      <strong>${formatFecha(examen.fecha)}</strong> por la IPS
+      <strong>${examen.ips || '______________________________'}</strong>${
+        examen.medico ? `, médico <strong>${examen.medico}</strong>` : ''
+      }, se debe tener en cuenta lo siguiente:</p>
+
+      <p class="seccion">Concepto de aptitud:</p>
+
+      <p class="cuerpo">De acuerdo al examen médico ocupacional realizado a
+      <strong>${emp.nombre.toUpperCase()}</strong> con documento de identificación
+      <strong>${emp.tipo_doc || 'CC'} ${emp.cc}</strong> se considera que es
+      <span class="concepto-resaltado">${(examen.concepto_aptitud || 'APTO').toUpperCase()}</span>
+      para el Cargo de <strong><u>${(emp.cargo || '__________').toUpperCase()}</u></strong>.
+      A continuación, se presentan las recomendaciones:</p>
+
+      ${renderSVETable(sveLista, recomendaciones)}
+
+      <p class="seccion">Restricciones:</p>
+      <ul class="restricciones-list">
+        ${restricciones.length
+          ? restricciones.map(r => `<li>${r}</li>`).join('')
+          : '<li>N/A</li>'}
+      </ul>
+
+      <p class="pagina-num">Página 1 de 2</p>
+
+      <div class="page-break">
+        ${renderHeader(empresa, prefijoDocs, vigenciaDesde)}
+
+        <p class="seccion">Remisiones:</p>
+        ${remisiones.length
+          ? remisiones.map(r => `<p class="cuerpo">${r}</p>`).join('')
+          : '<p class="cuerpo" style="color:#555;font-style:italic">Sin remisiones adicionales.</p>'}
+
+        <p class="cuerpo" style="margin-top:18px">
+          <strong>${empresa.toUpperCase()}</strong>, le informa que, como parte del cumplimiento
+          del Sistema de Gestión de Seguridad y Salud en el Trabajo, el responsable de Seguridad
+          y Salud en el trabajo, hará un seguimiento periódico al cumplimiento de las anteriores
+          recomendaciones y en caso de manifestación de remisiones médicas, se le solicitarán las
+          debidas constancias médicas de la remisión a la cual es enviado.
+        </p>
+
+        <p class="cuerpo"><strong>Nota:</strong> debe realizarse los debidos procesos médicos en
+        los 30 días siguientes a partir de la fecha de entrega de este documento y en caso de ser
+        diagnosticada alguna patología la cual requiera un trato especial, por favor notificar al
+        jefe inmediato.</p>
+
+        <div class="firmas-grid">
+          <div>
+            <div class="firma-linea"></div>
+            <p class="firma-label">FIRMA:</p>
+            <div class="firma-linea"></div>
+            <p class="firma-label">NOMBRE COMPLETO DEL EMPLEADO<br>QUE ENTREGA LAS RECOMENDACIONES:</p>
+            <div class="firma-linea"></div>
+            <p class="firma-label">CARGO:</p>
+          </div>
+          <div>
+            <div class="firma-linea"></div>
+            <p class="firma-label">FIRMA DEL EMPLEADO</p>
+            <div class="firma-linea"></div>
+            <p class="firma-label">NOMBRE COMPLETO DEL EMPLEADO:</p>
+            <div class="firma-linea"></div>
+            <p class="firma-label">${emp.tipo_doc || 'CÉDULA DE CIUDADANÍA'}:</p>
+          </div>
+        </div>
+
+        <p class="pagina-num">Página 2 de 2</p>
+      </div>
+    </div>`;
+}
+
+// ── Cargar lista de empleados ──────────────────────────────
+async function cargarEmpleados() {
+  const lista = document.getElementById('lista-empleados');
+  lista.innerHTML = '<p class="text-muted text-sm">Cargando…</p>';
+  document.getElementById('btn-generar').disabled = true;
+  empleadosData = [];
+
+  try {
+    const empresaId = VigiaAPI.esAdmin()
+      ? document.getElementById('sel-empresa').value
+      : null;
+
+    if (VigiaAPI.esAdmin() && !empresaId) {
+      lista.innerHTML = '<p class="text-muted text-sm">Selecciona una empresa para continuar.</p>';
+      return;
+    }
+
+    const token = VigiaAPI.token();
+    const url   = empresaId
+      ? `${API}/empleados?empresa_id=${empresaId}`
+      : `${API}/empleados`;
+
+    const r = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+    const emps = await r.json();
+
+    if (!emps || !emps.length) {
+      lista.innerHTML = '<p class="text-muted text-sm">No hay empleados activos.</p>';
+      return;
+    }
+
+    // Fetch detalle (con examenes) en paralelo
+    const detalles = await Promise.all(
+      emps.map(e =>
+        fetch(`${API}/empleados/${e.id}`, { headers: { Authorization: `Bearer ${token}` } })
+          .then(r => r.json())
+          .catch(() => null)
+      )
+    );
+
+    // Solo empleados con al menos 1 examen
+    empleadosData = detalles
+      .filter(e => e && e.examenes && e.examenes.length > 0)
+      .sort((a, b) => a.nombre.localeCompare(b.nombre));
+
+    if (!empleadosData.length) {
+      lista.innerHTML = '<p class="text-muted text-sm">Ningún empleado tiene exámenes registrados.</p>';
+      return;
+    }
+
+    renderLista();
+    document.getElementById('btn-generar').disabled = false;
+
+  } catch (err) {
+    lista.innerHTML = `<p class="text-muted text-sm">Error: ${err.message}</p>`;
+  }
+}
+
+function renderLista() {
+  const colores = { OK:'badge-ok', SEGUIMIENTO:'badge-seg', ADVERTENCIA:'badge-warn', CRITICO:'badge-crit' };
+  document.getElementById('lista-empleados').innerHTML = empleadosData.map((e, i) => {
+    const examen  = e.examenes[0];
+    const nivel   = e.alerta_nivel || 'OK';
+    const color   = colores[nivel] || 'badge-ok';
+    return `
+      <label class="emp-row" for="chk-${i}">
+        <input type="checkbox" id="chk-${i}" data-idx="${i}" checked onchange="actualizarConteo()">
+        <div class="emp-info">
+          <strong>${e.nombre}</strong>
+          <span>${e.tipo_doc || 'CC'} ${e.cc}${e.cargo ? ' · ' + e.cargo : ''} · ${e.examenes.length} examen${e.examenes.length > 1 ? 'es' : ''} · último: ${formatFecha(examen?.fecha)}</span>
+        </div>
+        <span class="emp-badge ${color}">${nivel}</span>
+      </label>`;
+  }).join('');
+  actualizarConteo();
+}
+
+function seleccionarTodos(val) {
+  document.querySelectorAll('#lista-empleados input[type=checkbox]').forEach(c => c.checked = val);
+  actualizarConteo();
+}
+
+function actualizarConteo() {
+  const n = document.querySelectorAll('#lista-empleados input[type=checkbox]:checked').length;
+  document.getElementById('txt-seleccionados').textContent = `${n} de ${empleadosData.length} seleccionados`;
+  document.getElementById('btn-generar').disabled   = n === 0;
+  document.getElementById('btn-separados').disabled = n === 0;
+}
+
+// ── Generar cartas ─────────────────────────────────────────
+async function generarCartas() {
+  const seleccionados = [...document.querySelectorAll('#lista-empleados input[type=checkbox]:checked')]
+    .map(c => empleadosData[parseInt(c.dataset.idx)]);
+
+  if (!seleccionados.length) { mostrarToast('Selecciona al menos un empleado', 'error'); return; }
+
+  document.getElementById('loading').classList.add('show');
+  document.getElementById('loading-msg').textContent = `Generando ${seleccionados.length} carta${seleccionados.length > 1 ? 's' : ''}…`;
+
+  try {
+    const html = seleccionados.map(emp => {
+      const examen = mergeExamenesMismaFecha(emp.examenes); // combina exámenes del mismo día
+      return renderCarta(emp, examen);
+    }).join('');
+
+    document.getElementById('cartas-container').innerHTML = html;
+    document.getElementById('cartas-container').classList.add('visible');
+
+    document.getElementById('panel-config').style.display = 'none';
+    document.getElementById('barra-print').classList.add('visible');
+    document.getElementById('info-print').textContent =
+      `${seleccionados.length} carta${seleccionados.length > 1 ? 's' : ''} generada${seleccionados.length > 1 ? 's' : ''} · ${seleccionados.map(e => e.nombre).join(', ')}`;
+
+    document.getElementById('loading').classList.remove('show');
+    window.scrollTo(0, 0);
+
+  } catch (err) {
+    document.getElementById('loading').classList.remove('show');
+    mostrarToast('Error: ' + err.message, 'error');
+  }
+}
+
+async function descargarZip() {
+  const seleccionados = [...document.querySelectorAll('#lista-empleados input[type=checkbox]:checked')]
+    .map(c => empleadosData[parseInt(c.dataset.idx)]);
+
+  if (!seleccionados.length) { mostrarToast('Selecciona al menos un empleado', 'error'); return; }
+
+  document.getElementById('loading').classList.add('show');
+  document.getElementById('loading-msg').textContent =
+    `Generando ${seleccionados.length} PDF${seleccionados.length > 1 ? 's' : ''} — esto puede tomar unos segundos…`;
+
+  try {
+    const resp = await fetch(`${API}/cartas/zip`, {
+      method: 'POST',
+      headers: {
+        'Content-Type':  'application/json',
+        'Authorization': `Bearer ${VigiaAPI.token()}`,
+      },
+      body: JSON.stringify({ empleado_ids: seleccionados.map(e => e.id) }),
+    });
+
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({ error: resp.statusText }));
+      throw new Error(err.error || resp.statusText);
+    }
+
+    const blob = await resp.blob();
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = 'cartas_recomendaciones.zip';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    mostrarToast(`ZIP descargado — ${seleccionados.length} carta${seleccionados.length > 1 ? 's' : ''} en PDF`, 'ok');
+  } catch (err) {
+    mostrarToast('Error: ' + err.message, 'error');
+  } finally {
+    document.getElementById('loading').classList.remove('show');
+  }
+}
+
+function volver() {
+  document.getElementById('panel-config').style.display = '';
+  document.getElementById('barra-print').classList.remove('visible');
+  document.getElementById('cartas-container').classList.remove('visible');
+  document.getElementById('cartas-container').innerHTML = '';
+}
+
+// ── Init ───────────────────────────────────────────────────
+async function init() {
+  const ok = await VigiaAPI.requireAuth();
+  if (!ok) return;
+
+  document.getElementById('nav-empresa').textContent = VigiaAPI.esAdmin() ? '👑 Admin' : '';
+
+  if (VigiaAPI.esAdmin()) {
+    document.getElementById('empresa-selector').classList.remove('hidden');
+    const empresas = await VigiaAPI.getEmpresas() || [];
+    const sel = document.getElementById('sel-empresa');
+    sel.innerHTML = '<option value="">— Seleccionar empresa —</option>' +
+      empresas.map(e => `<option value="${e.id}">${e.nombre}</option>`).join('');
+  } else {
+    await cargarEmpleados();
+  }
+}
+
+init();
+</script>
+<script src="js/vigia-chat.js"></script>
+</body>
+</html>

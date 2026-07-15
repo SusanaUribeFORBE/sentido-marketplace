@@ -1,0 +1,651 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vigía 360 — Empleado</title>
+  <link rel="stylesheet" href="vigia.css" />
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="dashboard.html" style="display:flex;align-items:center;gap:10px;text-decoration:none">
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="36" viewBox="0 0 34 38">
+      <path d="M17 1L2 7V21C2 30 9 37 17 39C25 37 32 30 32 21V7Z" fill="rgba(255,255,255,0.15)" stroke="white" stroke-width="1.5"/>
+      <circle cx="12" cy="19" r="4.5" fill="white" opacity="0.9"/>
+      <circle cx="22" cy="19" r="4.5" fill="white" opacity="0.9"/>
+      <circle cx="12" cy="19" r="2" fill="rgba(26,58,92,0.8)"/>
+      <circle cx="22" cy="19" r="2" fill="rgba(26,58,92,0.8)"/>
+      <polygon points="15,25 17,28 19,25" fill="white" opacity="0.7"/>
+    </svg>
+    <span style="color:white;font-weight:800;font-size:17px;letter-spacing:0.5px">VIGÍA <span style="color:#4ADE80;font-weight:900">360</span></span>
+  </a>
+  <div class="nav-links">
+    <a href="dashboard.html" class="nav-link-fixed">Dashboard</a>
+
+    <!-- P — Planear -->
+    <div class="nav-dropdown" id="dd-P">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-P')">
+        <span class="phva-pill phva-P">P</span> Planear <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="perfil-responsable.html">🩺 Responsable SST</a>
+        <a href="responsabilidades.html">👥 Roles y Responsabilidades</a>
+        <a href="copasst.html">🤝 COPASST y Convivencia</a>
+        <a href="documentos-sst.html">📄 Documentos del SG-SST</a>
+        <a href="matriz-peligros.html">⚠️ Matriz de Peligros (GTC-45)</a>
+        <a href="plan-trabajo.html">📅 Plan de Trabajo Anual</a>
+        <a href="presupuesto-sgsst.html">💰 Presupuesto SG-SST</a>
+        <a href="profesiograma.html">💊 Profesiograma</a>
+      </div>
+    </div>
+
+    <!-- H — Hacer -->
+    <div class="nav-dropdown" id="dd-H">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-H')">
+        <span class="phva-pill phva-H">H</span> Hacer <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="epp.html">🦺 EPP</a>
+        <a href="capacitaciones.html">🎓 Capacitaciones</a>
+        <a href="emergencias.html">🚨 Emergencias y Brigada</a>
+        <a href="inspecciones.html">🔍 Inspecciones y Mantenimiento</a>
+        <a href="perfil-salud.html">🏥 Salud Ocupacional</a>
+        <div class="nav-dd-divider"></div>
+        <a href="lista-personal.html">👥 Lista de Personal</a>
+        <a href="subir.html">⬆️ Subir Examen</a>
+        <a href="subir-masivo.html">📦 Carga Masiva</a>
+        <a href="cartas-masivas.html">📄 Cartas Masivas</a>
+        <a href="reporte-examenes.html">📊 Cobertura de Exámenes</a>
+        <a href="informe-condiciones.html">📋 Informe de Condiciones</a>
+      </div>
+    </div>
+
+    <!-- V — Verificar -->
+    <div class="nav-dropdown" id="dd-V">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-V')">
+        <span class="phva-pill phva-V">V</span> Verificar <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="evaluacion-sst.html">📋 Evaluación (Res. 0312)</a>
+        <a href="investigaciones.html">🔍 AT / Incidentes</a>
+        <a href="ausentismo.html">📉 Ausentismo laboral</a>
+        <a href="indicadores-sgsst.html">📊 Indicadores SG-SST</a>
+        <a href="analisis-phva.html">📈 Análisis e Indicadores</a>
+      </div>
+    </div>
+
+    <!-- A — Actuar -->
+    <div class="nav-dropdown" id="dd-A">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-A')">
+        <span class="phva-pill phva-A">A</span> Actuar <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="mejoramiento.html">✅ Acciones de Mejoramiento</a>
+        <a href="evaluacion-sst.html">📝 Plan de Mejoramiento (F002)</a>
+      </div>
+    </div>
+
+    <a href="listado-maestro.html" class="nav-link-fixed">📁 Listado Maestro</a>
+    <span id="nav-empresa" style="color:#CBD8E6;font-size:13px;padding:6px 0"></span>
+    <button onclick="VigiaAPI.logout()"
+      style="background:none;border:1px solid rgba(255,255,255,.2);color:#CBD8E6;
+             border-radius:6px;padding:6px 12px;cursor:pointer;font-size:13px">Salir</button>
+  </div>
+</nav>
+
+<div class="page" id="contenido">
+  <div class="empty-state mt-8">
+    <div class="spinner" style="margin:0 auto 16px;border-color:rgba(46,134,171,.2);border-top-color:var(--blue)"></div>
+    <p class="text-muted">Cargando empleado…</p>
+  </div>
+</div>
+
+<!-- Modal compartir concepto -->
+<div id="modal-compartir" class="hidden"
+     style="position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;
+            display:flex;align-items:center;justify-content:center;padding:16px">
+  <div class="card" style="padding:28px;width:100%;max-width:500px;max-height:85vh;overflow-y:auto">
+    <div class="flex justify-between items-center" style="margin-bottom:16px">
+      <h3 style="color:var(--navy)">Concepto médico — mensaje</h3>
+      <button onclick="cerrarCompartir()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted)">✕</button>
+    </div>
+    <textarea id="msg-concepto" readonly
+      style="width:100%;height:260px;padding:12px;border:1.5px solid var(--border);border-radius:8px;
+             font-size:13px;line-height:1.6;resize:none;background:var(--bg);color:var(--text);
+             font-family:inherit"></textarea>
+    <div class="flex gap-3 mt-4">
+      <button class="btn btn-outline" style="flex:1" onclick="copiarMensaje()">📋 Copiar</button>
+      <button class="btn btn-primary" style="flex:1;background:#25D366;border:none" onclick="enviarWhatsApp()">📱 WhatsApp</button>
+    </div>
+    <p class="text-muted text-sm mt-4" style="text-align:center">
+      Comparte directamente con el área de RRHH o el jefe inmediato
+    </p>
+  </div>
+</div>
+
+<!-- Modal editar examen -->
+<div id="modal-editar-examen" class="hidden"
+     style="position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;
+            display:flex;align-items:flex-start;justify-content:center;padding:24px 16px;overflow-y:auto">
+  <div class="card" style="padding:28px;width:100%;max-width:620px">
+    <div class="flex justify-between items-center" style="margin-bottom:20px">
+      <h3 style="color:var(--navy)">✏️ Editar examen</h3>
+      <button onclick="cerrarEditarExamen()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted)">✕</button>
+    </div>
+    <form id="form-editar-examen" onsubmit="guardarEdicionExamen(event)">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+        <div>
+          <label class="label">Tipo de examen</label>
+          <select id="e-tipo" class="input" onchange="actualizarAlertasEditar()">
+            <option value="PRE-INGRESO">Pre-ingreso</option>
+            <option value="PERIODICO">Periódico</option>
+            <option value="POST-INCAPACIDAD">Post-incapacidad (Art. 12)</option>
+            <option value="RETORNO LABORAL">Retorno laboral (Art. 12)</option>
+            <option value="CAMBIO DE OCUPACION">Cambio de ocupación</option>
+            <option value="SEGUIMIENTO">Seguimiento / Control (Art. 8)</option>
+            <option value="RETIRO">Retiro / Egreso</option>
+          </select>
+        </div>
+        <div>
+          <label class="label">Fecha</label>
+          <input type="date" id="e-fecha" class="input" oninput="actualizarAlertasEditar()">
+        </div>
+        <div>
+          <label class="label">IPS <span style="color:#E74C3C">*</span></label>
+          <input type="text" id="e-ips" class="input" placeholder="Clínica / laboratorio" required>
+        </div>
+        <div>
+          <label class="label">Médico <span style="color:#E74C3C">*</span></label>
+          <input type="text" id="e-medico" class="input" placeholder="Dr. Nombre" required>
+        </div>
+        <div>
+          <label class="label">Licencia SST</label>
+          <input type="text" id="e-licencia" class="input" placeholder="Nro. licencia">
+        </div>
+        <div>
+          <label class="label">Concepto de aptitud</label>
+          <select id="e-concepto" class="input" onchange="onConceptoEditarChange()">
+            <option value="APTO SIN RESTRICCIONES">Apto sin restricciones</option>
+            <option value="APTO CON RESTRICCIONES">Apto con restricciones</option>
+            <option value="NO APTO">No apto</option>
+          </select>
+        </div>
+      </div>
+      <div style="margin-bottom:14px">
+        <label class="label">Exámenes realizados (uno por línea)</label>
+        <textarea id="e-examenes-realizados" class="input" rows="3"
+          style="resize:vertical" oninput="actualizarAlertasEditar()"
+          placeholder="Ej: Audiometría&#10;Visiometría&#10;Hemograma"></textarea>
+      </div>
+      <div id="e-restricciones-wrap">
+        <div style="margin-bottom:14px">
+          <label class="label">Restricciones (una por línea)</label>
+          <textarea id="e-restricciones" class="input" rows="2"
+            style="resize:vertical" oninput="actualizarAlertasEditar()"
+            placeholder="Ej: No levantar más de 10 kg"></textarea>
+        </div>
+        <div id="e-temporalidad-wrap" style="margin-bottom:14px;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:14px">
+          <label class="label" style="margin-bottom:8px">Temporalidad de restricciones</label>
+          <div style="display:flex;gap:20px;margin-bottom:10px">
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:14px">
+              <input type="radio" name="e-temporalidad" value="PERMANENTE" onchange="onTemporalidadEditarChange()"> Permanente
+            </label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:14px">
+              <input type="radio" name="e-temporalidad" value="TEMPORAL" onchange="onTemporalidadEditarChange()"> Temporal
+            </label>
+          </div>
+          <div id="e-hasta-wrap" style="display:none">
+            <label class="label">Fecha de vencimiento de restricción</label>
+            <input type="date" id="e-restriccion-hasta" class="input" oninput="actualizarAlertasEditar()">
+          </div>
+        </div>
+      </div>
+      <div style="margin-bottom:14px">
+        <label class="label">Recomendaciones médicas (una por línea)</label>
+        <textarea id="e-recomendaciones" class="input" rows="2"
+          style="resize:vertical" oninput="actualizarAlertasEditar()"
+          placeholder="Ej: Pausas activas cada 2 horas"></textarea>
+      </div>
+      <div id="editar-alertas-preview" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px"></div>
+      <div id="editar-error" style="display:none;color:var(--critico);font-size:13px;margin-bottom:12px;padding:8px 12px;background:#FDECEA;border-radius:6px"></div>
+      <div class="flex gap-3 justify-between">
+        <button type="button" class="btn btn-outline" onclick="cerrarEditarExamen()">Cancelar</button>
+        <button type="submit" class="btn btn-navy" id="btn-guardar-edicion">Guardar cambios →</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="js/vigia-api.js"></script>
+<script src="js/alertas.js"></script>
+<script>
+  const empId = new URLSearchParams(location.search).get('id');
+  let empData = null;
+
+  async function init() {
+    const ok = await VigiaAPI.requireAuth();
+    if (!ok) return;
+
+    if (!empId) {
+      renderError('No se especificó un empleado.');
+      return;
+    }
+
+    try {
+      const emp = await VigiaAPI.getEmpleado(empId);
+      empData = emp;
+      renderPagina(emp);
+    } catch (e) {
+      renderError(e.message);
+    }
+  }
+
+  function renderError(msg) {
+    document.getElementById('contenido').innerHTML = `
+      <div class="empty-state mt-8">
+        <div class="empty-icon">🔍</div>
+        <h3>Empleado no encontrado</h3>
+        <p>${msg}</p>
+        <a href="dashboard.html" class="btn btn-primary">← Volver al dashboard</a>
+      </div>`;
+  }
+
+  function renderPagina(e) {
+    const todasAlertas = (e.examenes || []).flatMap(ex => ex.alertas || []);
+    const criticas     = todasAlertas.filter(a => a.nivel === 'CRITICO');
+    const advertencias = todasAlertas.filter(a => a.nivel === 'ADVERTENCIA');
+    const seguimiento  = todasAlertas.filter(a => a.nivel === 'SEGUIMIENTO');
+    const inactivo     = e.activo === false;
+
+    document.getElementById('contenido').innerHTML = `
+      ${inactivo ? `
+      <div style="background:#FEF3C7;border:1.5px solid #F59E0B;border-radius:10px;padding:12px 18px;margin-bottom:16px;display:flex;align-items:center;gap:10px">
+        <span style="font-size:20px">🔴</span>
+        <div>
+          <strong style="color:#92400E">Empleado retirado / inactivo</strong>
+          <span class="text-sm" style="color:#92400E;opacity:.8;margin-left:8px">No aparece en el dashboard ni en las alertas semanales.</span>
+        </div>
+      </div>` : ''}
+      <div class="flex justify-between items-center mb-4">
+        <a href="dashboard.html" class="btn btn-outline btn-sm">← Dashboard</a>
+        <div class="flex gap-3">
+          <button class="btn btn-outline btn-sm" onclick="abrirCompartir()" style="color:var(--blue);border-color:var(--blue)">📤 Compartir concepto</button>
+          <a href="subir.html" class="btn btn-primary btn-sm">+ Nuevo examen</a>
+          ${inactivo
+            ? `<button class="btn btn-outline btn-sm" onclick="toggleEstado(true)" style="color:var(--ok);border-color:var(--ok)">✅ Reactivar</button>`
+            : `<button class="btn btn-outline btn-sm" onclick="toggleEstado(false)" style="color:#D97706;border-color:#D97706">🏁 Marcar retirado</button>`}
+          <button class="btn btn-outline btn-sm" onclick="confirmarEliminar('${e.id}','${e.nombre.replace(/'/g,"\\'")}')">🗑 Eliminar</button>
+        </div>
+      </div>
+
+      <div class="card mb-4" style="padding:24px">
+        <div class="flex justify-between items-center mb-4">
+          <div>
+            <h2 style="font-size:22px;color:var(--navy);font-weight:700">${e.nombre}</h2>
+            <p class="text-muted text-sm">${e.tipo_doc || 'CC'} ${e.cc}${e.sexo ? ' · ' + e.sexo : ''}${e.fecha_nac ? ' · ' + _edad(e.fecha_nac) : ''}</p>
+            ${e.vigia_empresas?.nombre ? `<p class="text-sm" style="color:var(--blue);margin-top:4px">🏢 ${e.vigia_empresas.nombre}</p>` : ''}
+          </div>
+          ${renderBadgeNivel(e.alerta_nivel || 'OK')}
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px 24px">
+          ${ficha('💼 Cargo',        e.cargo || '—')}
+          ${ficha('📍 Departamento', e.departamento || '—')}
+          ${ficha('🏥 EPS',          e.eps || '—')}
+          ${ficha('🛡 ARL',          _arlBadge(e.arl))}
+          ${ficha('💰 Pensiones',    e.fondo_pension || '—')}
+          ${ficha('📱 Celular',      e.celular || '—')}
+        </div>
+      </div>
+
+      ${todasAlertas.length > 0 ? `
+      <div class="card mb-4" style="padding:24px">
+        <h3 style="font-size:16px;font-weight:700;color:var(--navy);margin-bottom:16px">
+          🔔 Alertas activas (${todasAlertas.length})
+        </h3>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          ${[...criticas, ...advertencias, ...seguimiento].map(renderAlertaCard).join('')}
+        </div>
+      </div>` : `
+      <div class="card mb-4" style="padding:24px;text-align:center">
+        <p style="color:var(--ok);font-weight:600;font-size:16px">✅ Sin alertas activas</p>
+        <p class="text-muted text-sm mt-4">El empleado está al día.</p>
+      </div>`}
+
+      <div class="card" style="padding:24px">
+        <h3 style="font-size:16px;font-weight:700;color:var(--navy);margin-bottom:20px">
+          📋 Historial de exámenes (${(e.examenes || []).length})
+        </h3>
+        ${(e.examenes || []).length === 0
+          ? '<p class="text-muted text-sm">Sin exámenes registrados.</p>'
+          : `<div class="timeline">${(e.examenes || []).map(ex => renderExamen(ex, e.id)).join('')}</div>`}
+      </div>
+    `;
+  }
+
+  function ficha(label, valor) {
+    return `<div>
+      <div style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:3px">${label}</div>
+      <div style="font-size:14px;font-weight:500;color:var(--text)">${valor}</div>
+    </div>`;
+  }
+
+  function _arlBadge(arl) {
+    return (!arl || arl.toUpperCase().includes('NO REFIERE'))
+      ? `<span style="color:var(--critico);font-weight:700">⚠️ NO REFIERE</span>`
+      : arl;
+  }
+
+  function _edad(fechaNac) {
+    const edad = new Date().getFullYear() - new Date(fechaNac).getFullYear();
+    return `${edad} años`;
+  }
+
+  function renderExamen(ex, empId) {
+    const critCount  = (ex.alertas || []).filter(a => a.nivel === 'CRITICO').length;
+    const dotClass   = critCount > 0 ? 'critico'
+                     : (ex.alertas || []).some(a => a.nivel === 'ADVERTENCIA') ? 'advertencia' : '';
+    const dotEmoji   = critCount > 0 ? '⚠️' : dotClass ? '⚙️' : '✅';
+    const concepto   = ex.concepto_aptitud || '—';
+    const concClass  = concepto.includes('NO APTO') ? 'concepto-NO_APTO'
+                     : concepto.includes('RESTRICCIONES') ? 'concepto-RESTRICCIONES' : 'concepto-APTO';
+
+    return `
+      <div class="timeline-item">
+        <div class="timeline-dot ${dotClass}">${dotEmoji}</div>
+        <div class="timeline-content">
+          <div class="timeline-header">
+            <div>
+              <h4>${ex.tipo || '—'}</h4>
+              <p class="text-muted text-sm">${[ex.ips, ex.medico].filter(Boolean).join(' · ')}</p>
+            </div>
+            <span class="timeline-date">${_formatFecha(ex.fecha)}</span>
+          </div>
+          <div style="margin-top:10px">
+            <span style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Concepto</span><br>
+            <span class="${concClass}" style="font-weight:600;font-size:14px">${concepto}</span>
+          </div>
+          ${ex.pdf_nombre ? `<div class="text-sm text-muted mt-4">📄 ${ex.pdf_nombre}</div>` : ''}
+          <div style="margin-top:10px">
+            <a href="formato-recomendaciones.html?empleado=${empId}&examen=${ex.id}"
+               target="_blank"
+               class="btn btn-outline btn-sm"
+               onclick="event.stopPropagation()"
+               style="font-size:12px">
+              📋 Carta recomendaciones
+            </a>
+          </div>
+          ${(ex.restricciones || []).length ? (() => {
+              const temp = ex.restriccion_temporalidad;
+              const hasta = ex.restriccion_hasta;
+              let badge = '';
+              if (temp === 'TEMPORAL' && hasta) {
+                const vencido = new Date(hasta + 'T00:00:00') < new Date();
+                badge = `<span style="font-size:11px;padding:2px 7px;border-radius:4px;margin-left:6px;
+                           background:${vencido ? '#FDECEA' : '#EFF6FF'};
+                           border:1px solid ${vencido ? '#FABEC2' : '#BFD7F0'};
+                           color:${vencido ? '#C0392B' : '#1A3A5C'}">
+                           ${vencido ? '⏰ Temporal — venció ' : '⏰ Temporal hasta '}${_formatFecha(hasta)}
+                         </span>`;
+              } else if (temp === 'PERMANENTE') {
+                badge = `<span style="font-size:11px;padding:2px 7px;border-radius:4px;margin-left:6px;
+                           background:#F1F5F9;border:1px solid var(--border);color:var(--muted)">🔒 Permanente</span>`;
+              }
+              return `<div style="margin-top:8px;font-size:13px"><strong>Restricciones:</strong> ${ex.restricciones.join(' · ')}${badge}</div>`;
+            })() : ''}
+          ${(ex.recomendaciones || []).length
+            ? `<div style="margin-top:6px;font-size:13px"><strong>Recomendaciones:</strong> ${ex.recomendaciones.join(' · ')}</div>` : ''}
+          ${(ex.alertas || []).length
+            ? `<div class="text-sm text-muted mt-4">${ex.alertas.length} alerta${ex.alertas.length > 1 ? 's' : ''} generada${ex.alertas.length > 1 ? 's' : ''}</div>` : ''}
+          <div style="margin-top:12px;display:flex;justify-content:flex-end">
+            <button class="btn btn-outline btn-sm" onclick="abrirEditarExamen('${ex.id}')" style="font-size:12px">✏️ Editar examen</button>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  function _formatFecha(f) {
+    if (!f) return '—';
+    const [y,m,d] = f.split('-');
+    const ms = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+    return `${d} ${ms[+m-1]} ${y}`;
+  }
+
+  async function confirmarEliminar(id, nombre) {
+    if (!confirm(`¿Eliminar el registro de ${nombre}?\nEsta acción no se puede deshacer.`)) return;
+    try {
+      await VigiaAPI.eliminarEmpleado(id);
+      mostrarToast('Empleado eliminado', 'ok');
+      setTimeout(() => location.href = 'dashboard.html', 1200);
+    } catch (e) {
+      mostrarToast('Error: ' + e.message, 'error');
+    }
+  }
+
+  // ── Compartir concepto ────────────────────────────────────
+  function abrirCompartir() {
+    if (!empData) return;
+    const examen = (empData.examenes || [])[0];
+    if (!examen) { mostrarToast('Este empleado no tiene exámenes registrados', 'error'); return; }
+    document.getElementById('msg-concepto').value = generarMensaje(empData, examen);
+    document.getElementById('modal-compartir').classList.remove('hidden');
+  }
+
+  function cerrarCompartir() {
+    document.getElementById('modal-compartir').classList.add('hidden');
+  }
+
+  function generarMensaje(emp, ex) {
+    const concepto = (ex.concepto_aptitud || '').toUpperCase();
+    const restricciones   = ex.restricciones   || [];
+    const recomendaciones = ex.recomendaciones || [];
+
+    let icono = '✅';
+    if (concepto.includes('NO APTO'))        icono = '🚫';
+    else if (concepto.includes('RESTRICCION')) icono = '⚠️';
+
+    const meses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+    const fmtFecha = f => {
+      if (!f) return '—';
+      const [y,m,d] = f.split('-');
+      return `${d} ${meses[+m-1]} ${y}`;
+    };
+
+    let msg = `🛡️ VIGÍA — CONCEPTO MÉDICO OCUPACIONAL\n\n`;
+    msg += `Empleado: ${emp.nombre}\n`;
+    msg += `${emp.tipo_doc || 'CC'}: ${emp.cc}\n`;
+    if (emp.cargo)    msg += `Cargo: ${emp.cargo}\n`;
+    if (emp.vigia_empresas?.nombre) msg += `Empresa: ${emp.vigia_empresas.nombre}\n`;
+    msg += `Tipo de examen: ${ex.tipo || '—'}\n`;
+    msg += `Fecha: ${fmtFecha(ex.fecha)}\n`;
+    msg += `IPS: ${ex.ips || '—'}\n`;
+    msg += `\n${icono} CONCEPTO: ${ex.concepto_aptitud || '—'}\n`;
+
+    if (restricciones.length > 0) {
+      msg += `\n⚙️ RESTRICCIONES:\n`;
+      restricciones.forEach(r => msg += `• ${r}\n`);
+      const temp = ex.restriccion_temporalidad;
+      if (temp === 'TEMPORAL' && ex.restriccion_hasta) {
+        msg += `Temporalidad: TEMPORAL — hasta ${fmtFecha(ex.restriccion_hasta)}\n`;
+      } else if (temp === 'PERMANENTE') {
+        msg += `Temporalidad: PERMANENTE\n`;
+      }
+    }
+
+    if (recomendaciones.length > 0) {
+      msg += `\n📋 RECOMENDACIONES:\n`;
+      recomendaciones.forEach(r => msg += `• ${r}\n`);
+    }
+
+    msg += `\n`;
+    if (concepto.includes('NO APTO')) {
+      msg += `🚫 ACCIÓN REQUERIDA:\nEsta persona NO puede ejercer el cargo según concepto médico ocupacional. No vincular hasta nueva evaluación médica.\n`;
+    } else if (concepto.includes('RESTRICCION')) {
+      msg += `⚠️ ACCIÓN REQUERIDA:\nPuede vincularse al cargo adaptando el puesto de trabajo según las restricciones indicadas. Documentar en el SG-SST y hacer seguimiento.\n`;
+    } else {
+      msg += `✅ CONCEPTO FAVORABLE:\nApto para el cargo sin restricciones. Puede vincularse con normalidad. Recuerde afiliar a ARL desde el primer día de trabajo.\n`;
+    }
+
+    msg += `\nGenerado por Vigía — Gestión de Salud Ocupacional SST`;
+    return msg;
+  }
+
+  function copiarMensaje() {
+    const ta = document.getElementById('msg-concepto');
+    navigator.clipboard.writeText(ta.value)
+      .then(() => mostrarToast('Mensaje copiado', 'ok'))
+      .catch(() => { ta.select(); document.execCommand('copy'); mostrarToast('Mensaje copiado', 'ok'); });
+  }
+
+  function enviarWhatsApp() {
+    const texto = document.getElementById('msg-concepto').value;
+    window.open('https://wa.me/?text=' + encodeURIComponent(texto), '_blank');
+  }
+
+  function mostrarToast(msg, tipo = 'ok') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = `toast toast-${tipo} show`;
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  // ── Marcar / reactivar empleado ───────────────────────────
+
+  async function toggleEstado(nuevoActivo) {
+    const nombre = empData?.nombre || 'este empleado';
+    const confirmMsg = nuevoActivo
+      ? `¿Reactivar a ${nombre}?\n\nVolverá a aparecer en el dashboard y en las alertas.`
+      : `¿Marcar como retirado a ${nombre}?\n\nDejará de aparecer en el dashboard y en las alertas semanales.`;
+    if (!confirm(confirmMsg)) return;
+    try {
+      await VigiaAPI.setEstadoEmpleado(empId, nuevoActivo);
+      const emp = await VigiaAPI.getEmpleado(empId);
+      empData = emp;
+      renderPagina(emp);
+      mostrarToast(nuevoActivo ? 'Empleado reactivado' : 'Empleado marcado como retirado', 'ok');
+    } catch (err) {
+      mostrarToast('Error: ' + err.message, 'error');
+    }
+  }
+
+  // ── Editar examen ─────────────────────────────────────────
+
+  let examenEditandoId = null;
+
+  function abrirEditarExamen(exId) {
+    const ex = (empData?.examenes || []).find(e => e.id === exId);
+    if (!ex) return;
+    examenEditandoId = exId;
+
+    document.getElementById('e-tipo').value             = ex.tipo || 'PERIODICO';
+    document.getElementById('e-fecha').value            = ex.fecha || '';
+    document.getElementById('e-ips').value              = ex.ips || '';
+    document.getElementById('e-medico').value           = ex.medico || '';
+    document.getElementById('e-licencia').value         = ex.licencia_sst || '';
+    document.getElementById('e-concepto').value         = ex.concepto_aptitud || 'APTO SIN RESTRICCIONES';
+    document.getElementById('e-examenes-realizados').value = (ex.examenes_realizados || []).join('\n');
+    document.getElementById('e-restricciones').value   = (ex.restricciones || []).join('\n');
+    document.getElementById('e-recomendaciones').value = (ex.recomendaciones || []).join('\n');
+
+    const temp = ex.restriccion_temporalidad || 'PERMANENTE';
+    document.querySelectorAll('input[name="e-temporalidad"]').forEach(r => { r.checked = r.value === temp; });
+    document.getElementById('e-restriccion-hasta').value = ex.restriccion_hasta || '';
+
+    document.getElementById('editar-error').style.display = 'none';
+    document.getElementById('btn-guardar-edicion').textContent = 'Guardar cambios →';
+    document.getElementById('btn-guardar-edicion').disabled = false;
+
+    onConceptoEditarChange();
+    document.getElementById('e-hasta-wrap').style.display = temp === 'TEMPORAL' ? '' : 'none';
+
+    document.getElementById('modal-editar-examen').classList.remove('hidden');
+    actualizarAlertasEditar();
+  }
+
+  function cerrarEditarExamen() {
+    examenEditandoId = null;
+    document.getElementById('modal-editar-examen').classList.add('hidden');
+  }
+
+  function onConceptoEditarChange() {
+    const esConRestr = document.getElementById('e-concepto').value === 'APTO CON RESTRICCIONES';
+    document.getElementById('e-restricciones-wrap').style.display = esConRestr ? '' : 'none';
+    actualizarAlertasEditar();
+  }
+
+  function onTemporalidadEditarChange() {
+    const temp = document.querySelector('input[name="e-temporalidad"]:checked')?.value;
+    document.getElementById('e-hasta-wrap').style.display = temp === 'TEMPORAL' ? '' : 'none';
+    actualizarAlertasEditar();
+  }
+
+  function _textoALista(txt) {
+    return (txt || '').split('\n').map(s => s.trim()).filter(Boolean);
+  }
+
+  function actualizarAlertasEditar() {
+    if (!document.getElementById('modal-editar-examen')) return;
+    const temp = document.querySelector('input[name="e-temporalidad"]:checked')?.value || '';
+    const alertas = generarAlertas({
+      tipo:                     document.getElementById('e-tipo').value,
+      fecha:                    document.getElementById('e-fecha').value,
+      concepto_aptitud:         document.getElementById('e-concepto').value,
+      examenes_realizados:      _textoALista(document.getElementById('e-examenes-realizados').value),
+      restricciones:            _textoALista(document.getElementById('e-restricciones').value),
+      recomendaciones:          _textoALista(document.getElementById('e-recomendaciones').value),
+      restriccion_temporalidad: temp,
+      restriccion_hasta:        document.getElementById('e-restriccion-hasta').value || null,
+    }, { arl: empData?.arl }, { vigenciaMeses: VigiaAPI.vigenciaMeses() });
+    document.getElementById('editar-alertas-preview').innerHTML = alertas.map(renderAlertaCard).join('');
+  }
+
+  async function guardarEdicionExamen(event) {
+    event.preventDefault();
+    if (!examenEditandoId) return;
+
+    const btn = document.getElementById('btn-guardar-edicion');
+    btn.textContent = 'Guardando…'; btn.disabled = true;
+    document.getElementById('editar-error').style.display = 'none';
+
+    const concepto  = document.getElementById('e-concepto').value;
+    const esConRestr = concepto === 'APTO CON RESTRICCIONES';
+    const temp      = document.querySelector('input[name="e-temporalidad"]:checked')?.value || '';
+
+    const datos = {
+      tipo:                     document.getElementById('e-tipo').value,
+      fecha:                    document.getElementById('e-fecha').value,
+      ips:                      document.getElementById('e-ips').value.trim(),
+      medico:                   document.getElementById('e-medico').value.trim(),
+      licencia_sst:             document.getElementById('e-licencia').value.trim(),
+      concepto_aptitud:         concepto,
+      examenes_realizados:      _textoALista(document.getElementById('e-examenes-realizados').value),
+      restricciones:            esConRestr ? _textoALista(document.getElementById('e-restricciones').value) : [],
+      recomendaciones:          _textoALista(document.getElementById('e-recomendaciones').value),
+      restriccion_temporalidad: esConRestr ? (temp || null) : null,
+      restriccion_hasta:        (esConRestr && temp === 'TEMPORAL') ? (document.getElementById('e-restriccion-hasta').value || null) : null,
+    };
+    datos.alertas = generarAlertas(datos, { arl: empData?.arl }, { vigenciaMeses: VigiaAPI.vigenciaMeses() });
+
+    try {
+      await VigiaAPI.editarExamen(examenEditandoId, datos);
+      cerrarEditarExamen();
+      const emp = await VigiaAPI.getEmpleado(empId);
+      empData = emp;
+      renderPagina(emp);
+      mostrarToast('Examen actualizado', 'ok');
+    } catch (err) {
+      const errDiv = document.getElementById('editar-error');
+      errDiv.textContent = err.message;
+      errDiv.style.display = 'block';
+      btn.textContent = 'Guardar cambios →'; btn.disabled = false;
+    }
+  }
+
+  init();
+</script>
+<script src="js/vigia-chat.js"></script>
+</body>
+</html>
+

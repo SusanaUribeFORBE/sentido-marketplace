@@ -1,0 +1,780 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vigía 360 — Presupuesto SG-SST F006</title>
+  <link rel="stylesheet" href="vigia.css" />
+  <style>
+    /* ── Header del formato ──────────────────────── */
+    .formato-header {
+      display:grid;grid-template-columns:1fr auto;gap:0;
+      border:2px solid var(--navy);border-radius:0;margin-bottom:0
+    }
+    .formato-header-left { padding:10px 16px }
+    .formato-header-right {
+      background:var(--navy);color:white;
+      padding:8px 14px;text-align:right;font-size:11px;
+      display:flex;flex-direction:column;justify-content:center;gap:3px
+    }
+    .formato-titulo {
+      font-size:16px;font-weight:900;color:var(--navy);
+      text-transform:uppercase;letter-spacing:.5px
+    }
+    .formato-sub { font-size:12px;color:var(--muted);margin-top:3px }
+    .formato-periodo {
+      border:2px solid var(--navy);border-top:0;
+      padding:6px 16px;display:flex;gap:24px;align-items:center;
+      flex-wrap:wrap;font-size:12px;margin-bottom:16px
+    }
+    .periodo-badge { font-weight:700;color:var(--navy) }
+
+    /* ── Tabla presupuesto ───────────────────────── */
+    .ppto-wrap { overflow-x:auto;margin-bottom:20px }
+    table.ppto {
+      width:100%;border-collapse:collapse;font-size:11px;white-space:nowrap;
+      border:1.5px solid var(--border)
+    }
+    table.ppto th {
+      background:var(--navy);color:white;padding:5px 6px;
+      text-align:center;font-size:10px;border:1px solid #1a3a5e
+    }
+    table.ppto th.th-left { text-align:left }
+    table.ppto td {
+      padding:4px 6px;border:1px solid var(--border);
+      vertical-align:middle;background:var(--card)
+    }
+    table.ppto td.td-group {
+      background:#1E3A5F;color:white;font-weight:800;font-size:11px;
+      letter-spacing:.4px;padding:5px 10px
+    }
+    table.ppto td.td-subtotal {
+      background:#EFF6FF;font-weight:700;color:var(--navy);font-size:11px
+    }
+    table.ppto td.td-total {
+      background:var(--navy);color:white;font-weight:800
+    }
+    table.ppto td.td-item-name {
+      white-space:normal;min-width:180px;max-width:220px;font-weight:600
+    }
+    table.ppto td.td-group-name {
+      white-space:normal;min-width:120px;max-width:160px;
+      font-size:10px;color:var(--muted)
+    }
+    .mes-p { background:#F0FDF4 }
+    .mes-e { background:#FFF7ED }
+    .val-cell {
+      text-align:right;min-width:68px;cursor:pointer;
+      padding:4px 6px;transition:background .1s
+    }
+    .val-cell:hover { background:#DBEAFE!important }
+    .val-cell input {
+      width:68px;border:none;background:transparent;text-align:right;
+      font-size:11px;font-family:inherit;color:var(--navy);outline:none
+    }
+    .pct-cell {
+      font-weight:700;text-align:right;
+      padding:4px 8px;min-width:44px
+    }
+    .pct-ok   { color:#15803D }
+    .pct-warn { color:#D97706 }
+    .pct-zero { color:var(--muted) }
+
+    .btn-add-item {
+      background:none;border:1.5px dashed var(--border);color:var(--muted);
+      border-radius:6px;padding:3px 10px;font-size:11px;cursor:pointer;
+      transition:all .15s;font-family:inherit
+    }
+    .btn-add-item:hover { border-color:var(--blue);color:var(--blue) }
+    .del-btn {
+      background:none;border:none;color:#CBD5E1;font-size:13px;cursor:pointer;
+      padding:0 3px;line-height:1
+    }
+    .del-btn:hover { color:#C0392B }
+
+    /* ── Sección pie ──────────────────────────────── */
+    .firmas-grid {
+      display:grid;grid-template-columns:1fr 1fr;gap:0;
+      border:1.5px solid var(--border);margin-bottom:20px
+    }
+    .firma-box { padding:12px 16px;border-right:1.5px solid var(--border) }
+    .firma-box:last-child { border-right:none }
+    .firma-label { font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px }
+    .firma-input {
+      width:100%;border:none;border-bottom:1.5px solid var(--border);
+      background:transparent;font-size:12px;font-family:inherit;
+      color:var(--text);padding:2px 0;outline:none
+    }
+
+    .analisis-box {
+      border:1.5px solid var(--border);border-radius:0;
+      padding:14px 16px;margin-bottom:20px
+    }
+    .analisis-title {
+      font-size:11px;font-weight:800;color:var(--navy);text-transform:uppercase;
+      letter-spacing:.5px;margin-bottom:8px
+    }
+    textarea.analisis-ta {
+      width:100%;border:none;background:transparent;resize:vertical;
+      font-size:12px;font-family:inherit;color:var(--text);
+      min-height:80px;outline:none;box-sizing:border-box
+    }
+
+    /* ── Totales resumen ─────────────────────────── */
+    .totales-bar {
+      display:grid;grid-template-columns:repeat(3,1fr);gap:12px;
+      margin-bottom:20px
+    }
+    @media(max-width:600px){ .totales-bar { grid-template-columns:1fr } }
+    .total-card {
+      background:var(--card);border:1.5px solid var(--border);
+      border-radius:10px;padding:14px 16px;text-align:center
+    }
+    .total-card.ppto { border-color:#BFDBFE;background:#EFF6FF }
+    .total-card.ejec { border-color:#6EE7B7;background:#F0FDF4 }
+    .total-card.pct-card { border-color:#FCD34D;background:#FEF9C3 }
+    .total-val { font-size:22px;font-weight:900;color:var(--navy) }
+    .total-lbl { font-size:11px;color:var(--muted);margin-top:4px }
+
+    /* ── Exportar/barra ─────────────────────────── */
+    .top-bar { display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;margin-bottom:16px }
+    .top-bar-actions { display:flex;gap:8px;flex-wrap:wrap;align-items:center }
+
+    /* ── Modal ──────────────────────────────────── */
+    .modal-overlay {
+      display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);
+      z-index:1000;align-items:center;justify-content:center
+    }
+    .modal-overlay.open { display:flex }
+    .modal {
+      background:var(--card);border-radius:12px;padding:24px;
+      width:min(620px,95vw);max-height:90vh;overflow-y:auto
+    }
+    .modal-title { font-size:15px;font-weight:800;color:var(--navy);margin-bottom:16px }
+    .modal-grid { display:grid;grid-template-columns:1fr 1fr;gap:8px }
+    .modal-grid .span2 { grid-column:1/-1 }
+    .modal-section {
+      grid-column:1/-1;font-size:10px;font-weight:700;color:var(--muted);
+      text-transform:uppercase;letter-spacing:.5px;padding-top:8px;
+      border-top:1px solid var(--border);margin-top:4px
+    }
+    label { font-size:12px;font-weight:600;color:var(--text);display:block;margin-bottom:3px }
+    input.fi, select.fi, textarea.fi {
+      width:100%;padding:6px 10px;border-radius:7px;border:1.5px solid var(--border);
+      background:var(--bg);color:var(--text);font-size:12px;font-family:inherit;
+      box-sizing:border-box
+    }
+    .mes-grid {
+      display:grid;grid-template-columns:80px 1fr 1fr;gap:6px;
+      align-items:center;margin-top:6px
+    }
+    .mes-grid .mh { font-size:10px;font-weight:700;color:var(--muted);text-align:right }
+    .mes-grid .ml { font-size:11px;font-weight:600;color:var(--navy) }
+    .modal-actions { display:flex;gap:8px;justify-content:flex-end;margin-top:18px }
+
+    /* ── Print ──────────────────────────────────── */
+    @media print {
+      .top-bar-actions,.del-btn,.btn-add-item,.modal-overlay { display:none!important }
+      .page { padding:0 }
+      .ppto-wrap { overflow:visible }
+      table.ppto { font-size:9px }
+    }
+
+    select.anio-sel {
+      padding:7px 11px;border-radius:7px;border:1.5px solid var(--border);
+      background:var(--bg);color:var(--text);font-size:13px;font-family:inherit
+    }
+  </style>
+</head>
+<body>
+<nav class="navbar">
+  <a href="dashboard.html" class="nav-brand">
+    <span class="brand-vigia">Vigía</span><span class="brand-sst">360</span>
+  </a>
+  <div class="nav-links">
+    <a href="dashboard.html" class="nav-link-fixed">Dashboard</a>
+    <div class="nav-dropdown" id="dd-P">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-P')">
+        <span class="phva-pill phva-P">P</span> Planear <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="perfil-responsable.html">🩺 Responsable SST</a>
+        <a href="responsabilidades.html">👥 Roles y Responsabilidades</a>
+        <a href="copasst.html">🤝 COPASST y Convivencia</a>
+        <a href="documentos-sst.html">📄 Documentos del SG-SST</a>
+        <a href="matriz-peligros.html">⚠️ Matriz de Peligros (GTC-45)</a>
+        <a href="plan-trabajo.html">📅 Plan de Trabajo Anual</a>
+        <a href="presupuesto-sgsst.html" style="font-weight:700;color:var(--green)">💰 Presupuesto SG-SST</a>
+        <a href="profesiograma.html">💊 Profesiograma</a>
+      </div>
+    </div>
+    <div class="nav-dropdown" id="dd-H">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-H')">
+        <span class="phva-pill phva-H">H</span> Hacer <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="epp.html">🦺 EPP</a>
+        <a href="capacitaciones.html">🎓 Capacitaciones</a>
+        <a href="emergencias.html">🚨 Emergencias y Brigada</a>
+        <a href="inspecciones.html">🔍 Inspecciones y Mantenimiento</a>
+        <a href="perfil-salud.html">🏥 Salud Ocupacional</a>
+        <div class="nav-dd-divider"></div>
+        <a href="lista-personal.html">👥 Lista de Personal</a>
+        <a href="subir.html">⬆️ Subir Examen</a>
+        <a href="subir-masivo.html">📦 Carga Masiva</a>
+        <a href="cartas-masivas.html">📄 Cartas Masivas</a>
+        <a href="reporte-examenes.html">📊 Cobertura de Exámenes</a>
+        <a href="informe-condiciones.html">📋 Informe de Condiciones</a>
+      </div>
+    </div>
+    <div class="nav-dropdown" id="dd-V">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-V')">
+        <span class="phva-pill phva-V">V</span> Verificar <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="evaluacion-sst.html">📋 Evaluación (Res. 0312)</a>
+        <a href="investigaciones.html">🔍 AT / Incidentes</a>
+        <a href="auditoria.html">🗒️ Auditoría Interna</a>
+        <a href="ausentismo.html">📉 Ausentismo laboral</a>
+        <a href="indicadores-sgsst.html">📊 Indicadores SG-SST</a>
+        <a href="analisis-phva.html">📈 Análisis e Indicadores</a>
+      </div>
+    </div>
+    <div class="nav-dropdown" id="dd-A">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-A')">
+        <span class="phva-pill phva-A">A</span> Actuar <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="mejoramiento.html">✅ Acciones de Mejoramiento</a>
+        <a href="evaluacion-sst.html">📝 Plan de Mejoramiento (F002)</a>
+      </div>
+    </div>
+    <a href="listado-maestro.html" class="nav-link-fixed">📁 Listado Maestro</a>
+    <span id="nav-empresa" style="color:#CBD8E6;font-size:13px;padding:6px 0"></span>
+    <button onclick="VigiaAPI.logout()"
+      style="background:none;border:1px solid rgba(255,255,255,.2);color:#CBD8E6;
+             border-radius:6px;padding:6px 12px;cursor:pointer;font-size:13px">Salir</button>
+  </div>
+</nav>
+
+<div class="page">
+
+  <!-- Barra superior -->
+  <div class="top-bar">
+    <div>
+      <h2 style="margin:0 0 3px;font-size:18px;color:var(--navy)">💰 Presupuesto SG-SST</h2>
+      <p style="margin:0;font-size:12px;color:var(--muted)">Formato F006 · Ítem 1.1.3 Res. 0312/2019 · Asignación de recursos para el SG-SST</p>
+    </div>
+    <div class="top-bar-actions">
+      <select class="anio-sel" id="sel-anio" onchange="cargar()"></select>
+      <button class="btn-outline btn" style="font-size:12px" onclick="VigiaAPI.imprimirModulo()">🖨️ Imprimir / PDF</button>
+      <button class="btn-outline btn" style="font-size:12px" onclick="exportarCSV()">📊 CSV</button>
+    </div>
+  </div>
+
+  <!-- Spinner -->
+  <div id="cargando" style="text-align:center;padding:48px">
+    <div class="spinner" style="margin:0 auto 16px;border-color:rgba(46,134,171,.2);border-top-color:var(--blue)"></div>
+    <p class="text-muted">Cargando presupuesto…</p>
+  </div>
+
+  <div id="contenido" style="display:none">
+
+    <!-- Cabecera del formato -->
+    <div class="formato-header">
+      <div class="formato-header-left">
+        <div class="formato-titulo">Presupuesto SG-SST</div>
+        <div class="formato-sub" id="lbl-empresa-fmt">Sistema de Gestión de Seguridad y Salud en el Trabajo</div>
+      </div>
+      <div class="formato-header-right">
+        <span>CÓDIGO: SG SST F006</span>
+        <span>VERSIÓN: 1</span>
+        <span>FECHA: 29/08/2023</span>
+      </div>
+    </div>
+    <div class="formato-periodo">
+      <span>PERÍODO: <span class="periodo-badge">ENE – DIC</span></span>
+      <span>AÑO: <span class="periodo-badge" id="lbl-anio-fmt">2025</span></span>
+      <span style="color:var(--muted)">P = Proyectado &nbsp;|&nbsp; E = Ejecutado</span>
+    </div>
+
+    <!-- Totales resumen -->
+    <div class="totales-bar">
+      <div class="total-card ppto">
+        <div class="total-val" id="tot-ppto">$0</div>
+        <div class="total-lbl">Total planificado</div>
+      </div>
+      <div class="total-card ejec">
+        <div class="total-val" id="tot-ejec">$0</div>
+        <div class="total-lbl">Total ejecutado</div>
+      </div>
+      <div class="total-card pct-card">
+        <div class="total-val" id="tot-pct">—</div>
+        <div class="total-lbl">% de ejecución</div>
+      </div>
+    </div>
+
+    <!-- Tabla principal -->
+    <div class="ppto-wrap">
+      <table class="ppto" id="tabla-ppto">
+        <thead>
+          <tr>
+            <th class="th-left" style="min-width:160px" rowspan="2">Detalle</th>
+            <th class="th-left" style="min-width:180px" rowspan="2">Ítem / descripción</th>
+            <th colspan="2">ENE</th>
+            <th colspan="2">FEB</th>
+            <th colspan="2">MAR</th>
+            <th colspan="2">ABR</th>
+            <th colspan="2">MAY</th>
+            <th colspan="2">JUN</th>
+            <th colspan="2">JUL</th>
+            <th colspan="2">AGO</th>
+            <th colspan="2">SEP</th>
+            <th colspan="2">OCT</th>
+            <th colspan="2">NOV</th>
+            <th colspan="2">DIC</th>
+            <th rowspan="2" style="min-width:80px">Total<br>Planificado</th>
+            <th rowspan="2" style="min-width:80px">Total<br>Ejecutado</th>
+            <th rowspan="2" style="min-width:44px">%</th>
+            <th rowspan="2" style="min-width:32px"></th>
+          </tr>
+          <tr id="thead-pe"></tr>
+        </thead>
+        <tbody id="tbody-ppto"></tbody>
+        <tfoot id="tfoot-ppto"></tfoot>
+      </table>
+    </div>
+
+    <!-- Firmas -->
+    <div class="firmas-grid">
+      <div class="firma-box">
+        <div class="firma-label">Elaboró</div>
+        <input class="firma-input" id="firma-elaboro" placeholder="Cargo · Nombre" onchange="guardarMeta()" />
+      </div>
+      <div class="firma-box">
+        <div class="firma-label">Revisó y Aprobó</div>
+        <input class="firma-input" id="firma-reviso" placeholder="Cargo · Nombre" onchange="guardarMeta()" />
+      </div>
+    </div>
+
+    <!-- Análisis -->
+    <div class="analisis-box">
+      <div class="analisis-title">Análisis del cumplimiento</div>
+      <textarea class="analisis-ta" id="txt-analisis" placeholder="Ingrese el análisis del cumplimiento del presupuesto para el período…" onchange="guardarMeta()"></textarea>
+    </div>
+
+  </div><!-- /contenido -->
+
+</div><!-- /page -->
+
+<!-- Modal agregar / editar ítem -->
+<div class="modal-overlay" id="modal-overlay" onclick="cerrarModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-title" id="modal-title">Nuevo ítem de presupuesto</div>
+    <div class="modal-grid">
+      <div class="span2">
+        <label>Categoría *</label>
+        <select class="fi" id="f-grupo">
+          <option value="GASTOS_PERSONAL">Gastos de Personal SST</option>
+          <option value="MEDICINA_PREVENTIVA">Medicina Preventiva</option>
+          <option value="DOTACION_EPP">Dotación y EPP</option>
+          <option value="EQUIPOS_EMERGENCIA">Equipos de Emergencia</option>
+          <option value="OTROS_RECURSOS">Otros Recursos Suministrados</option>
+        </select>
+      </div>
+      <div class="span2">
+        <label>Descripción del ítem *</label>
+        <input type="text" class="fi" id="f-nombre" placeholder="Ej: Consultoría SST" />
+      </div>
+      <div class="span2">
+        <label>Beneficio / justificación</label>
+        <textarea class="fi" id="f-beneficio" rows="2" placeholder="Ej: Cumplimiento Decreto 1072 y Res. 0312…"></textarea>
+      </div>
+      <div class="modal-section">Valores proyectados (P) y ejecutados (E) por mes</div>
+    </div>
+
+    <div class="mes-grid">
+      <div></div>
+      <div class="mh">Proyectado (P)</div>
+      <div class="mh">Ejecutado (E)</div>
+    </div>
+    <div id="mes-inputs"></div>
+
+    <div class="modal-actions">
+      <button class="btn-outline btn" onclick="cerrarModal()">Cancelar</button>
+      <button class="btn" onclick="guardarItem()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/vigia-api.js"></script>
+<script>
+const MESES_CLAVE = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+const MESES_NOM  = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
+                    'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+const GRUPOS = {
+  GASTOS_PERSONAL:    { label: 'Gastos de Personal SST',           color: '#1E3A5F', defaults: ['Consultoría SST','Afiliación al SGRL'] },
+  MEDICINA_PREVENTIVA:{ label: 'Medicina Preventiva',              color: '#1D4B6E', defaults: ['Exámenes ocupacionales'] },
+  DOTACION_EPP:       { label: 'Dotación y EPP',                   color: '#1E5E4F', defaults: ['Elementos de protección personal (EPP)','Dotación: calzado, camiseta, pantalón'] },
+  EQUIPOS_EMERGENCIA: { label: 'Equipos de Emergencia',            color: '#6B1E0E', defaults: ['Botiquín de primeros auxilios','Recarga de extintores portátiles'] },
+  OTROS_RECURSOS:     { label: 'Otros Recursos Suministrados',     color: '#3B2D6B', defaults: ['Mantenimientos locativos','Mantenimiento de maquinaria','Investigaciones de accidentes','Capacitaciones y actividades de promoción','Inducción SG-SST'] },
+};
+
+let anioActual = new Date().getFullYear();
+let items = [];
+let meta  = null;
+let editId = null;
+
+// ── Init ────────────────────────────────────────────
+(async () => {
+  const ok = await VigiaAPI.requireAuth();
+  if (!ok) return;
+  const nombre = localStorage.getItem('vigia_empresa_nombre') || '';
+  document.getElementById('nav-empresa').textContent = nombre;
+  document.getElementById('lbl-empresa-fmt').textContent = nombre || 'Sistema de Gestión de Seguridad y Salud en el Trabajo';
+
+  const sel = document.getElementById('sel-anio');
+  const cur = new Date().getFullYear();
+  for (let y = cur + 1; y >= cur - 3; y--) {
+    const o = document.createElement('option');
+    o.value = y; o.textContent = y;
+    if (y === cur) o.selected = true;
+    sel.appendChild(o);
+  }
+  // Build P/E header
+  const tr = document.getElementById('thead-pe');
+  MESES_CLAVE.forEach(() => {
+    tr.innerHTML += '<th class="mes-p">P</th><th class="mes-e">E</th>';
+  });
+  cargar();
+})();
+
+// ── Cargar datos ─────────────────────────────────────
+async function cargar() {
+  anioActual = parseInt(document.getElementById('sel-anio').value);
+  document.getElementById('lbl-anio-fmt').textContent = anioActual;
+  document.getElementById('cargando').style.display = '';
+  document.getElementById('contenido').style.display = 'none';
+  try {
+    const eid = VigiaAPI.empresaId() || null;
+    const resp = await VigiaAPI.getPresupuesto(eid, anioActual);
+    items = resp.items || [];
+    meta  = resp.meta  || null;
+
+    // Si no hay ítems, inicializar con los defaults
+    if (items.length === 0) await inicializarDefaults(eid);
+
+    renderTabla();
+    renderMeta();
+    document.getElementById('cargando').style.display = 'none';
+    document.getElementById('contenido').style.display = '';
+  } catch(e) {
+    document.getElementById('cargando').innerHTML =
+      `<p style="color:#C0392B">Error: ${e.message}</p>`;
+  }
+}
+
+async function inicializarDefaults(eid) {
+  let orden = 0;
+  for (const [grupoKey, g] of Object.entries(GRUPOS)) {
+    for (const nombre of g.defaults) {
+      const item = await VigiaAPI.crearPresupuestoItem({
+        empresa_id: eid || undefined,
+        anio: anioActual, grupo: grupoKey, nombre,
+        beneficio: null, orden: orden++, valores: {}
+      });
+      items.push(item);
+    }
+  }
+}
+
+// ── Render tabla ──────────────────────────────────────
+function renderTabla() {
+  const tbody = document.getElementById('tbody-ppto');
+  const tfoot = document.getElementById('tfoot-ppto');
+  tbody.innerHTML = '';
+
+  let grandP = 0, grandE = 0;
+
+  for (const [grupoKey, g] of Object.entries(GRUPOS)) {
+    const grpItems = items.filter(i => i.grupo === grupoKey);
+    if (!grpItems.length) continue;
+
+    // Group header
+    const thdr = document.createElement('tr');
+    thdr.innerHTML = `
+      <td class="td-group" colspan="2">${g.label}</td>
+      ${MESES_CLAVE.map(() => '<td class="td-group" colspan="2"></td>').join('')}
+      <td class="td-group"></td><td class="td-group"></td><td class="td-group"></td>
+      <td class="td-group">
+        <button class="btn-add-item" onclick="abrirModal(null,'${grupoKey}')">+ Añadir</button>
+      </td>`;
+    tbody.appendChild(thdr);
+
+    let subtotP = 0, subtotE = 0;
+
+    for (const item of grpItems) {
+      const v = item.valores || {};
+      let totP = 0, totE = 0;
+      const tr = document.createElement('tr');
+      let cells = `
+        <td class="td-group-name">${g.label}</td>
+        <td class="td-item-name">${escH(item.nombre)}</td>`;
+
+      MESES_CLAVE.forEach(m => {
+        const p = Number(v[m+'_p'] || 0);
+        const e = Number(v[m+'_e'] || 0);
+        totP += p; totE += e;
+        cells += `
+          <td class="val-cell mes-p" onclick="editCell(this,'${item.id}','${m}_p',${p})">${fmtCOP(p)}</td>
+          <td class="val-cell mes-e" onclick="editCell(this,'${item.id}','${m}_e',${e})">${fmtCOP(e)}</td>`;
+      });
+
+      subtotP += totP; subtotE += totE;
+      const pct = totP > 0 ? (totE / totP * 100).toFixed(1) : null;
+      const pctCls = pct === null ? 'pct-zero' : Number(pct) >= 80 ? 'pct-ok' : 'pct-warn';
+
+      cells += `
+        <td style="text-align:right;font-weight:700">${fmtCOP(totP)}</td>
+        <td style="text-align:right;font-weight:700">${fmtCOP(totE)}</td>
+        <td class="pct-cell ${pctCls}">${pct !== null ? pct+'%' : '—'}</td>
+        <td style="text-align:center">
+          <button class="del-btn" onclick="editarItem('${item.id}')" title="Editar">✏️</button>
+          <button class="del-btn" onclick="eliminarItem('${item.id}')" title="Eliminar">🗑</button>
+        </td>`;
+
+      tr.innerHTML = cells;
+      tbody.appendChild(tr);
+    }
+
+    // Subtotal row
+    grandP += subtotP; grandE += subtotE;
+    const stPct = subtotP > 0 ? (subtotE / subtotP * 100).toFixed(1) : null;
+    const sub = document.createElement('tr');
+    sub.innerHTML = `
+      <td class="td-subtotal" colspan="2">Subtotal — ${g.label}</td>
+      ${MESES_CLAVE.map(() => '<td class="td-subtotal" colspan="2"></td>').join('')}
+      <td class="td-subtotal" style="text-align:right">${fmtCOP(subtotP)}</td>
+      <td class="td-subtotal" style="text-align:right">${fmtCOP(subtotE)}</td>
+      <td class="td-subtotal pct-cell ${stPct !== null && Number(stPct)>=80 ? 'pct-ok':'pct-warn'}">${stPct !== null ? stPct+'%':'—'}</td>
+      <td class="td-subtotal"></td>`;
+    tbody.appendChild(sub);
+  }
+
+  // Grand total
+  const gpct = grandP > 0 ? (grandE / grandP * 100).toFixed(1) : null;
+  tfoot.innerHTML = `
+    <tr>
+      <td class="td-total" colspan="2">TOTAL PROGRAMADO / EJECUTADO</td>
+      ${MESES_CLAVE.map(() => '<td class="td-total" colspan="2"></td>').join('')}
+      <td class="td-total" style="text-align:right">${fmtCOP(grandP)}</td>
+      <td class="td-total" style="text-align:right">${fmtCOP(grandE)}</td>
+      <td class="td-total" style="text-align:right">${gpct !== null ? gpct+'%':'—'}</td>
+      <td class="td-total"></td>
+    </tr>`;
+
+  // Tarjetas resumen
+  document.getElementById('tot-ppto').textContent = fmtCOP(grandP);
+  document.getElementById('tot-ejec').textContent = fmtCOP(grandE);
+  document.getElementById('tot-pct').textContent  = gpct !== null ? gpct+'%' : '—';
+}
+
+function renderMeta() {
+  if (meta) {
+    document.getElementById('firma-elaboro').value = meta.elaboro || '';
+    document.getElementById('firma-reviso').value  = meta.reviso  || '';
+    document.getElementById('txt-analisis').value  = meta.analisis || '';
+  }
+}
+
+// ── Edición inline de celda ───────────────────────────
+function editCell(td, itemId, campo, valorActual) {
+  if (td.querySelector('input')) return;
+  const orig = td.textContent;
+  td.innerHTML = '';
+  const inp = document.createElement('input');
+  inp.type = 'number'; inp.min = '0'; inp.step = '1000';
+  inp.value = valorActual; inp.style.cssText = 'width:72px;border:none;background:transparent;text-align:right;font-size:11px;font-family:inherit;color:var(--navy)';
+  td.appendChild(inp);
+  inp.focus(); inp.select();
+
+  const guardar = async () => {
+    const nuevo = parseInt(inp.value) || 0;
+    if (nuevo === valorActual) { td.textContent = orig; return; }
+    const item = items.find(i => i.id === itemId);
+    if (!item) return;
+    item.valores = item.valores || {};
+    item.valores[campo] = nuevo;
+    try {
+      await VigiaAPI.editarPresupuestoItem(itemId, { nombre: item.nombre, beneficio: item.beneficio, orden: item.orden, valores: item.valores });
+      renderTabla();
+    } catch(e) {
+      td.textContent = orig;
+      alert('Error al guardar: ' + e.message);
+    }
+  };
+
+  inp.addEventListener('blur', guardar);
+  inp.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { inp.blur(); }
+    if (e.key === 'Escape') { td.textContent = orig; }
+  });
+}
+
+// ── Modal ítem ────────────────────────────────────────
+function buildMesInputs(valores) {
+  const cont = document.getElementById('mes-inputs');
+  cont.innerHTML = '';
+  MESES_CLAVE.forEach((m, i) => {
+    const row = document.createElement('div');
+    row.className = 'mes-grid';
+    const p = Number((valores || {})[m+'_p'] || 0);
+    const e = Number((valores || {})[m+'_e'] || 0);
+    row.innerHTML = `
+      <div class="ml">${MESES_NOM[i]}</div>
+      <input type="number" class="fi" id="mp-${m}" min="0" step="1000" value="${p}" placeholder="0" />
+      <input type="number" class="fi" id="me-${m}" min="0" step="1000" value="${e}" placeholder="0" />`;
+    cont.appendChild(row);
+  });
+}
+
+function abrirModal(id, grupoPref) {
+  editId = id || null;
+  document.getElementById('modal-title').textContent = id ? 'Editar ítem' : 'Nuevo ítem de presupuesto';
+  if (id) {
+    const item = items.find(i => i.id === id);
+    if (item) {
+      document.getElementById('f-grupo').value    = item.grupo;
+      document.getElementById('f-nombre').value   = item.nombre;
+      document.getElementById('f-beneficio').value= item.beneficio || '';
+      buildMesInputs(item.valores);
+    }
+  } else {
+    document.getElementById('f-grupo').value    = grupoPref || 'GASTOS_PERSONAL';
+    document.getElementById('f-nombre').value   = '';
+    document.getElementById('f-beneficio').value= '';
+    buildMesInputs({});
+  }
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function editarItem(id) { abrirModal(id); }
+
+function cerrarModal(e) {
+  if (e && e.target !== document.getElementById('modal-overlay')) return;
+  document.getElementById('modal-overlay').classList.remove('open');
+  editId = null;
+}
+
+async function guardarItem() {
+  const nombre = document.getElementById('f-nombre').value.trim();
+  if (!nombre) return alert('Ingrese una descripción para el ítem.');
+  const valores = {};
+  MESES_CLAVE.forEach(m => {
+    valores[m+'_p'] = parseInt(document.getElementById('mp-'+m).value) || 0;
+    valores[m+'_e'] = parseInt(document.getElementById('me-'+m).value) || 0;
+  });
+  const payload = {
+    empresa_id: VigiaAPI.empresaId() || undefined,
+    anio: anioActual,
+    grupo: document.getElementById('f-grupo').value,
+    nombre,
+    beneficio: document.getElementById('f-beneficio').value || null,
+    orden: editId ? (items.find(i=>i.id===editId)?.orden||0) : items.length,
+    valores,
+  };
+  try {
+    if (editId) {
+      const upd = await VigiaAPI.editarPresupuestoItem(editId, payload);
+      const idx = items.findIndex(i => i.id === editId);
+      if (idx >= 0) items[idx] = upd;
+    } else {
+      const nuevo = await VigiaAPI.crearPresupuestoItem(payload);
+      items.push(nuevo);
+    }
+    document.getElementById('modal-overlay').classList.remove('open');
+    editId = null;
+    renderTabla();
+  } catch(e) { alert('Error al guardar: ' + e.message); }
+}
+
+async function eliminarItem(id) {
+  if (!confirm('¿Eliminar este ítem del presupuesto?')) return;
+  try {
+    await VigiaAPI.eliminarPresupuestoItem(id);
+    items = items.filter(i => i.id !== id);
+    renderTabla();
+  } catch(e) { alert('Error: ' + e.message); }
+}
+
+// ── Meta (firmas + análisis) ──────────────────────────
+let _metaTimer = null;
+function guardarMeta() {
+  clearTimeout(_metaTimer);
+  _metaTimer = setTimeout(async () => {
+    try {
+      const res = await VigiaAPI.guardarPresupuestoMeta({
+        empresa_id: VigiaAPI.empresaId() || undefined,
+        anio: anioActual,
+        elaboro:  document.getElementById('firma-elaboro').value,
+        reviso:   document.getElementById('firma-reviso').value,
+        analisis: document.getElementById('txt-analisis').value,
+      });
+      meta = res;
+    } catch(e) { /* silencioso */ }
+  }, 1200);
+}
+
+// ── CSV Export ────────────────────────────────────────
+function exportarCSV() {
+  const filas = [['GRUPO','ÍTEM','BENEFICIO',
+    ...MESES_CLAVE.flatMap(m=>[m.toUpperCase()+' P', m.toUpperCase()+' E']),
+    'TOTAL P','TOTAL E','%']];
+
+  for (const [key, g] of Object.entries(GRUPOS)) {
+    items.filter(i=>i.grupo===key).forEach(item => {
+      const v = item.valores || {};
+      let tP=0,tE=0;
+      const row = [g.label, item.nombre, item.beneficio||''];
+      MESES_CLAVE.forEach(m => {
+        const p=Number(v[m+'_p']||0), e=Number(v[m+'_e']||0);
+        tP+=p; tE+=e; row.push(p,e);
+      });
+      const pct = tP>0 ? (tE/tP*100).toFixed(1)+'%' : '0%';
+      row.push(tP,tE,pct);
+      filas.push(row);
+    });
+  }
+
+  const csv = filas.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\r\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'}));
+  a.download = `presupuesto-sgsst-${anioActual}.csv`;
+  a.click();
+}
+
+// ── Helpers ───────────────────────────────────────────
+function fmtCOP(v) {
+  if (!v) return '—';
+  return '$ ' + Number(v).toLocaleString('es-CO');
+}
+function escH(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function toggleDD(e, id) {
+  e.stopPropagation();
+  document.querySelectorAll('.nav-dropdown.open').forEach(d => {
+    if (d.id !== id) d.classList.remove('open');
+  });
+  document.getElementById(id).classList.toggle('open');
+}
+document.addEventListener('click', () =>
+  document.querySelectorAll('.nav-dropdown.open').forEach(d => d.classList.remove('open'))
+);
+</script>
+<script src="js/vigia-chat.js"></script>
+</body>
+</html>
+

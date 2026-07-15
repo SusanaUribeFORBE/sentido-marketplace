@@ -1,0 +1,260 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vigía 360 — Alertas de vencimiento</title>
+  <link rel="stylesheet" href="vigia.css" />
+  <style>
+    .alerta-card { display:flex;align-items:flex-start;gap:14px;padding:14px 18px;
+      border:1.5px solid var(--border);border-radius:10px;margin-bottom:10px;
+      background:var(--card);transition:border-color .15s }
+    .alerta-card:hover { border-color:var(--blue) }
+    .alerta-icon { font-size:22px;flex-shrink:0;margin-top:2px }
+    .alerta-body { flex:1;min-width:0 }
+    .alerta-titulo { font-size:14px;font-weight:700;color:var(--navy) }
+    .alerta-detalle { font-size:12px;color:var(--muted);margin-top:3px }
+    .alerta-empresa { font-size:11px;color:var(--muted);margin-top:4px }
+    .alerta-meta { display:flex;align-items:center;gap:8px;flex-shrink:0 }
+    .nivel-VENCIDO  { background:#FDECEA;color:#C0392B;border:1.5px solid #FABEC2 }
+    .nivel-CRITICO  { background:#FEF3C7;color:#D97706;border:1.5px solid #FCD34D }
+    .nivel-PROXIMO  { background:#EFF6FF;color:#2563EB;border:1.5px solid #BFDBFE }
+    .nivel-badge { padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;flex-shrink:0 }
+    .filter-bar { display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px }
+    .filter-btn { padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;
+      border:1.5px solid var(--border);background:none;cursor:pointer;
+      color:var(--muted);transition:all .15s }
+    .filter-btn.active { background:var(--navy);color:white;border-color:var(--navy) }
+    .tipo-section { margin-bottom:24px }
+    .tipo-header { font-size:13px;font-weight:800;color:var(--navy);text-transform:uppercase;
+      letter-spacing:.05em;margin-bottom:10px;padding-bottom:6px;
+      border-bottom:2px solid var(--blue);display:flex;align-items:center;gap:8px }
+    .stats-alertas { display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px }
+    .stat-alerta { padding:16px 20px;border-radius:10px;text-align:center;border:1.5px solid }
+    .stat-num { font-size:28px;font-weight:900 }
+    .stat-lbl { font-size:12px;font-weight:600;margin-top:4px }
+  </style>
+</head>
+<body>
+<nav class="navbar">
+  <a href="dashboard.html" class="nav-brand">
+    <span class="brand-vigia">Vigía</span><span class="brand-sst">360</span>
+  </a>
+  <div class="nav-links">
+    <a href="dashboard.html" class="nav-link-fixed">Dashboard</a>
+    <div class="nav-dropdown" id="dd-P">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-P')">
+        <span class="phva-pill phva-P">P</span> Planear <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="perfil-responsable.html">🩺 Responsable SST</a>
+        <a href="responsabilidades.html">👥 Roles y Responsabilidades</a>
+        <a href="copasst.html">🤝 COPASST y Convivencia</a>
+        <a href="documentos-sst.html">📄 Documentos del SG-SST</a>
+        <a href="matriz-peligros.html">⚠️ Matriz de Peligros (GTC-45)</a>
+        <a href="plan-trabajo.html">📅 Plan de Trabajo Anual</a>
+        <a href="presupuesto-sgsst.html">💰 Presupuesto SG-SST</a>
+        <a href="profesiograma.html">💊 Profesiograma</a>
+      </div>
+    </div>
+    <div class="nav-dropdown" id="dd-H">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-H')">
+        <span class="phva-pill phva-H">H</span> Hacer <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="epp.html">🦺 EPP</a>
+        <a href="capacitaciones.html">🎓 Capacitaciones</a>
+        <a href="emergencias.html">🚨 Emergencias y Brigada</a>
+        <a href="inspecciones.html">🔍 Inspecciones y Mantenimiento</a>
+        <a href="perfil-salud.html">🏥 Salud Ocupacional</a>
+        <div class="nav-dd-divider"></div>
+        <a href="lista-personal.html">👥 Lista de Personal</a>
+        <a href="subir.html">⬆️ Subir Examen</a>
+        <a href="subir-masivo.html">📦 Carga Masiva</a>
+        <a href="cartas-masivas.html">📄 Cartas Masivas</a>
+        <a href="reporte-examenes.html">📊 Cobertura de Exámenes</a>
+        <a href="informe-condiciones.html">📋 Informe de Condiciones</a>
+      </div>
+    </div>
+    <div class="nav-dropdown" id="dd-V">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-V')">
+        <span class="phva-pill phva-V">V</span> Verificar <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="evaluacion-sst.html">📋 Evaluación (Res. 0312)</a>
+        <a href="investigaciones.html">🔍 AT / Incidentes</a>
+        <a href="auditoria.html">🗒️ Auditoría Interna</a>
+        <a href="ausentismo.html">📉 Ausentismo laboral</a>
+        <a href="indicadores-sgsst.html">📊 Indicadores SG-SST</a>
+        <a href="analisis-phva.html">📈 Análisis e Indicadores</a>
+      </div>
+    </div>
+    <div class="nav-dropdown" id="dd-A">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-A')">
+        <span class="phva-pill phva-A">A</span> Actuar <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="mejoramiento.html">✅ Acciones de Mejoramiento</a>
+        <a href="evaluacion-sst.html">📝 Plan de Mejoramiento (F002)</a>
+      </div>
+    </div>
+    <a href="listado-maestro.html" class="nav-link-fixed">📁 Listado Maestro</a>
+    <span id="nav-empresa" style="color:#CBD8E6;font-size:13px;padding:6px 0"></span>
+    <button onclick="VigiaAPI.logout()"
+      style="background:none;border:1px solid rgba(255,255,255,.2);color:#CBD8E6;
+             border-radius:6px;padding:6px 12px;cursor:pointer;font-size:13px">Salir</button>
+  </div>
+</nav>
+
+<div class="page">
+  <div style="margin-bottom:20px">
+    <h2 style="margin:0 0 4px;font-size:18px;color:var(--navy)">🔔 Alertas de vencimiento</h2>
+    <p style="margin:0;font-size:13px;color:var(--muted)">Exámenes médicos, EPP, mantenimiento, acciones de mejoramiento, COPASST y simulacros que requieren atención.</p>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-alertas" id="stats-alertas">
+    <div class="stat-alerta" style="background:#FDECEA;border-color:#FABEC2;color:#C0392B">
+      <div class="stat-num" id="stat-vencido">—</div>
+      <div class="stat-lbl">🔴 Vencidos</div>
+    </div>
+    <div class="stat-alerta" style="background:#FEF3C7;border-color:#FCD34D;color:#D97706">
+      <div class="stat-num" id="stat-critico">—</div>
+      <div class="stat-lbl">🟡 Críticos (≤7 días)</div>
+    </div>
+    <div class="stat-alerta" style="background:#EFF6FF;border-color:#BFDBFE;color:#2563EB">
+      <div class="stat-num" id="stat-proximo">—</div>
+      <div class="stat-lbl">🔵 Próximos (≤30 días)</div>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <div class="filter-bar" id="filtros">
+    <button class="filter-btn active" onclick="filtrar('TODOS')">Todos</button>
+    <button class="filter-btn" onclick="filtrar('VENCIDO')">🔴 Vencidos</button>
+    <button class="filter-btn" onclick="filtrar('CRITICO')">🟡 Críticos</button>
+    <button class="filter-btn" onclick="filtrar('EXAMEN')">🏥 Exámenes</button>
+    <button class="filter-btn" onclick="filtrar('EPP')">🦺 EPP</button>
+    <button class="filter-btn" onclick="filtrar('MANTENIMIENTO')">🔧 Mantenimiento</button>
+    <button class="filter-btn" onclick="filtrar('MEJORAMIENTO')">✅ Mejoramiento</button>
+    <button class="filter-btn" onclick="filtrar('COPASST')">🤝 COPASST</button>
+    <button class="filter-btn" onclick="filtrar('SIMULACRO')">🚨 Simulacro</button>
+  </div>
+
+  <div id="cargando" style="text-align:center;padding:48px">
+    <div class="spinner" style="margin:0 auto 16px;border-color:rgba(46,134,171,.2);border-top-color:var(--blue)"></div>
+    <p class="text-muted">Cargando alertas…</p>
+  </div>
+
+  <div id="lista-alertas" style="display:none"></div>
+
+  <div id="empty-alertas" style="display:none">
+    <div class="card" style="padding:48px;text-align:center">
+      <div style="font-size:48px;margin-bottom:12px">✅</div>
+      <h3 style="color:var(--navy);margin-bottom:8px">Todo al día</h3>
+      <p class="text-muted text-sm">No hay alertas pendientes en este momento.</p>
+    </div>
+  </div>
+</div>
+
+<script src="js/vigia-api.js"></script>
+<script>
+const TIPO_INFO = {
+  EXAMEN:       { icon:'🏥', label:'Exámenes médicos',      url:'lista-personal.html' },
+  EPP:          { icon:'🦺', label:'EPP — Vencimiento',      url:'epp.html' },
+  MANTENIMIENTO:{ icon:'🔧', label:'Mantenimiento pendiente',url:'inspecciones.html' },
+  MEJORAMIENTO: { icon:'✅', label:'Acciones de mejoramiento',url:'mejoramiento.html' },
+  COPASST:      { icon:'🤝', label:'COPASST / Comité convivencia',url:'copasst.html' },
+  SIMULACRO:    { icon:'🚨', label:'Simulacro de emergencias',url:'emergencias.html' },
+};
+
+let _todas = [];
+let _filtro = 'TODOS';
+
+function filtrar(f) {
+  _filtro = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  renderLista();
+}
+
+function renderLista() {
+  const lista = document.getElementById('lista-alertas');
+  const empty = document.getElementById('empty-alertas');
+
+  let alertas = _todas;
+  if (_filtro === 'VENCIDO' || _filtro === 'CRITICO') {
+    alertas = _todas.filter(a => a.nivel === _filtro);
+  } else if (_filtro !== 'TODOS') {
+    alertas = _todas.filter(a => a.tipo === _filtro);
+  }
+
+  if (!alertas.length) {
+    lista.style.display = 'none';
+    empty.style.display = '';
+    return;
+  }
+  empty.style.display = 'none';
+  lista.style.display = '';
+
+  // Agrupar por tipo
+  const grupos = {};
+  for (const a of alertas) {
+    if (!grupos[a.tipo]) grupos[a.tipo] = [];
+    grupos[a.tipo].push(a);
+  }
+
+  lista.innerHTML = Object.entries(grupos).map(([tipo, items]) => {
+    const info = TIPO_INFO[tipo] || { icon:'⚠️', label: tipo };
+    return `
+      <div class="tipo-section">
+        <div class="tipo-header">${info.icon} ${info.label} <span style="color:var(--muted);font-weight:600">(${items.length})</span></div>
+        ${items.map(a => renderAlerta(a)).join('')}
+      </div>`;
+  }).join('');
+}
+
+function renderAlerta(a) {
+  const info = TIPO_INFO[a.tipo] || { icon:'⚠️', url:'dashboard.html' };
+  const nivelLabel = { VENCIDO:'Vencido', CRITICO:'Crítico', PROXIMO:'Próximo' }[a.nivel] || a.nivel;
+  const esAdmin = VigiaAPI.esAdmin();
+  return `
+    <div class="alerta-card">
+      <span class="alerta-icon">${info.icon}</span>
+      <div class="alerta-body">
+        <div class="alerta-titulo">${a.descripcion}</div>
+        ${a.detalle ? `<div class="alerta-detalle">${a.detalle}</div>` : ''}
+        ${esAdmin && a.empresa_nombre ? `<div class="alerta-empresa">🏢 ${a.empresa_nombre}</div>` : ''}
+      </div>
+      <div class="alerta-meta">
+        <span class="nivel-badge nivel-${a.nivel}">${nivelLabel}</span>
+        <a href="${a.url || info.url}" class="btn-xs" style="white-space:nowrap">Ver →</a>
+      </div>
+    </div>`;
+}
+
+async function init() {
+  const ok = await VigiaAPI.requireAuth(); if (!ok) return;
+  document.getElementById('nav-empresa').textContent = localStorage.getItem('vigia_nombre_empresa') || '';
+
+  try {
+    _todas = await VigiaAPI.getAlertas() || [];
+  } catch(e) {
+    _todas = [];
+  }
+
+  document.getElementById('cargando').style.display = 'none';
+
+  // Stats
+  document.getElementById('stat-vencido').textContent = _todas.filter(a => a.nivel === 'VENCIDO').length;
+  document.getElementById('stat-critico').textContent = _todas.filter(a => a.nivel === 'CRITICO').length;
+  document.getElementById('stat-proximo').textContent = _todas.filter(a => a.nivel === 'PROXIMO').length;
+
+  renderLista();
+}
+init();
+</script>
+<script src="js/vigia-chat.js"></script>
+</body>
+</html>
+

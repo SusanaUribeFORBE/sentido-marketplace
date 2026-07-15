@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vigía 360 — Manual de Usuario</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 14px; color: #222; background: #F5F7FA; line-height: 1.6; }
+    a { color: #2E86AB; }
+
+    /* ── Layout ── */
+    .wrap { max-width: 820px; margin: 0 auto; padding: 32px 20px; }
+
+    /* ── Portada ── */
+    .portada {
+      background: linear-gradient(135deg, #1A3A5C 0%, #2E86AB 100%);
+      border-radius: 14px;
+      padding: 48px 44px;
+      color: white;
+      margin-bottom: 28px;
+      position: relative;
+      overflow: hidden;
+    }
+    .portada::after {
+      content: '';
+      position: absolute; right: -50px; top: -50px;
+      width: 200px; height: 200px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.06);
+    }
+    .portada-marca { display: flex; align-items: center; gap: 14px; margin-bottom: 32px; }
+    .portada-marca-txt { font-size: 24px; font-weight: 900; letter-spacing: 1px; }
+    .portada-marca-sub { font-size: 11px; opacity: 0.65; text-transform: uppercase; letter-spacing: 2px; margin-top: 2px; }
+    .portada h1 { font-size: 30px; font-weight: 900; line-height: 1.2; margin-bottom: 10px; }
+    .portada p  { font-size: 14px; opacity: 0.75; margin-bottom: 28px; }
+    .portada-datos { border-top: 1px solid rgba(255,255,255,0.2); padding-top: 20px; display: flex; gap: 32px; flex-wrap: wrap; font-size: 13px; opacity: 0.8; }
+    .portada-datos span { display: flex; gap: 6px; align-items: center; }
+
+    /* ── Sección ── */
+    .seccion {
+      background: white;
+      border: 1px solid #E2E8F0;
+      border-radius: 12px;
+      padding: 28px 32px;
+      margin-bottom: 20px;
+    }
+    .seccion-num {
+      display: inline-block;
+      background: #2E86AB;
+      color: white;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 20px;
+      margin-bottom: 10px;
+    }
+    .seccion h2 { font-size: 18px; color: #1A3A5C; margin-bottom: 14px; font-weight: 800; }
+    .seccion h3 { font-size: 14px; color: #1A3A5C; font-weight: 700; margin: 18px 0 8px; }
+    .seccion p  { color: #444; margin-bottom: 10px; }
+    .seccion ul { padding-left: 20px; color: #444; }
+    .seccion ul li { margin-bottom: 6px; }
+
+    /* ── Paso ── */
+    .pasos { display: flex; flex-direction: column; gap: 14px; margin: 14px 0; }
+    .paso  { display: flex; gap: 14px; align-items: flex-start; }
+    .paso-num {
+      width: 30px; height: 30px; border-radius: 50%;
+      background: #2E86AB; color: white;
+      font-weight: 900; font-size: 14px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 1px;
+    }
+    .paso-body strong { color: #1A3A5C; display: block; margin-bottom: 2px; }
+    .paso-body span   { font-size: 13px; color: #555; }
+
+    /* ── Alerta cards ── */
+    .alertas-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 14px 0; }
+    .alerta-card  { border-radius: 10px; padding: 14px 16px; border-left: 5px solid; }
+    .alerta-card.critico    { background: #FEF2F2; border-color: #E74C3C; }
+    .alerta-card.advertencia{ background: #FFFBEB; border-color: #F39C12; }
+    .alerta-card.seguimiento{ background: #EFF6FF; border-color: #3498DB; }
+    .alerta-card.ok         { background: #F0FDF4; border-color: #27AE60; }
+    .alerta-card h4 { font-size: 13px; font-weight: 800; margin-bottom: 4px; }
+    .alerta-card.critico     h4 { color: #C0392B; }
+    .alerta-card.advertencia h4 { color: #D68910; }
+    .alerta-card.seguimiento h4 { color: #2471A3; }
+    .alerta-card.ok          h4 { color: #1E8449; }
+    .alerta-card p  { font-size: 12px; color: #555; margin: 0; line-height: 1.5; }
+
+    /* ── Tip ── */
+    .tip {
+      background: #EFF6FF;
+      border: 1px solid #BFD7F0;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin: 14px 0;
+      font-size: 13px;
+      color: #1A3A5C;
+      display: flex; gap: 10px; align-items: flex-start;
+    }
+    .tip-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+    /* ── Tabla ── */
+    .tabla { width: 100%; border-collapse: collapse; font-size: 13px; margin: 12px 0; }
+    .tabla th { background: #1A3A5C; color: white; padding: 9px 13px; text-align: left; }
+    .tabla td { padding: 8px 13px; border-bottom: 1px solid #E2E8F0; color: #444; }
+    .tabla tr:last-child td { border-bottom: none; }
+
+    /* ── URL box ── */
+    .url-box {
+      background: #F8FAFD;
+      border: 1.5px dashed #2E86AB;
+      border-radius: 8px;
+      padding: 12px 18px;
+      font-family: monospace;
+      font-size: 13px;
+      color: #1A3A5C;
+      font-weight: 700;
+      margin: 12px 0;
+      text-align: center;
+    }
+
+    /* ── Acciones no-print ── */
+    .acciones {
+      display: flex; gap: 12px; justify-content: flex-end;
+      margin-bottom: 20px;
+    }
+    .btn {
+      padding: 10px 20px; border-radius: 8px; font-size: 14px;
+      font-weight: 700; cursor: pointer; border: none;
+    }
+    .btn-primary { background: #2E86AB; color: white; }
+    .btn-outline { background: white; color: #2E86AB; border: 1.5px solid #2E86AB; }
+    .btn:hover { opacity: 0.88; }
+
+    /* ── Print ── */
+    @media print {
+      body { background: white; font-size: 12px; }
+      .wrap { max-width: 100%; padding: 0; }
+      .acciones { display: none; }
+      .seccion { break-inside: avoid; border: 1px solid #ddd; margin-bottom: 14px; padding: 20px 24px; }
+      .portada  { break-after: page; border-radius: 0; margin: 0 0 24px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .alerta-card { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      h2 { font-size: 15px; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- Acciones -->
+  <div class="acciones no-print" style="margin-top:8px">
+    <button class="btn btn-outline" onclick="descargarWord()">⬇ Descargar Word</button>
+    <button class="btn btn-primary" onclick="window.print()">🖨️ Imprimir / PDF</button>
+  </div>
+
+  <!-- Portada -->
+  <div class="portada">
+    <div class="portada-marca">
+      <svg xmlns="http://www.w3.org/2000/svg" width="44" height="50" viewBox="0 0 34 38">
+        <path d="M17 1L2 7V21C2 30 9 37 17 39C25 37 32 30 32 21V7Z" fill="rgba(255,255,255,0.2)" stroke="white" stroke-width="1.5"/>
+        <circle cx="12" cy="19" r="4.5" fill="white" opacity="0.9"/>
+        <circle cx="22" cy="19" r="4.5" fill="white" opacity="0.9"/>
+        <circle cx="12" cy="19" r="2" fill="rgba(26,58,92,0.7)"/>
+        <circle cx="22" cy="19" r="2" fill="rgba(26,58,92,0.7)"/>
+        <polygon points="15,25 17,28 19,25" fill="white" opacity="0.7"/>
+      </svg>
+      <div>
+        <div class="portada-marca-txt">VIGÍA</div>
+        <div class="portada-marca-sub">Seguridad y Salud en el Trabajo</div>
+      </div>
+    </div>
+    <h1>Manual de Usuario</h1>
+    <p>Guía para la gestión de exámenes médicos ocupacionales.<br>Aprende a subir exámenes, consultar alertas y generar informes.</p>
+    <div class="portada-datos">
+      <span>📋 Versión 1.0</span>
+      <span>📅 2026</span>
+      <span>🌐 riesgo-backend-production.up.railway.app/vigia/</span>
+    </div>
+  </div>
+
+  <!-- 1. ¿Qué es Vigía? -->
+  <div class="seccion">
+    <div class="seccion-num">Introducción</div>
+    <h2>¿Qué es Vigía SST?</h2>
+    <p><strong>Vigía</strong> es un sistema digital para gestionar los exámenes médicos ocupacionales de tu empresa. Permite:</p>
+    <ul>
+      <li>Subir los resultados de los exámenes en PDF — la inteligencia artificial extrae los datos automáticamente.</li>
+      <li>Hacer seguimiento a las fechas de vencimiento y recibir alertas cuando un examen está próximo a vencer.</li>
+      <li>Verificar qué empleados tienen examen vigente y quiénes están pendientes.</li>
+      <li>Generar informes de condiciones de salud para el SG-SST.</li>
+    </ul>
+    <div class="tip">
+      <span class="tip-icon">💡</span>
+      <span>Vigía cumple con lo establecido en la <strong>Resolución 1843 de 2025</strong> del Ministerio del Trabajo, que regula las evaluaciones médicas ocupacionales en Colombia (deroga la Res. 2346 de 2007).</span>
+    </div>
+  </div>
+
+  <!-- 2. Acceso -->
+  <div class="seccion">
+    <div class="seccion-num">Sección 1</div>
+    <h2>Ingresar al sistema</h2>
+    <p>Accede desde cualquier navegador (Chrome, Edge, Firefox) en la siguiente dirección:</p>
+    <div class="url-box">https://riesgo-backend-production.up.railway.app/vigia/</div>
+
+    <h3>Pasos para ingresar</h3>
+    <div class="pasos">
+      <div class="paso">
+        <div class="paso-num">1</div>
+        <div class="paso-body">
+          <strong>Selecciona "Empresa"</strong>
+          <span>En la pantalla de inicio encontrarás dos pestañas: <em>Empresa</em> y <em>Administrador</em>. Selecciona <em>Empresa</em>.</span>
+        </div>
+      </div>
+      <div class="paso">
+        <div class="paso-num">2</div>
+        <div class="paso-body">
+          <strong>Escribe el nombre de tu empresa</strong>
+          <span>Ingresa el nombre exacto tal como fue registrado (ej: <em>WELHOME SAS</em>).</span>
+        </div>
+      </div>
+      <div class="paso">
+        <div class="paso-num">3</div>
+        <div class="paso-body">
+          <strong>Ingresa la contraseña</strong>
+          <span>Escribe la contraseña que te fue asignada y haz clic en <em>Entrar →</em></span>
+        </div>
+      </div>
+    </div>
+    <div class="tip">
+      <span class="tip-icon">🔒</span>
+      <span>Si olvidaste tu contraseña, contacta al administrador del sistema para restablecerla.</span>
+    </div>
+  </div>
+
+  <!-- 3. Dashboard -->
+  <div class="seccion">
+    <div class="seccion-num">Sección 2</div>
+    <h2>Dashboard — Vista general</h2>
+    <p>Al ingresar verás el panel principal con un resumen del estado de los exámenes de tu empresa.</p>
+
+    <h3>Tarjetas de resumen</h3>
+    <p>En la parte superior aparecen cuatro contadores:</p>
+    <table class="tabla">
+      <thead><tr><th>Tarjeta</th><th>Qué indica</th></tr></thead>
+      <tbody>
+        <tr><td>🔴 <strong>Críticos</strong></td><td>Empleados con alertas urgentes: examen vencido, sin ARL o concepto NO APTO.</td></tr>
+        <tr><td>🟡 <strong>Advertencias</strong></td><td>Exámenes próximos a vencer (menos de 60 días) o empleados aptos con restricciones.</td></tr>
+        <tr><td>🔵 <strong>Seguimiento</strong></td><td>Recomendaciones médicas pendientes o ARL en proceso de afiliación.</td></tr>
+        <tr><td>🟢 <strong>Al día</strong></td><td>Empleados con examen vigente y sin observaciones.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Lista de empleados</h3>
+    <p>Debajo de las tarjetas verás la tabla con todos los empleados registrados. Puedes:</p>
+    <ul>
+      <li>Buscar por nombre o cédula usando el campo de búsqueda.</li>
+      <li>Filtrar por nivel de alerta (Crítico, Advertencia, Seguimiento, Al día).</li>
+      <li>Hacer clic en cualquier empleado para ver su historial completo de exámenes.</li>
+    </ul>
+  </div>
+
+  <!-- 4. Sistema de alertas -->
+  <div class="seccion">
+    <div class="seccion-num">Sección 3</div>
+    <h2>Sistema de alertas</h2>
+    <p>Vigía evalúa automáticamente el estado de cada empleado y asigna un nivel de alerta basado en sus exámenes:</p>
+
+    <div class="alertas-grid">
+      <div class="alerta-card critico">
+        <h4>🔴 Crítico</h4>
+        <p>Requiere acción inmediata.<br>
+        • Examen médico vencido<br>
+        • Concepto: NO APTO<br>
+        • Sin ARL (empleado activo)</p>
+      </div>
+      <div class="alerta-card advertencia">
+        <h4>🟡 Advertencia</h4>
+        <p>Requiere seguimiento pronto.<br>
+        • Examen vence en menos de 60 días<br>
+        • Apto con restricciones médicas</p>
+      </div>
+      <div class="alerta-card seguimiento">
+        <h4>🔵 Seguimiento</h4>
+        <p>Situación bajo control.<br>
+        • Recomendaciones médicas activas<br>
+        • ARL pendiente (pre-ingreso)<br>
+        • Examen de retiro completado</p>
+      </div>
+      <div class="alerta-card ok">
+        <h4>🟢 Al día</h4>
+        <p>Todo en orden.<br>
+        • Examen vigente<br>
+        • Sin observaciones médicas<br>
+        • ARL registrada</p>
+      </div>
+    </div>
+
+    <div class="tip">
+      <span class="tip-icon">📌</span>
+      <span>Los exámenes médicos ocupacionales tienen una vigencia de <strong>12 meses</strong>. Vigía te notificará cuando falten 60 días para el vencimiento.</span>
+    </div>
+  </div>
+
+  <!-- 5. Subir examen -->
+  <div class="seccion">
+    <div class="seccion-num">Sección 4</div>
+    <h2>Subir un examen médico (PDF)</h2>
+    <p>Puedes subir el PDF del examen médico y la inteligencia artificial extrae todos los datos automáticamente.</p>
+
+    <h3>Cómo subir un examen</h3>
+    <div class="pasos">
+      <div class="paso">
+        <div class="paso-num">1</div>
+        <div class="paso-body">
+          <strong>Ir a "Subir examen"</strong>
+          <span>En el menú superior haz clic en <em>Subir examen</em>.</span>
+        </div>
+      </div>
+      <div class="paso">
+        <div class="paso-num">2</div>
+        <div class="paso-body">
+          <strong>Seleccionar el PDF</strong>
+          <span>Arrastra el archivo PDF al área indicada o haz clic en ella para buscarlo en tu computador.</span>
+        </div>
+      </div>
+      <div class="paso">
+        <div class="paso-num">3</div>
+        <div class="paso-body">
+          <strong>Extraer datos automáticamente</strong>
+          <span>Haz clic en <em>Extraer datos →</em>. La IA leerá el PDF y completará el formulario en segundos.</span>
+        </div>
+      </div>
+      <div class="paso">
+        <div class="paso-num">4</div>
+        <div class="paso-body">
+          <strong>Revisar y confirmar</strong>
+          <span>Verifica que los datos extraídos sean correctos (nombre, cédula, tipo de examen, fecha, concepto de aptitud). Corrígelos si es necesario.</span>
+        </div>
+      </div>
+      <div class="paso">
+        <div class="paso-num">5</div>
+        <div class="paso-body">
+          <strong>Guardar</strong>
+          <span>Haz clic en <em>Guardar →</em>. El sistema registra el examen y actualiza automáticamente el nivel de alerta del empleado.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="tip">
+      <span class="tip-icon">📄</span>
+      <span>Vigía es compatible con PDFs de las principales IPS del país: Cendiatra, Colmédica, IPS Colombia, entre otras. Si el PDF está protegido o escaneado sin texto, algunos datos pueden no extraerse correctamente — en ese caso corrígelos manualmente.</span>
+    </div>
+  </div>
+
+  <!-- 6. Carga masiva -->
+  <div class="seccion">
+    <div class="seccion-num">Sección 5</div>
+    <h2>Carga masiva de exámenes</h2>
+    <p>Si tienes varios exámenes por subir al mismo tiempo, usa la opción <strong>Carga masiva</strong> del menú superior.</p>
+    <div class="pasos">
+      <div class="paso">
+        <div class="paso-num">1</div>
+        <div class="paso-body">
+          <strong>Ir a "Carga masiva"</strong>
+          <span>Haz clic en <em>Carga masiva</em> en el menú superior.</span>
+        </div>
+      </div>
+      <div class="paso">
+        <div class="paso-num">2</div>
+        <div class="paso-body">
+          <strong>Seleccionar múltiples PDFs</strong>
+          <span>Arrastra varios archivos PDF a la vez o selecciónalos desde tu computador.</span>
+        </div>
+      </div>
+      <div class="paso">
+        <div class="paso-num">3</div>
+        <div class="paso-body">
+          <strong>Procesamiento automático</strong>
+          <span>El sistema procesa cada PDF uno a uno y te muestra el resultado de cada uno.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. Lista de personal -->
+  <div class="seccion">
+    <div class="seccion-num">Sección 6</div>
+    <h2>Lista de personal — Verificar quién tiene examen</h2>
+    <p>Esta función te permite cruzar tu nómina completa con los exámenes registrados en Vigía para identificar a quién le falta el examen médico.</p>
+
+    <div class="pasos">
+      <div class="paso">
+        <div class="paso-num">1</div>
+        <div class="paso-body">
+          <strong>Ir a "Lista de personal"</strong>
+          <span>Haz clic en <em>Lista de personal</em> en el menú superior.</span>
+        </div>
+      </div>
+      <div class="paso">
+        <div class="paso-num">2</div>
+        <div class="paso-body">
+          <strong>Cargar el listado</strong>
+          <span>Sube un archivo CSV con las columnas <code>cc</code> y <code>nombre</code>, o pega directamente los números de cédula en el campo de texto (uno por línea).</span>
+        </div>
+      </div>
+      <div class="paso">
+        <div class="paso-num">3</div>
+        <div class="paso-body">
+          <strong>Ver resultados</strong>
+          <span>El sistema muestra para cada empleado si tiene examen vigente (✅), si está por vencer (⚠️) o si no tiene examen registrado (❌).</span>
+        </div>
+      </div>
+      <div class="paso">
+        <div class="paso-num">4</div>
+        <div class="paso-body">
+          <strong>Descargar reporte Excel</strong>
+          <span>Haz clic en <em>Descargar reporte Excel</em> para guardar el resultado con los estados de cada empleado.</span>
+        </div>
+      </div>
+    </div>
+
+    <h3>Formato del archivo CSV</h3>
+    <p>Si usas un archivo CSV, debe tener esta estructura (puedes exportarlo desde Excel):</p>
+    <table class="tabla">
+      <thead><tr><th>cc</th><th>nombre</th></tr></thead>
+      <tbody>
+        <tr><td>1007111063</td><td>ACEVEDO VELASQUEZ YIMMY</td></tr>
+        <tr><td>1039473557</td><td>GARCIA PEREZ MARIA</td></tr>
+        <tr><td>1036449041</td><td>LOPEZ RAMIREZ CARLOS</td></tr>
+      </tbody>
+    </table>
+    <div class="tip">
+      <span class="tip-icon">💡</span>
+      <span>Si solo tienes las cédulas (sin nombres), puedes pegarlas directamente en el campo de texto — el sistema buscará el nombre en Vigía automáticamente.</span>
+    </div>
+  </div>
+
+  <!-- 8. Informe -->
+  <div class="seccion">
+    <div class="seccion-num">Sección 7</div>
+    <h2>Informe de Condiciones de Salud</h2>
+    <p>Vigía genera automáticamente un <strong>Diagnóstico de Condiciones de Salud</strong> de tu empresa, con información relevante para el SG-SST.</p>
+
+    <h3>Qué incluye el informe</h3>
+    <ul>
+      <li>Resumen general (total de empleados, alertas activas).</li>
+      <li>Distribución por tipo de examen (pre-ingreso, periódico, post-incapacidad, retorno laboral, seguimiento, retiro).</li>
+      <li>Distribución por género y grupos de edad.</li>
+      <li>Distribución por cargo.</li>
+      <li>Conceptos de aptitud médica (apto, apto con restricciones, no apto).</li>
+      <li>Hábitos de vida (tabaquismo, consumo de licor, actividad física) — disponible cuando se han subido exámenes con esa información.</li>
+      <li>Resultados de exámenes complementarios (audiometría, visiometría, espirometría).</li>
+      <li>Recomendaciones médicas más frecuentes.</li>
+      <li><strong>Recomendaciones SG-SST</strong> personalizadas según los resultados (pausas activas, programas de vigilancia epidemiológica, etc.).</li>
+    </ul>
+
+    <h3>Cómo generarlo</h3>
+    <div class="pasos">
+      <div class="paso">
+        <div class="paso-num">1</div>
+        <div class="paso-body">
+          <strong>Ir a "Informe"</strong>
+          <span>Haz clic en <em>Informe</em> en el menú superior.</span>
+        </div>
+      </div>
+      <div class="paso">
+        <div class="paso-num">2</div>
+        <div class="paso-body">
+          <strong>Hacer clic en "Generar informe"</strong>
+          <span>El sistema calcula las estadísticas automáticamente usando todos los exámenes registrados.</span>
+        </div>
+      </div>
+      <div class="paso">
+        <div class="paso-num">3</div>
+        <div class="paso-body">
+          <strong>Descargar o imprimir</strong>
+          <span>Usa el botón <em>Descargar Word</em> para obtener un documento editable, o <em>Imprimir / PDF</em> para guardarlo como PDF.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 9. Alertas por correo -->
+  <div class="seccion">
+    <div class="seccion-num">Sección 8</div>
+    <h2>Alertas automáticas por correo electrónico</h2>
+    <p>El sistema puede enviar un correo electrónico automático cuando un examen está próximo a vencer o ya está vencido.</p>
+    <ul>
+      <li>Las alertas se envían al correo del encargado de programar exámenes en la empresa.</li>
+      <li>Se notifican los exámenes que vencerán en los próximos <strong>60 días</strong> y los que ya están <strong>vencidos</strong>.</li>
+      <li>Para activar esta función, comunícate con el administrador del sistema para registrar el correo de tu empresa.</li>
+    </ul>
+    <div class="tip">
+      <span class="tip-icon">✉️</span>
+      <span>Los correos se envían automáticamente cada día. Revisa tu carpeta de spam si no los ves en la bandeja principal.</span>
+    </div>
+  </div>
+
+  <!-- 10. Ver empleado -->
+  <div class="seccion">
+    <div class="seccion-num">Sección 9</div>
+    <h2>Ver el detalle de un empleado</h2>
+    <p>Desde el dashboard, haz clic en el nombre de cualquier empleado para ver su ficha completa:</p>
+    <ul>
+      <li><strong>Datos personales:</strong> nombre, cédula, fecha de nacimiento, sexo, EPS, ARL, fondo de pensiones.</li>
+      <li><strong>Cargo y departamento.</strong></li>
+      <li><strong>Historial de exámenes:</strong> todos los exámenes subidos con fecha, tipo, IPS y concepto de aptitud.</li>
+      <li><strong>Alertas activas:</strong> tarjetas detalladas con la descripción y la acción recomendada para cada alerta.</li>
+      <li><strong>Eliminar un examen:</strong> si subiste un examen por error, puedes eliminarlo desde esta pantalla.</li>
+    </ul>
+  </div>
+
+  <!-- 11. Preguntas frecuentes -->
+  <div class="seccion">
+    <div class="seccion-num">Sección 10</div>
+    <h2>Preguntas frecuentes</h2>
+
+    <h3>¿Qué pasa si la IA extrae datos incorrectos?</h3>
+    <p>En el paso de revisión (Paso 4 de subir examen) puedes corregir cualquier campo antes de guardar. Vigía siempre te permite revisar antes de confirmar.</p>
+
+    <h3>¿Los exámenes PDF se almacenan en el sistema?</h3>
+    <p>Vigía extrae los datos del PDF y los almacena en la base de datos, pero no guarda el archivo PDF original. Te recomendamos conservar los PDFs originales en la carpeta de historia clínica de tu empresa.</p>
+
+    <h3>¿Con qué frecuencia debo subir los exámenes?</h3>
+    <p>Se recomienda subir el examen tan pronto lo recibas de la IPS. Esto permite que las alertas de vencimiento funcionen desde el primer día.</p>
+
+    <h3>¿Un empleado de pre-ingreso sin ARL aparece como "Crítico"?</h3>
+    <p>No. Vigía reconoce que en el examen de pre-ingreso el empleado puede no tener ARL aún (se afilia desde el primer día de trabajo). En ese caso el estado es <em>Seguimiento</em>, no Crítico.</p>
+
+    <h3>¿Cuántos usuarios pueden ingresar al mismo tiempo?</h3>
+    <p>No hay límite de usuarios simultáneos. Puedes compartir las credenciales con el equipo de SST o RRHH de tu empresa.</p>
+
+    <h3>¿El sistema funciona en el celular?</h3>
+    <p>Sí, Vigía está adaptado para dispositivos móviles. Sin embargo, para subir exámenes y revisar informes se recomienda usar un computador.</p>
+  </div>
+
+  <!-- Pie -->
+  <div style="text-align:center;color:#8899AA;font-size:12px;padding:20px 0 8px;border-top:1px solid #E2E8F0;margin-top:4px">
+    <strong>VIGÍA SST</strong> — Sistema de Gestión de Exámenes Médicos Ocupacionales<br>
+    Conforme a Resolución 1843 de 2025 · Decreto 1072 de 2015 · Resolución 0312 de 2019
+  </div>
+
+</div><!-- /wrap -->
+
+<script>
+  function descargarWord() {
+    const html = `
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+      xmlns:w="urn:schemas-microsoft-com:office:word"
+      xmlns="http://www.w3.org/TR/REC-html40">
+<head><meta charset="UTF-8">
+<style>
+  body { font-family:Calibri,Arial,sans-serif; font-size:11pt; color:#222; margin:2cm; line-height:1.5; }
+  h1 { font-size:22pt; color:#1A3A5C; margin-bottom:6pt; }
+  h2 { font-size:14pt; color:#2E86AB; border-bottom:2px solid #2E86AB; padding-bottom:4pt; margin-top:22pt; margin-bottom:10pt; }
+  h3 { font-size:12pt; color:#1A3A5C; margin-top:14pt; margin-bottom:6pt; }
+  p  { font-size:11pt; margin-bottom:8pt; }
+  ul { padding-left:20pt; margin-bottom:10pt; }
+  li { margin-bottom:5pt; font-size:11pt; }
+  table { border-collapse:collapse; width:100%; margin:10pt 0; font-size:10pt; }
+  th { background:#1A3A5C; color:white; padding:7pt 10pt; text-align:left; font-weight:bold; }
+  td { padding:6pt 10pt; border-bottom:1px solid #E0E6EE; }
+  .paso { margin-bottom:10pt; padding:8pt 12pt; background:#F8FAFD; border-left:3pt solid #2E86AB; }
+  .paso strong { color:#1A3A5C; }
+  .tip { background:#EFF6FF; border:1pt solid #BFD7F0; padding:8pt 12pt; margin:10pt 0; font-size:10pt; color:#1A3A5C; }
+  .alerta { padding:8pt 12pt; margin:6pt 0; border-left:4pt solid #ccc; }
+  .alerta-critico     { border-color:#E74C3C; background:#FEF2F2; }
+  .alerta-advertencia { border-color:#F39C12; background:#FFFBEB; }
+  .alerta-seguimiento { border-color:#3498DB; background:#EFF6FF; }
+  .alerta-ok          { border-color:#27AE60; background:#F0FDF4; }
+  .portada { background:#1A3A5C; color:white; padding:24pt; margin:-2cm -2cm 24pt; -webkit-print-color-adjust:exact; }
+  .portada h1 { color:white; font-size:24pt; }
+  .portada p  { color:#CBD8E6; font-size:11pt; }
+  .url { background:#F0F4F8; border:1pt dashed #2E86AB; padding:8pt 14pt; font-family:Courier New; font-size:11pt; text-align:center; margin:10pt 0; color:#1A3A5C; font-weight:bold; }
+  .pie { color:#888; font-size:9pt; margin-top:30pt; border-top:1pt solid #ddd; padding-top:8pt; text-align:center; }
+</style></head>
+<body>
+
+<div class="portada">
+  <h1>VIGÍA SST — Manual de Usuario</h1>
+  <p>Guía para la gestión de exámenes médicos ocupacionales<br>
+  Seguridad y Salud en el Trabajo · Versión 1.0 · 2026</p>
+</div>
+
+<h2>¿Qué es Vigía SST?</h2>
+<p>Vigía es un sistema digital para gestionar los exámenes médicos ocupacionales de tu empresa. Permite subir los resultados de los exámenes en PDF (la inteligencia artificial extrae los datos automáticamente), hacer seguimiento a las fechas de vencimiento, verificar qué empleados tienen examen vigente y generar informes de condiciones de salud para el SG-SST.</p>
+<div class="tip">💡 Vigía cumple con lo establecido en la Resolución 1843 de 2025 del Ministerio de la Protección Social.</div>
+
+<h2>1. Ingresar al sistema</h2>
+<p>Accede desde cualquier navegador (Chrome, Edge, Firefox) en:</p>
+<div class="url">https://riesgo-backend-production.up.railway.app/vigia/</div>
+<div class="paso"><strong>Paso 1:</strong> Selecciona la pestaña "Empresa".</div>
+<div class="paso"><strong>Paso 2:</strong> Escribe el nombre exacto de tu empresa y la contraseña asignada.</div>
+<div class="paso"><strong>Paso 3:</strong> Haz clic en "Entrar →".</div>
+
+<h2>2. Dashboard — Vista general</h2>
+<p>Al ingresar verás el panel principal con un resumen del estado de los exámenes.</p>
+<table>
+  <thead><tr><th>Indicador</th><th>Significado</th></tr></thead>
+  <tbody>
+    <tr><td>🔴 Críticos</td><td>Examen vencido, sin ARL (activo) o concepto NO APTO.</td></tr>
+    <tr><td>🟡 Advertencias</td><td>Examen vence en menos de 60 días o apto con restricciones.</td></tr>
+    <tr><td>🔵 Seguimiento</td><td>Recomendaciones activas o ARL en proceso de afiliación.</td></tr>
+    <tr><td>🟢 Al día</td><td>Examen vigente sin observaciones.</td></tr>
+  </tbody>
+</table>
+
+<h2>3. Sistema de alertas</h2>
+<div class="alerta alerta-critico"><strong>🔴 Crítico:</strong> Examen médico vencido · Concepto NO APTO · Sin ARL (empleado activo).</div>
+<div class="alerta alerta-advertencia"><strong>🟡 Advertencia:</strong> Examen vence en menos de 60 días · Apto con restricciones médicas.</div>
+<div class="alerta alerta-seguimiento"><strong>🔵 Seguimiento:</strong> Recomendaciones médicas activas · ARL pendiente (pre-ingreso).</div>
+<div class="alerta alerta-ok"><strong>🟢 Al día:</strong> Examen vigente · Sin observaciones · ARL registrada.</div>
+<div class="tip">📌 Vigía notifica cuando faltan 60 días para el vencimiento. La vigencia es de 12 meses para la mayoría de exámenes; los de seguimiento/control tienen control cada 6 meses (Res. 1843/2025, Art. 15).</div>
+
+<h2>4. Subir un examen médico (PDF)</h2>
+<div class="paso"><strong>Paso 1:</strong> Haz clic en "Subir examen" en el menú superior.</div>
+<div class="paso"><strong>Paso 2:</strong> Arrastra el archivo PDF al área indicada o búscalo en tu computador.</div>
+<div class="paso"><strong>Paso 3:</strong> Haz clic en "Extraer datos →". La IA completará el formulario automáticamente.</div>
+<div class="paso"><strong>Paso 4:</strong> Revisa que los datos sean correctos (nombre, cédula, tipo de examen, fecha, concepto de aptitud).</div>
+<div class="paso"><strong>Paso 5:</strong> Haz clic en "Guardar →". El examen queda registrado y las alertas se actualizan.</div>
+<div class="tip">📄 Compatible con PDFs de Cendiatra, Colmédica, IPS Colombia y otras IPS. Si el PDF está escaneado sin texto, algunos datos pueden requerir corrección manual.</div>
+
+<h2>5. Carga masiva de exámenes</h2>
+<p>Ve a "Carga masiva" en el menú para subir varios PDFs al mismo tiempo. El sistema los procesa uno a uno y muestra el resultado de cada uno.</p>
+
+<h2>6. Lista de personal</h2>
+<p>Ve a "Lista de personal" para cruzar tu nómina con los exámenes registrados.</p>
+<div class="paso"><strong>Paso 1:</strong> Sube un archivo CSV (columnas: cc, nombre) o pega las cédulas en el campo de texto.</div>
+<div class="paso"><strong>Paso 2:</strong> El sistema muestra: ✅ Examen vigente · ⚠️ Por vencer · ❌ Sin examen registrado.</div>
+<div class="paso"><strong>Paso 3:</strong> Descarga el reporte en Excel con el botón "Descargar reporte Excel".</div>
+<table>
+  <thead><tr><th>cc</th><th>nombre</th></tr></thead>
+  <tbody>
+    <tr><td>1007111063</td><td>GARCIA PEREZ MARIA</td></tr>
+    <tr><td>1039473557</td><td>LOPEZ RAMIREZ CARLOS</td></tr>
+  </tbody>
+</table>
+
+<h2>7. Informe de Condiciones de Salud</h2>
+<p>Vigía genera automáticamente un diagnóstico del estado de salud de la empresa con información para el SG-SST: distribución por género y edad, conceptos de aptitud, hábitos de vida, exámenes complementarios y recomendaciones personalizadas.</p>
+<div class="paso"><strong>Paso 1:</strong> Haz clic en "Informe" en el menú superior.</div>
+<div class="paso"><strong>Paso 2:</strong> Haz clic en "Generar informe".</div>
+<div class="paso"><strong>Paso 3:</strong> Descarga el informe en Word o imprímelo como PDF.</div>
+
+<h2>8. Alertas por correo electrónico</h2>
+<p>El sistema envía correos automáticos cuando un examen está próximo a vencer (menos de 60 días) o ya venció. Para activar esta función, comunica al administrador el correo electrónico del encargado de programar exámenes en tu empresa.</p>
+
+<h2>9. Preguntas frecuentes</h2>
+<p><strong>¿Qué pasa si la IA extrae datos incorrectos?</strong><br>En el paso de revisión puedes corregir cualquier campo antes de guardar.</p>
+<p><strong>¿Los PDFs se almacenan en el sistema?</strong><br>No. Solo se almacenan los datos extraídos. Conserva los PDFs originales en la historia clínica de tu empresa.</p>
+<p><strong>¿Un empleado de pre-ingreso sin ARL aparece como "Crítico"?</strong><br>No. Vigía reconoce que la ARL se afilia desde el primer día de trabajo. El estado será "Seguimiento", no "Crítico".</p>
+<p><strong>¿El sistema funciona en el celular?</strong><br>Sí, está adaptado para móviles. Se recomienda computador para subir exámenes y revisar informes.</p>
+
+<div class="pie">
+  VIGÍA SST — Sistema de Gestión de Exámenes Médicos Ocupacionales<br>
+  Conforme a Resolución 1843 de 2025 · Decreto 1072 de 2015 · Resolución 0312 de 2019
+</div>
+</body></html>`;
+
+    const blob = new Blob([html], { type: 'application/msword;charset=utf-8' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url; a.download = 'Manual-Usuario-Vigia-SST.doc'; a.click();
+    URL.revokeObjectURL(url);
+  }
+</script>
+<script src="js/vigia-chat.js"></script>
+</body>
+</html>

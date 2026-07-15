@@ -1,0 +1,809 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vigía 360 — Perfil Responsable SG-SST</title>
+  <link rel="stylesheet" href="vigia.css" />
+  <style>
+    /* ── Validación card ──────────────────────────── */
+    .valid-card {
+      border-radius:12px;border:2px solid;padding:18px 22px;
+      display:flex;gap:16px;align-items:flex-start;margin-bottom:24px
+    }
+    .valid-card.HABILITADO    { border-color:#6EE7B7;background:#ECFDF5 }
+    .valid-card.NO_HABILITADO { border-color:#FABEC2;background:#FDECEA }
+    .valid-card.SIN_CERTIFICADO{ border-color:#FCD34D;background:#FFFBEB }
+    .valid-card.PENDIENTE     { border-color:#CBD5E1;background:#F8FAFC }
+    .valid-icon { font-size:32px;flex-shrink:0 }
+    .valid-titulo { font-size:15px;font-weight:800;margin-bottom:4px }
+    .valid-HABILITADO    .valid-titulo { color:#065F46 }
+    .valid-NO_HABILITADO .valid-titulo { color:#C0392B }
+    .valid-SIN_CERTIFICADO .valid-titulo { color:#92400E }
+    .valid-PENDIENTE     .valid-titulo { color:#64748B }
+    .valid-msg { font-size:13px;color:var(--text);line-height:1.5 }
+    .valid-meta { font-size:11px;color:var(--muted);margin-top:6px }
+
+    /* ── Requirement table ────────────────────────── */
+    .req-table { width:100%;border-collapse:collapse;font-size:12px;margin-top:4px }
+    .req-table th { background:#1A3A5C;color:#fff;padding:7px 10px;text-align:left;font-weight:700 }
+    .req-table td { padding:7px 10px;border-bottom:1px solid var(--border) }
+    .req-table tr.match td { background:#ECFDF5;font-weight:700 }
+    .req-table tr.match td:first-child::before { content:"▶ ";color:#6EE7B7 }
+
+    /* ── Cert upload ──────────────────────────────── */
+    .cert-box { border:1.5px solid var(--border);border-radius:10px;padding:16px 18px;margin-bottom:12px }
+    .cert-box h4 { font-size:13px;font-weight:800;color:var(--navy);margin-bottom:10px }
+    .cert-preview { display:flex;align-items:center;gap:10px;margin-top:8px }
+    .cert-link { font-size:12px;color:var(--blue);text-decoration:none;font-weight:700 }
+    .cert-link:hover { text-decoration:underline }
+
+    /* ── Print ────────────────────────────────────── */
+    @media print {
+      nav, .no-print, .vc-chat-wrapper { display:none !important }
+      @page { size:A4 portrait;margin:15mm }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="dashboard.html" style="display:flex;align-items:center;gap:10px;text-decoration:none">
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="36" viewBox="0 0 34 38">
+      <path d="M17 1L2 7V21C2 30 9 37 17 39C25 37 32 30 32 21V7Z" fill="rgba(255,255,255,0.15)" stroke="white" stroke-width="1.5"/>
+      <circle cx="12" cy="19" r="4.5" fill="white" opacity="0.9"/>
+      <circle cx="22" cy="19" r="4.5" fill="white" opacity="0.9"/>
+      <circle cx="12" cy="19" r="2" fill="rgba(26,58,92,0.8)"/>
+      <circle cx="22" cy="19" r="2" fill="rgba(26,58,92,0.8)"/>
+      <polygon points="15,25 17,28 19,25" fill="white" opacity="0.7"/>
+    </svg>
+    <span style="color:white;font-weight:800;font-size:17px;letter-spacing:0.5px">VIGÍA <span style="color:#4ADE80;font-weight:900">360</span></span>
+  </a>
+  <div class="nav-links">
+    <a href="dashboard.html" class="nav-link-fixed">Dashboard</a>
+
+    <!-- P — Planear -->
+    <div class="nav-dropdown" id="dd-P">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-P')">
+        <span class="phva-pill phva-P">P</span> Planear <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="perfil-responsable.html">🩺 Responsable SST</a>
+        <a href="responsabilidades.html">👥 Roles y Responsabilidades</a>
+        <a href="copasst.html">🤝 COPASST y Convivencia</a>
+        <a href="documentos-sst.html">📄 Documentos del SG-SST</a>
+        <a href="matriz-peligros.html">⚠️ Matriz de Peligros (GTC-45)</a>
+        <a href="plan-trabajo.html">📅 Plan de Trabajo Anual</a>
+        <a href="presupuesto-sgsst.html">💰 Presupuesto SG-SST</a>
+        <a href="profesiograma.html">💊 Profesiograma</a>
+      </div>
+    </div>
+
+    <!-- H — Hacer -->
+    <div class="nav-dropdown" id="dd-H">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-H')">
+        <span class="phva-pill phva-H">H</span> Hacer <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="epp.html">🦺 EPP</a>
+        <a href="capacitaciones.html">🎓 Capacitaciones</a>
+        <a href="emergencias.html">🚨 Emergencias y Brigada</a>
+        <a href="inspecciones.html">🔍 Inspecciones y Mantenimiento</a>
+        <a href="perfil-salud.html">🏥 Salud Ocupacional</a>
+        <div class="nav-dd-divider"></div>
+        <a href="lista-personal.html">👥 Lista de Personal</a>
+        <a href="subir.html">⬆️ Subir Examen</a>
+        <a href="subir-masivo.html">📦 Carga Masiva</a>
+        <a href="cartas-masivas.html">📄 Cartas Masivas</a>
+        <a href="reporte-examenes.html">📊 Cobertura de Exámenes</a>
+        <a href="informe-condiciones.html">📋 Informe de Condiciones</a>
+      </div>
+    </div>
+
+    <!-- V — Verificar -->
+    <div class="nav-dropdown" id="dd-V">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-V')">
+        <span class="phva-pill phva-V">V</span> Verificar <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="evaluacion-sst.html">📋 Evaluación (Res. 0312)</a>
+        <a href="investigaciones.html">🔍 AT / Incidentes</a>
+        <a href="ausentismo.html">📉 Ausentismo laboral</a>
+        <a href="indicadores-sgsst.html">📊 Indicadores SG-SST</a>
+        <a href="analisis-phva.html">📈 Análisis e Indicadores</a>
+      </div>
+    </div>
+
+    <!-- A — Actuar -->
+    <div class="nav-dropdown" id="dd-A">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-A')">
+        <span class="phva-pill phva-A">A</span> Actuar <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="mejoramiento.html">✅ Acciones de Mejoramiento</a>
+        <a href="evaluacion-sst.html">📝 Plan de Mejoramiento (F002)</a>
+      </div>
+    </div>
+
+    <a href="listado-maestro.html" class="nav-link-fixed">📁 Listado Maestro</a>
+    <span id="nav-empresa" style="color:#CBD8E6;font-size:13px;padding:6px 0"></span>
+    <button onclick="VigiaAPI.logout()"
+      style="background:none;border:1px solid rgba(255,255,255,.2);color:#CBD8E6;
+             border-radius:6px;padding:6px 12px;cursor:pointer;font-size:13px">Salir</button>
+  </div>
+</nav>
+
+<div class="container">
+
+  <!-- Doc header F005 -->
+  <div class="doc-header">
+    <div class="doc-header-logo-col">
+      <img class="doc-logo-img" src="" alt="" onerror="this.style.display='none'" />
+    </div>
+    <div class="doc-header-title-col">DESIGNACIÓN DEL RESPONSABLE<br>DEL SISTEMA DE GESTIÓN SST</div>
+    <div class="doc-header-code-col">
+      <span class="doc-header-code-line"><strong>CÓDIGO:</strong> <span class="doc-codigo" data-sufijo="F005">SG-SST F005</span></span>
+      <span class="doc-header-code-line"><strong>VERSIÓN</strong> 1</span>
+      <span class="doc-header-code-line"><strong>FECHA DE VIGENCIA:</strong><br><span class="doc-fecha"></span></span>
+    </div>
+  </div>
+
+  <!-- Selector de empresa (solo admin) -->
+  <div id="admin-selector" style="display:none;margin-bottom:20px">
+    <div style="background:var(--card);border:1.5px solid var(--border);border-radius:10px;padding:16px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+      <span style="font-size:13px;font-weight:700;color:var(--navy)">👑 Vista administrador — selecciona una empresa:</span>
+      <select id="admin-empresa-sel" onchange="cambiarEmpresaAdmin()"
+        style="font-size:13px;padding:7px 12px;border:1.5px solid var(--border);border-radius:7px;
+               background:var(--bg);color:var(--text);font-family:inherit;min-width:240px">
+        <option value="">— Seleccionar empresa —</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Cargando -->
+  <div id="cargando" style="text-align:center;padding:40px;color:var(--muted)">Cargando...</div>
+
+  <div id="contenido" style="display:none">
+
+    <!-- ── Validación card ── -->
+    <div class="valid-card PENDIENTE" id="valid-card">
+      <div class="valid-icon" id="valid-icon">⏳</div>
+      <div>
+        <div class="valid-titulo" id="valid-titulo">Cargando validación...</div>
+        <div class="valid-msg"   id="valid-msg"></div>
+        <div class="valid-meta"  id="valid-meta"></div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:28px" class="no-print">
+      <!-- ── Tabla de requisitos legales ── -->
+      <div>
+        <h3 style="font-size:13px;font-weight:800;color:var(--navy);margin-bottom:8px">
+          Perfil mínimo exigido — Res. 0312/2019
+        </h3>
+        <table class="req-table" id="req-table">
+          <thead>
+            <tr>
+              <th>Tamaño empresa</th>
+              <th>Clase de Riesgo</th>
+              <th>Perfil mínimo</th>
+              <th>Experiencia</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr id="req-row-1">
+              <td>≤ 10 trabajadores</td>
+              <td>I, II, III</td>
+              <td>Técnico en SST</td>
+              <td>1 año</td>
+            </tr>
+            <tr id="req-row-2">
+              <td>11 a 50 trabajadores</td>
+              <td>I, II, III</td>
+              <td>Tecnólogo en SST</td>
+              <td>2 años</td>
+            </tr>
+            <tr id="req-row-3">
+              <td>&gt; 50 trabajadores</td>
+              <td>Cualquiera</td>
+              <td>Profesional o Especialista</td>
+              <td>—</td>
+            </tr>
+            <tr id="req-row-4">
+              <td>Cualquier tamaño</td>
+              <td>IV o V</td>
+              <td>Profesional o Especialista</td>
+              <td>—</td>
+            </tr>
+          </tbody>
+        </table>
+        <p style="font-size:10px;color:var(--muted);margin-top:6px">
+          La fila resaltada corresponde al perfil de esta empresa.
+        </p>
+      </div>
+
+      <!-- ── Impresión / acciones ── -->
+      <div style="display:flex;flex-direction:column;gap:10px;justify-content:flex-start">
+        <button class="btn btn-outline" style="align-self:flex-start" onclick="window.print()">🖨️ Imprimir designación</button>
+      </div>
+    </div>
+
+    <!-- ── Formulario ── -->
+    <div style="background:var(--card);border:1.5px solid var(--border);border-radius:12px;padding:24px 28px">
+      <h3 style="font-size:15px;font-weight:800;color:var(--navy);margin-bottom:20px">
+        Datos del Responsable del SG-SST
+      </h3>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+        <div class="form-group">
+          <label>Nombre completo <span style="color:#E74C3C">*</span></label>
+          <input type="text" id="f-nombre" placeholder="Nombre y apellidos completos" />
+        </div>
+        <div class="form-group">
+          <label>Número de Licencia en SST <span style="color:#E74C3C">*</span></label>
+          <input type="text" id="f-licencia" placeholder="Ej: 2017060032574" />
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+        <div class="form-group">
+          <label>Nivel educativo <span style="color:#E74C3C">*</span></label>
+          <select id="f-nivel" onchange="actualizarValidacion()">
+            <option value="">— Seleccionar —</option>
+            <option value="TECNICO">Técnico en SST</option>
+            <option value="TECNOLOGO">Tecnólogo en SST</option>
+            <option value="PROFESIONAL">Profesional en SST / Salud Ocupacional</option>
+            <option value="ESPECIALISTA">Especialista en SST / Salud Ocupacional</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Años de experiencia en SST <span style="color:#E74C3C">*</span></label>
+          <input type="number" id="f-experiencia" min="0" max="50" placeholder="0" onchange="actualizarValidacion()" />
+        </div>
+      </div>
+
+      <!-- Nombre Representante Legal -->
+      <div class="form-group" style="margin-bottom:20px">
+        <label>Nombre completo del Representante Legal</label>
+        <input type="text" id="f-rep-legal-nombre" placeholder="Nombre y apellidos del representante legal" />
+      </div>
+
+      <!-- Certificado 50 horas -->
+      <div class="cert-box">
+        <h4>📄 Curso Virtual de 50 Horas en SST <span style="color:#E74C3C;font-size:11px">(obligatorio)</span></h4>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div class="form-group" style="margin-bottom:0">
+            <label>Fecha de aprobación</label>
+            <input type="date" id="f-cert50h-fecha" />
+          </div>
+          <div>
+            <label style="font-size:12px;font-weight:700;color:var(--muted);display:block;margin-bottom:6px">Archivo del certificado (PDF / imagen)</label>
+            <label class="btn btn-outline" style="cursor:pointer;font-size:12px;margin:0;display:inline-flex;align-items:center;gap:6px">
+              📁 Seleccionar archivo
+              <input type="file" id="f-cert50h-file" accept=".pdf,image/*" style="display:none" onchange="previsualizarCert('50h', this)" />
+            </label>
+            <div class="cert-preview" id="prev-50h" style="display:none">
+              <span style="font-size:18px">📄</span>
+              <a class="cert-link" id="link-50h" href="#" target="_blank">Ver certificado actual</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Certificado 20 horas (renovación) -->
+      <div class="cert-box">
+        <h4>🔁 Renovación de 20 Horas <span style="color:var(--muted);font-size:11px">(si aplica — cada 3 años)</span></h4>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div class="form-group" style="margin-bottom:0">
+            <label>Fecha de renovación</label>
+            <input type="date" id="f-cert20h-fecha" />
+          </div>
+          <div>
+            <label style="font-size:12px;font-weight:700;color:var(--muted);display:block;margin-bottom:6px">Archivo del certificado de renovación</label>
+            <label class="btn btn-outline" style="cursor:pointer;font-size:12px;margin:0;display:inline-flex;align-items:center;gap:6px">
+              📁 Seleccionar archivo
+              <input type="file" id="f-cert20h-file" accept=".pdf,image/*" style="display:none" onchange="previsualizarCert('20h', this)" />
+            </label>
+            <div class="cert-preview" id="prev-20h" style="display:none">
+              <span style="font-size:18px">📄</span>
+              <a class="cert-link" id="link-20h" href="#" target="_blank">Ver certificado actual</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:12px;margin-top:8px" class="no-print">
+        <button class="btn btn-navy" id="btn-guardar" onclick="guardar()">Guardar</button>
+        <span style="font-size:12px;color:var(--muted);align-self:center" id="guard-status"></span>
+      </div>
+
+      <!-- Firma digital del Responsable SST -->
+      <div id="firma-resp-section" class="cert-box no-print" style="margin-top:20px;display:none">
+        <h4>✍️ Firma digital del Responsable SST</h4>
+        <p style="font-size:12px;color:var(--muted);margin:0 0 10px">La firma aparecerá en el Acto de Designación al imprimir.</p>
+        <div id="firma-resp-preview" style="display:none;margin-bottom:10px;text-align:center">
+          <img id="firma-resp-img" style="max-height:72px;max-width:220px;border:1.5px solid var(--border);border-radius:8px;padding:4px;background:#fff">
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-outline" id="btn-agregar-firma" onclick="agregarFirmaResp()">✍️ Agregar firma digital</button>
+          <button class="btn btn-outline" id="btn-eliminar-firma" style="display:none;color:#C0392B;border-color:#FABEC2" onclick="eliminarFirmaResp()">🗑 Eliminar firma</button>
+        </div>
+      </div>
+
+      <!-- Firma digital del Representante Legal -->
+      <div class="cert-box no-print" style="margin-top:12px">
+        <h4>✍️ Firma digital del Representante Legal</h4>
+        <p style="font-size:12px;color:var(--muted);margin:0 0 10px">Aparecerá junto con el nombre, cargo y NIT en el Acto de Designación.</p>
+        <div id="firma-rl-preview" style="display:none;margin-bottom:10px;text-align:center">
+          <img id="firma-rl-img" style="max-height:72px;max-width:220px;border:1.5px solid var(--border);border-radius:8px;padding:4px;background:#fff">
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-outline" id="btn-agregar-firma-rl" onclick="agregarFirmaRL()">✍️ Agregar firma digital</button>
+          <button class="btn btn-outline" id="btn-eliminar-firma-rl" style="display:none;color:#C0392B;border-color:#FABEC2" onclick="eliminarFirmaRL()">🗑 Eliminar firma</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Texto de designación (print) -->
+    <div style="margin-top:24px;padding:20px;border:1px solid var(--border);border-radius:10px">
+      <h3 style="font-size:13px;font-weight:800;color:var(--navy);margin-bottom:10px">
+        ACTO DE DESIGNACIÓN
+      </h3>
+      <p style="font-size:12px;line-height:1.8;color:var(--text)">
+        La empresa <strong id="print-empresa">___________</strong>, el día <strong id="print-fecha-desig">_______________</strong>, designa como Responsable del Sistema de Gestión de Seguridad y Salud en el Trabajo (SG-SST) a <strong id="print-nombre">___________________________</strong>, identificado(a) con Licencia en SST N.° <strong id="print-licencia">___________</strong>, con nivel educativo de <strong id="print-nivel">___________</strong> y <strong id="print-exp">___</strong> año(s) de experiencia en SST, quien cuenta con el curso virtual de capacitación de 50 horas del SG-SST exigido por la normativa colombiana vigente (Res. 0312/2019 del Ministerio de Trabajo).
+      </p>
+      <p style="font-size:12px;line-height:1.8;color:var(--text);margin-top:10px">
+        Esta designación se realiza en cumplimiento del Artículo 4° del Decreto 1072/2015 y las disposiciones de la Resolución 0312/2019 sobre estándares mínimos del SG-SST.
+      </p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:60px;margin-top:40px">
+        <div style="text-align:center;font-size:11px">
+          <div id="print-firma-rl" style="min-height:55px;display:flex;align-items:flex-end;justify-content:center;margin-bottom:0"></div>
+          <div style="border-top:1.5px solid #1A3A5C;padding-top:8px">
+            <strong id="print-rep-legal-nombre"></strong><br>
+            Representante Legal<br>
+            <span id="print-empresa2" style="color:var(--muted)"></span><br>
+            <span id="print-nit" style="color:var(--muted)"></span>
+          </div>
+        </div>
+        <div style="text-align:center;font-size:11px">
+          <div id="print-firma-resp" style="margin-bottom:6px;min-height:55px;display:flex;align-items:flex-end;justify-content:center"></div>
+          <div style="border-top:1.5px solid #1A3A5C;padding-top:8px">
+            <strong>RESPONSABLE SG-SST</strong><br>
+            <span id="print-nombre2" style="color:var(--muted)"></span><br>
+            <span style="color:var(--muted)">Lic. SST N.° <span id="print-licencia2"></span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /contenido -->
+
+</div><!-- /container -->
+
+<div class="toast" id="toast"></div>
+<script src="js/firma-pad.js"></script>
+<script src="js/vigia-api.js"></script>
+<script>
+
+let datosEmpresa = null;
+
+const NIVEL_LABEL = {
+  TECNICO:     'Técnico en SST',
+  TECNOLOGO:   'Tecnólogo en SST',
+  PROFESIONAL: 'Profesional en SST',
+  ESPECIALISTA:'Especialista en SST',
+};
+
+const ICONOS_ESTADO = {
+  HABILITADO:     '✅',
+  NO_HABILITADO:  '❌',
+  SIN_CERTIFICADO:'⚠️',
+  PENDIENTE:      '⏳',
+};
+
+const LABELS_ESTADO = {
+  HABILITADO:     'HABILITADO — Cumple el perfil mínimo exigido por ley',
+  NO_HABILITADO:  'NO HABILITADO — El perfil no cumple los requisitos legales',
+  SIN_CERTIFICADO:'CERTIFICADO PENDIENTE — Falta subir el certificado del curso',
+  PENDIENTE:      'PERFIL PENDIENTE — Complete los datos del Responsable SST',
+};
+
+// ─── Resalta la fila de requisitos que aplica ───────────
+function resaltarFila(nt, cr) {
+  ['req-row-1','req-row-2','req-row-3','req-row-4'].forEach(id => {
+    document.getElementById(id).classList.remove('match');
+  });
+  if (['IV','V'].includes(cr)) {
+    document.getElementById('req-row-4').classList.add('match');
+  } else if (nt > 50) {
+    document.getElementById('req-row-3').classList.add('match');
+  } else if (nt >= 11) {
+    document.getElementById('req-row-2').classList.add('match');
+  } else {
+    document.getElementById('req-row-1').classList.add('match');
+  }
+}
+
+// ─── Validación client-side para feedback inmediato ────
+function calcularValidacion(nt, cr, nivel, exp, tieneCert) {
+  const NIVELES = ['TECNICO','TECNOLOGO','PROFESIONAL','ESPECIALISTA'];
+  if (!nivel) return { estado:'PENDIENTE', mensaje: 'Selecciona el nivel educativo' };
+
+  let minNivel, minExp;
+  if (nt > 50 || ['IV','V'].includes(cr)) { minNivel='PROFESIONAL'; minExp=0; }
+  else if (nt >= 11) { minNivel='TECNOLOGO'; minExp=2; }
+  else { minNivel='TECNICO'; minExp=1; }
+
+  if (NIVELES.indexOf(nivel) < NIVELES.indexOf(minNivel)) {
+    return { estado:'NO_HABILITADO', mensaje: `Para esta empresa se requiere mínimo nivel ${NIVEL_LABEL[minNivel]}` };
+  }
+  if (exp < minExp) {
+    return { estado:'NO_HABILITADO', mensaje: `Se requieren mínimo ${minExp} año(s) de experiencia en SST` };
+  }
+  if (!tieneCert) {
+    return { estado:'SIN_CERTIFICADO', mensaje: 'Falta el certificado del curso de 50 horas (o renovación de 20 horas)' };
+  }
+  return { estado:'HABILITADO', mensaje:'El Responsable SST cumple el perfil mínimo exigido por la Res. 0312/2019' };
+}
+
+function actualizarValidacion() {
+  if (!datosEmpresa) return;
+  const nt     = datosEmpresa.num_trabajadores || 0;
+  const cr     = datosEmpresa.clase_riesgo     || 'I';
+  const nivel  = document.getElementById('f-nivel').value;
+  const exp    = parseInt(document.getElementById('f-experiencia').value) || 0;
+  const tieneCert = !!datosEmpresa.resp_cert50h_url || !!document.getElementById('f-cert50h-fecha').value;
+
+  const v = calcularValidacion(nt, cr, nivel, exp, tieneCert);
+  mostrarValidacion(v, nt, cr);
+}
+
+function mostrarValidacion(v, nt, cr) {
+  const card = document.getElementById('valid-card');
+  card.className = `valid-card ${v.estado}`;
+  document.getElementById('valid-icon').textContent = ICONOS_ESTADO[v.estado] || '⏳';
+  document.getElementById('valid-titulo').textContent = LABELS_ESTADO[v.estado] || v.estado;
+  document.getElementById('valid-msg').textContent = v.mensaje;
+  document.getElementById('valid-meta').textContent =
+    nt ? `Esta empresa: ${nt} trabajadores · Clase de Riesgo ${cr}` : 'Configura el tamaño de empresa para ver la validación';
+}
+
+// ─── Preview certificado ────────────────────────────────
+function previsualizarCert(tipo, input) {
+  if (!input.files[0]) return;
+  const file = input.files[0];
+  if (file.size > 5 * 1024 * 1024) {
+    mostrarToast('El archivo no debe superar 5 MB', 'error');
+    input.value = ''; return;
+  }
+  const prev = document.getElementById(`prev-${tipo}`);
+  const link = document.getElementById(`link-${tipo}`);
+  const url  = URL.createObjectURL(file);
+  link.href  = url;
+  link.textContent = file.name;
+  prev.style.display = 'flex';
+}
+
+// ─── Cambiar empresa (admin) ─────────────────────────────
+async function cambiarEmpresaAdmin() {
+  const sel = document.getElementById('admin-empresa-sel');
+  const id  = sel.value;
+  if (!id) return;
+  document.getElementById('cargando').style.display = '';
+  document.getElementById('contenido').style.display = 'none';
+  await cargarDatos(id);
+}
+
+// ─── Cargar datos ───────────────────────────────────────
+async function cargarDatos(empresaIdOverride) {
+  const empresaId = empresaIdOverride || (VigiaAPI.esAdmin() ? null : VigiaAPI.empresaId());
+  if (!empresaId) {
+    document.getElementById('cargando').style.display = 'none';
+    return;
+  }
+  try {
+    datosEmpresa = await VigiaAPI.getResponsable(empresaId);
+  } catch (err) {
+    mostrarToast('Error al cargar datos: ' + err.message, 'error');
+    return;
+  }
+
+  // Poblar formulario
+  document.getElementById('f-nombre').value      = datosEmpresa.resp_nombre        || '';
+  document.getElementById('f-licencia').value    = datosEmpresa.resp_licencia       || '';
+  document.getElementById('f-nivel').value       = datosEmpresa.resp_nivel_educativo|| '';
+  document.getElementById('f-experiencia').value = datosEmpresa.resp_experiencia_anios ?? '';
+  document.getElementById('f-cert50h-fecha').value = datosEmpresa.resp_cert50h_fecha || '';
+  document.getElementById('f-cert20h-fecha').value = datosEmpresa.resp_cert20h_fecha || '';
+
+  // Certs existentes
+  if (datosEmpresa.resp_cert50h_url) {
+    document.getElementById('link-50h').href = datosEmpresa.resp_cert50h_url;
+    document.getElementById('prev-50h').style.display = 'flex';
+  }
+  if (datosEmpresa.resp_cert20h_url) {
+    document.getElementById('link-20h').href = datosEmpresa.resp_cert20h_url;
+    document.getElementById('prev-20h').style.display = 'flex';
+  }
+
+  // Validación
+  mostrarValidacion(datosEmpresa.validacion, datosEmpresa.num_trabajadores, datosEmpresa.clase_riesgo);
+  resaltarFila(datosEmpresa.num_trabajadores || 0, datosEmpresa.clase_riesgo || 'I');
+
+  // Textos de designación (print)
+  const emp = datosEmpresa.nombre || '';
+  const nom = datosEmpresa.resp_nombre || '___________________________';
+  const lic = datosEmpresa.resp_licencia || '___________';
+  const niv = NIVEL_LABEL[datosEmpresa.resp_nivel_educativo] || '___________';
+  const exp = datosEmpresa.resp_experiencia_anios ?? '___';
+  document.getElementById('print-empresa').textContent  = emp;
+  document.getElementById('print-empresa2').textContent = emp;
+  document.getElementById('print-nombre').textContent   = nom;
+  document.getElementById('print-nombre2').textContent  = nom;
+  document.getElementById('print-licencia').textContent = lic;
+  document.getElementById('print-licencia2').textContent= lic;
+  document.getElementById('print-nivel').textContent    = niv;
+  document.getElementById('print-exp').textContent      = exp;
+
+  // Logo: actualizar localStorage y el header del documento
+  if (datosEmpresa.logo_url) {
+    localStorage.setItem('vigia_logo_url', datosEmpresa.logo_url);
+    document.querySelectorAll('.doc-logo-img').forEach(img => { img.src = datosEmpresa.logo_url; img.style.display = ''; });
+  }
+
+  // Fecha de designación: usar la almacenada (no la de hoy)
+  if (datosEmpresa.resp_fecha_designacion) {
+    const [y, m, d] = datosEmpresa.resp_fecha_designacion.split('-');
+    document.querySelectorAll('.doc-fecha').forEach(el => { el.textContent = `${d}/${m}/${y}`; });
+    const fechaLarga = new Date(`${y}-${m}-${d}T12:00:00`).toLocaleDateString('es-CO', { day:'2-digit', month:'long', year:'numeric' });
+    document.getElementById('print-fecha-desig').textContent = fechaLarga;
+  }
+
+  // Representante Legal
+  document.getElementById('f-rep-legal-nombre').value = datosEmpresa.rep_legal_nombre || '';
+  actualizarFirmaRLPreview(datosEmpresa.rep_legal_firma_b64 || null);
+
+  // NIT en bloque imprimible
+  const nitTxt = datosEmpresa.nit ? `NIT: ${datosEmpresa.nit}` : '';
+  document.getElementById('print-nit').textContent = nitTxt;
+  document.getElementById('print-rep-legal-nombre').textContent = datosEmpresa.rep_legal_nombre || '';
+
+  // Firma digital del responsable
+  if (!VigiaAPI.esAdmin()) {
+    document.getElementById('firma-resp-section').style.display = '';
+    actualizarFirmaPreview(datosEmpresa.resp_firma_b64 || null);
+  }
+
+  document.getElementById('cargando').style.display  = 'none';
+  document.getElementById('contenido').style.display = '';
+}
+
+// ─── Firma digital ────────────────────────────────────────
+function actualizarFirmaPreview(firma_b64) {
+  const preview    = document.getElementById('firma-resp-preview');
+  const img        = document.getElementById('firma-resp-img');
+  const printBox   = document.getElementById('print-firma-resp');
+  const btnElim    = document.getElementById('btn-eliminar-firma');
+  const btnAgregar = document.getElementById('btn-agregar-firma');
+
+  if (firma_b64) {
+    img.src = firma_b64;
+    preview.style.display = '';
+    btnElim.style.display = '';
+    btnAgregar.textContent = '✍️ Cambiar firma';
+    printBox.innerHTML = `<img src="${firma_b64}" style="max-height:55px;max-width:160px;display:inline-block;margin-bottom:4px">`;
+  } else {
+    preview.style.display = 'none';
+    btnElim.style.display = 'none';
+    btnAgregar.textContent = '✍️ Agregar firma digital';
+    printBox.innerHTML = '<div style="height:55px"></div>';
+  }
+}
+
+async function agregarFirmaResp() {
+  const nombre = document.getElementById('f-nombre')?.value || '';
+  const firma_b64 = await FirmaPad.abrir({
+    titulo: 'Firma del Responsable SST',
+    subtitulo: nombre ? `Responsable: ${nombre}` : 'Firme para el Acto de Designación',
+  });
+  if (!firma_b64) return;
+  try {
+    await VigiaAPI.guardarFirmaResponsable(firma_b64);
+    actualizarFirmaPreview(firma_b64);
+    mostrarToast('Firma guardada', 'ok');
+  } catch (err) { mostrarToast('Error: ' + (err.message || err), 'error'); }
+}
+
+async function eliminarFirmaResp() {
+  if (!confirm('¿Eliminar la firma digital del Responsable SST?')) return;
+  try {
+    await VigiaAPI.guardarFirmaResponsable(null);
+    actualizarFirmaPreview(null);
+    mostrarToast('Firma eliminada', 'ok');
+  } catch (err) { mostrarToast('Error: ' + (err.message || err), 'error'); }
+}
+
+// ─── Firma Representante Legal ───────────────────────────
+function actualizarFirmaRLPreview(firma_b64) {
+  const preview  = document.getElementById('firma-rl-preview');
+  const img      = document.getElementById('firma-rl-img');
+  const printBox = document.getElementById('print-firma-rl');
+  const btnElim  = document.getElementById('btn-eliminar-firma-rl');
+  const btnAgr   = document.getElementById('btn-agregar-firma-rl');
+
+  if (firma_b64) {
+    img.src = firma_b64;
+    preview.style.display = '';
+    btnElim.style.display = '';
+    btnAgr.textContent = '✍️ Cambiar firma';
+    printBox.innerHTML = `<img src="${firma_b64}" style="max-height:55px;max-width:160px;display:inline-block;margin-bottom:4px">`;
+  } else {
+    preview.style.display = 'none';
+    btnElim.style.display = 'none';
+    btnAgr.textContent = '✍️ Agregar firma digital';
+    printBox.innerHTML = '<div style="height:55px"></div>';
+  }
+}
+
+async function agregarFirmaRL() {
+  const nombre = document.getElementById('f-rep-legal-nombre')?.value || '';
+  const firma_b64 = await FirmaPad.abrir({
+    titulo: 'Firma del Representante Legal',
+    subtitulo: nombre ? `Rep. Legal: ${nombre}` : 'Firme para el Acto de Designación',
+  });
+  if (!firma_b64) return;
+  try {
+    const empresaId = VigiaAPI.esAdmin() ? (document.getElementById('admin-empresa-sel')?.value || null) : null;
+    await VigiaAPI.guardarFirmaRepresentanteLegal(firma_b64, empresaId);
+    actualizarFirmaRLPreview(firma_b64);
+    mostrarToast('Firma del Rep. Legal guardada', 'ok');
+  } catch (err) { mostrarToast('Error: ' + (err.message || err), 'error'); }
+}
+
+async function eliminarFirmaRL() {
+  if (!confirm('¿Eliminar la firma del Representante Legal?')) return;
+  try {
+    const empresaId = VigiaAPI.esAdmin() ? (document.getElementById('admin-empresa-sel')?.value || null) : null;
+    await VigiaAPI.guardarFirmaRepresentanteLegal(null, empresaId);
+    actualizarFirmaRLPreview(null);
+    mostrarToast('Firma eliminada', 'ok');
+  } catch (err) { mostrarToast('Error: ' + (err.message || err), 'error'); }
+}
+
+// ─── Guardar ────────────────────────────────────────────
+async function guardar() {
+  const nombre       = document.getElementById('f-nombre').value.trim();
+  const licencia     = document.getElementById('f-licencia').value.trim();
+  const nivel        = document.getElementById('f-nivel').value;
+  const exp          = document.getElementById('f-experiencia').value;
+  const fecha50h     = document.getElementById('f-cert50h-fecha').value;
+  const fecha20h     = document.getElementById('f-cert20h-fecha').value;
+  const file50h      = document.getElementById('f-cert50h-file').files[0];
+  const file20h      = document.getElementById('f-cert20h-file').files[0];
+  const repLegalNom  = document.getElementById('f-rep-legal-nombre').value.trim();
+
+  if (!nombre || !licencia || !nivel) {
+    mostrarToast('Nombre, licencia y nivel educativo son obligatorios', 'error'); return;
+  }
+
+  const btn = document.getElementById('btn-guardar');
+  btn.disabled = true; btn.textContent = 'Guardando...';
+  document.getElementById('guard-status').textContent = '';
+
+  try {
+    // Guardar datos principales
+    datosEmpresa = await VigiaAPI.actualizarResponsable({
+      resp_nombre: nombre, resp_licencia: licencia,
+      resp_nivel_educativo: nivel,
+      resp_experiencia_anios: exp ? parseInt(exp) : null,
+      resp_cert50h_fecha: fecha50h || null,
+      resp_cert20h_fecha: fecha20h || null,
+      rep_legal_nombre: repLegalNom || null,
+    });
+
+    // Actualizar bloques Rep. Legal en print
+    document.getElementById('print-rep-legal-nombre').textContent = repLegalNom;
+    if (datosEmpresa.nit) document.getElementById('print-nit').textContent = `NIT: ${datosEmpresa.nit}`;
+
+    // Subir cert 50h si hay archivo nuevo
+    if (file50h) {
+      const r50 = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = async e => {
+          try { resolve(await VigiaAPI.subirCert50h(e.target.result, file50h.type, file50h.name)); }
+          catch(err) { reject(err); }
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file50h);
+      });
+      if (r50.cert50h_url) {
+        document.getElementById('link-50h').href = r50.cert50h_url;
+        document.getElementById('prev-50h').style.display = 'flex';
+        datosEmpresa.resp_cert50h_url = r50.cert50h_url;
+      }
+    }
+
+    // Subir cert 20h si hay archivo nuevo
+    if (file20h) {
+      const r20 = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = async e => {
+          try { resolve(await VigiaAPI.subirCert20h(e.target.result, file20h.type, file20h.name)); }
+          catch(err) { reject(err); }
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file20h);
+      });
+      if (r20.cert20h_url) {
+        document.getElementById('link-20h').href = r20.cert20h_url;
+        document.getElementById('prev-20h').style.display = 'flex';
+      }
+    }
+
+    // Actualizar validación
+    mostrarValidacion(datosEmpresa.validacion, datosEmpresa.num_trabajadores, datosEmpresa.clase_riesgo);
+
+    // Actualizar textos print
+    document.getElementById('print-nombre').textContent   = nombre;
+    document.getElementById('print-nombre2').textContent  = nombre;
+    document.getElementById('print-licencia').textContent = licencia;
+    document.getElementById('print-licencia2').textContent= licencia;
+    document.getElementById('print-nivel').textContent    = NIVEL_LABEL[nivel] || nivel;
+    document.getElementById('print-exp').textContent      = exp || '0';
+    if (datosEmpresa.resp_fecha_designacion) {
+      const [y, m, d] = datosEmpresa.resp_fecha_designacion.split('-');
+      document.querySelectorAll('.doc-fecha').forEach(el => { el.textContent = `${d}/${m}/${y}`; });
+      const fechaLarga = new Date(`${y}-${m}-${d}T12:00:00`).toLocaleDateString('es-CO', { day:'2-digit', month:'long', year:'numeric' });
+      document.getElementById('print-fecha-desig').textContent = fechaLarga;
+    }
+
+    // Actualizar localStorage
+    localStorage.setItem('vigia_resp_estado', datosEmpresa.validacion?.estado || 'PENDIENTE');
+
+    mostrarToast('Perfil guardado', 'ok');
+    document.getElementById('guard-status').textContent = `Guardado — ${new Date().toLocaleTimeString('es-CO')}`;
+  } catch (err) {
+    mostrarToast('Error: ' + (err.message || err), 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Guardar';
+  }
+}
+
+// ─── Toast ──────────────────────────────────────────────
+function mostrarToast(msg, tipo = 'ok') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = `toast toast-${tipo} show`;
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+// ─── Init ───────────────────────────────────────────────
+async function init() {
+  const ok = await VigiaAPI.requireAuth();
+  if (!ok) return;
+  VigiaAPI.initDocHeader();
+
+  if (VigiaAPI.esAdmin()) {
+    // Admin: mostrar selector de empresas
+    document.getElementById('admin-selector').style.display = '';
+    document.getElementById('cargando').style.display = 'none';
+    try {
+      const empresas = await VigiaAPI.getEmpresas();
+      const sel = document.getElementById('admin-empresa-sel');
+      (empresas || []).forEach(e => {
+        const opt = document.createElement('option');
+        opt.value = e.id;
+        opt.textContent = e.nombre;
+        sel.appendChild(opt);
+      });
+    } catch(e) { mostrarToast('Error cargando empresas', 'error'); }
+  } else {
+    await cargarDatos();
+  }
+}
+
+init();
+</script>
+<script src="js/vigia-chat.js"></script>
+</body>
+</html>
+

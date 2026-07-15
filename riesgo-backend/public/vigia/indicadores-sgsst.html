@@ -1,0 +1,790 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vigía 360 — Indicadores SG-SST</title>
+  <link rel="stylesheet" href="vigia.css" />
+  <style>
+    /* ── Layout ───────────────────────────────────── */
+    .section-title {
+      font-size:13px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;
+      color:var(--navy);padding:6px 0 10px;border-bottom:2px solid var(--border);
+      margin:24px 0 14px;display:flex;align-items:center;gap:8px
+    }
+    .section-title .pill {
+      background:var(--navy);color:white;border-radius:6px;padding:2px 10px;
+      font-size:11px;letter-spacing:.5px
+    }
+    .pill-at  { background:#C0392B!important }
+    .pill-el  { background:#D97706!important }
+    .pill-aus { background:#1D4ED8!important }
+    .pill-epr { background:#059669!important }
+
+    /* ── Indicator grid ───────────────────────────── */
+    .ind-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:4px }
+    .ind-grid-2 { grid-template-columns:repeat(2,1fr) }
+    .ind-grid-1 { grid-template-columns:1fr }
+    @media(max-width:800px){ .ind-grid { grid-template-columns:repeat(2,1fr) } }
+    @media(max-width:500px){ .ind-grid { grid-template-columns:1fr } }
+
+    .ind-card {
+      background:var(--card);border:1.5px solid var(--border);border-radius:10px;
+      padding:14px 16px;position:relative;transition:box-shadow .15s
+    }
+    .ind-card.cumple { border-color:#6EE7B7;background:#F0FDF4 }
+    .ind-card.nocumple { border-color:#FCA5A5;background:#FFF1F2 }
+    .ind-card.sin-datos { border-color:var(--border);opacity:.7 }
+
+    .ind-badge {
+      position:absolute;top:10px;right:10px;font-size:10px;font-weight:800;
+      padding:2px 8px;border-radius:20px;letter-spacing:.4px
+    }
+    .badge-cumple { background:#DCFCE7;color:#15803D }
+    .badge-nocumple { background:#FFE4E6;color:#BE123C }
+    .badge-sinmeta { background:#F1F5F9;color:#64748B }
+
+    .ind-nombre { font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px }
+    .ind-valor  { font-size:28px;font-weight:900;color:var(--navy);line-height:1;margin-bottom:2px }
+    .ind-valor.grande { font-size:22px }
+    .ind-formula { font-size:10px;color:var(--muted);margin-top:4px;line-height:1.4 }
+    .ind-meta   { font-size:11px;color:var(--muted);margin-top:4px }
+    .ind-meta strong { color:var(--navy) }
+
+    /* ── Monthly table ────────────────────────────── */
+    .mes-table { width:100%;border-collapse:collapse;font-size:12px }
+    .mes-table th { background:var(--navy);color:white;padding:7px 8px;text-align:center;white-space:nowrap;font-size:11px }
+    .mes-table td { padding:6px 8px;border-bottom:1px solid var(--border);text-align:center;vertical-align:middle }
+    .mes-table tr:last-child td { border-bottom:none }
+    .mes-table tr.total-row td { background:var(--navy);color:white;font-weight:700 }
+    .mes-table td.mes-nombre { text-align:left;font-weight:600;color:var(--navy);white-space:nowrap }
+    .edit-btn { background:none;border:1px solid var(--border);border-radius:5px;padding:2px 7px;
+                cursor:pointer;font-size:11px;color:var(--text) }
+    .edit-btn:hover { background:var(--navy);color:white;border-color:var(--navy) }
+
+    .cumple-cell { color:#15803D;font-weight:700 }
+    .nocumple-cell { color:#BE123C;font-weight:700 }
+
+    /* ── Modal ────────────────────────────────────── */
+    .modal-overlay {
+      display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);
+      z-index:1000;align-items:center;justify-content:center
+    }
+    .modal-overlay.open { display:flex }
+    .modal {
+      background:var(--card);border-radius:12px;padding:24px;
+      width:min(640px,95vw);max-height:90vh;overflow-y:auto
+    }
+    .modal-title { font-size:15px;font-weight:800;color:var(--navy);margin-bottom:18px }
+    .form-grid { display:grid;grid-template-columns:1fr 1fr;gap:10px }
+    .form-grid-3 { grid-template-columns:1fr 1fr 1fr }
+    @media(max-width:500px){ .form-grid,.form-grid-3 { grid-template-columns:1fr } }
+    .form-section { font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;
+                    letter-spacing:.5px;grid-column:1/-1;margin-top:6px;padding-top:6px;
+                    border-top:1px solid var(--border) }
+    label { font-size:12px;color:var(--text);display:block;margin-bottom:3px;font-weight:600 }
+    input[type=number] {
+      width:100%;padding:7px 10px;border-radius:7px;border:1.5px solid var(--border);
+      background:var(--bg);color:var(--text);font-size:13px;font-family:inherit;box-sizing:border-box
+    }
+    textarea {
+      width:100%;padding:7px 10px;border-radius:7px;border:1.5px solid var(--border);
+      background:var(--bg);color:var(--text);font-size:13px;font-family:inherit;
+      box-sizing:border-box;resize:vertical
+    }
+    .modal-actions { display:flex;gap:8px;justify-content:flex-end;margin-top:18px }
+
+    /* ── Export / filter bar ─────────────────────── */
+    .top-bar { display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;margin-bottom:20px }
+    .top-bar-title h2 { margin:0 0 4px;font-size:18px;color:var(--navy) }
+    .top-bar-title p  { margin:0;font-size:12px;color:var(--muted) }
+    .top-bar-actions  { display:flex;gap:8px;align-items:center;flex-wrap:wrap }
+
+    select.anio-sel {
+      padding:7px 11px;border-radius:7px;border:1.5px solid var(--border);
+      background:var(--bg);color:var(--text);font-size:13px;font-family:inherit
+    }
+
+    /* ── Nota informativa ────────────────────────── */
+    .nota {
+      background:#EFF6FF;border:1.5px solid #BFDBFE;border-radius:8px;
+      padding:10px 14px;font-size:12px;color:#1E40AF;margin-bottom:16px
+    }
+
+    /* ── Print ───────────────────────────────────── */
+    @media print {
+      .top-bar-actions,.modal-overlay,.edit-btn { display:none!important }
+      .page { padding:0 }
+    }
+  </style>
+</head>
+<body>
+<nav class="navbar">
+  <a href="dashboard.html" class="nav-brand">
+    <span class="brand-vigia">Vigía</span><span class="brand-sst">360</span>
+  </a>
+  <div class="nav-links">
+    <a href="dashboard.html" class="nav-link-fixed">Dashboard</a>
+    <div class="nav-dropdown" id="dd-P">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-P')">
+        <span class="phva-pill phva-P">P</span> Planear <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="perfil-responsable.html">🩺 Responsable SST</a>
+        <a href="responsabilidades.html">👥 Roles y Responsabilidades</a>
+        <a href="copasst.html">🤝 COPASST y Convivencia</a>
+        <a href="documentos-sst.html">📄 Documentos del SG-SST</a>
+        <a href="matriz-peligros.html">⚠️ Matriz de Peligros (GTC-45)</a>
+        <a href="plan-trabajo.html">📅 Plan de Trabajo Anual</a>
+        <a href="presupuesto-sgsst.html">💰 Presupuesto SG-SST</a>
+        <a href="profesiograma.html">💊 Profesiograma</a>
+      </div>
+    </div>
+    <div class="nav-dropdown" id="dd-H">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-H')">
+        <span class="phva-pill phva-H">H</span> Hacer <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="epp.html">🦺 EPP</a>
+        <a href="capacitaciones.html">🎓 Capacitaciones</a>
+        <a href="emergencias.html">🚨 Emergencias y Brigada</a>
+        <a href="inspecciones.html">🔍 Inspecciones y Mantenimiento</a>
+        <a href="perfil-salud.html">🏥 Salud Ocupacional</a>
+        <div class="nav-dd-divider"></div>
+        <a href="lista-personal.html">👥 Lista de Personal</a>
+        <a href="subir.html">⬆️ Subir Examen</a>
+        <a href="subir-masivo.html">📦 Carga Masiva</a>
+        <a href="cartas-masivas.html">📄 Cartas Masivas</a>
+        <a href="reporte-examenes.html">📊 Cobertura de Exámenes</a>
+        <a href="informe-condiciones.html">📋 Informe de Condiciones</a>
+      </div>
+    </div>
+    <div class="nav-dropdown" id="dd-V">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-V')">
+        <span class="phva-pill phva-V">V</span> Verificar <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="evaluacion-sst.html">📋 Evaluación (Res. 0312)</a>
+        <a href="investigaciones.html">🔍 AT / Incidentes</a>
+        <a href="auditoria.html">🗒️ Auditoría Interna</a>
+        <a href="ausentismo.html">📉 Ausentismo laboral</a>
+        <a href="indicadores-sgsst.html" style="font-weight:700;color:var(--green)">📊 Indicadores SG-SST</a>
+        <a href="analisis-phva.html">📈 Análisis e Indicadores</a>
+      </div>
+    </div>
+    <div class="nav-dropdown" id="dd-A">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-A')">
+        <span class="phva-pill phva-A">A</span> Actuar <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="mejoramiento.html">✅ Acciones de Mejoramiento</a>
+        <a href="evaluacion-sst.html">📝 Plan de Mejoramiento (F002)</a>
+      </div>
+    </div>
+    <a href="listado-maestro.html" class="nav-link-fixed">📁 Listado Maestro</a>
+    <span id="nav-empresa" style="color:#CBD8E6;font-size:13px;padding:6px 0"></span>
+    <button onclick="VigiaAPI.logout()"
+      style="background:none;border:1px solid rgba(255,255,255,.2);color:#CBD8E6;
+             border-radius:6px;padding:6px 12px;cursor:pointer;font-size:13px">Salir</button>
+  </div>
+</nav>
+
+<div class="page">
+
+  <div class="top-bar">
+    <div class="top-bar-title">
+      <h2>📊 Indicadores SG-SST</h2>
+      <p>Estándar ARL SURA · Ministerio de Trabajo · AT, EL, Ausentismo y E-P-R · <span id="lbl-empresa"></span></p>
+    </div>
+    <div class="top-bar-actions">
+      <select class="anio-sel" id="sel-anio" onchange="cargar()"></select>
+      <button class="btn-outline btn" style="font-size:12px" onclick="VigiaAPI.imprimirModulo()">🖨️ Imprimir</button>
+      <button class="btn-outline btn" style="font-size:12px" onclick="exportarCSV()">📊 CSV</button>
+      <button class="btn" onclick="abrirModal(null)">+ Ingresar mes</button>
+    </div>
+  </div>
+
+  <!-- Spinner -->
+  <div id="cargando" style="text-align:center;padding:48px">
+    <div class="spinner" style="margin:0 auto 16px;border-color:rgba(46,134,171,.2);border-top-color:var(--blue)"></div>
+    <p class="text-muted">Calculando indicadores…</p>
+  </div>
+
+  <div id="contenido" style="display:none">
+
+    <!-- ── ACCIDENTALIDAD ────────────────────────────── -->
+    <div class="section-title">
+      <span class="pill pill-at">AT</span> Accidentalidad
+    </div>
+    <div class="ind-grid">
+
+      <div class="ind-card" id="card-if">
+        <div class="ind-badge" id="badge-if">—</div>
+        <div class="ind-nombre">Índice de Frecuencia AT</div>
+        <div class="ind-valor" id="val-if">—</div>
+        <div class="ind-formula">N° AT / N° Trabajadores × 100</div>
+        <div class="ind-meta">Meta mensual: <strong>≤ 8</strong> · Meta anual: <strong>≤ 30</strong></div>
+      </div>
+
+      <div class="ind-card" id="card-is">
+        <div class="ind-badge" id="badge-is">—</div>
+        <div class="ind-nombre">Índice de Severidad AT</div>
+        <div class="ind-valor" id="val-is">—</div>
+        <div class="ind-formula">(Días perdidos + Días cargados) / N° Trabajadores × 100</div>
+        <div class="ind-meta">Meta mensual: <strong>≤ 50</strong> · Meta anual: <strong>≤ 30</strong></div>
+      </div>
+
+      <div class="ind-card" id="card-mort">
+        <div class="ind-badge" id="badge-mort">—</div>
+        <div class="ind-nombre">Proporción AT Mortales</div>
+        <div class="ind-valor" id="val-mort">—</div>
+        <div class="ind-formula">N° AT Mortales / Total AT × 100</div>
+        <div class="ind-meta">Meta: <strong>0%</strong></div>
+      </div>
+
+    </div>
+
+    <!-- ── ENFERMEDAD LABORAL ─────────────────────────── -->
+    <div class="section-title">
+      <span class="pill pill-el">EL</span> Enfermedad Laboral
+    </div>
+    <div class="ind-grid ind-grid-2">
+
+      <div class="ind-card" id="card-prev">
+        <div class="ind-badge" id="badge-prev">—</div>
+        <div class="ind-nombre">Prevalencia EL</div>
+        <div class="ind-valor grande" id="val-prev">—</div>
+        <div class="ind-formula">(Casos nuevos EL + Casos antiguos EL) / Promedio trabajadores × 100.000</div>
+        <div class="ind-meta">Meta: <strong>0</strong></div>
+      </div>
+
+      <div class="ind-card" id="card-inc">
+        <div class="ind-badge" id="badge-inc">—</div>
+        <div class="ind-nombre">Incidencia EL</div>
+        <div class="ind-valor grande" id="val-inc">—</div>
+        <div class="ind-formula">Casos nuevos EL / Promedio trabajadores × 100.000</div>
+        <div class="ind-meta">Meta: <strong>0</strong></div>
+      </div>
+
+    </div>
+
+    <!-- ── AUSENTISMO ─────────────────────────────────── -->
+    <div class="section-title">
+      <span class="pill pill-aus">AUS</span> Ausentismo laboral por causa médica
+    </div>
+    <div class="ind-grid ind-grid-1">
+
+      <div class="ind-card" id="card-aus">
+        <div class="ind-badge" id="badge-aus">—</div>
+        <div class="ind-nombre">Tasa de ausentismo</div>
+        <div class="ind-valor" id="val-aus">—</div>
+        <div class="ind-formula">Días de ausencia (laboral + común) / Días de trabajo programados × 100</div>
+        <div class="ind-meta">Meta mensual: <strong>≤ 2%</strong> · Meta anual: <strong>≤ 2%</strong></div>
+      </div>
+
+    </div>
+
+    <!-- ── E-P-R ───────────────────────────────────────── -->
+    <div class="section-title">
+      <span class="pill pill-epr">E-P-R</span> Estructura — Proceso — Resultado del SG-SST
+    </div>
+    <div class="ind-grid">
+
+      <div class="ind-card" id="card-estr">
+        <div class="ind-badge" id="badge-estr">—</div>
+        <div class="ind-nombre">Indicador de Estructura</div>
+        <div class="ind-valor" id="val-estr">—</div>
+        <div class="ind-formula">Ítems cumplidos / Ítems a evaluar × 100</div>
+        <div class="ind-meta">Meta: <strong>≥ 95%</strong></div>
+      </div>
+
+      <div class="ind-card" id="card-proc">
+        <div class="ind-badge" id="badge-proc">—</div>
+        <div class="ind-nombre">Indicador de Proceso</div>
+        <div class="ind-valor" id="val-proc">—</div>
+        <div class="ind-formula">Ítems cumplidos / Ítems a evaluar × 100</div>
+        <div class="ind-meta">Meta: definida por empresa</div>
+      </div>
+
+      <div class="ind-card" id="card-res">
+        <div class="ind-badge" id="badge-res">—</div>
+        <div class="ind-nombre">Indicador de Resultado</div>
+        <div class="ind-valor" id="val-res">—</div>
+        <div class="ind-formula">Ítems cumplidos / Ítems a evaluar × 100</div>
+        <div class="ind-meta">Meta: definida por empresa</div>
+      </div>
+
+    </div>
+
+    <!-- ── Tabla mensual ───────────────────────────────── -->
+    <div class="section-title" style="margin-top:32px">
+      📅 Datos mensuales ingresados
+    </div>
+
+    <div class="nota">
+      💡 Ingrese aquí los totales mensuales de su empresa para que el sistema calcule automáticamente todos los indicadores del SG-SST. Los campos de <strong>Ausentismo</strong> corresponden a días de incapacidad del mes.
+    </div>
+
+    <div style="overflow-x:auto">
+      <table class="mes-table" id="tabla-meses">
+        <thead>
+          <tr>
+            <th>Mes</th>
+            <th>Trabajadores</th>
+            <th>Días lab.</th>
+            <th>N° AT</th>
+            <th>Días AT</th>
+            <th>Días cargados</th>
+            <th>Mortales</th>
+            <th>EL nuevos</th>
+            <th>EL antiguos</th>
+            <th>Aus. laboral</th>
+            <th>Aus. común</th>
+            <th>Aus %</th>
+            <th>IF AT</th>
+            <th>IS AT</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="tbody-meses"></tbody>
+        <tfoot id="tfoot-meses"></tfoot>
+      </table>
+    </div>
+
+  </div><!-- /contenido -->
+
+</div><!-- /page -->
+
+<!-- ── Modal ingreso mensual ──────────────────────────── -->
+<div class="modal-overlay" id="modal-overlay" onclick="cerrarModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-title" id="modal-title">Ingresar datos del mes</div>
+
+    <div class="form-grid">
+      <div>
+        <label>Año *</label>
+        <input type="number" id="f-anio" min="2020" max="2099" placeholder="2025" />
+      </div>
+      <div>
+        <label>Mes (1–12) *</label>
+        <input type="number" id="f-mes" min="1" max="12" placeholder="1" />
+      </div>
+
+      <div class="form-section">Personal</div>
+      <div>
+        <label>N° trabajadores en el mes</label>
+        <input type="number" id="f-trab" min="0" placeholder="0" />
+      </div>
+      <div>
+        <label>Días laborales del mes</label>
+        <input type="number" id="f-dias-lab" min="1" max="31" placeholder="30" />
+      </div>
+
+      <div class="form-section">Accidentes de Trabajo (AT)</div>
+      <div>
+        <label>N° accidentes de trabajo</label>
+        <input type="number" id="f-nat" min="0" placeholder="0" />
+      </div>
+      <div>
+        <label>Días perdidos AT</label>
+        <input type="number" id="f-dias-at" min="0" placeholder="0" />
+      </div>
+      <div>
+        <label>Días cargados AT</label>
+        <input type="number" id="f-dias-carg" min="0" placeholder="0" />
+      </div>
+      <div>
+        <label>AT mortales</label>
+        <input type="number" id="f-mort" min="0" placeholder="0" />
+      </div>
+
+      <div class="form-section">Enfermedad Laboral (EL)</div>
+      <div>
+        <label>Casos nuevos EL</label>
+        <input type="number" id="f-el-nuevos" min="0" placeholder="0" />
+      </div>
+      <div>
+        <label>Casos antiguos EL</label>
+        <input type="number" id="f-el-ant" min="0" placeholder="0" />
+      </div>
+
+      <div class="form-section">Ausentismo (días de incapacidad)</div>
+      <div>
+        <label>Días ausencia laboral (AT/EL)</label>
+        <input type="number" id="f-aus-lab" min="0" placeholder="0" />
+      </div>
+      <div>
+        <label>Días ausencia común (EG/otro)</label>
+        <input type="number" id="f-aus-com" min="0" placeholder="0" />
+      </div>
+
+      <div class="form-section">E-P-R del SG-SST (opcional)</div>
+      <div>
+        <label>Estructura: ítems cumplidos</label>
+        <input type="number" id="f-ec" min="0" placeholder="0" />
+      </div>
+      <div>
+        <label>Estructura: ítems a evaluar</label>
+        <input type="number" id="f-et" min="0" placeholder="0" />
+      </div>
+      <div>
+        <label>Proceso: ítems cumplidos</label>
+        <input type="number" id="f-pc" min="0" placeholder="0" />
+      </div>
+      <div>
+        <label>Proceso: ítems a evaluar</label>
+        <input type="number" id="f-pt" min="0" placeholder="0" />
+      </div>
+      <div>
+        <label>Resultado: ítems cumplidos</label>
+        <input type="number" id="f-rc" min="0" placeholder="0" />
+      </div>
+      <div>
+        <label>Resultado: ítems a evaluar</label>
+        <input type="number" id="f-rt" min="0" placeholder="0" />
+      </div>
+
+      <div class="form-section">Observaciones</div>
+      <div style="grid-column:1/-1">
+        <textarea id="f-obs" rows="2" placeholder="Análisis, plan de acción, observaciones…"></textarea>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-outline btn" onclick="cerrarModal()">Cancelar</button>
+      <button class="btn" onclick="guardarMes()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/vigia-api.js"></script>
+<script>
+  const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
+                 'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+  let anioActual = new Date().getFullYear();
+  let datos      = null;   // response from /indicadores-sgsst
+  let editId     = null;   // UUID del registro mensual en edición
+
+  // ── Init ──────────────────────────────────────────────
+  (async () => {
+    const ok = await VigiaAPI.requireAuth();
+    if (!ok) return;
+
+    const nombre = localStorage.getItem('vigia_empresa_nombre') || '';
+    document.getElementById('nav-empresa').textContent = nombre;
+    document.getElementById('lbl-empresa').textContent = nombre;
+
+    const sel = document.getElementById('sel-anio');
+    const cur = new Date().getFullYear();
+    for (let y = cur; y >= cur - 4; y--) {
+      const o = document.createElement('option');
+      o.value = y; o.textContent = y;
+      if (y === cur) o.selected = true;
+      sel.appendChild(o);
+    }
+
+    cargar();
+  })();
+
+  // ── Cargar y renderizar ───────────────────────────────
+  async function cargar() {
+    anioActual = parseInt(document.getElementById('sel-anio').value);
+    document.getElementById('cargando').style.display = '';
+    document.getElementById('contenido').style.display = 'none';
+    try {
+      const eid = VigiaAPI.empresaId() || null;
+      datos = await VigiaAPI.getIndicadoresSgSST(eid, anioActual);
+      renderIndicadores(datos);
+      renderTabla(datos);
+      document.getElementById('cargando').style.display = 'none';
+      document.getElementById('contenido').style.display = '';
+    } catch(e) {
+      document.getElementById('cargando').innerHTML =
+        `<p style="color:#C0392B">Error al cargar: ${e.message}</p>`;
+    }
+  }
+
+  // ── Render tarjetas de indicadores ───────────────────
+  function renderIndicadores(d) {
+    const ind = d.indicadores;
+
+    setInd('if',   ind.at_frecuencia.valor,  ind.at_frecuencia.cumple,  '%');
+    setInd('is',   ind.at_severidad.valor,   ind.at_severidad.cumple,   '%');
+    setInd('mort', ind.at_prop_mortales.valor,ind.at_prop_mortales.cumple,'%', true);
+    setInd('prev', ind.el_prevalencia.valor,  ind.el_prevalencia.cumple, '', false, true);
+    setInd('inc',  ind.el_incidencia.valor,   ind.el_incidencia.cumple,  '', false, true);
+    setInd('aus',  ind.ausentismo.valor,      ind.ausentismo.cumple,     '%');
+    setInd('estr', ind.epr_estructura.valor,  ind.epr_estructura.cumple, '%');
+    setInd('proc', ind.epr_proceso.valor,     ind.epr_proceso.cumple,    '%');
+    setInd('res',  ind.epr_resultado.valor,   ind.epr_resultado.cumple,  '%');
+  }
+
+  function setInd(key, valor, cumple, suffix, metaCero, x100k) {
+    const card  = document.getElementById('card-' + key);
+    const badge = document.getElementById('badge-' + key);
+    const val   = document.getElementById('val-' + key);
+
+    if (valor === null || valor === undefined) {
+      val.textContent  = 'Sin datos';
+      badge.textContent = 'SIN DATOS';
+      badge.className  = 'ind-badge badge-sinmeta';
+      card.className   = 'ind-card sin-datos';
+      return;
+    }
+
+    const display = x100k
+      ? valor.toLocaleString('es-CO', { maximumFractionDigits: 1 })
+      : (valor % 1 === 0 ? valor : valor.toFixed(2));
+
+    val.textContent = display + (suffix || '');
+
+    if (cumple === null) {
+      badge.textContent = 'SIN META';
+      badge.className   = 'ind-badge badge-sinmeta';
+      card.className    = 'ind-card';
+    } else if (cumple) {
+      badge.textContent = '✓ CUMPLE';
+      badge.className   = 'ind-badge badge-cumple';
+      card.className    = 'ind-card cumple';
+    } else {
+      badge.textContent = '✗ NO CUMPLE';
+      badge.className   = 'ind-badge badge-nocumple';
+      card.className    = 'ind-card nocumple';
+    }
+  }
+
+  // ── Render tabla mensual ──────────────────────────────
+  function renderTabla(d) {
+    const detalle = d.detalle_mensual || [];
+    const porMes  = {};
+    (d.por_mes || []).forEach(m => { porMes[m.mes] = m; });
+
+    const tbody = document.getElementById('tbody-meses');
+    tbody.innerHTML = '';
+
+    let totTrab=0, totDiasLab=0, totAt=0, totDiasAt=0, totDiasCarg=0, totMort=0,
+        totElN=0, totElA=0, totAusL=0, totAusC=0;
+
+    for (let mes = 1; mes <= 12; mes++) {
+      const r  = detalle.find(x => x.mes === mes);
+      const pm = porMes[mes];
+      const tr = document.createElement('tr');
+
+      if (!r) {
+        tr.innerHTML = `
+          <td class="mes-nombre">${MESES[mes-1]}</td>
+          <td colspan="13" style="color:var(--muted);font-style:italic;text-align:left">— Sin datos</td>
+          <td><button class="edit-btn" onclick="abrirModal(null,${mes})">+ Ingresar</button></td>`;
+      } else {
+        const n  = r.num_trabajadores || 0;
+        const dl = r.dias_laborales || 30;
+        const dp = n * dl;
+        const da = (r.dias_ausencia_laboral || 0) + (r.dias_ausencia_comun || 0);
+        const dit = (r.dias_perdidos_at || 0) + (r.dias_cargados_at || 0);
+        const pAus = dp > 0 ? ((da / dp) * 100).toFixed(2) : '—';
+        const ifAt = n  > 0 ? ((r.num_at / n) * 100).toFixed(2) : '—';
+        const isAt = n  > 0 ? ((dit / n) * 100).toFixed(2) : '—';
+
+        const ausCls  = dp>0 && (da/dp)*100 > 2  ? 'nocumple-cell' : (dp>0 ? 'cumple-cell':'');
+        const ifCls   = n>0  && (r.num_at/n)*100 > 8  ? 'nocumple-cell' : (n>0 ? 'cumple-cell':'');
+        const isCls   = n>0  && (dit/n)*100 > 50 ? 'nocumple-cell' : (n>0 ? 'cumple-cell':'');
+
+        totTrab    += n; totDiasLab += dl; totAt += r.num_at||0;
+        totDiasAt  += r.dias_perdidos_at||0; totDiasCarg += r.dias_cargados_at||0;
+        totMort    += r.num_at_mortales||0;
+        totElN     += r.casos_nuevos_el||0; totElA += r.casos_antiguos_el||0;
+        totAusL    += r.dias_ausencia_laboral||0; totAusC += r.dias_ausencia_comun||0;
+
+        tr.innerHTML = `
+          <td class="mes-nombre">${MESES[mes-1]}</td>
+          <td>${n}</td>
+          <td>${dl}</td>
+          <td>${r.num_at||0}</td>
+          <td>${r.dias_perdidos_at||0}</td>
+          <td>${r.dias_cargados_at||0}</td>
+          <td>${r.num_at_mortales||0}</td>
+          <td>${r.casos_nuevos_el||0}</td>
+          <td>${r.casos_antiguos_el||0}</td>
+          <td>${r.dias_ausencia_laboral||0}</td>
+          <td>${r.dias_ausencia_comun||0}</td>
+          <td class="${ausCls}">${pAus}${dp>0?'%':''}</td>
+          <td class="${ifCls}">${ifAt}${n>0?'%':''}</td>
+          <td class="${isCls}">${isAt}${n>0?'%':''}</td>
+          <td><button class="edit-btn" onclick="abrirModal('${r.id}',${mes})">Editar</button></td>`;
+      }
+      tbody.appendChild(tr);
+    }
+
+    // Totals row
+    const totDp = totTrab * (totDiasLab / 12 || 30);
+    const totDa = totAusL + totAusC;
+    const totDit = totDiasAt + totDiasCarg;
+    const tAus = d.totales?.dias_programados > 0
+      ? ((d.totales.dias_ausencia / d.totales.dias_programados)*100).toFixed(2)+'%' : '—';
+    const tIf = totTrab>0 ? ((totAt/totTrab)*100).toFixed(2)+'%' : '—';
+    const tIs = totTrab>0 ? ((totDit/totTrab)*100).toFixed(2)+'%' : '—';
+
+    const tfoot = document.getElementById('tfoot-meses');
+    tfoot.innerHTML = `
+      <tr class="total-row">
+        <td class="mes-nombre">TOTAL ANUAL</td>
+        <td>~${d.promedio_trabajadores||0}</td>
+        <td>—</td>
+        <td>${totAt}</td>
+        <td>${totDiasAt}</td>
+        <td>${totDiasCarg}</td>
+        <td>${totMort}</td>
+        <td>${totElN}</td>
+        <td>${totElA}</td>
+        <td>${totAusL}</td>
+        <td>${totAusC}</td>
+        <td>${tAus}</td>
+        <td>${tIf}</td>
+        <td>${tIs}</td>
+        <td></td>
+      </tr>`;
+  }
+
+  // ── Modal ─────────────────────────────────────────────
+  function abrirModal(id, mesPref) {
+    editId = id || null;
+    document.getElementById('modal-title').textContent =
+      id ? 'Editar datos del mes' : 'Ingresar datos del mes';
+
+    // Pre-fill anio/mes
+    document.getElementById('f-anio').value = anioActual;
+    document.getElementById('f-mes').value  = mesPref || '';
+
+    if (id) {
+      // Buscar en detalle_mensual
+      const r = (datos?.detalle_mensual || []).find(x => x.id === id);
+      if (r) {
+        setF('anio', r.anio); setF('mes', r.mes);
+        setF('trab', r.num_trabajadores); setF('dias-lab', r.dias_laborales);
+        setF('nat', r.num_at); setF('dias-at', r.dias_perdidos_at);
+        setF('dias-carg', r.dias_cargados_at); setF('mort', r.num_at_mortales);
+        setF('el-nuevos', r.casos_nuevos_el); setF('el-ant', r.casos_antiguos_el);
+        setF('aus-lab', r.dias_ausencia_laboral); setF('aus-com', r.dias_ausencia_comun);
+        setF('ec', r.epr_estructura_cumplidos); setF('et', r.epr_estructura_total);
+        setF('pc', r.epr_proceso_cumplidos);    setF('pt', r.epr_proceso_total);
+        setF('rc', r.epr_resultado_cumplidos);  setF('rt', r.epr_resultado_total);
+        document.getElementById('f-obs').value = r.observaciones || '';
+      }
+    } else {
+      ['trab','dias-lab','nat','dias-at','dias-carg','mort',
+       'el-nuevos','el-ant','aus-lab','aus-com','ec','et','pc','pt','rc','rt']
+        .forEach(k => setF(k, k==='dias-lab'?30:0));
+      document.getElementById('f-obs').value = '';
+    }
+
+    document.getElementById('modal-overlay').classList.add('open');
+  }
+
+  function setF(id, val) { document.getElementById('f-'+id).value = val ?? ''; }
+  function gF(id) { return parseInt(document.getElementById('f-'+id).value) || 0; }
+
+  function cerrarModal(e) {
+    if (e && e.target !== document.getElementById('modal-overlay')) return;
+    document.getElementById('modal-overlay').classList.remove('open');
+    editId = null;
+  }
+
+  async function guardarMes() {
+    const anio = parseInt(document.getElementById('f-anio').value);
+    const mes  = parseInt(document.getElementById('f-mes').value);
+    if (!anio || !mes || mes < 1 || mes > 12)
+      return alert('Ingrese año y mes válidos.');
+
+    const payload = {
+      empresa_id:           VigiaAPI.empresaId() || undefined,
+      anio, mes,
+      num_trabajadores:     gF('trab'),
+      dias_laborales:       gF('dias-lab') || 30,
+      num_at:               gF('nat'),
+      dias_perdidos_at:     gF('dias-at'),
+      dias_cargados_at:     gF('dias-carg'),
+      num_at_mortales:      gF('mort'),
+      casos_nuevos_el:      gF('el-nuevos'),
+      casos_antiguos_el:    gF('el-ant'),
+      dias_ausencia_laboral:gF('aus-lab'),
+      dias_ausencia_comun:  gF('aus-com'),
+      epr_estructura_cumplidos: gF('ec'),
+      epr_estructura_total:     gF('et'),
+      epr_proceso_cumplidos:    gF('pc'),
+      epr_proceso_total:        gF('pt'),
+      epr_resultado_cumplidos:  gF('rc'),
+      epr_resultado_total:      gF('rt'),
+      observaciones: document.getElementById('f-obs').value || null,
+    };
+
+    try {
+      if (editId) {
+        await VigiaAPI.editarSgSSTMensual(editId, payload);
+      } else {
+        await VigiaAPI.upsertSgSSTMensual(payload);
+      }
+      document.getElementById('modal-overlay').classList.remove('open');
+      editId = null;
+      await cargar();
+    } catch(e) { alert('Error al guardar: ' + e.message); }
+  }
+
+  // ── CSV Export ────────────────────────────────────────
+  function exportarCSV() {
+    if (!datos) return;
+    const ind = datos.indicadores;
+    const filas = [
+      ['INDICADOR','VALOR','META','CUMPLE'],
+      ['IF AT (%)', ind.at_frecuencia.valor, '≤ 30 anual', ind.at_frecuencia.cumple ? 'CUMPLE' : 'NO CUMPLE'],
+      ['IS AT (%)', ind.at_severidad.valor,  '≤ 30 anual', ind.at_severidad.cumple  ? 'CUMPLE' : 'NO CUMPLE'],
+      ['Prop. Mortales AT (%)', ind.at_prop_mortales.valor, '0%', ind.at_prop_mortales.cumple ? 'CUMPLE' : 'NO CUMPLE'],
+      ['Prevalencia EL (×100.000)', ind.el_prevalencia.valor, '0', ind.el_prevalencia.cumple ? 'CUMPLE' : 'NO CUMPLE'],
+      ['Incidencia EL (×100.000)', ind.el_incidencia.valor, '0', ind.el_incidencia.cumple ? 'CUMPLE' : 'NO CUMPLE'],
+      ['Ausentismo (%)', ind.ausentismo.valor, '≤ 2%', ind.ausentismo.cumple ? 'CUMPLE' : 'NO CUMPLE'],
+      ['E-P-R Estructura (%)', ind.epr_estructura.valor, '≥ 95%', ind.epr_estructura.cumple !== null ? (ind.epr_estructura.cumple ? 'CUMPLE' : 'NO CUMPLE') : 'SIN DATOS'],
+      ['E-P-R Proceso (%)', ind.epr_proceso.valor, '—', '—'],
+      ['E-P-R Resultado (%)', ind.epr_resultado.valor, '—', '—'],
+      [],
+      ['MES','TRABAJADORES','DÍAS LAB.','N° AT','DÍAS AT','DÍAS CARG.','MORTALES','EL NUEVOS','EL ANTIGUOS','AUS. LAB.','AUS. COMÚN','AUS %','IF AT %','IS AT %'],
+    ];
+
+    (datos.detalle_mensual || []).forEach(r => {
+      const n  = r.num_trabajadores || 0;
+      const dp = n * (r.dias_laborales || 30);
+      const da = (r.dias_ausencia_laboral||0) + (r.dias_ausencia_comun||0);
+      const dit = (r.dias_perdidos_at||0) + (r.dias_cargados_at||0);
+      filas.push([
+        MESES[r.mes-1], n, r.dias_laborales||30,
+        r.num_at||0, r.dias_perdidos_at||0, r.dias_cargados_at||0, r.num_at_mortales||0,
+        r.casos_nuevos_el||0, r.casos_antiguos_el||0,
+        r.dias_ausencia_laboral||0, r.dias_ausencia_comun||0,
+        dp>0 ? ((da/dp)*100).toFixed(2) : '—',
+        n>0  ? ((r.num_at/n)*100).toFixed(2) : '—',
+        n>0  ? ((dit/n)*100).toFixed(2) : '—',
+      ]);
+    });
+
+    const csv = filas.map(r => r.map(c => `"${String(c ?? '').replace(/"/g,'""')}"`).join(',')).join('\r\n');
+    const a   = document.createElement('a');
+    a.href    = URL.createObjectURL(new Blob(['﻿'+csv], {type:'text/csv;charset=utf-8'}));
+    a.download = `indicadores-sgsst-${anioActual}.csv`;
+    a.click();
+  }
+
+  // ── Dropdown nav ─────────────────────────────────────
+  function toggleDD(e, id) {
+    e.stopPropagation();
+    document.querySelectorAll('.nav-dropdown.open').forEach(d => {
+      if (d.id !== id) d.classList.remove('open');
+    });
+    document.getElementById(id).classList.toggle('open');
+  }
+  document.addEventListener('click', () =>
+    document.querySelectorAll('.nav-dropdown.open').forEach(d => d.classList.remove('open'))
+  );
+</script>
+<script src="js/vigia-chat.js"></script>
+</body>
+</html>
+

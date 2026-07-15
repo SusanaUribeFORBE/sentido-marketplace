@@ -1,0 +1,470 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vigía 360 — Inspecciones y Mantenimiento</title>
+  <link rel="stylesheet" href="vigia.css" />
+  <style>
+    .tabs { display:flex;gap:4px;margin-bottom:20px;flex-wrap:wrap }
+    .tab  { padding:8px 18px;border-radius:8px;border:1.5px solid var(--border);
+            background:var(--card);cursor:pointer;font-size:13px;font-weight:600;color:var(--muted) }
+    .tab.active { background:var(--blue);color:#fff;border-color:var(--blue) }
+    .est-ABIERTA   { background:#FEF3C7;color:#D97706 }
+    .est-CERRADA   { background:#ECFDF5;color:#065F46 }
+    .est-PENDIENTE { background:#FEF3C7;color:#D97706 }
+    .est-REALIZADO { background:#ECFDF5;color:#065F46 }
+    .est-chip { padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700 }
+    .stat-box { background:var(--card);border:1.5px solid var(--border);border-radius:10px;padding:16px;text-align:center }
+    .stat-num { font-size:28px;font-weight:800;color:var(--blue) }
+    .stat-lbl { font-size:12px;color:var(--muted);margin-top:2px }
+    .stats-row { display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px }
+    @media(max-width:600px){ .stats-row { grid-template-columns:repeat(2,1fr) } }
+  </style>
+</head>
+<body>
+<nav class="navbar">
+  <a href="dashboard.html" class="nav-brand">
+    <span class="brand-vigia">Vigía</span><span class="brand-sst">360</span>
+  </a>
+  <div class="nav-links">
+    <a href="dashboard.html" class="nav-link-fixed">Dashboard</a>
+    <div class="nav-dropdown" id="dd-P">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-P')">
+        <span class="phva-pill phva-P">P</span> Planear <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="perfil-responsable.html">🩺 Responsable SST</a>
+        <a href="responsabilidades.html">👥 Roles y Responsabilidades</a>
+        <a href="copasst.html">🤝 COPASST y Convivencia</a>
+        <a href="documentos-sst.html">📄 Documentos del SG-SST</a>
+        <a href="matriz-peligros.html">⚠️ Matriz de Peligros (GTC-45)</a>
+        <a href="plan-trabajo.html">📅 Plan de Trabajo Anual</a>
+        <a href="presupuesto-sgsst.html">💰 Presupuesto SG-SST</a>
+        <a href="profesiograma.html">💊 Profesiograma</a>
+      </div>
+    </div>
+    <div class="nav-dropdown" id="dd-H">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-H')">
+        <span class="phva-pill phva-H">H</span> Hacer <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="epp.html">🦺 EPP</a>
+        <a href="capacitaciones.html">🎓 Capacitaciones</a>
+        <a href="emergencias.html">🚨 Emergencias y Brigada</a>
+        <a href="inspecciones.html">🔍 Inspecciones y Mantenimiento</a>
+        <a href="perfil-salud.html">🏥 Salud Ocupacional</a>
+        <div class="nav-dd-divider"></div>
+        <a href="lista-personal.html">👥 Lista de Personal</a>
+        <a href="subir.html">⬆️ Subir Examen</a>
+        <a href="subir-masivo.html">📦 Carga Masiva</a>
+        <a href="cartas-masivas.html">📄 Cartas Masivas</a>
+        <a href="reporte-examenes.html">📊 Cobertura de Exámenes</a>
+        <a href="informe-condiciones.html">📋 Informe de Condiciones</a>
+      </div>
+    </div>
+    <div class="nav-dropdown" id="dd-V">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-V')">
+        <span class="phva-pill phva-V">V</span> Verificar <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="evaluacion-sst.html">📋 Evaluación (Res. 0312)</a>
+        <a href="investigaciones.html">🔍 AT / Incidentes</a>
+        <a href="auditoria.html">🗒️ Auditoría Interna</a>
+        <a href="ausentismo.html">📉 Ausentismo laboral</a>
+        <a href="indicadores-sgsst.html">📊 Indicadores SG-SST</a>
+        <a href="analisis-phva.html">📈 Análisis e Indicadores</a>
+      </div>
+    </div>
+    <div class="nav-dropdown" id="dd-A">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-A')">
+        <span class="phva-pill phva-A">A</span> Actuar <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="mejoramiento.html">✅ Acciones de Mejoramiento</a>
+        <a href="evaluacion-sst.html">📝 Plan de Mejoramiento (F002)</a>
+      </div>
+    </div>
+    <a href="listado-maestro.html" class="nav-link-fixed">📁 Listado Maestro</a>
+    <span id="nav-empresa" style="color:#CBD8E6;font-size:13px;padding:6px 0"></span>
+    <button onclick="VigiaAPI.logout()"
+      style="background:none;border:1px solid rgba(255,255,255,.2);color:#CBD8E6;
+             border-radius:6px;padding:6px 12px;cursor:pointer;font-size:13px">Salir</button>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="stats-row">
+    <div class="stat-box"><div class="stat-num" id="st-insp-abiertas">–</div><div class="stat-lbl">Inspecciones abiertas</div></div>
+    <div class="stat-box"><div class="stat-num" id="st-insp-total">–</div><div class="stat-lbl">Total inspecciones</div></div>
+    <div class="stat-box"><div class="stat-num" id="st-mant-pendiente" style="color:#D97706">–</div><div class="stat-lbl">Mantenimientos pendientes</div></div>
+    <div class="stat-box"><div class="stat-num" id="st-mant-total">–</div><div class="stat-lbl">Total mantenimientos</div></div>
+  </div>
+
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:4px">
+    <div class="tabs" style="margin-bottom:0">
+      <button class="tab active" onclick="mostrarTab('inspecciones',this)">🔍 Inspecciones (4.2.4)</button>
+      <button class="tab" onclick="mostrarTab('mantenimiento',this)">🔧 Mantenimiento (4.2.5)</button>
+    </div>
+    <div class="export-bar" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:16px">
+      <button class="btn-outline btn" style="font-size:12px;padding:6px 12px" onclick="VigiaAPI.imprimirModulo()">🖨️ PDF</button>
+      <button class="btn-outline btn" style="font-size:12px;padding:6px 12px" onclick="exportCSV_insp()">📊 CSV Inspecciones</button>
+      <button class="btn-outline btn" style="font-size:12px;padding:6px 12px" onclick="exportCSV_mant()">📊 CSV Mantenimiento</button>
+    </div>
+  </div>
+
+  <!-- Inspecciones -->
+  <div id="tab-inspecciones">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div>
+        <h3 style="margin:0;font-size:15px;color:var(--navy)">Inspecciones a instalaciones, maquinaria y equipos</h3>
+        <p style="margin:4px 0 0;font-size:12px;color:var(--muted)">Con participación del COPASST · Res. 0312/2019 Est. 4.2.4</p>
+      </div>
+      <button class="btn" onclick="abrirModalInsp()">+ Nueva inspección</button>
+    </div>
+    <table class="data-table" style="width:100%">
+      <thead><tr><th>Fecha</th><th>Área</th><th>Inspector</th><th>Tipo</th><th>COPASST</th><th>Hallazgos</th><th>Estado</th><th></th></tr></thead>
+      <tbody id="tbody-insp"></tbody>
+    </table>
+  </div>
+
+  <!-- Mantenimiento -->
+  <div id="tab-mantenimiento" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div>
+        <h3 style="margin:0;font-size:15px;color:var(--navy)">Mantenimiento periódico de equipos y herramientas</h3>
+        <p style="margin:4px 0 0;font-size:12px;color:var(--muted)">Preventivo y correctivo · Res. 0312/2019 Est. 4.2.5</p>
+      </div>
+      <button class="btn" onclick="abrirModalMant()">+ Registrar mantenimiento</button>
+    </div>
+    <table class="data-table" style="width:100%">
+      <thead><tr><th>Equipo / Instalación</th><th>Tipo</th><th>Frecuencia</th><th>Fecha realización</th><th>Próxima fecha</th><th>Responsable</th><th>Estado</th><th></th></tr></thead>
+      <tbody id="tbody-mant"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- MODAL Inspección -->
+<div class="modal-overlay" id="modal-insp" style="display:none">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-header">
+      <span id="modal-insp-titulo" class="modal-title">Nueva inspección</span>
+      <button class="modal-close" onclick="cerrarModal('modal-insp')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="in-id">
+      <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="form-group">
+          <label>Fecha *</label>
+          <input type="date" id="in-fecha" class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Tipo</label>
+          <select id="in-tipo" class="form-control">
+            <option value="GENERAL">General</option>
+            <option value="EQUIPOS">Equipos / Maquinaria</option>
+            <option value="EPP">EPP</option>
+            <option value="EMERGENCIA">Emergencias</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="form-group">
+          <label>Área / Proceso *</label>
+          <input id="in-area" class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Inspector</label>
+          <input id="in-inspector" class="form-control">
+        </div>
+      </div>
+      <div class="form-group">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+          <input type="checkbox" id="in-copasst"> Participó el COPASST
+        </label>
+      </div>
+      <div class="form-group">
+        <label>Hallazgos</label>
+        <textarea id="in-hallazgos" class="form-control" rows="3"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Acciones requeridas</label>
+        <textarea id="in-acciones" class="form-control" rows="2"></textarea>
+      </div>
+      <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="form-group">
+          <label>Estado</label>
+          <select id="in-estado" class="form-control">
+            <option value="ABIERTA">Abierta</option>
+            <option value="CERRADA">Cerrada</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Enlace evidencia</label>
+          <input id="in-evidencia" class="form-control" placeholder="https://…">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="cerrarModal('modal-insp')">Cancelar</button>
+      <button class="btn" onclick="guardarInsp()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL Mantenimiento -->
+<div class="modal-overlay" id="modal-mant" style="display:none">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-header">
+      <span id="modal-mant-titulo" class="modal-title">Registrar mantenimiento</span>
+      <button class="modal-close" onclick="cerrarModal('modal-mant')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="ma-id">
+      <div class="form-group">
+        <label>Equipo / Instalación *</label>
+        <input id="ma-equipo" class="form-control">
+      </div>
+      <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="form-group">
+          <label>Tipo</label>
+          <select id="ma-tipo" class="form-control">
+            <option value="PREVENTIVO">Preventivo</option>
+            <option value="CORRECTIVO">Correctivo</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Frecuencia</label>
+          <select id="ma-frecuencia" class="form-control">
+            <option value="">Seleccionar…</option>
+            <option>MENSUAL</option><option>TRIMESTRAL</option>
+            <option>SEMESTRAL</option><option>ANUAL</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="form-group">
+          <label>Fecha realización *</label>
+          <input type="date" id="ma-fecha" class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Próxima fecha</label>
+          <input type="date" id="ma-proxima" class="form-control">
+        </div>
+      </div>
+      <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="form-group">
+          <label>Responsable</label>
+          <input id="ma-responsable" class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Estado</label>
+          <select id="ma-estado" class="form-control">
+            <option value="PENDIENTE">Pendiente</option>
+            <option value="REALIZADO">Realizado</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Observaciones</label>
+        <textarea id="ma-obs" class="form-control" rows="2"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="cerrarModal('modal-mant')">Cancelar</button>
+      <button class="btn" onclick="guardarMant()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/vigia-api.js"></script>
+<script>
+let _insp = [], _mant = [];
+
+function mostrarTab(tab, btn) {
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  document.getElementById('tab-inspecciones').style.display = tab === 'inspecciones' ? '' : 'none';
+  document.getElementById('tab-mantenimiento').style.display = tab === 'mantenimiento' ? '' : 'none';
+}
+function cerrarModal(id) { document.getElementById(id).style.display = 'none'; }
+
+async function cargar() {
+  [_insp, _mant] = await Promise.all([VigiaAPI.getInspecciones(), VigiaAPI.getMantenimiento()]);
+  _insp = _insp || []; _mant = _mant || [];
+  renderStats(); renderInsp(); renderMant();
+}
+
+function renderStats() {
+  document.getElementById('st-insp-abiertas').textContent = _insp.filter(i => i.estado === 'ABIERTA').length;
+  document.getElementById('st-insp-total').textContent    = _insp.length;
+  document.getElementById('st-mant-pendiente').textContent= _mant.filter(m => m.estado === 'PENDIENTE').length;
+  document.getElementById('st-mant-total').textContent    = _mant.length;
+}
+
+function renderInsp() {
+  const tbody = document.getElementById('tbody-insp');
+  if (!_insp.length) { tbody.innerHTML = '<tr><td colspan="8" class="empty-msg">Sin inspecciones registradas.</td></tr>'; return; }
+  tbody.innerHTML = _insp.map(i => `
+    <tr>
+      <td>${new Date(i.fecha+'T12:00:00').toLocaleDateString('es-CO')}</td>
+      <td>${i.area}</td>
+      <td>${i.inspector||'–'}</td>
+      <td style="font-size:12px">${i.tipo||'GENERAL'}</td>
+      <td style="text-align:center">${i.participo_copasst ? '✓' : '–'}</td>
+      <td style="max-width:180px;font-size:12px">${i.hallazgos||'–'}</td>
+      <td><span class="est-chip est-${i.estado}">${i.estado}</span></td>
+      <td>
+        <button class="btn-xs" onclick="editarInsp('${i.id}')">Editar</button>
+        <button class="btn-xs del" onclick="eliminarInsp('${i.id}')">Eliminar</button>
+      </td>
+    </tr>`).join('');
+}
+
+function renderMant() {
+  const tbody = document.getElementById('tbody-mant');
+  if (!_mant.length) { tbody.innerHTML = '<tr><td colspan="8" class="empty-msg">Sin registros de mantenimiento.</td></tr>'; return; }
+  tbody.innerHTML = _mant.map(m => `
+    <tr>
+      <td style="font-weight:700">${m.equipo}</td>
+      <td>${m.tipo||'PREVENTIVO'}</td>
+      <td>${m.frecuencia||'–'}</td>
+      <td>${new Date(m.fecha+'T12:00:00').toLocaleDateString('es-CO')}</td>
+      <td>${m.proxima_fecha ? new Date(m.proxima_fecha+'T12:00:00').toLocaleDateString('es-CO') : '–'}</td>
+      <td>${m.responsable||'–'}</td>
+      <td><span class="est-chip est-${m.estado||'PENDIENTE'}">${m.estado||'PENDIENTE'}</span></td>
+      <td>
+        <button class="btn-xs" onclick="editarMant('${m.id}')">Editar</button>
+        <button class="btn-xs del" onclick="eliminarMant('${m.id}')">Eliminar</button>
+      </td>
+    </tr>`).join('');
+}
+
+// Inspección
+function abrirModalInsp() {
+  ['in-id','in-area','in-inspector','in-hallazgos','in-acciones','in-evidencia'].forEach(id => document.getElementById(id).value='');
+  document.getElementById('in-fecha').value = new Date().toISOString().slice(0,10);
+  document.getElementById('in-tipo').value = 'GENERAL';
+  document.getElementById('in-estado').value = 'ABIERTA';
+  document.getElementById('in-copasst').checked = false;
+  document.getElementById('modal-insp-titulo').textContent = 'Nueva inspección';
+  document.getElementById('modal-insp').style.display = 'flex';
+}
+function editarInsp(id) {
+  const i = _insp.find(x => x.id === id); if (!i) return;
+  document.getElementById('in-id').value = id;
+  document.getElementById('in-fecha').value = i.fecha||'';
+  document.getElementById('in-tipo').value = i.tipo||'GENERAL';
+  document.getElementById('in-area').value = i.area||'';
+  document.getElementById('in-inspector').value = i.inspector||'';
+  document.getElementById('in-copasst').checked = !!i.participo_copasst;
+  document.getElementById('in-hallazgos').value = i.hallazgos||'';
+  document.getElementById('in-acciones').value = i.acciones||'';
+  document.getElementById('in-estado').value = i.estado||'ABIERTA';
+  document.getElementById('in-evidencia').value = i.evidencia_url||'';
+  document.getElementById('modal-insp-titulo').textContent = 'Editar inspección';
+  document.getElementById('modal-insp').style.display = 'flex';
+}
+async function guardarInsp() {
+  const fecha = document.getElementById('in-fecha').value;
+  const area  = document.getElementById('in-area').value.trim();
+  if (!fecha || !area) { alert('Fecha y área son obligatorios.'); return; }
+  const datos = {
+    fecha, area,
+    tipo:              document.getElementById('in-tipo').value,
+    inspector:         document.getElementById('in-inspector').value.trim()||null,
+    participo_copasst: document.getElementById('in-copasst').checked,
+    hallazgos:         document.getElementById('in-hallazgos').value.trim()||null,
+    acciones:          document.getElementById('in-acciones').value.trim()||null,
+    estado:            document.getElementById('in-estado').value,
+    evidencia_url:     document.getElementById('in-evidencia').value.trim()||null,
+  };
+  const id = document.getElementById('in-id').value;
+  try {
+    if (id) await VigiaAPI.editarInspeccion(id, datos);
+    else    await VigiaAPI.crearInspeccion(datos);
+    cerrarModal('modal-insp'); await cargar();
+  } catch(e) { alert('Error: '+e.message); }
+}
+async function eliminarInsp(id) {
+  if (!confirm('¿Eliminar inspección?')) return;
+  await VigiaAPI.eliminarInspeccion(id); await cargar();
+}
+
+// Mantenimiento
+function abrirModalMant() {
+  ['ma-id','ma-equipo','ma-responsable','ma-obs'].forEach(i => document.getElementById(i).value='');
+  document.getElementById('ma-fecha').value = new Date().toISOString().slice(0,10);
+  document.getElementById('ma-proxima').value = '';
+  document.getElementById('ma-tipo').value = 'PREVENTIVO';
+  document.getElementById('ma-frecuencia').value = '';
+  document.getElementById('ma-estado').value = 'REALIZADO';
+  document.getElementById('modal-mant-titulo').textContent = 'Registrar mantenimiento';
+  document.getElementById('modal-mant').style.display = 'flex';
+}
+function editarMant(id) {
+  const m = _mant.find(x => x.id === id); if (!m) return;
+  document.getElementById('ma-id').value = id;
+  document.getElementById('ma-equipo').value = m.equipo||'';
+  document.getElementById('ma-tipo').value = m.tipo||'PREVENTIVO';
+  document.getElementById('ma-frecuencia').value = m.frecuencia||'';
+  document.getElementById('ma-fecha').value = m.fecha||'';
+  document.getElementById('ma-proxima').value = m.proxima_fecha||'';
+  document.getElementById('ma-responsable').value = m.responsable||'';
+  document.getElementById('ma-estado').value = m.estado||'PENDIENTE';
+  document.getElementById('ma-obs').value = m.observaciones||'';
+  document.getElementById('modal-mant-titulo').textContent = 'Editar mantenimiento';
+  document.getElementById('modal-mant').style.display = 'flex';
+}
+async function guardarMant() {
+  const equipo = document.getElementById('ma-equipo').value.trim();
+  const fecha  = document.getElementById('ma-fecha').value;
+  if (!equipo || !fecha) { alert('Equipo y fecha son obligatorios.'); return; }
+  const datos = {
+    equipo, fecha,
+    tipo:         document.getElementById('ma-tipo').value,
+    frecuencia:   document.getElementById('ma-frecuencia').value||null,
+    responsable:  document.getElementById('ma-responsable').value.trim()||null,
+    estado:       document.getElementById('ma-estado').value,
+    observaciones:document.getElementById('ma-obs').value.trim()||null,
+    proxima_fecha:document.getElementById('ma-proxima').value||null,
+  };
+  const id = document.getElementById('ma-id').value;
+  try {
+    if (id) await VigiaAPI.editarMantenimiento(id, datos);
+    else    await VigiaAPI.crearMantenimiento(datos);
+    cerrarModal('modal-mant'); await cargar();
+  } catch(e) { alert('Error: '+e.message); }
+}
+async function eliminarMant(id) {
+  if (!confirm('¿Eliminar registro de mantenimiento?')) return;
+  await VigiaAPI.eliminarMantenimiento(id); await cargar();
+}
+
+function exportCSV_insp() {
+  VigiaAPI.exportarCSV(_insp, [
+    ['Fecha','fecha'],['Area','area'],['Inspector','inspector'],['Tipo','tipo'],
+    ['Participo COPASST','participo_copasst'],['Hallazgos','hallazgos'],
+    ['Acciones','acciones'],['Estado','estado'],
+  ], `Inspecciones_${new Date().toISOString().slice(0,10)}`);
+}
+function exportCSV_mant() {
+  VigiaAPI.exportarCSV(_mant, [
+    ['Equipo','equipo'],['Tipo','tipo'],['Frecuencia','frecuencia'],
+    ['Fecha realizacion','fecha'],['Proxima fecha','proxima_fecha'],
+    ['Responsable','responsable'],['Estado','estado'],['Observaciones','observaciones'],
+  ], `Mantenimiento_${new Date().toISOString().slice(0,10)}`);
+}
+
+async function init() {
+  const ok = await VigiaAPI.requireAuth(); if (!ok) return;
+  document.getElementById('nav-empresa').textContent = localStorage.getItem('vigia_nombre_empresa')||'';
+  VigiaAPI.initDocHeader();
+  await cargar();
+}
+init();
+</script>
+<script src="js/vigia-chat.js"></script>
+</body>
+</html>
+

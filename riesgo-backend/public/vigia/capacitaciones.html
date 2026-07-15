@@ -1,0 +1,927 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vigía 360 — Capacitaciones SST</title>
+  <link rel="stylesheet" href="vigia.css" />
+  <style>
+    /* ── Estado chips ──────────────────────────────── */
+    .chip-programada  { background:#EFF6FF;color:#2563EB;border:1.5px solid #BFD7F0 }
+    .chip-realizada   { background:#ECFDF5;color:#065F46;border:1.5px solid #6EE7B7 }
+    .chip-cancelada   { background:#F1F5F9;color:#64748B;border:1.5px solid #CBD5E1 }
+    .chip { padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap }
+
+    .eficacia-si       { background:#ECFDF5;color:#065F46;border:1.5px solid #6EE7B7 }
+    .eficacia-no       { background:#FDECEA;color:#C0392B;border:1.5px solid #FABEC2 }
+    .eficacia-pendiente{ background:#FEF3C7;color:#D97706;border:1.5px solid #FCD34D }
+
+    /* ── Tarjeta de capacitación ───────────────────── */
+    .cap-card { border:1.5px solid var(--border);border-radius:10px;padding:16px 20px;
+      margin-bottom:10px;cursor:pointer;transition:border-color .15s }
+    .cap-card:hover { border-color:var(--blue) }
+    .cap-head { display:flex;justify-content:space-between;align-items:flex-start;gap:12px }
+    .cap-titulo { font-size:14px;font-weight:700;color:var(--navy) }
+    .cap-meta   { font-size:12px;color:var(--muted);margin-top:5px;display:flex;gap:14px;flex-wrap:wrap }
+
+    /* ── Resumen ───────────────────────────────────── */
+    .resumen-grid { display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px }
+    @media(max-width:600px){ .resumen-grid { grid-template-columns:repeat(2,1fr) } }
+    .res-card { background:var(--card);border:1.5px solid var(--border);border-radius:10px;
+      padding:16px;text-align:center }
+    .res-num { font-size:28px;font-weight:800;color:var(--navy) }
+    .res-lbl { font-size:11px;color:var(--muted);margin-top:4px }
+
+    /* ── Modal ─────────────────────────────────────── */
+    .modal-overlay { position:fixed;inset:0;background:rgba(0,0,0,.45);
+      display:flex;align-items:center;justify-content:center;z-index:200;padding:16px }
+    .modal-box { background:var(--card);border-radius:14px;width:100%;max-width:700px;
+      max-height:92vh;overflow-y:auto;padding:28px 32px;
+      box-shadow:0 16px 48px rgba(0,0,0,.25) }
+    .modal-box h3 { font-size:17px;font-weight:800;color:var(--navy);margin-bottom:20px }
+
+    /* ── Participantes ─────────────────────────────── */
+    .part-row { display:flex;align-items:center;gap:10px;padding:8px 0;
+      border-bottom:1px solid var(--border) }
+    .part-row:last-child { border-bottom:none }
+    .part-asistio { width:18px;height:18px;border-radius:4px;cursor:pointer;
+      border:2px solid var(--border);flex-shrink:0;
+      display:flex;align-items:center;justify-content:center;font-size:12px }
+    .part-asistio.on { background:var(--navy);border-color:var(--navy);color:white }
+
+    /* ── Acta de Capacitación (print) ─────────────── */
+    #acta-cap-print { display:none;font-family:inherit }
+    @media print {
+      @page { size:A4 portrait;margin:12mm }
+      body.printing-acta-cap nav,
+      body.printing-acta-cap .page,
+      body.printing-acta-cap .modal-overlay,
+      body.printing-acta-cap .toast { display:none !important }
+      body.printing-acta-cap #acta-cap-print { display:block !important }
+    }
+
+    /* ── Filtros ───────────────────────────────────── */
+    .filtros { display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px }
+    .filtros select, .filtros input {
+      padding:6px 10px;border-radius:7px;border:1.5px solid var(--border);
+      background:var(--bg);color:var(--text);font-size:13px;font-family:inherit }
+
+    /* ── Tipo pill selector ────────────────────────── */
+    .tipo-pill { display:inline-block;padding:5px 12px;border-radius:20px;font-size:12px;
+      border:1.5px solid var(--border);cursor:pointer;margin:3px;transition:all .12s }
+    .tipo-pill:hover { border-color:var(--blue);color:var(--blue) }
+    .tipo-pill.sel  { background:var(--navy);color:white;border-color:var(--navy) }
+
+    /* ── Tab dentro del modal ──────────────────────── */
+    .modal-tabs { display:flex;border-bottom:2px solid var(--border);margin-bottom:20px;gap:0 }
+    .modal-tab  { padding:8px 18px;font-size:13px;font-weight:600;cursor:pointer;
+      border-bottom:2px solid transparent;margin-bottom:-2px;color:var(--muted);transition:all .15s }
+    .modal-tab.active { color:var(--navy);border-bottom-color:var(--navy) }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="dashboard.html" style="display:flex;align-items:center;gap:10px;text-decoration:none">
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="36" viewBox="0 0 34 38">
+      <path d="M17 1L2 7V21C2 30 9 37 17 39C25 37 32 30 32 21V7Z" fill="rgba(255,255,255,0.15)" stroke="white" stroke-width="1.5"/>
+      <circle cx="12" cy="19" r="4.5" fill="white" opacity="0.9"/>
+      <circle cx="22" cy="19" r="4.5" fill="white" opacity="0.9"/>
+      <circle cx="12" cy="19" r="2" fill="rgba(26,58,92,0.8)"/>
+      <circle cx="22" cy="19" r="2" fill="rgba(26,58,92,0.8)"/>
+      <polygon points="15,25 17,28 19,25" fill="white" opacity="0.7"/>
+    </svg>
+    <span style="color:white;font-weight:800;font-size:17px;letter-spacing:0.5px">VIGÍA <span style="color:#4ADE80;font-weight:900">360</span></span>
+  </a>
+  <div class="nav-links">
+    <a href="dashboard.html" class="nav-link-fixed">Dashboard</a>
+
+    <!-- P — Planear -->
+    <div class="nav-dropdown" id="dd-P">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-P')">
+        <span class="phva-pill phva-P">P</span> Planear <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="perfil-responsable.html">🩺 Responsable SST</a>
+        <a href="responsabilidades.html">👥 Roles y Responsabilidades</a>
+        <a href="copasst.html">🤝 COPASST y Convivencia</a>
+        <a href="documentos-sst.html">📄 Documentos del SG-SST</a>
+        <a href="matriz-peligros.html">⚠️ Matriz de Peligros (GTC-45)</a>
+        <a href="plan-trabajo.html">📅 Plan de Trabajo Anual</a>
+        <a href="presupuesto-sgsst.html">💰 Presupuesto SG-SST</a>
+        <a href="profesiograma.html">💊 Profesiograma</a>
+      </div>
+    </div>
+
+    <!-- H — Hacer -->
+    <div class="nav-dropdown" id="dd-H">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-H')">
+        <span class="phva-pill phva-H">H</span> Hacer <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="epp.html">🦺 EPP</a>
+        <a href="capacitaciones.html">🎓 Capacitaciones</a>
+        <a href="emergencias.html">🚨 Emergencias y Brigada</a>
+        <a href="inspecciones.html">🔍 Inspecciones y Mantenimiento</a>
+        <a href="perfil-salud.html">🏥 Salud Ocupacional</a>
+        <div class="nav-dd-divider"></div>
+        <a href="lista-personal.html">👥 Lista de Personal</a>
+        <a href="subir.html">⬆️ Subir Examen</a>
+        <a href="subir-masivo.html">📦 Carga Masiva</a>
+        <a href="cartas-masivas.html">📄 Cartas Masivas</a>
+        <a href="reporte-examenes.html">📊 Cobertura de Exámenes</a>
+        <a href="informe-condiciones.html">📋 Informe de Condiciones</a>
+      </div>
+    </div>
+
+    <!-- V — Verificar -->
+    <div class="nav-dropdown" id="dd-V">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-V')">
+        <span class="phva-pill phva-V">V</span> Verificar <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="evaluacion-sst.html">📋 Evaluación (Res. 0312)</a>
+        <a href="investigaciones.html">🔍 AT / Incidentes</a>
+        <a href="ausentismo.html">📉 Ausentismo laboral</a>
+        <a href="indicadores-sgsst.html">📊 Indicadores SG-SST</a>
+        <a href="analisis-phva.html">📈 Análisis e Indicadores</a>
+      </div>
+    </div>
+
+    <!-- A — Actuar -->
+    <div class="nav-dropdown" id="dd-A">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-A')">
+        <span class="phva-pill phva-A">A</span> Actuar <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="mejoramiento.html">✅ Acciones de Mejoramiento</a>
+        <a href="evaluacion-sst.html">📝 Plan de Mejoramiento (F002)</a>
+      </div>
+    </div>
+
+    <a href="listado-maestro.html" class="nav-link-fixed">📁 Listado Maestro</a>
+    <span id="nav-empresa" style="color:#CBD8E6;font-size:13px;padding:6px 0"></span>
+    <button onclick="VigiaAPI.logout()"
+      style="background:none;border:1px solid rgba(255,255,255,.2);color:#CBD8E6;
+             border-radius:6px;padding:6px 12px;cursor:pointer;font-size:13px">Salir</button>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="doc-header">
+    <div class="doc-header-logo-col">
+      <img class="doc-logo-img" src="" alt="" onerror="this.style.display='none'" />
+    </div>
+    <div class="doc-header-title-col">Registro de Capacitaciones<br>y Entrenamientos en SST</div>
+    <div class="doc-header-code-col">
+      <span class="doc-header-code-line"><strong>CÓDIGO:</strong> <span class="doc-codigo" data-sufijo="R004">SG-SST R004</span></span>
+      <span class="doc-header-code-line"><strong>VERSIÓN</strong> 1</span>
+      <span class="doc-header-code-line"><strong>FECHA DE VIGENCIA:</strong><br><span class="doc-fecha"></span></span>
+    </div>
+  </div>
+  <div id="cargando" class="empty-state mt-8">
+    <div class="spinner" style="margin:0 auto 16px;border-color:rgba(46,134,171,.2);border-top-color:var(--blue)"></div>
+    <p class="text-muted">Cargando…</p>
+  </div>
+
+  <div id="contenido" style="display:none">
+
+    <div class="flex justify-between items-center mb-4" style="flex-wrap:wrap;gap:12px">
+      <div>
+        <h2 style="font-size:20px;font-weight:800;color:var(--navy)">Programa de Capacitaciones SST</h2>
+        <p class="text-muted text-sm">Decreto 1072/2015 Art. 2.2.4.6.11 · Res. 0312/2019 ítem 1.2</p>
+      </div>
+      <div class="flex gap-3 items-center" style="flex-wrap:wrap">
+        <select id="sel-anio" onchange="cambiarAnio(this.value)"
+          style="padding:8px 12px;border-radius:8px;border:1.5px solid var(--border);
+                 background:var(--bg);color:var(--text);font-size:14px;font-family:inherit">
+        </select>
+        <button class="btn btn-outline" style="font-size:12px" onclick="exportCSV_caps()">📊 CSV</button>
+        <button class="btn btn-navy" onclick="abrirModal()">+ Nueva capacitación</button>
+      </div>
+    </div>
+
+    <!-- Resumen -->
+    <div class="resumen-grid" id="resumen-cards"></div>
+
+    <!-- Filtros -->
+    <div class="filtros">
+      <select id="filtro-tipo" onchange="filtrar()">
+        <option value="">Todos los tipos</option>
+        <option value="inducción">Inducción</option>
+        <option value="reinducción">Reinducción</option>
+        <option value="periódica">Periódica</option>
+        <option value="específica">Específica</option>
+        <option value="otro">Otro</option>
+      </select>
+      <select id="filtro-estado" onchange="filtrar()">
+        <option value="">Todos los estados</option>
+        <option value="programada">Programada</option>
+        <option value="realizada">Realizada</option>
+        <option value="cancelada">Cancelada</option>
+      </select>
+      <select id="filtro-eficacia" onchange="filtrar()">
+        <option value="">Toda eficacia</option>
+        <option value="si">Con evaluación</option>
+        <option value="no">Sin evaluación</option>
+        <option value="pendiente">Pendiente</option>
+      </select>
+      <input type="text" id="filtro-texto" placeholder="Buscar tema…"
+        oninput="filtrar()" style="min-width:180px">
+    </div>
+
+    <!-- Lista -->
+    <div id="lista-caps"></div>
+    <div id="lista-vacia" style="display:none">
+      <div class="card" style="padding:48px;text-align:center">
+        <div style="font-size:48px;margin-bottom:12px">🎓</div>
+        <h3 style="color:var(--navy);margin-bottom:8px">Sin capacitaciones registradas</h3>
+        <p class="text-muted text-sm">Registra las capacitaciones del programa anual SST.</p>
+        <button class="btn btn-navy mt-4" onclick="abrirModal()">+ Registrar capacitación</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CAPACITACIÓN -->
+<div class="modal-overlay" id="modal" style="display:none" onclick="cerrarFuera(event)">
+  <div class="modal-box" id="modal-box">
+
+    <!-- Tabs: Datos / Participantes -->
+    <div class="modal-tabs" id="modal-tabs" style="display:none">
+      <div class="modal-tab active" id="tab-datos" onclick="switchTab('datos')">📝 Datos</div>
+      <div class="modal-tab"        id="tab-part"  onclick="switchTab('participantes')">
+        👥 Participantes <span id="tab-part-count"></span>
+      </div>
+    </div>
+
+    <!-- ── PESTAÑA DATOS ── -->
+    <div id="panel-datos">
+      <h3 id="modal-titulo">Nueva capacitación</h3>
+
+      <!-- Tipo rápido -->
+      <div style="margin-bottom:14px">
+        <div class="label" style="margin-bottom:6px">Tipo de capacitación</div>
+        <div>
+          <span class="tipo-pill sel" onclick="selTipo(this,'inducción')">Inducción</span>
+          <span class="tipo-pill"    onclick="selTipo(this,'reinducción')">Reinducción</span>
+          <span class="tipo-pill"    onclick="selTipo(this,'periódica')">Periódica</span>
+          <span class="tipo-pill"    onclick="selTipo(this,'específica')">Específica en riesgo</span>
+          <span class="tipo-pill"    onclick="selTipo(this,'otro')">Otro</span>
+        </div>
+        <input type="hidden" id="m-tipo" value="inducción">
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div style="grid-column:1/-1">
+          <label class="label">Tema / Nombre *</label>
+          <input type="text" id="m-tema" class="input mt-1"
+            placeholder="Ej: Uso correcto de EPP, Manejo de cargas, Emergencias…">
+        </div>
+        <div>
+          <label class="label">Fecha</label>
+          <input type="date" id="m-fecha" class="input mt-1">
+        </div>
+        <div>
+          <label class="label">Duración (horas)</label>
+          <input type="number" id="m-horas" class="input mt-1" min="0.5" step="0.5" placeholder="2">
+        </div>
+        <div>
+          <label class="label">Modalidad</label>
+          <select id="m-modalidad" class="input mt-1">
+            <option value="presencial">Presencial</option>
+            <option value="virtual">Virtual</option>
+            <option value="mixta">Mixta</option>
+          </select>
+        </div>
+        <div>
+          <label class="label">Estado</label>
+          <select id="m-estado" class="input mt-1">
+            <option value="programada">Programada</option>
+            <option value="realizada">Realizada</option>
+            <option value="cancelada">Cancelada</option>
+          </select>
+        </div>
+        <div>
+          <label class="label">Instructor / Entidad</label>
+          <input type="text" id="m-instructor" class="input mt-1"
+            placeholder="Nombre o empresa capacitadora">
+        </div>
+        <div>
+          <label class="label">Lugar</label>
+          <input type="text" id="m-lugar" class="input mt-1"
+            placeholder="Sala de reuniones, plataforma, etc.">
+        </div>
+        <div style="grid-column:1/-1">
+          <label class="label">Objetivo de la capacitación</label>
+          <input type="text" id="m-objetivo" class="input mt-1"
+            placeholder="Ej: Desarrollar habilidades para el uso seguro de maquinaria">
+        </div>
+        <div style="grid-column:1/-1">
+          <label class="label">Contenido / Temas tratados</label>
+          <textarea id="m-contenido" class="input mt-1" rows="2"
+            placeholder="Descripción de los temas abordados en la sesión"></textarea>
+        </div>
+
+        <!-- Evaluación de eficacia -->
+        <div>
+          <label class="label">Evaluación de eficacia</label>
+          <select id="m-eficacia" class="input mt-1" onchange="onEficaciaChange()">
+            <option value="pendiente">Pendiente</option>
+            <option value="si">Sí — se evaluó</option>
+            <option value="no">No se evaluó</option>
+          </select>
+        </div>
+        <div id="m-resultado-wrap">
+          <label class="label">Resultado / Criterio de aprobación</label>
+          <input type="text" id="m-resultado" class="input mt-1"
+            placeholder="Ej: 80% de participantes aprobaron la prueba">
+        </div>
+        <div style="grid-column:1/-1">
+          <label class="label">Observaciones</label>
+          <textarea id="m-obs" class="input mt-1" rows="2"
+            placeholder="Notas adicionales, compromisos, seguimientos…"></textarea>
+        </div>
+      </div>
+
+      <div class="flex justify-between mt-6">
+        <div class="flex gap-2">
+          <button class="btn btn-outline" onclick="cerrarModal()">Cancelar</button>
+          <button id="btn-eliminar-cap" class="btn btn-outline"
+            style="color:#C0392B;border-color:#FABEC2;display:none"
+            onclick="eliminarCapActual()">🗑 Eliminar</button>
+        </div>
+        <button class="btn btn-navy" onclick="guardarCapacitacion()">
+          <span id="btn-guardar-lbl">Guardar</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ── PESTAÑA PARTICIPANTES ── -->
+    <div id="panel-participantes" style="display:none">
+      <h3>Participantes</h3>
+
+      <!-- Agregar desde empleados -->
+      <div style="margin-bottom:14px">
+        <div class="label" style="margin-bottom:6px">Agregar participante</div>
+        <div class="flex gap-2">
+          <select id="sel-empleado" class="input" style="flex:1">
+            <option value="">— Seleccionar empleado —</option>
+          </select>
+          <button class="btn btn-outline" onclick="agregarDesdeEmpleado()">+ Empleado</button>
+        </div>
+        <div style="text-align:center;margin:8px 0;font-size:12px;color:var(--muted)">
+          o agrega externo / contratista
+        </div>
+        <div class="flex gap-2">
+          <input type="text" id="p-nombre" class="input" placeholder="Nombre completo" style="flex:2">
+          <input type="text" id="p-cedula" class="input" placeholder="Cédula" style="flex:1">
+          <input type="text" id="p-cargo"  class="input" placeholder="Cargo" style="flex:1">
+          <button class="btn btn-outline" onclick="agregarExterno()">+ Agregar</button>
+        </div>
+      </div>
+
+      <!-- Lista participantes -->
+      <div id="lista-part" style="max-height:320px;overflow-y:auto"></div>
+
+      <div class="flex justify-between mt-6" style="flex-wrap:wrap;gap:8px">
+        <button class="btn btn-outline" onclick="switchTab('datos')">← Volver a datos</button>
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+          <div style="font-size:12px;color:var(--muted)" id="part-resumen"></div>
+          <button class="btn btn-outline" onclick="imprimirActaCapacitacion()" style="font-size:12px">🖨️ Imprimir Acta</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="acta-cap-print"></div>
+<div class="toast" id="toast"></div>
+<script src="js/firma-pad.js"></script>
+<script src="js/vigia-api.js"></script>
+<script>
+
+let caps        = [];     // capacitaciones del año seleccionado
+let capActual   = null;   // objeto completo con participantes (al editar)
+let editandoId  = null;
+let empleados   = [];     // para el selector de participantes
+let tabActiva   = 'datos';
+
+// ── Inicialización ──────────────────────────────────────────
+async function init() {
+  const ok = await VigiaAPI.requireAuth();
+  if (!ok) return;
+  VigiaAPI.initDocHeader();
+
+  const anioActual = new Date().getFullYear();
+  const sel = document.getElementById('sel-anio');
+  for (let a = anioActual + 1; a >= anioActual - 3; a--) {
+    const opt = document.createElement('option');
+    opt.value = a; opt.textContent = a;
+    if (a === anioActual) opt.selected = true;
+    sel.appendChild(opt);
+  }
+
+  // Cargar empleados para selector de participantes
+  empleados = await VigiaAPI.getEmpleados() || [];
+
+  await cargarCaps(anioActual);
+  document.getElementById('cargando').style.display  = 'none';
+  document.getElementById('contenido').style.display = '';
+}
+
+async function cargarCaps(anio) {
+  const empresaId = VigiaAPI.esAdmin() ? VigiaAPI.empresaId() : null;
+  caps = await VigiaAPI.getCapacitaciones(empresaId, anio) || [];
+  filtrar();
+}
+
+async function cambiarAnio(anio) {
+  await cargarCaps(parseInt(anio));
+}
+
+// ── Filtros ─────────────────────────────────────────────────
+function filtrar() {
+  const tipo     = document.getElementById('filtro-tipo').value;
+  const estado   = document.getElementById('filtro-estado').value;
+  const eficacia = document.getElementById('filtro-eficacia').value;
+  const texto    = document.getElementById('filtro-texto').value.toLowerCase();
+
+  const lista = caps.filter(c => {
+    if (tipo     && c.tipo !== tipo)                                     return false;
+    if (estado   && c.estado !== estado)                                 return false;
+    if (eficacia && c.evaluacion_eficacia !== eficacia)                  return false;
+    if (texto    && !c.tema.toLowerCase().includes(texto))               return false;
+    return true;
+  });
+
+  renderLista(lista);
+  renderResumen();
+}
+
+// ── Render lista ────────────────────────────────────────────
+function renderLista(lista) {
+  const cont  = document.getElementById('lista-caps');
+  const empty = document.getElementById('lista-vacia');
+  if (!lista.length) { cont.innerHTML = ''; empty.style.display = ''; return; }
+  empty.style.display = 'none';
+
+  const MESES = ['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  cont.innerHTML = lista.map(c => {
+    const fecha = c.fecha ? (() => {
+      const d = new Date(c.fecha + 'T12:00:00');
+      return `${d.getDate()} ${MESES[d.getMonth()+1]} ${d.getFullYear()}`;
+    })() : '—';
+    const efClass = `chip eficacia-${c.evaluacion_eficacia || 'pendiente'}`;
+    const efLabel = { si:'✅ Evaluada', no:'❌ Sin evaluar', pendiente:'⏳ Pendiente' };
+
+    return `
+      <div class="cap-card" onclick="abrirEditar('${c.id}')">
+        <div class="cap-head">
+          <div style="flex:1">
+            <div class="cap-titulo">${c.tema}</div>
+            <div class="cap-meta">
+              <span>📅 ${fecha}</span>
+              ${c.duracion_horas ? `<span>⏱ ${c.duracion_horas}h</span>` : ''}
+              ${c.instructor     ? `<span>👤 ${c.instructor}</span>`      : ''}
+              ${c.lugar          ? `<span>📍 ${c.lugar}</span>`           : ''}
+              <span style="text-transform:capitalize">${c.modalidad || ''}</span>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0">
+            <span class="chip chip-${c.estado || 'programada'}">${
+              {programada:'Programada',realizada:'Realizada',cancelada:'Cancelada'}[c.estado] || 'Programada'
+            }</span>
+            <span class="${efClass}">${efLabel[c.evaluacion_eficacia||'pendiente']}</span>
+            <span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:capitalize">
+              ${c.tipo || ''}
+            </span>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ── Resumen ─────────────────────────────────────────────────
+function renderResumen() {
+  const total      = caps.length;
+  const realizadas = caps.filter(c => c.estado === 'realizada').length;
+  const horas      = caps.filter(c => c.estado === 'realizada')
+                        .reduce((s, c) => s + (parseFloat(c.duracion_horas)||0), 0);
+  const evaluadas  = caps.filter(c => c.evaluacion_eficacia === 'si').length;
+  const pct        = total > 0 ? Math.round(realizadas / total * 100) : 0;
+
+  document.getElementById('resumen-cards').innerHTML = `
+    <div class="res-card">
+      <div class="res-num">${pct}%</div>
+      <div class="res-lbl">Cumplimiento</div>
+    </div>
+    <div class="res-card">
+      <div class="res-num">${realizadas}/${total}</div>
+      <div class="res-lbl">Realizadas</div>
+    </div>
+    <div class="res-card">
+      <div class="res-num">${horas.toLocaleString('es-CO',{maximumFractionDigits:1})}h</div>
+      <div class="res-lbl">Horas ejecutadas</div>
+    </div>
+    <div class="res-card">
+      <div class="res-num">${evaluadas}</div>
+      <div class="res-lbl">Con evaluación de eficacia</div>
+    </div>`;
+}
+
+// ── Modal — nueva capacitación ───────────────────────────────
+function abrirModal() {
+  editandoId = null;
+  capActual  = null;
+  document.getElementById('modal-titulo').textContent     = 'Nueva capacitación';
+  document.getElementById('modal-tabs').style.display     = 'none';
+  document.getElementById('btn-guardar-lbl').textContent  = 'Guardar y agregar participantes';
+  document.getElementById('btn-eliminar-cap').style.display = 'none';
+
+  _resetForm();
+  switchTab('datos');
+  document.getElementById('modal').style.display = 'flex';
+}
+
+async function abrirEditar(id) {
+  editandoId = id;
+  document.getElementById('modal-titulo').textContent       = 'Editar capacitación';
+  document.getElementById('modal-tabs').style.display       = 'flex';
+  document.getElementById('btn-guardar-lbl').textContent    = 'Guardar cambios';
+  document.getElementById('btn-eliminar-cap').style.display = '';
+
+  try {
+    capActual = await VigiaAPI.getCapacitacion(id);
+    _rellenarForm(capActual);
+    _renderParticipantes(capActual.participantes || []);
+    switchTab('datos');
+    document.getElementById('modal').style.display = 'flex';
+  } catch (err) { mostrarToast('Error: ' + err.message, 'error'); }
+}
+
+function _resetForm() {
+  ['m-tema','m-fecha','m-instructor','m-lugar','m-objetivo','m-contenido',
+   'm-resultado','m-obs'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('m-horas').value     = '';
+  document.getElementById('m-modalidad').value = 'presencial';
+  document.getElementById('m-estado').value    = 'programada';
+  document.getElementById('m-eficacia').value  = 'pendiente';
+  document.getElementById('m-tipo').value      = 'inducción';
+  document.querySelectorAll('.tipo-pill').forEach((p, i) => p.classList.toggle('sel', i === 0));
+  onEficaciaChange();
+}
+
+function _rellenarForm(c) {
+  document.getElementById('m-tema').value       = c.tema        || '';
+  document.getElementById('m-fecha').value      = c.fecha       || '';
+  document.getElementById('m-horas').value      = c.duracion_horas || '';
+  document.getElementById('m-instructor').value = c.instructor   || '';
+  document.getElementById('m-lugar').value      = c.lugar        || '';
+  document.getElementById('m-objetivo').value   = c.objetivo     || '';
+  document.getElementById('m-contenido').value  = c.contenido    || '';
+  document.getElementById('m-obs').value        = c.observaciones|| '';
+  document.getElementById('m-modalidad').value  = c.modalidad    || 'presencial';
+  document.getElementById('m-estado').value     = c.estado       || 'programada';
+  document.getElementById('m-eficacia').value   = c.evaluacion_eficacia || 'pendiente';
+  document.getElementById('m-resultado').value  = c.resultado_evaluacion || '';
+  document.getElementById('m-tipo').value       = c.tipo         || 'periódica';
+  document.querySelectorAll('.tipo-pill').forEach(p => {
+    p.classList.toggle('sel', p.textContent.trim().toLowerCase() === (c.tipo||'').toLowerCase() ||
+      (c.tipo === 'específica' && p.textContent.includes('Específica')));
+  });
+  onEficaciaChange();
+}
+
+function cerrarModal()        { document.getElementById('modal').style.display = 'none'; }
+function cerrarFuera(e)       { if (e.target === document.getElementById('modal')) cerrarModal(); }
+function onEficaciaChange()   {
+  const v = document.getElementById('m-eficacia').value;
+  document.getElementById('m-resultado-wrap').style.display = v === 'si' ? '' : 'none';
+}
+
+function selTipo(el, tipo) {
+  document.querySelectorAll('.tipo-pill').forEach(p => p.classList.remove('sel'));
+  el.classList.add('sel');
+  document.getElementById('m-tipo').value = tipo;
+}
+
+// ── Tabs del modal ────────────────────────────────────────
+function switchTab(tab) {
+  tabActiva = tab;
+  document.getElementById('panel-datos').style.display         = tab === 'datos'         ? '' : 'none';
+  document.getElementById('panel-participantes').style.display = tab === 'participantes' ? '' : 'none';
+  document.getElementById('tab-datos').classList.toggle('active', tab === 'datos');
+  document.getElementById('tab-part').classList.toggle('active',  tab === 'participantes');
+
+  if (tab === 'participantes') {
+    // Poblar selector de empleados (excluir los que ya están)
+    const yaIds = (capActual?.participantes || [])
+      .map(p => p.empleado_id).filter(Boolean);
+    const sel = document.getElementById('sel-empleado');
+    sel.innerHTML = '<option value="">— Seleccionar empleado —</option>' +
+      empleados.filter(e => !yaIds.includes(e.id))
+        .map(e => `<option value="${e.id}" data-nombre="${e.nombre}" data-cedula="${e.cedula||''}" data-cargo="${e.cargo||''}">${e.nombre}</option>`)
+        .join('');
+  }
+}
+
+// ── Guardar capacitación ────────────────────────────────────
+async function guardarCapacitacion() {
+  const tema = document.getElementById('m-tema').value.trim();
+  if (!tema) { mostrarToast('Escribe el tema de la capacitación', 'error'); return; }
+
+  const datos = {
+    tema,
+    tipo:                 document.getElementById('m-tipo').value,
+    modalidad:            document.getElementById('m-modalidad').value,
+    fecha:                document.getElementById('m-fecha').value    || null,
+    duracion_horas:       parseFloat(document.getElementById('m-horas').value) || null,
+    instructor:           document.getElementById('m-instructor').value.trim() || null,
+    lugar:                document.getElementById('m-lugar').value.trim()      || null,
+    objetivo:             document.getElementById('m-objetivo').value.trim()   || null,
+    contenido:            document.getElementById('m-contenido').value.trim()  || null,
+    estado:               document.getElementById('m-estado').value,
+    evaluacion_eficacia:  document.getElementById('m-eficacia').value,
+    resultado_evaluacion: document.getElementById('m-resultado').value.trim()  || null,
+    observaciones:        document.getElementById('m-obs').value.trim()        || null,
+  };
+
+  try {
+    if (editandoId) {
+      const actualizada = await VigiaAPI.editarCapacitacion(editandoId, datos);
+      const idx = caps.findIndex(c => c.id === editandoId);
+      if (idx !== -1) caps[idx] = { ...caps[idx], ...actualizada };
+      mostrarToast('Capacitación actualizada', 'ok');
+      filtrar();
+    } else {
+      const nueva = await VigiaAPI.crearCapacitacion(datos);
+      caps.unshift(nueva);
+      editandoId = nueva.id;
+      capActual  = { ...nueva, participantes: [] };
+      // Mostrar pestaña de participantes
+      document.getElementById('modal-tabs').style.display = 'flex';
+      document.getElementById('btn-guardar-lbl').textContent = 'Guardar cambios';
+      document.getElementById('modal-titulo').textContent = 'Editar capacitación';
+      switchTab('participantes');
+      mostrarToast('Capacitación creada — agrega los participantes', 'ok');
+      filtrar();
+    }
+  } catch (err) { mostrarToast('Error: ' + err.message, 'error'); }
+}
+
+// ── Participantes ────────────────────────────────────────────
+async function agregarDesdeEmpleado() {
+  const sel = document.getElementById('sel-empleado');
+  const opt = sel.selectedOptions[0];
+  if (!opt || !opt.value) return;
+
+  const datos = {
+    nombre:      opt.dataset.nombre,
+    cedula:      opt.dataset.cedula || null,
+    cargo:       opt.dataset.cargo  || null,
+    empleado_id: opt.value,
+  };
+  await _agregarParticipante(datos);
+}
+
+async function agregarExterno() {
+  const nombre = document.getElementById('p-nombre').value.trim();
+  if (!nombre) { mostrarToast('Ingresa el nombre', 'error'); return; }
+  const datos = {
+    nombre,
+    cedula: document.getElementById('p-cedula').value.trim() || null,
+    cargo:  document.getElementById('p-cargo').value.trim()  || null,
+  };
+  await _agregarParticipante(datos);
+  ['p-nombre','p-cedula','p-cargo'].forEach(id => document.getElementById(id).value = '');
+}
+
+async function _agregarParticipante(datos) {
+  try {
+    const nuevo = await VigiaAPI.agregarParticipante(editandoId, datos);
+    capActual.participantes = [...(capActual.participantes || []), nuevo];
+    _renderParticipantes(capActual.participantes);
+    switchTab('participantes'); // re-pobla el selector
+    mostrarToast('Participante agregado', 'ok');
+  } catch (err) { mostrarToast('Error: ' + err.message, 'error'); }
+}
+
+async function toggleAsistencia(id, actual) {
+  try {
+    const actualizado = await VigiaAPI.editarParticipante(id, { asistio: !actual });
+    const p = capActual.participantes.find(x => x.id === id);
+    if (p) p.asistio = actualizado.asistio;
+    _renderParticipantes(capActual.participantes);
+  } catch (err) { mostrarToast('Error: ' + err.message, 'error'); }
+}
+
+async function quitarParticipante(id) {
+  try {
+    await VigiaAPI.eliminarParticipante(id);
+    capActual.participantes = capActual.participantes.filter(p => p.id !== id);
+    _renderParticipantes(capActual.participantes);
+    mostrarToast('Participante retirado', 'ok');
+  } catch (err) { mostrarToast('Error: ' + err.message, 'error'); }
+}
+
+function _renderParticipantes(lista) {
+  const cont = document.getElementById('lista-part');
+  const asistieron = lista.filter(p => p.asistio).length;
+  document.getElementById('tab-part-count').textContent = lista.length ? `(${lista.length})` : '';
+  document.getElementById('part-resumen').textContent =
+    lista.length ? `${asistieron} de ${lista.length} asistieron` : '';
+
+  if (!lista.length) {
+    cont.innerHTML = '<p class="text-muted text-sm" style="text-align:center;padding:24px">Sin participantes registrados</p>';
+    return;
+  }
+  cont.innerHTML = lista.map(p => `
+    <div class="part-row">
+      <div class="part-asistio ${p.asistio ? 'on' : ''}"
+        onclick="toggleAsistencia('${p.id}', ${p.asistio})"
+        title="${p.asistio ? 'Asistió' : 'No asistió'}">
+        ${p.asistio ? '✓' : ''}
+      </div>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:600;color:var(--navy)">${p.nombre}</div>
+        <div style="font-size:11px;color:var(--muted)">
+          ${[p.cargo, p.cedula].filter(Boolean).join(' · ')}
+        </div>
+      </div>
+      ${p.firma_b64
+        ? `<span onclick="borrarFirmaParticipante('${p.id}')" title="Firma digital registrada. Click para eliminar"
+             style="font-size:10px;color:#065F46;font-weight:700;padding:2px 8px;background:#ECFDF5;border-radius:4px;border:1px solid #6EE7B7;cursor:pointer;white-space:nowrap">✓ Firmado</span>`
+        : `<button onclick="firmarParticipante('${p.id}', '${p.nombre.replace(/'/g, "\\'")}')"
+             style="font-size:11px;padding:3px 9px;border:1.5px solid #1A3A5C;border-radius:6px;background:none;cursor:pointer;color:#1A3A5C;font-family:inherit;white-space:nowrap">✍ Firmar</button>`
+      }
+      <button onclick="quitarParticipante('${p.id}')"
+        style="background:none;border:none;cursor:pointer;font-size:14px;color:var(--muted)"
+        title="Retirar">✕</button>
+    </div>`).join('');
+}
+
+async function eliminarCapActual() {
+  if (!confirm('¿Eliminar esta capacitación y sus participantes?')) return;
+  try {
+    await VigiaAPI.eliminarCapacitacion(editandoId);
+    caps = caps.filter(c => c.id !== editandoId);
+    filtrar();
+    cerrarModal();
+    mostrarToast('Capacitación eliminada', 'ok');
+  } catch (err) { mostrarToast('Error: ' + err.message, 'error'); }
+}
+
+function imprimirActaCapacitacion() {
+  if (!capActual) { mostrarToast('Primero abre una capacitación', 'error'); return; }
+  const cap    = capActual;
+  const partic = cap.participantes || [];
+  const logo    = VigiaAPI.logoUrl();
+  const prefijo = VigiaAPI.prefijoDocs();
+  const empresa = document.getElementById('nav-empresa')?.textContent || '';
+  const hoy     = new Date().toLocaleDateString('es-CO', { day:'2-digit', month:'long', year:'numeric' });
+  const fmtF    = iso => iso ? new Date(iso + 'T00:00:00').toLocaleDateString('es-CO', { day:'2-digit', month:'2-digit', year:'numeric' }) : '—';
+  const EFICACIA = { si:'Se realizó evaluación ✓', no:'No se realizó evaluación', pendiente:'Pendiente' };
+
+  const logoHtml = logo
+    ? `<img src="${logo}" style="max-height:52px;max-width:120px;object-fit:contain" onerror="this.style.display='none'">`
+    : `<div style="font-size:12px;font-weight:800;color:#1A3A5C">${empresa}</div>`;
+
+  document.getElementById('acta-cap-print').innerHTML = `
+    <div class="doc-header" style="margin-bottom:14px">
+      <div class="doc-header-logo-col">${logoHtml}</div>
+      <div class="doc-header-title-col">ACTA DE ASISTENCIA<br>A CAPACITACIÓN SST</div>
+      <div class="doc-header-code-col">
+        <span class="doc-header-code-line"><strong>CÓDIGO:</strong> ${prefijo} R004</span>
+        <span class="doc-header-code-line"><strong>VERSIÓN</strong> 1</span>
+        <span class="doc-header-code-line"><strong>FECHA:</strong> ${hoy}</span>
+      </div>
+    </div>
+
+    <table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:12px">
+      <tr>
+        <td style="background:#F0F4F8;font-weight:700;padding:5px 8px;border:1px solid #CBD5E1;width:90px">Empresa</td>
+        <td style="padding:5px 8px;border:1px solid #CBD5E1">${empresa}</td>
+        <td style="background:#F0F4F8;font-weight:700;padding:5px 8px;border:1px solid #CBD5E1;width:70px">Fecha</td>
+        <td style="padding:5px 8px;border:1px solid #CBD5E1">${fmtF(cap.fecha)}</td>
+      </tr>
+      <tr>
+        <td style="background:#F0F4F8;font-weight:700;padding:5px 8px;border:1px solid #CBD5E1">Tema</td>
+        <td style="padding:5px 8px;border:1px solid #CBD5E1;font-weight:700" colspan="3">${cap.tema || '—'}</td>
+      </tr>
+      <tr>
+        <td style="background:#F0F4F8;font-weight:700;padding:5px 8px;border:1px solid #CBD5E1">Modalidad</td>
+        <td style="padding:5px 8px;border:1px solid #CBD5E1">${cap.modalidad || '—'}</td>
+        <td style="background:#F0F4F8;font-weight:700;padding:5px 8px;border:1px solid #CBD5E1">Duración</td>
+        <td style="padding:5px 8px;border:1px solid #CBD5E1">${cap.duracion_horas ? cap.duracion_horas + ' h' : '—'}</td>
+      </tr>
+      <tr>
+        <td style="background:#F0F4F8;font-weight:700;padding:5px 8px;border:1px solid #CBD5E1">Instructor</td>
+        <td style="padding:5px 8px;border:1px solid #CBD5E1">${cap.instructor || '—'}</td>
+        <td style="background:#F0F4F8;font-weight:700;padding:5px 8px;border:1px solid #CBD5E1">Lugar</td>
+        <td style="padding:5px 8px;border:1px solid #CBD5E1">${cap.lugar || '—'}</td>
+      </tr>
+      ${cap.objetivo ? `<tr><td style="background:#F0F4F8;font-weight:700;padding:5px 8px;border:1px solid #CBD5E1">Objetivo</td><td style="padding:5px 8px;border:1px solid #CBD5E1" colspan="3">${cap.objetivo}</td></tr>` : ''}
+      ${cap.contenido ? `<tr><td style="background:#F0F4F8;font-weight:700;padding:5px 8px;border:1px solid #CBD5E1">Contenido</td><td style="padding:5px 8px;border:1px solid #CBD5E1" colspan="3">${cap.contenido}</td></tr>` : ''}
+    </table>
+
+    <table style="width:100%;border-collapse:collapse;font-size:10px;margin-bottom:14px">
+      <thead>
+        <tr style="background:#1A3A5C;color:#fff">
+          <th style="padding:6px 8px;width:22px">#</th>
+          <th style="padding:6px 8px;text-align:left">Nombre completo</th>
+          <th style="padding:6px 8px;text-align:left;width:85px">Cédula</th>
+          <th style="padding:6px 8px;text-align:left;width:100px">Cargo</th>
+          <th style="padding:6px 8px;text-align:center;width:48px">Asistió</th>
+          <th style="padding:6px 8px;text-align:center;width:150px">Firma</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${partic.length === 0
+          ? `<tr><td colspan="6" style="padding:12px;text-align:center;color:#94A3B8;border:1px solid #CBD5E1">Sin participantes registrados</td></tr>`
+          : partic.map((p, i) => `
+            <tr>
+              <td style="padding:5px 8px;border:1px solid #CBD5E1;text-align:center">${i + 1}</td>
+              <td style="padding:5px 8px;border:1px solid #CBD5E1;font-weight:600">${p.nombre}</td>
+              <td style="padding:5px 8px;border:1px solid #CBD5E1">${p.cedula || '—'}</td>
+              <td style="padding:5px 8px;border:1px solid #CBD5E1">${p.cargo || '—'}</td>
+              <td style="padding:5px 8px;border:1px solid #CBD5E1;text-align:center;font-size:13px;font-weight:700">${p.asistio ? '✓' : '✗'}</td>
+              <td style="padding:3px 6px;border:1px solid #CBD5E1;text-align:center">
+                ${p.firma_b64
+                  ? `<img src="${p.firma_b64}" style="max-height:42px;max-width:140px;display:inline-block">`
+                  : '<div style="height:42px;border-bottom:1px solid #94A3B8;width:90%;margin:0 auto"></div>'}
+              </td>
+            </tr>`).join('')}
+      </tbody>
+    </table>
+
+    ${(cap.evaluacion_eficacia && cap.evaluacion_eficacia !== 'pendiente') || cap.resultado_evaluacion || cap.observaciones ? `
+    <div style="font-size:10px;border:1px solid #CBD5E1;border-radius:4px;padding:7px 10px;margin-bottom:14px">
+      ${cap.evaluacion_eficacia ? `<strong>Evaluación de eficacia:</strong> ${EFICACIA[cap.evaluacion_eficacia] || cap.evaluacion_eficacia}${cap.resultado_evaluacion ? ' · ' + cap.resultado_evaluacion : ''}<br>` : ''}
+      ${cap.observaciones ? `<strong>Observaciones:</strong> ${cap.observaciones}` : ''}
+    </div>` : ''}
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:60px;margin-top:36px">
+      <div style="border-top:1.5px solid #1A3A5C;padding-top:8px;text-align:center;font-size:10px">
+        <strong>INSTRUCTOR / FACILITADOR</strong><br>
+        <span style="color:#64748B">${cap.instructor || '___________________________'}</span>
+      </div>
+      <div style="border-top:1.5px solid #1A3A5C;padding-top:8px;text-align:center;font-size:10px">
+        <strong>RESPONSABLE SG-SST</strong><br>
+        <span style="color:#64748B">___________________________</span>
+      </div>
+    </div>`;
+
+  document.body.classList.add('printing-acta-cap');
+  window.print();
+  setTimeout(() => document.body.classList.remove('printing-acta-cap'), 800);
+}
+
+async function firmarParticipante(id, nombre) {
+  const firma_b64 = await FirmaPad.abrir({
+    titulo: 'Firma de asistencia',
+    subtitulo: `Participante: ${nombre}`,
+  });
+  if (!firma_b64) return;
+  try {
+    await VigiaAPI.guardarFirmaParticipante(id, firma_b64);
+    const i = (capActual?.participantes || []).findIndex(p => p.id === id);
+    if (i >= 0) capActual.participantes[i].firma_b64 = firma_b64;
+    _renderParticipantes(capActual?.participantes || []);
+    mostrarToast('Firma guardada', 'ok');
+  } catch (err) { mostrarToast('Error: ' + (err.message || err), 'error'); }
+}
+
+async function borrarFirmaParticipante(id) {
+  if (!confirm('¿Eliminar la firma digital de este participante?')) return;
+  try {
+    await VigiaAPI.borrarFirmaParticipante(id);
+    const i = (capActual?.participantes || []).findIndex(p => p.id === id);
+    if (i >= 0) capActual.participantes[i].firma_b64 = null;
+    _renderParticipantes(capActual?.participantes || []);
+    mostrarToast('Firma eliminada', 'ok');
+  } catch (err) { mostrarToast('Error: ' + (err.message || err), 'error'); }
+}
+
+function mostrarToast(msg, tipo = 'ok') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast toast-${tipo} show`;
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function exportCSV_caps() {
+  VigiaAPI.exportarCSV(caps, [
+    ['Tema','tema'],['Fecha','fecha'],['Tipo','tipo'],['Modalidad','modalidad'],
+    ['Horas','duracion_horas'],['Instructor','instructor'],['Lugar','lugar'],
+    ['Estado','estado'],['Evaluacion eficacia','evaluacion_eficacia'],
+    ['Resultado evaluacion','resultado_evaluacion'],
+  ], `Capacitaciones_${document.getElementById('sel-anio')?.value || new Date().getFullYear()}`);
+}
+
+init();
+</script>
+<script src="js/vigia-chat.js"></script>
+</body>
+</html>
+

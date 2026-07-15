@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vigía 360 — Cobertura de Exámenes Ocupacionales</title>
+  <link rel="stylesheet" href="vigia.css" />
+  <style>
+    /* ── KPIs ── */
+    .kpi-row { display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:24px }
+    .kpi { background:var(--card);border:1.5px solid var(--border);border-radius:10px;
+           padding:16px 18px;text-align:center }
+    .kpi-num { font-size:32px;font-weight:900;color:var(--navy);line-height:1 }
+    .kpi-lbl { font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;
+               letter-spacing:.8px;margin-top:4px }
+    .kpi.verde  .kpi-num { color:#059669 }
+    .kpi.rojo   .kpi-num { color:#DC2626 }
+    .kpi.amarillo .kpi-num { color:#D97706 }
+    .kpi.azul   .kpi-num { color:#2563EB }
+
+    /* ── Filtros ── */
+    .filtros-row { display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:18px }
+    .pill { border:1.5px solid var(--border);background:var(--card);color:var(--text);
+            border-radius:20px;padding:5px 14px;font-size:12px;font-weight:700;cursor:pointer;
+            transition:.15s }
+    .pill:hover { border-color:var(--navy) }
+    .pill.activo { background:var(--navy);color:#fff;border-color:var(--navy) }
+    .pill.p-rojo.activo   { background:#DC2626;border-color:#DC2626 }
+    .pill.p-amarillo.activo { background:#D97706;border-color:#D97706 }
+    .pill.p-azul.activo   { background:#2563EB;border-color:#2563EB }
+    .pill.p-verde.activo  { background:#059669;border-color:#059669 }
+    .busq { flex:1;min-width:180px;max-width:300px;padding:6px 12px;
+            border:1.5px solid var(--border);border-radius:20px;font-size:13px;
+            background:var(--bg);color:var(--text);font-family:inherit }
+
+    /* ── Tabla ── */
+    .rep-table { width:100%;border-collapse:collapse;font-size:12px }
+    .rep-table th { background:var(--navy);color:#fff;padding:9px 12px;text-align:left;
+                    font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.7px;
+                    cursor:pointer;white-space:nowrap;user-select:none }
+    .rep-table th:hover { background:#1e4a7a }
+    .rep-table th .sort-icon { opacity:.5;margin-left:4px }
+    .rep-table th.sorted .sort-icon { opacity:1 }
+    .rep-table td { padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:middle }
+    .rep-table tr:last-child td { border-bottom:none }
+    .rep-table tr:hover td { background:rgba(46,134,171,.05) }
+    .rep-table tr.sin-examen td { background:rgba(220,38,38,.03) }
+    .rep-table tr.sin-examen:hover td { background:rgba(220,38,38,.07) }
+
+    /* Badges */
+    .badge { display:inline-block;border-radius:12px;padding:3px 10px;font-size:11px;
+             font-weight:700;white-space:nowrap }
+    .badge-ok       { background:#D1FAE5;color:#065F46 }
+    .badge-seg      { background:#DBEAFE;color:#1E40AF }
+    .badge-adv      { background:#FEF3C7;color:#92400E }
+    .badge-crit     { background:#FEE2E2;color:#991B1B }
+    .badge-sin      { background:#F3F4F6;color:#6B7280;border:1px solid #E5E7EB }
+    .badge-apto     { background:#D1FAE5;color:#065F46 }
+    .badge-restric  { background:#FEF3C7;color:#92400E }
+    .badge-no-apto  { background:#FEE2E2;color:#991B1B }
+    .badge-pend     { background:#F3F4F6;color:#6B7280 }
+
+    /* ── Acciones ── */
+    .btn-ver { font-size:11px;padding:3px 10px;border-radius:6px;border:1.5px solid var(--border);
+               background:none;color:var(--text);cursor:pointer;text-decoration:none;
+               font-family:inherit;font-weight:700 }
+    .btn-ver:hover { border-color:var(--navy);color:var(--navy) }
+
+    /* ── Print ── */
+    @media print {
+      nav, .no-print, .vc-chat-wrapper { display:none !important }
+      @page { size:A4 landscape;margin:12mm }
+      .kpi-row { grid-template-columns:repeat(5,1fr) }
+      .rep-table { font-size:10px }
+      .rep-table th { font-size:9px }
+      .rep-table td { padding:6px 8px }
+      .badge { font-size:9px;padding:2px 7px }
+    }
+
+    @media (max-width:700px) {
+      .kpi-row { grid-template-columns:repeat(2,1fr) }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="dashboard.html" style="display:flex;align-items:center;gap:10px;text-decoration:none">
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="36" viewBox="0 0 34 38">
+      <path d="M17 1L2 7V21C2 30 9 37 17 39C25 37 32 30 32 21V7Z" fill="rgba(255,255,255,0.15)" stroke="white" stroke-width="1.5"/>
+      <circle cx="12" cy="19" r="4.5" fill="white" opacity="0.9"/>
+      <circle cx="22" cy="19" r="4.5" fill="white" opacity="0.9"/>
+      <circle cx="12" cy="19" r="2" fill="rgba(26,58,92,0.8)"/>
+      <circle cx="22" cy="19" r="2" fill="rgba(26,58,92,0.8)"/>
+      <polygon points="15,25 17,28 19,25" fill="white" opacity="0.7"/>
+    </svg>
+    <span style="color:white;font-weight:800;font-size:17px;letter-spacing:0.5px">VIGÍA <span style="color:#4ADE80;font-weight:900">360</span></span>
+  </a>
+  <div class="nav-links">
+    <a href="dashboard.html" class="nav-link-fixed">Dashboard</a>
+    <div class="nav-dropdown" id="dd-P">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-P')">
+        <span class="phva-pill phva-P">P</span> Planear <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="perfil-responsable.html">🩺 Responsable SST</a>
+        <a href="responsabilidades.html">👥 Roles y Responsabilidades</a>
+        <a href="copasst.html">🤝 COPASST y Convivencia</a>
+        <a href="documentos-sst.html">📄 Documentos del SG-SST</a>
+        <a href="matriz-peligros.html">⚠️ Matriz de Peligros (GTC-45)</a>
+        <a href="plan-trabajo.html">📅 Plan de Trabajo Anual</a>
+        <a href="presupuesto-sgsst.html">💰 Presupuesto SG-SST</a>
+        <a href="profesiograma.html">💊 Profesiograma</a>
+      </div>
+    </div>
+    <div class="nav-dropdown" id="dd-H">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-H')">
+        <span class="phva-pill phva-H">H</span> Hacer <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="epp.html">🦺 EPP</a>
+        <a href="capacitaciones.html">🎓 Capacitaciones</a>
+        <a href="emergencias.html">🚨 Emergencias y Brigada</a>
+        <a href="inspecciones.html">🔍 Inspecciones y Mantenimiento</a>
+        <a href="perfil-salud.html">🏥 Salud Ocupacional</a>
+        <div class="nav-dd-divider"></div>
+        <a href="lista-personal.html">👥 Lista de Personal</a>
+        <a href="subir.html">⬆️ Subir Examen</a>
+        <a href="subir-masivo.html">📦 Carga Masiva</a>
+        <a href="reporte-examenes.html" style="color:var(--green);font-weight:800">📊 Cobertura de Exámenes</a>
+        <a href="informe-condiciones.html">📋 Informe de Condiciones</a>
+      </div>
+    </div>
+    <div class="nav-dropdown" id="dd-V">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-V')">
+        <span class="phva-pill phva-V">V</span> Verificar <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="evaluacion-sst.html">📋 Evaluación (Res. 0312)</a>
+        <a href="investigaciones.html">🔍 AT / Incidentes</a>
+        <a href="ausentismo.html">📉 Ausentismo laboral</a>
+        <a href="indicadores-sgsst.html">📊 Indicadores SG-SST</a>
+        <a href="analisis-phva.html">📈 Análisis e Indicadores</a>
+      </div>
+    </div>
+    <div class="nav-dropdown" id="dd-A">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-A')">
+        <span class="phva-pill phva-A">A</span> Actuar <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="mejoramiento.html">✅ Acciones de Mejoramiento</a>
+        <a href="evaluacion-sst.html">📝 Plan de Mejoramiento (F002)</a>
+      </div>
+    </div>
+    <a href="listado-maestro.html" class="nav-link-fixed">📁 Listado Maestro</a>
+    <span id="nav-empresa" style="color:#CBD8E6;font-size:13px;padding:6px 0"></span>
+    <button onclick="VigiaAPI.logout()"
+      style="background:none;border:1px solid rgba(255,255,255,.2);color:#CBD8E6;
+             border-radius:6px;padding:6px 12px;cursor:pointer;font-size:13px">Salir</button>
+  </div>
+</nav>
+
+<div class="container">
+
+  <!-- Encabezado de documento -->
+  <div class="doc-header">
+    <div class="doc-header-logo-col">
+      <img class="doc-logo-img" src="" alt="" onerror="this.style.display='none'" />
+    </div>
+    <div class="doc-header-title-col">REPORTE DE COBERTURA<br>DE EXÁMENES OCUPACIONALES</div>
+    <div class="doc-header-code-col">
+      <span class="doc-header-code-line"><strong>CÓDIGO:</strong> <span class="doc-codigo" data-sufijo="R001">SG-SST R001</span></span>
+      <span class="doc-header-code-line"><strong>VERSIÓN</strong> 1</span>
+      <span class="doc-header-code-line"><strong>FECHA DE VIGENCIA:</strong><br><span class="doc-fecha"></span></span>
+    </div>
+  </div>
+
+  <!-- Selector de empresa (admin) -->
+  <div id="admin-selector" style="display:none;margin-bottom:20px">
+    <div style="background:var(--card);border:1.5px solid var(--border);border-radius:10px;padding:16px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+      <span style="font-size:13px;font-weight:700;color:var(--navy)">👑 Vista administrador — selecciona una empresa:</span>
+      <select id="admin-empresa-sel" onchange="cargar()"
+        style="font-size:13px;padding:7px 12px;border:1.5px solid var(--border);border-radius:7px;
+               background:var(--bg);color:var(--text);font-family:inherit;min-width:240px">
+        <option value="">— Seleccionar empresa —</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Cargando -->
+  <div id="cargando" style="text-align:center;padding:48px;color:var(--muted)">Cargando...</div>
+
+  <div id="contenido" style="display:none">
+
+    <!-- KPIs -->
+    <div class="kpi-row" id="kpi-row"></div>
+
+    <!-- Barra de filtros + acciones -->
+    <div class="filtros-row no-print">
+      <button class="pill activo" data-filtro="todos"       onclick="setFiltro('todos',this)">Todos</button>
+      <button class="pill p-rojo"   data-filtro="sin"       onclick="setFiltro('sin',this)">Sin examen</button>
+      <button class="pill p-verde"  data-filtro="con"       onclick="setFiltro('con',this)">Con examen</button>
+      <button class="pill p-rojo"   data-filtro="CRITICO"   onclick="setFiltro('CRITICO',this)">🔴 Crítico</button>
+      <button class="pill p-amarillo" data-filtro="ADVERTENCIA" onclick="setFiltro('ADVERTENCIA',this)">🟡 Advertencia</button>
+      <button class="pill p-azul"   data-filtro="SEGUIMIENTO" onclick="setFiltro('SEGUIMIENTO',this)">🔵 Seguimiento</button>
+      <input class="busq" id="busq" type="search" placeholder="Buscar por nombre, C.C. o cargo…" oninput="renderTabla()" />
+    </div>
+
+    <div class="filtros-row no-print" style="gap:8px;margin-top:-8px;margin-bottom:16px">
+      <label style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px;cursor:pointer">
+        <input type="checkbox" id="chk-inactivos" onchange="cargar()" />
+        Incluir inactivos
+      </label>
+      <div style="flex:1"></div>
+      <span id="conteo-lbl" style="font-size:12px;color:var(--muted);align-self:center"></span>
+      <button class="btn btn-outline" onclick="exportarCSV()" style="font-size:12px;padding:5px 14px">⬇️ Exportar CSV</button>
+      <button class="btn btn-outline" onclick="window.print()" style="font-size:12px;padding:5px 14px">🖨️ Imprimir</button>
+    </div>
+
+    <!-- Tabla -->
+    <div style="overflow-x:auto;border:1.5px solid var(--border);border-radius:10px">
+      <table class="rep-table" id="rep-tabla">
+        <thead>
+          <tr>
+            <th onclick="sortBy('nombre')">Nombre <span class="sort-icon" id="si-nombre">↕</span></th>
+            <th onclick="sortBy('cc')">C.C. <span class="sort-icon" id="si-cc">↕</span></th>
+            <th onclick="sortBy('cargo')">Cargo <span class="sort-icon" id="si-cargo">↕</span></th>
+            <th onclick="sortBy('departamento')" class="no-print">Departamento <span class="sort-icon" id="si-departamento">↕</span></th>
+            <th onclick="sortBy('tiene_examen')">¿Tiene examen? <span class="sort-icon" id="si-tiene_examen">↕</span></th>
+            <th onclick="sortBy('tipo')">Último tipo <span class="sort-icon" id="si-tipo">↕</span></th>
+            <th onclick="sortBy('fecha')">Fecha <span class="sort-icon" id="si-fecha">↕</span></th>
+            <th onclick="sortBy('concepto')">Concepto <span class="sort-icon" id="si-concepto">↕</span></th>
+            <th onclick="sortBy('alerta_nivel')">Alerta <span class="sort-icon" id="si-alerta_nivel">↕</span></th>
+            <th class="no-print" style="width:60px"></th>
+          </tr>
+        </thead>
+        <tbody id="rep-tbody"></tbody>
+      </table>
+    </div>
+
+    <p id="sin-resultados" style="display:none;text-align:center;padding:32px;color:var(--muted);font-size:13px">
+      No hay empleados que coincidan con el filtro seleccionado.
+    </p>
+
+    <!-- Fecha de generación (print) -->
+    <p style="font-size:10px;color:var(--muted);margin-top:16px;text-align:right" id="pie-fecha"></p>
+
+  </div><!-- /contenido -->
+
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="js/vigia-api.js"></script>
+<script>
+// ─── Estado ───────────────────────────────────────────────
+let datos      = [];   // todos los registros del backend
+let filtroActivo = 'todos';
+let sortCol    = 'nombre';
+let sortAsc    = true;
+
+// ─── Utilidades ───────────────────────────────────────────
+const ALERTA_ORDER = { CRITICO:0, ADVERTENCIA:1, SEGUIMIENTO:2, OK:3 };
+const CONCEPTO_ORDER = { 'NO APTO':0, 'APTO CON RESTRICCIONES':1, 'PENDIENTE':2, 'APTO SIN RESTRICCIONES':3 };
+const TIPO_LABEL = {
+  'PRE-INGRESO':         'Pre-ingreso',
+  'PERIODICO':           'Periódico',
+  'POST-INCAPACIDAD':    'Post-incapacidad',
+  'CAMBIO DE OCUPACION': 'Cambio ocupación',
+  'RETORNO LABORAL':     'Retorno laboral',
+  'SEGUIMIENTO':         'Seguimiento',
+  'RETIRO':              'Retiro',
+  'EGRESO':              'Egreso',
+};
+
+function badgeAlerta(nivel) {
+  const map = { OK:'badge-ok', SEGUIMIENTO:'badge-seg', ADVERTENCIA:'badge-adv', CRITICO:'badge-crit' };
+  const lbl = { OK:'OK', SEGUIMIENTO:'Seguimiento', ADVERTENCIA:'Advertencia', CRITICO:'Crítico' };
+  return `<span class="badge ${map[nivel]||'badge-pend'}">${lbl[nivel]||nivel}</span>`;
+}
+function badgeConcepto(c) {
+  if (!c) return '<span class="badge badge-sin">—</span>';
+  if (c === 'APTO SIN RESTRICCIONES')  return `<span class="badge badge-apto">Apto</span>`;
+  if (c === 'APTO CON RESTRICCIONES')  return `<span class="badge badge-restric">Apto c/rest.</span>`;
+  if (c === 'NO APTO')                 return `<span class="badge badge-no-apto">No apto</span>`;
+  return `<span class="badge badge-pend">Pendiente</span>`;
+}
+function fmtFecha(f) {
+  if (!f) return '—';
+  const [y,m,d] = f.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+// ─── KPIs ─────────────────────────────────────────────────
+function renderKPIs(lista) {
+  const total   = lista.length;
+  const con     = lista.filter(e => e.tiene_examen).length;
+  const sin     = total - con;
+  const pct     = total ? Math.round(con / total * 100) : 0;
+  const criticos= lista.filter(e => e.alerta_nivel === 'CRITICO').length;
+
+  document.getElementById('kpi-row').innerHTML = `
+    <div class="kpi"><div class="kpi-num">${total}</div><div class="kpi-lbl">Total empleados</div></div>
+    <div class="kpi verde"><div class="kpi-num">${con}</div><div class="kpi-lbl">Con examen</div></div>
+    <div class="kpi rojo"><div class="kpi-num">${sin}</div><div class="kpi-lbl">Sin examen</div></div>
+    <div class="kpi ${pct===100?'verde':pct>=70?'amarillo':'rojo'}">
+      <div class="kpi-num">${pct}%</div><div class="kpi-lbl">Cobertura</div>
+    </div>
+    <div class="kpi ${criticos?'rojo':'verde'}">
+      <div class="kpi-num">${criticos}</div><div class="kpi-lbl">Alertas críticas</div>
+    </div>`;
+}
+
+// ─── Filtrado ─────────────────────────────────────────────
+function setFiltro(filtro, btn) {
+  filtroActivo = filtro;
+  document.querySelectorAll('.pill').forEach(p => p.classList.remove('activo'));
+  btn.classList.add('activo');
+  renderTabla();
+}
+
+function filtrar() {
+  const busq = (document.getElementById('busq').value || '').toLowerCase().trim();
+  return datos.filter(e => {
+    // Filtro pill
+    if (filtroActivo === 'sin' && e.tiene_examen)  return false;
+    if (filtroActivo === 'con' && !e.tiene_examen) return false;
+    if (['CRITICO','ADVERTENCIA','SEGUIMIENTO','OK'].includes(filtroActivo) && e.alerta_nivel !== filtroActivo) return false;
+    // Búsqueda texto
+    if (busq) {
+      const hay = (e.nombre+e.cc+e.cargo+e.departamento).toLowerCase().includes(busq);
+      if (!hay) return false;
+    }
+    return true;
+  });
+}
+
+// ─── Ordenamiento ─────────────────────────────────────────
+function sortBy(col) {
+  if (sortCol === col) sortAsc = !sortAsc;
+  else { sortCol = col; sortAsc = true; }
+  document.querySelectorAll('.sort-icon').forEach(el => el.textContent = '↕');
+  const si = document.getElementById(`si-${col}`);
+  if (si) si.textContent = sortAsc ? '↑' : '↓';
+  document.querySelectorAll('th').forEach(th => th.classList.remove('sorted'));
+  renderTabla();
+}
+
+function ordenar(lista) {
+  return [...lista].sort((a, b) => {
+    let va, vb;
+    switch(sortCol) {
+      case 'nombre':      va=a.nombre;       vb=b.nombre;       break;
+      case 'cc':          va=a.cc;           vb=b.cc;           break;
+      case 'cargo':       va=a.cargo;        vb=b.cargo;        break;
+      case 'departamento':va=a.departamento; vb=b.departamento; break;
+      case 'tiene_examen':va=a.tiene_examen?0:1; vb=b.tiene_examen?0:1; break;
+      case 'tipo':        va=a.ultimo_examen?.tipo||''; vb=b.ultimo_examen?.tipo||''; break;
+      case 'fecha':       va=a.ultimo_examen?.fecha||''; vb=b.ultimo_examen?.fecha||''; break;
+      case 'concepto':    va=CONCEPTO_ORDER[a.ultimo_examen?.concepto_aptitud]??9;
+                          vb=CONCEPTO_ORDER[b.ultimo_examen?.concepto_aptitud]??9; break;
+      case 'alerta_nivel':va=ALERTA_ORDER[a.alerta_nivel]??9; vb=ALERTA_ORDER[b.alerta_nivel]??9; break;
+      default:            va=a.nombre; vb=b.nombre;
+    }
+    if (typeof va === 'string') return sortAsc ? va.localeCompare(vb,'es') : vb.localeCompare(va,'es');
+    return sortAsc ? va - vb : vb - va;
+  });
+}
+
+// ─── Render tabla ─────────────────────────────────────────
+function renderTabla() {
+  const filtrados = ordenar(filtrar());
+  const tbody = document.getElementById('rep-tbody');
+  const sinRes = document.getElementById('sin-resultados');
+  document.getElementById('conteo-lbl').textContent = `Mostrando ${filtrados.length} de ${datos.length} empleados`;
+
+  if (!filtrados.length) {
+    tbody.innerHTML = '';
+    sinRes.style.display = '';
+    return;
+  }
+  sinRes.style.display = 'none';
+
+  tbody.innerHTML = filtrados.map(e => {
+    const ex     = e.ultimo_examen;
+    const rowCls = e.tiene_examen ? '' : 'sin-examen';
+    const tieneStr = e.tiene_examen
+      ? `<span class="badge badge-ok">✔ Registrado</span>`
+      : `<span class="badge badge-sin">✗ Sin examen</span>`;
+    const tipoStr   = ex ? (TIPO_LABEL[ex.tipo] || ex.tipo) : '—';
+    const fechaStr  = ex ? fmtFecha(ex.fecha) : '—';
+    const conceptoStr = ex ? badgeConcepto(ex.concepto_aptitud) : '<span class="badge badge-sin">—</span>';
+    const alertaStr   = badgeAlerta(e.alerta_nivel);
+    const activoTag = !e.activo ? '<span class="badge badge-pend" style="font-size:10px;margin-left:4px">inactivo</span>' : '';
+
+    return `<tr class="${rowCls}">
+      <td><strong>${e.nombre}</strong>${activoTag}</td>
+      <td style="font-family:monospace">${e.cc}</td>
+      <td>${e.cargo || '—'}</td>
+      <td class="no-print">${e.departamento || '—'}</td>
+      <td>${tieneStr}<br><span style="font-size:10px;color:var(--muted)">${e.total_examenes} examen${e.total_examenes!==1?'s':''}</span></td>
+      <td>${tipoStr}</td>
+      <td style="white-space:nowrap">${fechaStr}</td>
+      <td>${conceptoStr}</td>
+      <td>${alertaStr}</td>
+      <td class="no-print"><a href="empleado.html?id=${e.id}" class="btn-ver">Ver →</a></td>
+    </tr>`;
+  }).join('');
+}
+
+// ─── Exportar CSV ─────────────────────────────────────────
+function exportarCSV() {
+  const filtrados = ordenar(filtrar());
+  const bom = '﻿';
+  const encabezado = ['Nombre','C.C.','Cargo','Departamento','Tiene examen','Total exámenes','Último tipo','Última fecha','Concepto aptitud','Nivel de alerta'];
+  const filas = filtrados.map(e => [
+    e.nombre, e.cc, e.cargo, e.departamento,
+    e.tiene_examen ? 'Sí' : 'No',
+    e.total_examenes,
+    e.ultimo_examen?.tipo || '',
+    e.ultimo_examen?.fecha || '',
+    e.ultimo_examen?.concepto_aptitud || '',
+    e.alerta_nivel,
+  ].map(v => `"${String(v||'').replace(/"/g,'""')}"`).join(','));
+
+  const csv = bom + [encabezado.join(','), ...filas].join('\r\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type:'text/csv;charset=utf-8' }));
+  a.download = `cobertura-examenes-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+// ─── Toast ────────────────────────────────────────────────
+function mostrarToast(msg, tipo='ok') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = `toast toast-${tipo} show`;
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+// ─── Carga ────────────────────────────────────────────────
+async function cargar() {
+  const sel    = document.getElementById('admin-empresa-sel');
+  const empId  = VigiaAPI.esAdmin() ? sel?.value : null;
+  if (VigiaAPI.esAdmin() && !empId) return;
+
+  const inclInactivos = document.getElementById('chk-inactivos')?.checked;
+  document.getElementById('cargando').style.display = '';
+  document.getElementById('contenido').style.display = 'none';
+
+  try {
+    datos = await VigiaAPI.getCobertura(empId, inclInactivos) || [];
+  } catch(err) {
+    mostrarToast('Error al cargar datos: ' + err.message, 'error');
+    document.getElementById('cargando').style.display = 'none';
+    return;
+  }
+
+  renderKPIs(datos);
+  renderTabla();
+
+  const hoy = new Date().toLocaleDateString('es-CO', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  document.getElementById('pie-fecha').textContent = `Generado el ${hoy}`;
+
+  // Logo en doc-header desde datos de empresa
+  if (VigiaAPI.logoUrl()) {
+    document.querySelectorAll('.doc-logo-img').forEach(img => { img.src = VigiaAPI.logoUrl(); });
+  }
+
+  document.getElementById('cargando').style.display  = 'none';
+  document.getElementById('contenido').style.display = '';
+}
+
+// ─── Init ─────────────────────────────────────────────────
+async function init() {
+  const ok = await VigiaAPI.requireAuth();
+  if (!ok) return;
+  VigiaAPI.initDocHeader();
+
+  if (VigiaAPI.esAdmin()) {
+    document.getElementById('admin-selector').style.display = '';
+    document.getElementById('cargando').style.display = 'none';
+    try {
+      const empresas = await VigiaAPI.getEmpresas();
+      const sel = document.getElementById('admin-empresa-sel');
+      (empresas || []).forEach(e => {
+        const opt = document.createElement('option');
+        opt.value = e.id; opt.textContent = e.nombre;
+        sel.appendChild(opt);
+      });
+    } catch(e) { mostrarToast('Error cargando empresas', 'error'); }
+  } else {
+    await cargar();
+  }
+}
+
+init();
+</script>
+<script src="js/vigia-chat.js"></script>
+</body>
+</html>

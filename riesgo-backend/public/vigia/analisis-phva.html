@@ -1,0 +1,649 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vigía 360 — Análisis PHVA</title>
+  <link rel="stylesheet" href="vigia.css" />
+  <style>
+    /* ── PHVA bars ──────────────────── */
+    .phva-bar-wrap { margin-bottom:12px }
+    .phva-bar-top  { display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px }
+    .phva-bar-ciclo{ font-size:13px;font-weight:800;color:var(--navy) }
+    .phva-bar-vals { font-size:12px;color:var(--muted) }
+    .phva-bar-track{ height:18px;background:#E2E8F0;border-radius:9px;overflow:hidden }
+    .phva-bar-fill { height:100%;border-radius:9px;transition:width .5s;position:relative;display:flex;align-items:center;padding-left:8px }
+    .phva-bar-pct  { font-size:11px;font-weight:800;color:#fff;white-space:nowrap }
+
+    /* ── Compliance grid ────────────── */
+    .grid-wrap  { display:flex;flex-wrap:wrap;gap:4px }
+    .grid-cell  { width:44px;height:44px;border-radius:6px;border:1.5px solid;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      cursor:default;transition:transform .1s;font-size:9px;font-weight:700;
+      color:var(--muted);text-align:center;line-height:1.2 }
+    .grid-cell:hover { transform:scale(1.15);z-index:10;position:relative }
+    .grid-cumple   { background:#ECFDF5;border-color:#6EE7B7;color:#065F46 }
+    .grid-no-cumple{ background:#FDECEA;border-color:#FABEC2;color:#C0392B }
+    .grid-no-aplica{ background:#F1F5F9;border-color:#CBD5E1;color:#94A3B8 }
+    .grid-sin-resp { background:#FFFBEB;border-color:#FCD34D;color:#92400E }
+
+    /* ── Brechas ────────────────────── */
+    .brecha-row { display:flex;align-items:center;gap:12px;padding:9px 14px;
+      border-radius:8px;background:var(--bg);margin-bottom:6px;border:1px solid var(--border) }
+    .brecha-code{ font-size:11px;font-weight:700;color:var(--muted);min-width:36px }
+    .brecha-name{ flex:1;font-size:13px;color:var(--text) }
+    .brecha-pts { font-size:12px;font-weight:700;color:#C0392B;white-space:nowrap }
+    .brecha-ciclo{ font-size:10px;padding:2px 7px;border-radius:10px;color:#fff;white-space:nowrap;font-weight:700 }
+
+    /* ── Eval selector ──────────────── */
+    .eval-pill  { display:inline-flex;align-items:center;gap:6px;padding:6px 14px;
+      border-radius:20px;border:1.5px solid var(--border);cursor:pointer;font-size:13px;
+      background:none;transition:all .15s;font-family:inherit }
+    .eval-pill:hover  { border-color:var(--blue) }
+    .eval-pill.active { border-color:var(--navy);background:var(--navy);color:#fff }
+
+    /* ── Line chart ─────────────────── */
+    .chart-wrap { width:100%;overflow:hidden }
+
+    /* ── Leyenda ciclo ──────────────── */
+    .ciclo-dot  { display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:middle }
+
+    @media print {
+      nav,.no-print { display:none!important }
+      body { background:white }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="dashboard.html" style="display:flex;align-items:center;gap:10px;text-decoration:none">
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="36" viewBox="0 0 34 38">
+      <path d="M17 1L2 7V21C2 30 9 37 17 39C25 37 32 30 32 21V7Z" fill="rgba(255,255,255,0.15)" stroke="white" stroke-width="1.5"/>
+      <circle cx="12" cy="19" r="4.5" fill="white" opacity="0.9"/>
+      <circle cx="22" cy="19" r="4.5" fill="white" opacity="0.9"/>
+      <circle cx="12" cy="19" r="2" fill="rgba(26,58,92,0.8)"/>
+      <circle cx="22" cy="19" r="2" fill="rgba(26,58,92,0.8)"/>
+      <polygon points="15,25 17,28 19,25" fill="white" opacity="0.7"/>
+    </svg>
+    <span style="color:white;font-weight:800;font-size:17px;letter-spacing:0.5px">VIGÍA <span style="color:#4ADE80;font-weight:900">360</span></span>
+  </a>
+  <div class="nav-links">
+    <a href="dashboard.html" class="nav-link-fixed">Dashboard</a>
+
+    <!-- P — Planear -->
+    <div class="nav-dropdown" id="dd-P">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-P')">
+        <span class="phva-pill phva-P">P</span> Planear <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="perfil-responsable.html">🩺 Responsable SST</a>
+        <a href="responsabilidades.html">👥 Roles y Responsabilidades</a>
+        <a href="copasst.html">🤝 COPASST y Convivencia</a>
+        <a href="documentos-sst.html">📄 Documentos del SG-SST</a>
+        <a href="matriz-peligros.html">⚠️ Matriz de Peligros (GTC-45)</a>
+        <a href="plan-trabajo.html">📅 Plan de Trabajo Anual</a>
+        <a href="presupuesto-sgsst.html">💰 Presupuesto SG-SST</a>
+        <a href="profesiograma.html">💊 Profesiograma</a>
+      </div>
+    </div>
+
+    <!-- H — Hacer -->
+    <div class="nav-dropdown" id="dd-H">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-H')">
+        <span class="phva-pill phva-H">H</span> Hacer <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="epp.html">🦺 EPP</a>
+        <a href="capacitaciones.html">🎓 Capacitaciones</a>
+        <a href="emergencias.html">🚨 Emergencias y Brigada</a>
+        <a href="inspecciones.html">🔍 Inspecciones y Mantenimiento</a>
+        <a href="perfil-salud.html">🏥 Salud Ocupacional</a>
+        <div class="nav-dd-divider"></div>
+        <a href="lista-personal.html">👥 Lista de Personal</a>
+        <a href="subir.html">⬆️ Subir Examen</a>
+        <a href="subir-masivo.html">📦 Carga Masiva</a>
+        <a href="cartas-masivas.html">📄 Cartas Masivas</a>
+        <a href="reporte-examenes.html">📊 Cobertura de Exámenes</a>
+        <a href="informe-condiciones.html">📋 Informe de Condiciones</a>
+      </div>
+    </div>
+
+    <!-- V — Verificar -->
+    <div class="nav-dropdown" id="dd-V">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-V')">
+        <span class="phva-pill phva-V">V</span> Verificar <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="evaluacion-sst.html">📋 Evaluación (Res. 0312)</a>
+        <a href="investigaciones.html">🔍 AT / Incidentes</a>
+        <a href="ausentismo.html">📉 Ausentismo laboral</a>
+        <a href="indicadores-sgsst.html">📊 Indicadores SG-SST</a>
+        <a href="analisis-phva.html">📈 Análisis e Indicadores</a>
+      </div>
+    </div>
+
+    <!-- A — Actuar -->
+    <div class="nav-dropdown" id="dd-A">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-A')">
+        <span class="phva-pill phva-A">A</span> Actuar <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="mejoramiento.html">✅ Acciones de Mejoramiento</a>
+        <a href="evaluacion-sst.html">📝 Plan de Mejoramiento (F002)</a>
+      </div>
+    </div>
+
+    <a href="listado-maestro.html" class="nav-link-fixed">📁 Listado Maestro</a>
+    <span id="nav-empresa" style="color:#CBD8E6;font-size:13px;padding:6px 0"></span>
+    <button onclick="VigiaAPI.logout()"
+      style="background:none;border:1px solid rgba(255,255,255,.2);color:#CBD8E6;
+             border-radius:6px;padding:6px 12px;cursor:pointer;font-size:13px">Salir</button>
+  </div>
+</nav>
+
+<div class="page">
+  <div id="cargando" class="empty-state mt-8">
+    <div class="spinner" style="margin:0 auto 16px;border-color:rgba(46,134,171,.2);border-top-color:var(--blue)"></div>
+    <p class="text-muted">Cargando análisis…</p>
+  </div>
+
+  <div id="contenido" style="display:none">
+
+    <!-- Cabecera -->
+    <div class="flex justify-between items-center mb-4 no-print">
+      <div>
+        <h2 style="font-size:20px;font-weight:800;color:var(--navy)">📊 Análisis PHVA — SG-SST</h2>
+        <p class="text-muted text-sm">Res. 0312/2019 · Evolución y brechas por ciclo</p>
+      </div>
+      <div class="flex gap-3">
+        <a href="evaluacion-sst.html" class="btn btn-outline">+ Nueva evaluación</a>
+        <button class="btn btn-outline" onclick="window.print()">🖨️ Imprimir</button>
+      </div>
+    </div>
+
+    <!-- Sin evaluaciones -->
+    <div id="sin-eval" style="display:none" class="card">
+      <div style="padding:48px;text-align:center">
+        <div style="font-size:48px;margin-bottom:12px">📋</div>
+        <h3 style="color:var(--navy);margin-bottom:8px">Sin evaluaciones registradas</h3>
+        <p class="text-muted text-sm">Realiza la evaluación inicial del SG-SST para ver el análisis.</p>
+        <a href="evaluacion-sst.html" class="btn btn-navy mt-4">Ir a Evaluación SST</a>
+      </div>
+    </div>
+
+    <!-- Selector de evaluación -->
+    <div id="eval-selector" class="card mb-4 no-print" style="padding:16px 20px;display:none">
+      <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:10px">EVALUACIONES DISPONIBLES</div>
+      <div id="eval-pills" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+    </div>
+
+    <!-- Summary cards -->
+    <div id="summary-cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:20px"></div>
+
+    <!-- PHVA Breakdown -->
+    <div class="card mb-4" id="card-phva" style="display:none;padding:24px">
+      <h3 style="font-size:15px;font-weight:800;color:var(--navy);margin-bottom:16px">Cumplimiento por ciclo PHVA</h3>
+      <div id="phva-bars"></div>
+      <div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:12px" id="phva-leyenda"></div>
+    </div>
+
+    <!-- Tendencia histórica -->
+    <div class="card mb-4" id="card-tendencia" style="display:none;padding:24px">
+      <h3 style="font-size:15px;font-weight:800;color:var(--navy);margin-bottom:4px">Tendencia histórica</h3>
+      <p class="text-muted text-sm" style="margin-bottom:16px">Puntaje total por período evaluado</p>
+      <div class="chart-wrap" id="tendencia-chart"></div>
+    </div>
+
+    <!-- Brechas -->
+    <div class="card mb-4" id="card-brechas" style="display:none;padding:24px">
+      <h3 style="font-size:15px;font-weight:800;color:var(--navy);margin-bottom:4px">Brechas identificadas</h3>
+      <p class="text-muted text-sm" style="margin-bottom:16px">Criterios con "No cumple" ordenados por impacto (mayor peso primero)</p>
+      <div id="lista-brechas"></div>
+    </div>
+
+    <!-- Mapa de cumplimiento -->
+    <div class="card mb-4" id="card-mapa" style="display:none;padding:24px">
+      <h3 style="font-size:15px;font-weight:800;color:var(--navy);margin-bottom:4px">Mapa de cumplimiento</h3>
+      <p class="text-muted text-sm" style="margin-bottom:12px">Cada celda representa un estándar — pasa el cursor para ver el nombre</p>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px;font-size:12px">
+        <span><span class="ciclo-dot" style="background:#6EE7B7"></span>✅ Cumple</span>
+        <span><span class="ciclo-dot" style="background:#FABEC2"></span>❌ No cumple</span>
+        <span><span class="ciclo-dot" style="background:#FCD34D"></span>⏳ Sin respuesta</span>
+        <span><span class="ciclo-dot" style="background:#CBD5E1"></span>➖ No aplica</span>
+      </div>
+      <div id="mapa-grid" class="grid-wrap"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="js/vigia-api.js"></script>
+<script>
+
+// ═══════════════════════════════════════════════════════
+// CICLOS — Res. 0312/2019 (igual que en evaluacion-sst)
+// ═══════════════════════════════════════════════════════
+
+const CICLOS_7 = [
+  { ciclo:'PLANEAR', peso_total:25, color:'#2E86AB', items:[
+    { item:'I. RECURSOS', estandares:[
+      {c:'1.1.1',n:'Responsable del SG-SST y afiliación SGRL',p:10},
+    ]},
+    { item:'II. GESTIÓN INTEGRAL', estandares:[
+      {c:'2.1.1',n:'Política, evaluación inicial y plan de trabajo',p:15},
+    ]},
+  ]},
+  { ciclo:'HACER', peso_total:60, color:'#1A3A5C', items:[
+    { item:'III. SALUD', estandares:[
+      {c:'3.2.1',n:'Evaluaciones médicas ocupacionales',p:20},
+    ]},
+    { item:'IV. PELIGROS', estandares:[
+      {c:'4.1.1',n:'Identificación de peligros y medidas de control',p:30},
+    ]},
+    { item:'V. AMENAZAS', estandares:[
+      {c:'5.1.1',n:'Plan de emergencias',p:10},
+    ]},
+  ]},
+  { ciclo:'VERIFICAR', peso_total:5, color:'#8E44AD', items:[
+    { item:'VI. VERIFICACIÓN', estandares:[{c:'6.1.1',n:'Revisión alta dirección',p:5}] },
+  ]},
+  { ciclo:'ACTUAR', peso_total:10, color:'#27AE60', items:[
+    { item:'VII. MEJORAMIENTO', estandares:[{c:'7.1.1',n:'Acciones correctivas',p:10}] },
+  ]},
+];
+
+const CICLOS_21 = [
+  { ciclo:'PLANEAR', peso_total:25, color:'#2E86AB', items:[
+    { item:'I. RECURSOS', estandares:[
+      {c:'1.1.1',n:'Responsable SG-SST y afiliación SGRL',p:2},
+      {c:'1.1.4',n:'Conformación y capacitación COPASST',p:1},
+      {c:'1.2.1',n:'Programa de capacitación PYP',p:2},
+    ]},
+    { item:'II. GESTIÓN INTEGRAL', estandares:[
+      {c:'2.1.1',n:'Política del SG-SST',p:2},
+      {c:'2.4.1',n:'Plan de trabajo anual',p:8},
+      {c:'2.5.1',n:'Archivo documental SG-SST',p:5},
+      {c:'2.7.1',n:'Matriz legal',p:5},
+    ]},
+  ]},
+  { ciclo:'HACER', peso_total:60, color:'#1A3A5C', items:[
+    { item:'III. SALUD', estandares:[
+      {c:'3.1.4',n:'Evaluaciones médicas ocupacionales',p:5},
+      {c:'3.2.1',n:'Reporte AT/EL a ARL, EPS y MinTrabajo',p:5},
+      {c:'3.2.2',n:'Investigación de AT/incidentes',p:5},
+      {c:'3.3.1',n:'Análisis estadístico de accidentalidad',p:5},
+    ]},
+    { item:'IV. PELIGROS', estandares:[
+      {c:'4.1.1',n:'Metodología identificación de peligros',p:8},
+      {c:'4.1.2',n:'Identificación participativa de peligros',p:7},
+      {c:'4.2.1',n:'Medidas de prevención y control',p:8},
+      {c:'4.2.4',n:'Inspecciones sistemáticas con COPASST',p:5},
+      {c:'4.2.6',n:'Entrega y verificación de EPP',p:5},
+    ]},
+    { item:'V. AMENAZAS', estandares:[
+      {c:'5.1.1',n:'Plan de emergencias',p:6},
+      {c:'5.1.2',n:'Brigadas conformadas y capacitadas',p:6},
+    ]},
+  ]},
+  { ciclo:'VERIFICAR', peso_total:5, color:'#8E44AD', items:[
+    { item:'VI. VERIFICACIÓN', estandares:[
+      {c:'6.1.1',n:'Indicadores SG-SST',p:2.5},
+      {c:'6.1.2',n:'Auditoría anual',p:2.5},
+    ]},
+  ]},
+  { ciclo:'ACTUAR', peso_total:10, color:'#27AE60', items:[
+    { item:'VII. MEJORAMIENTO', estandares:[
+      {c:'7.1.1',n:'Acciones preventivas y correctivas',p:5},
+      {c:'7.1.2',n:'Plan de mejora',p:5},
+    ]},
+  ]},
+];
+
+const CICLOS_60 = [
+  { ciclo:'PLANEAR', peso_total:25, color:'#2E86AB', items:[
+    { item:'I. RECURSOS', estandares:[
+      {c:'1.1.1',n:'Responsable del SG-SST',p:0.5},{c:'1.1.2',n:'Responsabilidades en el SG-SST',p:0.5},
+      {c:'1.1.3',n:'Asignación de recursos SG-SST',p:0.5},{c:'1.1.4',n:'Afiliación SGRL',p:0.5},
+      {c:'1.1.5',n:'Trabajadores de alto riesgo y pensión especial',p:0.5},{c:'1.1.6',n:'Conformación COPASST',p:0.5},
+      {c:'1.1.7',n:'Capacitación COPASST',p:0.5},{c:'1.1.8',n:'Comité de Convivencia',p:0.5},
+      {c:'1.2.1',n:'Programa Capacitación PYP',p:2},{c:'1.2.2',n:'Inducción y Reinducción SG-SST',p:2},
+      {c:'1.2.3',n:'Responsable con curso virtual 50 horas',p:2},
+    ]},
+    { item:'II. GESTIÓN INTEGRAL', estandares:[
+      {c:'2.1.1',n:'Política SG-SST firmada y comunicada',p:1},{c:'2.2.1',n:'Objetivos SG-SST',p:1},
+      {c:'2.3.1',n:'Evaluación e identificación de prioridades',p:1},{c:'2.4.1',n:'Plan de trabajo anual',p:2},
+      {c:'2.5.1',n:'Archivo documental SG-SST',p:2},{c:'2.6.1',n:'Rendición sobre el desempeño',p:1},
+      {c:'2.7.1',n:'Matriz legal',p:2},{c:'2.8.1',n:'Mecanismos de comunicación SG-SST',p:1},
+      {c:'2.9.1',n:'Adquisición de productos y servicios SG-SST',p:1},{c:'2.10.1',n:'Evaluación de proveedores y contratistas',p:2},
+      {c:'2.11.1',n:'Evaluación del impacto de cambios',p:1},
+    ]},
+  ]},
+  { ciclo:'HACER', peso_total:60, color:'#1A3A5C', items:[
+    { item:'III. SALUD', estandares:[
+      {c:'3.1.1',n:'Diagnóstico de condiciones de salud',p:1},{c:'3.1.2',n:'Actividades de Promoción y Prevención',p:1},
+      {c:'3.1.3',n:'Información al médico de perfiles de cargo',p:1},{c:'3.1.4',n:'Evaluaciones médicas ocupacionales',p:1},
+      {c:'3.1.5',n:'Custodia de Historias Clínicas',p:1},{c:'3.1.6',n:'Restricciones y recomendaciones médicas',p:1},
+      {c:'3.1.7',n:'Estilos de vida saludables',p:1},{c:'3.1.8',n:'Agua potable y servicios sanitarios',p:1},
+      {c:'3.1.9',n:'Eliminación adecuada de residuos',p:1},
+      {c:'3.2.1',n:'Reporte AT/EL a ARL, EPS y MinTrabajo',p:2},{c:'3.2.2',n:'Investigación de AT, incidentes y EL',p:2},
+      {c:'3.2.3',n:'Estadísticas de accidentalidad',p:1},
+      {c:'3.3.1',n:'Frecuencia de accidentalidad',p:1},{c:'3.3.2',n:'Severidad de accidentalidad',p:1},
+      {c:'3.3.3',n:'Mortalidad por AT',p:1},{c:'3.3.4',n:'Prevalencia de EL',p:1},
+      {c:'3.3.5',n:'Incidencia de EL',p:1},{c:'3.3.6',n:'Ausentismo por causa médica',p:1},
+    ]},
+    { item:'IV. PELIGROS', estandares:[
+      {c:'4.1.1',n:'Metodología identificación de peligros',p:4},{c:'4.1.2',n:'Identificación participativa de peligros',p:4},
+      {c:'4.1.3',n:'Sustancias carcinógenas o toxicidad aguda',p:3},{c:'4.1.4',n:'Mediciones ambientales',p:4},
+      {c:'4.2.1',n:'Medidas de prevención y control',p:2.5},{c:'4.2.2',n:'Verificación aplicación de medidas',p:2.5},
+      {c:'4.2.3',n:'Procedimientos e instructivos',p:2.5},{c:'4.2.4',n:'Inspecciones con COPASST',p:2.5},
+      {c:'4.2.5',n:'Mantenimiento de instalaciones y equipos',p:2.5},{c:'4.2.6',n:'Entrega EPP verificado',p:2.5},
+    ]},
+    { item:'V. AMENAZAS', estandares:[
+      {c:'5.1.1',n:'Plan de prevención y respuesta ante emergencias',p:5},
+      {c:'5.1.2',n:'Brigada conformada, capacitada y dotada',p:5},
+    ]},
+  ]},
+  { ciclo:'VERIFICAR', peso_total:5, color:'#8E44AD', items:[
+    { item:'VI. VERIFICACIÓN', estandares:[
+      {c:'6.1.1',n:'Indicadores SG-SST',p:1.25},{c:'6.1.2',n:'Auditoría anual',p:1.25},
+      {c:'6.1.3',n:'Revisión anual alta dirección',p:1.25},{c:'6.1.4',n:'Planificación auditorías COPASST',p:1.25},
+    ]},
+  ]},
+  { ciclo:'ACTUAR', peso_total:10, color:'#27AE60', items:[
+    { item:'VII. MEJORAMIENTO', estandares:[
+      {c:'7.1.1',n:'Acciones preventivas y correctivas',p:2.5},{c:'7.1.2',n:'Mejora por revisión alta dirección',p:2.5},
+      {c:'7.1.3',n:'Mejora por investigación AT/EL',p:2.5},{c:'7.1.4',n:'Plan de mejora por autoridades y ARL',p:2.5},
+    ]},
+  ]},
+];
+
+function calcularTabla(nt, cr) {
+  if (!nt || !cr) return 60;
+  if (cr === 'IV' || cr === 'V') return 60;
+  if (nt > 50) return 60;
+  if (nt <= 10) return 7;
+  return 21;
+}
+
+// ═══════════════════════════════════════════════════════
+// Estado
+// ═══════════════════════════════════════════════════════
+let todasEvals   = [];
+let evalActual   = null;   // objeto con resultados completo
+let CICLOS       = CICLOS_60;
+
+// ═══════════════════════════════════════════════════════
+// Lógica PHVA
+// ═══════════════════════════════════════════════════════
+function normEstado(v) {
+  if (!v) return null;
+  if (typeof v === 'string') return v;
+  if (typeof v === 'object') return v.estado || null;
+  return null;
+}
+
+function calcularCiclos(resultados, ciclos) {
+  return ciclos.map(ciclo => {
+    let total = 0, obtenido = 0, cumple = 0, noCumple = 0, noAplica = 0, sinR = 0;
+    for (const item of ciclo.items) {
+      for (const est of item.estandares) {
+        const estado = normEstado(resultados[est.c]);
+        if (estado === 'no_aplica') { noAplica++; continue; }
+        total     += est.p;
+        if (estado === 'cumple')    { obtenido += est.p; cumple++; }
+        else if (estado === 'no_cumple') noCumple++;
+        else sinR++;
+      }
+    }
+    const pct = total > 0 ? Math.round(obtenido / total * 1000) / 10 : 0;
+    return { ciclo: ciclo.ciclo, color: ciclo.color, peso_total: ciclo.peso_total,
+             obtenido, total, pct, cumple, noCumple, noAplica, sinR };
+  });
+}
+
+function getBrechas(resultados, ciclos) {
+  const brechas = [];
+  for (const ciclo of ciclos) {
+    for (const item of ciclo.items) {
+      for (const est of item.estandares) {
+        const estado = normEstado(resultados[est.c]);
+        if (estado === 'no_cumple') {
+          brechas.push({ ...est, ciclo: ciclo.ciclo, color: ciclo.color });
+        }
+      }
+    }
+  }
+  return brechas.sort((a, b) => b.p - a.p);
+}
+
+function getTodos(ciclos) {
+  return ciclos.flatMap(c => c.items.flatMap(i => i.estandares.map(e => ({
+    ...e, ciclo: c.ciclo, color: c.color,
+  }))));
+}
+
+// ═══════════════════════════════════════════════════════
+// Render
+// ═══════════════════════════════════════════════════════
+function renderSummaryCards(ev, ciclosData) {
+  const cat = ev.categoria || 'CRITICO';
+  const catLabel = { ACEPTABLE:'Aceptable', MODERADO:'Moderadamente aceptable', CRITICO:'Crítico' }[cat] || '—';
+  const catColor = { ACEPTABLE:'#27AE60', MODERADO:'#D97706', CRITICO:'#C0392B' }[cat] || 'var(--muted)';
+  const cumpleTotal = ciclosData.reduce((s, c) => s + c.cumple, 0);
+  const noCumpleTotal = ciclosData.reduce((s, c) => s + c.noCumple, 0);
+  const totalCrit = getTodos(CICLOS).length;
+
+  document.getElementById('summary-cards').innerHTML = `
+    <div class="summary-card">
+      <div class="num" style="color:${catColor}">${Math.round(ev.puntaje || 0)}%</div>
+      <div class="lbl">Puntaje total</div>
+    </div>
+    <div class="summary-card">
+      <div class="num" style="font-size:18px;color:${catColor}">${catLabel}</div>
+      <div class="lbl">Categoría Res. 0312</div>
+    </div>
+    <div class="summary-card">
+      <div class="num" style="color:#27AE60">${cumpleTotal}</div>
+      <div class="lbl">Criterios cumplidos</div>
+    </div>
+    <div class="summary-card">
+      <div class="num" style="color:#C0392B">${noCumpleTotal}</div>
+      <div class="lbl">Criterios incumplidos</div>
+    </div>
+    <div class="summary-card">
+      <div class="num">${totalCrit}</div>
+      <div class="lbl">Estándares aplicables</div>
+    </div>
+  `;
+}
+
+function renderPHVABars(ciclosData) {
+  document.getElementById('card-phva').style.display = '';
+  document.getElementById('phva-bars').innerHTML = ciclosData.map(c => {
+    const pct = c.pct;
+    const color = pct >= 85 ? '#27AE60' : pct >= 60 ? '#D97706' : '#C0392B';
+    const fillW = Math.max(pct, 0);
+    return `
+      <div class="phva-bar-wrap">
+        <div class="phva-bar-top">
+          <span class="phva-bar-ciclo" style="color:${c.color}">${c.ciclo}</span>
+          <span class="phva-bar-vals">${c.obtenido.toFixed(1)} / ${c.total.toFixed(1)} pts
+            &nbsp;·&nbsp; ✅ ${c.cumple} &nbsp;❌ ${c.noCumple}${c.noAplica ? ` &nbsp;➖ ${c.noAplica}` : ''}</span>
+        </div>
+        <div class="phva-bar-track">
+          <div class="phva-bar-fill" style="width:${fillW}%;background:${color}">
+            ${fillW > 15 ? `<span class="phva-bar-pct">${pct}%</span>` : ''}
+          </div>
+        </div>
+        ${fillW <= 15 ? `<div style="font-size:11px;font-weight:700;color:${color};margin-top:2px">${pct}%</div>` : ''}
+      </div>`;
+  }).join('');
+
+  document.getElementById('phva-leyenda').innerHTML = ciclosData.map(c =>
+    `<span style="font-size:12px"><span class="ciclo-dot" style="background:${c.color}"></span>${c.ciclo} (${c.peso_total} pts)</span>`
+  ).join('');
+}
+
+function renderTendencia(evals) {
+  document.getElementById('card-tendencia').style.display = '';
+  const data = evals.filter(e => e.puntaje != null && e.periodo != null)
+                    .sort((a, b) => a.periodo - b.periodo);
+  const container = document.getElementById('tendencia-chart');
+
+  if (data.length < 2) {
+    container.innerHTML = `<p class="text-muted text-sm" style="text-align:center;padding:20px">
+      Registra al menos 2 evaluaciones con período definido para ver la tendencia.</p>`;
+    return;
+  }
+
+  const W = 100, H = 55, PL = 6, PR = 8, PT = 10, PB = 18;
+  const iW = W - PL - PR, iH = H - PT - PB;
+  const n = data.length;
+  const px = i => PL + (n > 1 ? (i / (n - 1)) * iW : iW / 2);
+  const py = v => PT + (1 - v / 100) * iH;
+
+  const points = data.map((d, i) => `${px(i)},${py(d.puntaje)}`).join(' ');
+  const area   = `${px(0)},${PT + iH} ${points} ${px(n-1)},${PT + iH}`;
+
+  const dots = data.map((d, i) => {
+    const col = d.puntaje >= 85 ? '#27AE60' : d.puntaje >= 60 ? '#D97706' : '#C0392B';
+    return `
+      <circle cx="${px(i)}" cy="${py(d.puntaje)}" r="1.8" fill="${col}" stroke="white" stroke-width="0.5"/>
+      <text x="${px(i)}" y="${py(d.puntaje) - 3}" text-anchor="middle" font-size="3.5" fill="${col}" font-weight="bold">${Math.round(d.puntaje)}%</text>
+      <text x="${px(i)}" y="${PT + iH + 6}" text-anchor="middle" font-size="3.5" fill="var(--muted)">${d.periodo}</text>`;
+  }).join('');
+
+  container.innerHTML = `
+    <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block">
+      <line x1="${PL}" y1="${py(85)}" x2="${W-PR}" y2="${py(85)}" stroke="#27AE60" stroke-width="0.3" stroke-dasharray="1,1" opacity="0.6"/>
+      <line x1="${PL}" y1="${py(60)}" x2="${W-PR}" y2="${py(60)}" stroke="#D97706" stroke-width="0.3" stroke-dasharray="1,1" opacity="0.6"/>
+      <text x="${W-PR+0.5}" y="${py(85)+1.5}" font-size="2.8" fill="#27AE60" opacity="0.8">85%</text>
+      <text x="${W-PR+0.5}" y="${py(60)+1.5}" font-size="2.8" fill="#D97706" opacity="0.8">60%</text>
+      <polygon points="${area}" fill="rgba(46,134,171,0.08)"/>
+      <polyline points="${points}" fill="none" stroke="#2E86AB" stroke-width="0.8" stroke-linecap="round" stroke-linejoin="round"/>
+      ${dots}
+    </svg>`;
+}
+
+function renderBrechas(resultados) {
+  const brechas = getBrechas(resultados, CICLOS);
+  document.getElementById('card-brechas').style.display = '';
+  if (!brechas.length) {
+    document.getElementById('lista-brechas').innerHTML =
+      '<p class="text-muted text-sm" style="text-align:center;padding:16px">🎉 Sin brechas — todos los criterios respondidos como Cumple o No aplica.</p>';
+    return;
+  }
+  document.getElementById('lista-brechas').innerHTML = brechas.map(b => `
+    <div class="brecha-row">
+      <span class="brecha-code">${b.c}</span>
+      <span class="brecha-name">${b.n}</span>
+      <span class="brecha-ciclo" style="background:${b.color}">${b.ciclo}</span>
+      <span class="brecha-pts">-${b.p} pts</span>
+    </div>`).join('');
+}
+
+function renderMapa(resultados) {
+  document.getElementById('card-mapa').style.display = '';
+  const todos = getTodos(CICLOS);
+  document.getElementById('mapa-grid').innerHTML = todos.map(e => {
+    const estado = normEstado(resultados[e.c]);
+    let cls = 'grid-sin-resp', ico = '⏳';
+    if (estado === 'cumple')     { cls = 'grid-cumple';    ico = '✅'; }
+    if (estado === 'no_cumple')  { cls = 'grid-no-cumple'; ico = '❌'; }
+    if (estado === 'no_aplica')  { cls = 'grid-no-aplica'; ico = '➖'; }
+    return `<div class="grid-cell ${cls}" title="${e.c}: ${e.n}">${e.c}</div>`;
+  }).join('');
+}
+
+function renderEvalSelector(evals) {
+  const pills = document.getElementById('eval-pills');
+  if (evals.length <= 1) {
+    document.getElementById('eval-selector').style.display = 'none';
+    return;
+  }
+  document.getElementById('eval-selector').style.display = '';
+  pills.innerHTML = evals.map(e => {
+    const pct = e.puntaje ? Math.round(e.puntaje) + '%' : 'Borrador';
+    const cat = { ACEPTABLE:'🟢', MODERADO:'🟡', CRITICO:'🔴' }[e.categoria] || '⬜';
+    return `<button class="eval-pill" id="pill-${e.id}" onclick="seleccionarEval('${e.id}')">
+      ${cat} ${e.periodo || 'Sin período'} · ${pct}</button>`;
+  }).join('');
+}
+
+async function seleccionarEval(id) {
+  // Marcar activo
+  document.querySelectorAll('.eval-pill').forEach(p => p.classList.remove('active'));
+  const pill = document.getElementById(`pill-${id}`);
+  if (pill) pill.classList.add('active');
+
+  // Cargar completo
+  evalActual = await VigiaAPI.getEvaluacion(id);
+
+  const resultados = evalActual.resultados || {};
+  const ciclosData = calcularCiclos(resultados, CICLOS);
+
+  renderSummaryCards(evalActual, ciclosData);
+  renderPHVABars(ciclosData);
+  renderTendencia(todasEvals);
+  renderBrechas(resultados);
+  renderMapa(resultados);
+}
+
+// ═══════════════════════════════════════════════════════
+// Init
+// ═══════════════════════════════════════════════════════
+async function init() {
+  const ok = await VigiaAPI.requireAuth();
+  if (!ok) return;
+
+  // Si admin abrió la página con ?empresa_id=X, usar ese ID específico
+  const urlParams  = new URLSearchParams(window.location.search);
+  const urlEmpresa = urlParams.get('empresa_id');
+  const empresaId  = urlEmpresa || (VigiaAPI.esAdmin() ? null : VigiaAPI.empresaId());
+
+  // Seleccionar tabla correcta (desde localStorage; admin con override usa 60 por defecto)
+  const nt  = urlEmpresa ? null : VigiaAPI.numTrabajadores();
+  const cr  = urlEmpresa ? null : VigiaAPI.claseRiesgo();
+  const t   = calcularTabla(nt, cr);
+  CICLOS    = t === 7 ? CICLOS_7 : t === 21 ? CICLOS_21 : CICLOS_60;
+
+  // Mostrar nombre de empresa en header si admin navegó por URL param
+  if (urlEmpresa) {
+    document.querySelector('h2').textContent = '📊 Análisis PHVA — empresa seleccionada';
+  }
+
+  try {
+    todasEvals = await VigiaAPI.getEvaluaciones(empresaId) || [];
+  } catch (_) { todasEvals = []; }
+
+  document.getElementById('cargando').style.display = 'none';
+  document.getElementById('contenido').style.display = '';
+
+  if (!todasEvals.length) {
+    document.getElementById('sin-eval').style.display = '';
+    return;
+  }
+
+  // Ordenar: más reciente primero
+  todasEvals.sort((a, b) => new Date(b.creado_en) - new Date(a.creado_en));
+
+  renderEvalSelector(todasEvals);
+
+  // Seleccionar la más reciente con puntaje
+  const reciente = todasEvals.find(e => e.puntaje != null) || todasEvals[0];
+  await seleccionarEval(reciente.id);
+}
+
+function mostrarToast(msg, tipo = 'ok') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = `toast toast-${tipo} show`;
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+init();
+</script>
+<script src="js/vigia-chat.js"></script>
+</body>
+</html>
+

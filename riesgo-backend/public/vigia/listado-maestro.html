@@ -1,0 +1,602 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vigía 360 — Listado Maestro de Documentos y Registros</title>
+  <link rel="stylesheet" href="vigia.css" />
+  <style>
+    /* ── Filtros ─────────────────── */
+    .filtros { display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px }
+    .tipo-pill { padding:6px 14px;border-radius:20px;border:1.5px solid var(--border);
+      font-size:12px;font-weight:700;cursor:pointer;background:none;transition:all .15s;font-family:inherit }
+    .tipo-pill.active { color:#fff;border-color:transparent }
+
+    /* ── Tabla maestro ─────────────── */
+    .lm-table { width:100%;border-collapse:collapse;font-size:11px;min-width:1300px }
+    .lm-table th { padding:8px 8px;text-align:left;font-size:9px;font-weight:800;
+      color:var(--muted);text-transform:uppercase;letter-spacing:.4px;
+      border-bottom:2px solid var(--border);white-space:nowrap;background:var(--bg) }
+    .lm-table td { padding:6px 8px;border-bottom:1px solid var(--border);vertical-align:middle }
+    .lm-table tr:last-child td { border-bottom:none }
+    .lm-table tr:hover td { background:rgba(46,134,171,.04) }
+    .lm-table tr.highlight td { background:#FFFBEB }
+
+    .code-cell { font-weight:800;font-size:10px;white-space:nowrap;font-family:monospace }
+    .tipo-badge { display:inline-block;padding:2px 7px;border-radius:8px;font-size:9px;font-weight:700;white-space:nowrap }
+    .t-F { background:#EFF6FF;color:#1D4ED8 }
+    .t-M { background:#F0FDF4;color:#166534 }
+    .t-P { background:#FFF7ED;color:#9A3412 }
+    .t-D { background:#FAF5FF;color:#6B21A8 }
+    .t-R { background:#FFF1F2;color:#9F1239 }
+
+    .estado-vigente  { color:#27AE60;font-weight:700;font-size:10px }
+    .estado-revision { color:#D97706;font-weight:700;font-size:10px }
+
+    .disp-CT { display:inline-block;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:700;
+      background:#ECFDF5;color:#065F46;white-space:nowrap }
+    .disp-M  { display:inline-block;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:700;
+      background:#EFF6FF;color:#1D4ED8;white-space:nowrap }
+    .disp-D  { display:inline-block;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:700;
+      background:#FFF1F2;color:#9F1239;white-space:nowrap }
+
+    .link-modulo { font-size:10px;color:var(--blue);text-decoration:none;display:inline-flex;
+      align-items:center;gap:4px;padding:2px 7px;border-radius:5px;
+      border:1px solid rgba(46,134,171,.3);white-space:nowrap }
+    .link-modulo:hover { background:rgba(46,134,171,.1) }
+
+    /* ── Enlace Drive ─────────────────── */
+    .drive-cell { display:flex;align-items:center;gap:5px;min-width:130px }
+    .drive-link { font-size:10px;color:#16A34A;text-decoration:none;font-weight:700;
+      display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:5px;
+      border:1px solid #6EE7B7;background:#ECFDF5;white-space:nowrap }
+    .drive-link:hover { background:#D1FAE5 }
+    .drive-add { font-size:10px;color:var(--muted);cursor:pointer;padding:2px 7px;
+      border-radius:5px;border:1px dashed var(--border);background:none;
+      font-family:inherit;transition:all .15s;white-space:nowrap }
+    .drive-add:hover { border-color:var(--blue);color:var(--blue) }
+    .drive-input-wrap { display:none;align-items:center;gap:4px }
+    .drive-input-wrap.show { display:flex }
+    .drive-input { font-size:10px;padding:3px 7px;border:1.5px solid var(--blue);
+      border-radius:5px;background:var(--bg);color:var(--text);font-family:inherit;
+      width:180px;outline:none }
+    .drive-save { font-size:10px;padding:3px 8px;border-radius:5px;
+      background:var(--blue);color:#fff;border:none;cursor:pointer;font-family:inherit }
+    .drive-del { font-size:10px;padding:3px 6px;border-radius:5px;
+      background:none;color:var(--muted);border:none;cursor:pointer;font-family:inherit }
+    .drive-del:hover { color:#DC2626 }
+
+    /* ── Resumen cards ─────────────── */
+    .resumen-bar { display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px }
+    .resumen-chip { padding:5px 12px;border-radius:10px;font-size:11px;font-weight:700 }
+
+    /* ── Config bar ─────────────────── */
+    .config-bar { display:flex;gap:16px;align-items:center;flex-wrap:wrap;
+      background:var(--card);border:1px solid var(--border);border-radius:10px;
+      padding:12px 16px;margin-bottom:16px;font-size:12px }
+    .config-bar label { font-weight:700;color:var(--muted);font-size:11px;margin-right:4px }
+    .config-bar input[type=date],.config-bar input[type=text] {
+      font-size:11px;padding:4px 8px;border:1.5px solid var(--border);border-radius:6px;
+      background:var(--bg);color:var(--text);font-family:inherit }
+
+    /* ── Print ─────────────────────── */
+    @media print {
+      nav, .filtros, .no-print, .config-bar { display:none!important }
+      body { background:white;font-size:9px }
+      .lm-table { min-width:unset;font-size:8px }
+      .lm-table th,.lm-table td { padding:4px 5px }
+      .card { box-shadow:none;border:1px solid #ddd;padding:0 }
+      .link-modulo { display:none }
+      h2 { font-size:13px }
+      .resumen-bar { display:none }
+      @page { size:A4 landscape;margin:10mm }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="dashboard.html" style="display:flex;align-items:center;gap:10px;text-decoration:none">
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="36" viewBox="0 0 34 38">
+      <path d="M17 1L2 7V21C2 30 9 37 17 39C25 37 32 30 32 21V7Z" fill="rgba(255,255,255,0.15)" stroke="white" stroke-width="1.5"/>
+      <circle cx="12" cy="19" r="4.5" fill="white" opacity="0.9"/>
+      <circle cx="22" cy="19" r="4.5" fill="white" opacity="0.9"/>
+      <circle cx="12" cy="19" r="2" fill="rgba(26,58,92,0.8)"/>
+      <circle cx="22" cy="19" r="2" fill="rgba(26,58,92,0.8)"/>
+      <polygon points="15,25 17,28 19,25" fill="white" opacity="0.7"/>
+    </svg>
+    <span style="color:white;font-weight:800;font-size:17px;letter-spacing:0.5px">VIGÍA <span style="color:#4ADE80;font-weight:900">360</span></span>
+  </a>
+  <div class="nav-links">
+    <a href="dashboard.html" class="nav-link-fixed">Dashboard</a>
+
+    <!-- P — Planear -->
+    <div class="nav-dropdown" id="dd-P">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-P')">
+        <span class="phva-pill phva-P">P</span> Planear <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="perfil-responsable.html">🩺 Responsable SST</a>
+        <a href="responsabilidades.html">👥 Roles y Responsabilidades</a>
+        <a href="copasst.html">🤝 COPASST y Convivencia</a>
+        <a href="documentos-sst.html">📄 Documentos del SG-SST</a>
+        <a href="matriz-peligros.html">⚠️ Matriz de Peligros (GTC-45)</a>
+        <a href="plan-trabajo.html">📅 Plan de Trabajo Anual</a>
+        <a href="presupuesto-sgsst.html">💰 Presupuesto SG-SST</a>
+        <a href="profesiograma.html">💊 Profesiograma</a>
+      </div>
+    </div>
+
+    <!-- H — Hacer -->
+    <div class="nav-dropdown" id="dd-H">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-H')">
+        <span class="phva-pill phva-H">H</span> Hacer <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="epp.html">🦺 EPP</a>
+        <a href="capacitaciones.html">🎓 Capacitaciones</a>
+        <a href="emergencias.html">🚨 Emergencias y Brigada</a>
+        <a href="inspecciones.html">🔍 Inspecciones y Mantenimiento</a>
+        <a href="perfil-salud.html">🏥 Salud Ocupacional</a>
+        <div class="nav-dd-divider"></div>
+        <a href="lista-personal.html">👥 Lista de Personal</a>
+        <a href="subir.html">⬆️ Subir Examen</a>
+        <a href="subir-masivo.html">📦 Carga Masiva</a>
+        <a href="cartas-masivas.html">📄 Cartas Masivas</a>
+        <a href="reporte-examenes.html">📊 Cobertura de Exámenes</a>
+        <a href="informe-condiciones.html">📋 Informe de Condiciones</a>
+      </div>
+    </div>
+
+    <!-- V — Verificar -->
+    <div class="nav-dropdown" id="dd-V">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-V')">
+        <span class="phva-pill phva-V">V</span> Verificar <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="evaluacion-sst.html">📋 Evaluación (Res. 0312)</a>
+        <a href="investigaciones.html">🔍 AT / Incidentes</a>
+        <a href="ausentismo.html">📉 Ausentismo laboral</a>
+        <a href="indicadores-sgsst.html">📊 Indicadores SG-SST</a>
+        <a href="analisis-phva.html">📈 Análisis e Indicadores</a>
+      </div>
+    </div>
+
+    <!-- A — Actuar -->
+    <div class="nav-dropdown" id="dd-A">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-A')">
+        <span class="phva-pill phva-A">A</span> Actuar <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="mejoramiento.html">✅ Acciones de Mejoramiento</a>
+        <a href="evaluacion-sst.html">📝 Plan de Mejoramiento (F002)</a>
+      </div>
+    </div>
+
+    <a href="listado-maestro.html" class="nav-link-fixed">📁 Listado Maestro</a>
+    <span id="nav-empresa" style="color:#CBD8E6;font-size:13px;padding:6px 0"></span>
+    <button onclick="VigiaAPI.logout()"
+      style="background:none;border:1px solid rgba(255,255,255,.2);color:#CBD8E6;
+             border-radius:6px;padding:6px 12px;cursor:pointer;font-size:13px">Salir</button>
+  </div>
+</nav>
+
+<div class="page" style="max-width:1600px">
+
+  <!-- Cabecera -->
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;flex-wrap:wrap;gap:12px">
+    <div>
+      <h2 style="font-size:20px;font-weight:800;color:var(--navy);margin-bottom:4px">📁 Listado Maestro de Documentos y Registros</h2>
+      <p class="text-muted text-sm" id="lm-subtitulo">SG-SST · Res. 0312/2019 · Dec. 1072/2015 art. 2.2.4.6.13 · Código: <strong id="lm-codigo">SG-SST F001</strong> · Versión: 1</p>
+    </div>
+    <div class="flex gap-3 no-print">
+      <button class="btn btn-outline" onclick="window.print()">🖨️ Imprimir (paisaje)</button>
+    </div>
+  </div>
+
+  <!-- Barra de configuración -->
+  <div class="config-bar no-print">
+    <div>
+      <label>Empresa / Proceso responsable:</label>
+      <input type="text" id="cfg-empresa" placeholder="Nombre del proceso o área" style="width:220px"
+        oninput="guardarConfig()" />
+    </div>
+    <div>
+      <label>Lugar de almacenamiento:</label>
+      <input type="text" id="cfg-lugar" placeholder="Ej: Servidor Vigía / Google Drive" style="width:200px"
+        oninput="guardarConfig()" />
+    </div>
+    <div>
+      <label>Fecha de vigencia del sistema:</label>
+      <input type="date" id="cfg-fecha" oninput="guardarConfig(); renderTabla(DOCS)" />
+    </div>
+    <div style="font-size:10px;color:var(--muted);margin-left:auto;max-width:240px;line-height:1.4">
+      Datos guardados automáticamente · Se muestran en el listado impreso
+    </div>
+  </div>
+
+  <!-- Leyenda retención (Dec. 1072/2015) -->
+  <div style="background:#F8FAFC;border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:11px;color:var(--muted)">
+    <strong style="color:var(--navy)">Decreto 1072/2015 art. 2.2.4.6.13 — Conservación mínima 20 años:</strong>
+    perfiles epidemiológicos · conceptos de exámenes médicos ocupacionales · resultados exámenes complementarios (audiometrías, espirometrías) · mediciones de ambientes de trabajo ·
+    <strong>registro de capacitaciones</strong> · <strong>registro de suministro de EPP</strong> |
+    <span class="disp-CT">CT</span> = Conservación Total &nbsp;
+    <span class="disp-M">M</span> = Microfilmación/Archivo digital &nbsp;
+    <span class="disp-D">D</span> = Destrucción
+  </div>
+
+  <!-- Chips de resumen -->
+  <div class="resumen-bar" id="resumen-bar"></div>
+
+  <!-- Filtros + Búsqueda -->
+  <div class="filtros no-print" style="align-items:center">
+    <button class="tipo-pill active" style="background:#1A3A5C;border-color:#1A3A5C" onclick="filtrar('ALL', this)">Todos</button>
+    <button class="tipo-pill" onclick="filtrar('F', this)">📄 Formatos</button>
+    <button class="tipo-pill" onclick="filtrar('M', this)">📊 Matrices</button>
+    <button class="tipo-pill" onclick="filtrar('P', this)">📋 Procedimientos</button>
+    <button class="tipo-pill" onclick="filtrar('D', this)">📜 Documentos</button>
+    <button class="tipo-pill" onclick="filtrar('R', this)">🗂️ Registros</button>
+    <button class="tipo-pill" onclick="filtrar('20', this)" style="border-color:#6EE7B7">⏳ Retención 20 años</button>
+    <div style="flex:1"></div>
+    <div style="position:relative;display:flex;align-items:center">
+      <span style="position:absolute;left:10px;color:var(--muted);font-size:14px;pointer-events:none">🔍</span>
+      <input type="search" id="lm-busqueda"
+        placeholder="Buscar por código o nombre…"
+        oninput="renderTabla(DOCS)"
+        style="padding:7px 12px 7px 32px;border:1.5px solid var(--border);border-radius:8px;
+               font-size:12px;background:var(--card);color:var(--text);font-family:inherit;
+               min-width:260px;outline:none;transition:border-color .15s"
+        onfocus="this.style.borderColor='var(--blue)'"
+        onblur="this.style.borderColor='var(--border)'" />
+    </div>
+  </div>
+
+  <!-- Tabla -->
+  <div class="card" style="overflow-x:auto;padding:0">
+    <table class="lm-table" id="tabla-lm">
+      <thead>
+        <tr>
+          <th style="width:90px">Código</th>
+          <th style="min-width:200px">Nombre del documento / registro</th>
+          <th style="width:90px">Tipo</th>
+          <th style="width:110px">Medio de<br>almacenamiento</th>
+          <th style="min-width:140px">Lugar de<br>almacenamiento</th>
+          <th style="width:100px">Área / Proceso<br>responsable</th>
+          <th style="width:80px">Fecha de<br>vigencia</th>
+          <th style="width:75px">Fecha de<br>revisión</th>
+          <th style="width:55px;text-align:center">Ver&shy;sión</th>
+          <th style="width:65px">Estado</th>
+          <th style="width:70px;text-align:center">Retención<br>(años)</th>
+          <th style="width:90px">Disposición<br>final</th>
+          <th class="no-print" style="width:110px">Módulo Vigía</th>
+          <th class="no-print" style="width:140px">🔗 Enlace (Drive)</th>
+        </tr>
+      </thead>
+      <tbody id="tabla-body"></tbody>
+    </table>
+  </div>
+
+</div>
+
+<script src="js/vigia-api.js"></script>
+<script>
+
+const PREFIJO_DOCS = localStorage.getItem('vigia_prefijo_docs') || 'SG-SST';
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Catálogo de documentos SG-SST
+// medio:       M=Magnético  FM=Físico/Magnético
+// retencion:   años de retención legal
+// disposicion: CT=Conservación Total  M=Microfilmación  D=Destrucción
+// ═══════════════════════════════════════════════════════════════════════════
+const DOCS = [
+  // ── FORMATOS ─────────────────────────────────────────────────────────────
+  { c:'SG-SST F001', n:'Listado Maestro de Documentos y Registros',                                             t:'F', medio:'M',  retencion:20, disposicion:'CT', area:'SST', v:1, min:true, link:'listado-maestro.html',  linkLabel:'📁 Ver listado' },
+  { c:'SG-SST F002', n:'Plan de Mejoramiento — Estándares mínimos SG-SST',                                      t:'F', medio:'M',  retencion:20, disposicion:'CT', area:'SST', v:1, min:true, link:'evaluacion-sst.html',   linkLabel:'📋 Evaluación' },
+  { c:'SG-SST F003', n:'Formato de Asistencia (inducción / capacitación)',                                       t:'F', medio:'FM', retencion:20, disposicion:'CT', area:'SST', v:1, min:true, link:'capacitaciones.html',   linkLabel:'🎓 Capacitaciones' },
+  { c:'SG-SST F004', n:'Carta de Recomendaciones médicas laborales y compromiso de cumplimiento',                t:'F', medio:'FM', retencion:20, disposicion:'CT', area:'SST', v:1, min:true, link:'dashboard.html',        linkLabel:'🏥 Exámenes' },
+  { c:'SG-SST F005', n:'Formato de designación — Responsable del diseño del SG-SST',                            t:'F', medio:'FM', retencion:20, disposicion:'CT', area:'SST', v:1, min:true, link:'perfil-responsable.html',linkLabel:'🪪 Responsable' },
+  { c:'SG-SST F006', n:'Encuesta de resultados del perfil Sociodemográfico',                                     t:'F', medio:'FM', retencion:5,  disposicion:'M',  area:'SST', v:1 },
+  { c:'SG-SST F007', n:'Inventario de Tareas de Trabajo en Alturas',                                            t:'F', medio:'M',  retencion:5,  disposicion:'M',  area:'SST', v:1 },
+  { c:'SG-SST F008', n:'Convocatoria para elegir representantes al COPASST y Comité de Convivencia Laboral',    t:'F', medio:'FM', retencion:20, disposicion:'CT', area:'SST', v:1 },
+  { c:'SG-SST F009', n:'Acta de Apertura de elecciones de los miembros del COPASST',                           t:'F', medio:'FM', retencion:20, disposicion:'CT', area:'SST', v:1 },
+  { c:'SG-SST F010', n:'Acta de Cierre de elecciones de los miembros del COPASST',                             t:'F', medio:'FM', retencion:20, disposicion:'CT', area:'SST', v:1 },
+  { c:'SG-SST F011', n:'Acta de Conformación COPASST',                                                          t:'F', medio:'FM', retencion:20, disposicion:'CT', area:'SST', v:1 },
+  { c:'SG-SST F012', n:'Acta de Apertura de elecciones de los miembros del COCOLAB',                           t:'F', medio:'FM', retencion:20, disposicion:'CT', area:'SST', v:1 },
+  { c:'SG-SST F013', n:'Acta de Cierre de elecciones de los miembros del COCOLAB',                             t:'F', medio:'FM', retencion:20, disposicion:'CT', area:'SST', v:1 },
+  { c:'SG-SST F014', n:'Acta de Conformación COCOLAB',                                                          t:'F', medio:'FM', retencion:20, disposicion:'CT', area:'SST', v:1 },
+  { c:'SG-SST F015', n:'Formato de designación de representantes al Comité de Convivencia Laboral',             t:'F', medio:'FM', retencion:20, disposicion:'CT', area:'SST', v:1 },
+  { c:'SG-SST F016', n:'Formato de auditoría de uso de EPP',                                                    t:'F', medio:'FM', retencion:5,  disposicion:'M',  area:'SST', v:1 },
+  { c:'SG-SST F017', n:'Formato de Gestión del Cambio',                                                         t:'F', medio:'M',  retencion:5,  disposicion:'M',  area:'SST', v:1 },
+  { c:'SG-SST F018', n:'Plan Anual de Trabajo',                                                                  t:'F', medio:'M',  retencion:5,  disposicion:'CT', area:'SST', v:1, link:'plan-trabajo.html',  linkLabel:'📅 Plan SST' },
+  { c:'SG-SST F019', n:'Formato Guión Simulacro/Simulación de Emergencias',                                     t:'F', medio:'M',  retencion:5,  disposicion:'M',  area:'SST', v:1 },
+  { c:'SG-SST F020', n:'Directorio Telefónico Externo para la Atención de Emergencias',                         t:'F', medio:'M',  retencion:5,  disposicion:'M',  area:'SST', v:1 },
+  { c:'SG-SST F021', n:'Cronograma de Capacitaciones en SST',                                                   t:'F', medio:'M',  retencion:20, disposicion:'CT', area:'SST', v:1, link:'capacitaciones.html', linkLabel:'🎓 Capacitaciones' },
+  { c:'SG-SST F022', n:'Formato de comunicación interna y externa',                                              t:'F', medio:'FM', retencion:5,  disposicion:'M',  area:'SST', v:1 },
+  { c:'SG-SST F023', n:'Formato selección, evaluación y reevaluación de proveedores',                           t:'F', medio:'FM', retencion:5,  disposicion:'M',  area:'SST', v:1 },
+  { c:'SG-SST F024', n:'Formato de Acciones Correctivas, Preventivas y de Mejora',                              t:'F', medio:'M',  retencion:5,  disposicion:'M',  area:'SST', v:1 },
+  { c:'SG-SST F025', n:'Acta de Reunión',                                                                        t:'F', medio:'FM', retencion:5,  disposicion:'M',  area:'SST', v:1 },
+  { c:'SG-SST F026', n:'Acta de cierre elecciones del Comité de Convivencia Laboral',                           t:'F', medio:'FM', retencion:20, disposicion:'CT', area:'SST', v:1 },
+  { c:'SG-SST F027', n:'Formato de reporte de condiciones y actos inseguros',                                   t:'F', medio:'FM', retencion:5,  disposicion:'M',  area:'SST', v:1, link:'investigaciones.html', linkLabel:'🔍 AT/Incidentes' },
+  { c:'SG-SST F028', n:'Formato de comunicación para quejas al Comité de Convivencia Laboral',                  t:'F', medio:'FM', retencion:20, disposicion:'CT', area:'SST', v:1 },
+  { c:'SG-SST F029', n:'Cronograma de Capacitaciones en SST para integrantes del COCOLAB',                     t:'F', medio:'FM', retencion:5,  disposicion:'M',  area:'SST', v:1 },
+  { c:'SG-SST F030', n:'Formato de Informe para la Revisión por la Alta Dirección',                             t:'F', medio:'M',  retencion:5,  disposicion:'CT', area:'SST', v:1 },
+  { c:'SG-SST F031', n:'Bitácora de Comunicaciones Internas y Externas',                                        t:'F', medio:'FM', retencion:5,  disposicion:'M',  area:'SST', v:1 },
+  { c:'SG-SST F032', n:'Plan de Auditoría Interna',                                                             t:'F', medio:'M',  retencion:5,  disposicion:'M',  area:'SST', v:1 },
+  { c:'SG-SST F033', n:'Formato de Informe de Auditoría Interna',                                               t:'F', medio:'M',  retencion:5,  disposicion:'M',  area:'SST', v:1 },
+  { c:'SG-SST F034', n:'Lista de Chequeo de la Auditoría Interna',                                              t:'F', medio:'M',  retencion:5,  disposicion:'M',  area:'SST', v:1 },
+  { c:'SG-SST F035', n:'Formato de Acciones Correctivas, Preventivas y de Mejora (seguimiento)',                t:'F', medio:'M',  retencion:5,  disposicion:'M',  area:'SST', v:1 },
+  { c:'SG-SST F036', n:'Formato de Evaluación de Auditores Internos',                                           t:'F', medio:'FM', retencion:5,  disposicion:'M',  area:'SST', v:1 },
+  { c:'SG-SST F037', n:'Formato de entrega de EPP',                                                             t:'F', medio:'FM', retencion:20, disposicion:'CT', area:'SST', v:1, link:'epp.html', linkLabel:'🦺 EPP' },
+  { c:'SG-SST F038', n:'Formato de reposición de EPP',                                                          t:'F', medio:'FM', retencion:20, disposicion:'CT', area:'SST', v:1, link:'epp.html', linkLabel:'🦺 EPP' },
+  { c:'SG-SST F039', n:'Formato de auditoría de uso de EPP',                                                    t:'F', medio:'FM', retencion:5,  disposicion:'M',  area:'SST', v:1 },
+  { c:'SG-SST F040', n:'Formato de Gestión del Cambio en SST',                                                  t:'F', medio:'M',  retencion:5,  disposicion:'M',  area:'SST', v:1 },
+  { c:'SG-SST F041', n:'Formato de Investigación de Accidentes e Incidentes de Trabajo',                        t:'F', medio:'FM', retencion:5,  disposicion:'M',  area:'SST', v:1, link:'investigaciones.html', linkLabel:'🔍 AT/Incidentes' },
+  { c:'SG-SST F042', n:'Formato requisición de compra de productos o contratación de servicios',                t:'F', medio:'FM', retencion:5,  disposicion:'M',  area:'SST', v:1 },
+  { c:'SG-SST F043', n:'Formato selección, evaluación y reevaluación de proveedores',                           t:'F', medio:'FM', retencion:5,  disposicion:'M',  area:'SST', v:1 },
+  { c:'SG-SST F044', n:'Formato de Informe de Simulacro/Simulación de Emergencias',                             t:'F', medio:'FM', retencion:5,  disposicion:'M',  area:'SST', v:1 },
+  { c:'SG-SST F045', n:'Formato Guión Simulacro/Simulación de Emergencias',                                     t:'F', medio:'M',  retencion:5,  disposicion:'M',  area:'SST', v:1 },
+  { c:'SG-SST F046', n:'Formato de Inspección de Equipos de Emergencia',                                        t:'F', medio:'FM', retencion:5,  disposicion:'M',  area:'SST', v:1 },
+  { c:'SG-SST F047', n:'Formato para presentar quejas de Acoso Laboral',                                        t:'F', medio:'FM', retencion:20, disposicion:'CT', area:'SST', v:1 },
+  { c:'SG-SST F048', n:'Formato de Entrega de Dotación',                                                        t:'F', medio:'FM', retencion:20, disposicion:'CT', area:'SST', v:1 },
+  { c:'SG-SST F049', n:'Evaluación Inducción/Reinducción SG-SST',                                               t:'F', medio:'FM', retencion:20, disposicion:'CT', area:'SST', v:1, link:'capacitaciones.html', linkLabel:'🎓 Capacitaciones' },
+  { c:'SG-SST F050', n:'Formato Plan de Capacitación, Inducción y Entrenamiento en SST',                        t:'F', medio:'M',  retencion:20, disposicion:'CT', area:'SST', v:1, link:'capacitaciones.html', linkLabel:'🎓 Capacitaciones' },
+  { c:'SG-SST F051', n:'Formato de Trabajo Anual de Seguridad y Salud en el Trabajo',                           t:'F', medio:'M',  retencion:5,  disposicion:'CT', area:'SST', v:1, link:'plan-trabajo.html',   linkLabel:'📅 Plan SST' },
+  { c:'SG-SST F052', n:'Formato de Inscripción del Brigadista',                                                  t:'F', medio:'FM', retencion:5,  disposicion:'D',  area:'SST', v:1 },
+  { c:'SG-SST F053', n:'Acta de Constitución y Posesión de miembros del Comité de Convivencia Laboral',         t:'F', medio:'FM', retencion:5,  disposicion:'M',  area:'SST', v:1 },
+
+  // ── MATRICES ─────────────────────────────────────────────────────────────
+  { c:'SG-SST M001', n:'Matriz de identificación de peligros y valoración de riesgos (GTC-45)',                 t:'M', medio:'M',  retencion:20, disposicion:'CT', area:'SST', v:1, min:true, link:'matriz-peligros.html', linkLabel:'⚠️ Peligros' },
+  { c:'SG-SST M002', n:'Matriz de seguimiento de exámenes médicos ocupacionales',                                t:'M', medio:'M',  retencion:20, disposicion:'CT', area:'SST', v:1, min:true, link:'dashboard.html',       linkLabel:'🏥 Exámenes' },
+  { c:'SG-SST M003', n:'Matriz de Roles y Responsabilidades en el SG-SST',                                      t:'M', medio:'M',  retencion:20, disposicion:'CT', area:'SST', v:1 },
+  { c:'SG-SST M004', n:'Matriz de Elementos de Protección Personal',                                            t:'M', medio:'M',  retencion:20, disposicion:'CT', area:'SST', v:1, link:'epp.html',             linkLabel:'🦺 EPP' },
+  { c:'SG-SST M005', n:'Matriz de objetivos, metas e indicadores del SG-SST',                                   t:'M', medio:'M',  retencion:5,  disposicion:'M',  area:'SST', v:1 },
+  { c:'SG-SST M006', n:'Matriz de análisis de vulnerabilidad y riesgo',                                         t:'M', medio:'M',  retencion:5,  disposicion:'M',  area:'SST', v:1 },
+  { c:'SG-SST M007', n:'Matriz legal SG-SST (requisitos legales aplicables)',                                   t:'M', medio:'M',  retencion:5,  disposicion:'CT', area:'SST', v:1 },
+
+  // ── PROCEDIMIENTOS ────────────────────────────────────────────────────────
+  { c:'SG-SST P001', n:'Procedimiento de Control de la Documentación',                                          t:'P', medio:'M',  retencion:5,  disposicion:'CT', area:'SST', v:1 },
+  { c:'SG-SST P002', n:'Procedimiento para la Conformación y Funcionamiento del COPASST y COCOLAB',             t:'P', medio:'M',  retencion:20, disposicion:'CT', area:'SST', v:1 },
+  { c:'SG-SST P003', n:'Programa de Prevención y Protección contra Caídas en Alturas',                         t:'P', medio:'M',  retencion:5,  disposicion:'CT', area:'SST', v:1 },
+  { c:'SG-SST P004', n:'Procedimiento Operativo Normalizado (P.O.N.) incendio o explosión',                     t:'P', medio:'M',  retencion:5,  disposicion:'M',  area:'SST', v:1 },
+  { c:'SG-SST P005', n:'Procedimiento de Comunicación Interna y Externa',                                        t:'P', medio:'M',  retencion:5,  disposicion:'CT', area:'SST', v:1 },
+  { c:'SG-SST P006', n:'Procedimiento de Gestión del Cambio en SST',                                            t:'P', medio:'M',  retencion:5,  disposicion:'CT', area:'SST', v:1 },
+  { c:'SG-SST P007', n:'Procedimiento de Investigación y Reporte de Accidentes y Enfermedades Laborales',       t:'P', medio:'M',  retencion:5,  disposicion:'M',  area:'SST', v:1, link:'investigaciones.html', linkLabel:'🔍 AT/Incidentes' },
+  { c:'SG-SST P008', n:'Procedimiento de Auditoría Interna',                                                     t:'P', medio:'M',  retencion:5,  disposicion:'M',  area:'SST', v:1 },
+  { c:'SG-SST P009', n:'Procedimiento Operativo Normalizado (P.O.N.) para sismo',                               t:'P', medio:'M',  retencion:5,  disposicion:'M',  area:'SST', v:1 },
+  { c:'SG-SST P010', n:'Procedimiento Operativo Normalizado (P.O.N.) para accidentes de tránsito',              t:'P', medio:'M',  retencion:5,  disposicion:'M',  area:'SST', v:1 },
+  { c:'SG-SST P011', n:'Procedimiento Operativo Normalizado (P.O.N.) incendio o explosión (actualización)',     t:'P', medio:'M',  retencion:5,  disposicion:'M',  area:'SST', v:1 },
+  { c:'SG-SST P012', n:'Procedimiento para Adquisiciones y Compras de SST',                                     t:'P', medio:'M',  retencion:5,  disposicion:'M',  area:'SST', v:1 },
+  { c:'SG-SST P013', n:'Procedimiento de Acciones Correctivas y Preventivas',                                    t:'P', medio:'M',  retencion:5,  disposicion:'M',  area:'SST', v:1 },
+
+  // ── DOCUMENTOS ────────────────────────────────────────────────────────────
+  { c:'SG-SST D001', n:'Política de Seguridad y Salud en el Trabajo',                                           t:'D', medio:'FM', retencion:5,  disposicion:'M',  area:'SST', v:1, min:true },
+  { c:'SG-SST D002', n:'Reglamento de Higiene y Seguridad Industrial',                                          t:'D', medio:'M',  retencion:5,  disposicion:'M',  area:'SST', v:1, min:true },
+  { c:'SG-SST D003', n:'Protocolos ante la Emergencia sanitaria por CORONAVIRUS COVID-19',                      t:'D', medio:'M',  retencion:5,  disposicion:'M',  area:'SST', v:1 },
+  { c:'SG-SST D004', n:'Objetivos del SG-SST',                                                                   t:'D', medio:'M',  retencion:5,  disposicion:'M',  area:'SST', v:1 },
+  { c:'SG-SST D005', n:'Plan de Prevención, Preparación y Respuesta ante Emergencias',                          t:'D', medio:'M',  retencion:5,  disposicion:'M',  area:'SST', v:1 },
+  { c:'SG-SST D006', n:'Programa de Elementos de Protección Personal',                                          t:'D', medio:'M',  retencion:5,  disposicion:'M',  area:'SST', v:1 },
+  { c:'SG-SST D007', n:'Manual de Seguridad y Salud en el Trabajo para Contratistas',                           t:'D', medio:'M',  retencion:5,  disposicion:'M',  area:'SST', v:1 },
+  { c:'SG-SST D008', n:'Planes de Acción para Emergencias',                                                      t:'D', medio:'M',  retencion:5,  disposicion:'M',  area:'SST', v:1 },
+  { c:'SG-SST D009', n:'Programa de prevención del contagio del Coronavirus (COVID-19)',                         t:'D', medio:'M',  retencion:5,  disposicion:'M',  area:'SST', v:1 },
+
+  // ── REGISTROS ─────────────────────────────────────────────────────────────
+  { c:'SG-SST R001', n:'Evaluación inicial SG-SST (Res. 0312/2019)',                                             t:'R', medio:'M',  retencion:20, disposicion:'CT', area:'SST', v:1, min:true, link:'evaluacion-sst.html',   linkLabel:'📋 Evaluación' },
+  { c:'SG-SST R002', n:'Registro de exámenes médicos ocupacionales',                                             t:'R', medio:'FM', retencion:20, disposicion:'CT', area:'SST', v:1, min:true, link:'dashboard.html',        linkLabel:'🏥 Exámenes' },
+  { c:'SG-SST R003', n:'Registro de accidentes, incidentes y enfermedades laborales',                           t:'R', medio:'FM', retencion:20, disposicion:'CT', area:'SST', v:1, min:true, link:'investigaciones.html',   linkLabel:'🔍 AT/Incidentes' },
+  { c:'SG-SST R004', n:'Registro de capacitaciones y entrenamientos en SST',                                    t:'R', medio:'FM', retencion:20, disposicion:'CT', area:'SST', v:1, min:true, link:'capacitaciones.html',    linkLabel:'🎓 Capacitaciones' },
+  { c:'SG-SST R005', n:'Profesiograma de exámenes médicos por cargo / área',                                    t:'R', medio:'M',  retencion:20, disposicion:'CT', area:'SST', v:1, link:'profesiograma.html',  linkLabel:'💊 Profesiograma' },
+  { c:'SG-SST R006', n:'Análisis PHVA — cumplimiento Res. 0312/2019',                                           t:'R', medio:'M',  retencion:20, disposicion:'CT', area:'SST', v:1, link:'analisis-phva.html',   linkLabel:'📊 Análisis' },
+  { c:'SG-SST R007', n:'Acta de Entrega de Elementos de Protección Personal',                                   t:'R', medio:'FM', retencion:20, disposicion:'CT', area:'SST', v:1, min:true, link:'epp.html',             linkLabel:'🦺 EPP' },
+];
+
+// ═══════════════════════════════════════════════════════════════════════════
+const TIPO_LABEL  = { F:'Formato', M:'Matriz', P:'Procedimiento', D:'Documento', R:'Registro' };
+const TIPO_COLORS = { F:'#2563EB', M:'#16A34A', P:'#EA580C', D:'#9333EA', R:'#DB2777' };
+const MEDIO_LABEL = { M:'Magnético', FM:'Físico / Magnético' };
+const DISP_LABEL  = { CT:'CT: Conservación Total', M:'M: Microfilmación', D:'D: Destrucción' };
+
+let filtroActivo = 'ALL';
+
+// ─── Config (empresa, lugar, fecha) ─────────────────────────────────────────
+function cargarConfig() {
+  const empresa  = localStorage.getItem('vigia_lm_empresa')  || '';
+  const lugar    = localStorage.getItem('vigia_lm_lugar')    || 'Servidor Vigía';
+  const fecha    = localStorage.getItem('vigia_lm_fecha')    || new Date().toISOString().slice(0,10);
+  document.getElementById('cfg-empresa').value = empresa;
+  document.getElementById('cfg-lugar').value   = lugar;
+  document.getElementById('cfg-fecha').value   = fecha;
+}
+function guardarConfig() {
+  localStorage.setItem('vigia_lm_empresa', document.getElementById('cfg-empresa').value);
+  localStorage.setItem('vigia_lm_lugar',   document.getElementById('cfg-lugar').value);
+  localStorage.setItem('vigia_lm_fecha',   document.getElementById('cfg-fecha').value);
+  renderTabla(DOCS);
+}
+
+function getConfig() {
+  return {
+    empresa: document.getElementById('cfg-empresa')?.value || '',
+    lugar:   document.getElementById('cfg-lugar')?.value   || 'Servidor Vigía',
+    fecha:   document.getElementById('cfg-fecha')?.value   || new Date().toISOString().slice(0,10),
+  };
+}
+
+function formatFecha(iso) {
+  if (!iso) return '—';
+  const [y,m,d] = iso.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+// ─── Resumen ─────────────────────────────────────────────────────────────────
+function renderResumen(docs) {
+  const counts = {};
+  for (const d of docs) counts[d.t] = (counts[d.t] || 0) + 1;
+  const minTotal  = docs.filter(d => d.min).length;
+  const ret20     = docs.filter(d => d.retencion === 20).length;
+
+  document.getElementById('resumen-bar').innerHTML =
+    `<span class="resumen-chip" style="background:#EFF6FF;color:#1D4ED8">${counts.F||0} Formatos</span>` +
+    `<span class="resumen-chip" style="background:#F0FDF4;color:#166534">${counts.M||0} Matrices</span>` +
+    `<span class="resumen-chip" style="background:#FFF7ED;color:#9A3412">${counts.P||0} Procedimientos</span>` +
+    `<span class="resumen-chip" style="background:#FAF5FF;color:#6B21A8">${counts.D||0} Documentos</span>` +
+    `<span class="resumen-chip" style="background:#FFF1F2;color:#9F1239">${counts.R||0} Registros</span>` +
+    `<span class="resumen-chip" style="background:#FFFBEB;color:#92400E">⭐ ${minTotal} mínimos Res. 0312</span>` +
+    `<span class="resumen-chip" style="background:#ECFDF5;color:#065F46">⏳ ${ret20} retención 20 años</span>` +
+    `<span class="resumen-chip" style="background:var(--bg);color:var(--navy);border:1px solid var(--border)">Total: ${docs.length}</span>`;
+}
+
+// ─── Tabla ────────────────────────────────────────────────────────────────────
+function renderTabla(docs) {
+  const { lugar, fecha, empresa } = getConfig();
+  const q = (document.getElementById('lm-busqueda')?.value || '').trim().toLowerCase();
+
+  let filtered;
+  if (filtroActivo === '20')  filtered = docs.filter(d => d.retencion === 20);
+  else if (filtroActivo === 'ALL') filtered = docs;
+  else filtered = docs.filter(d => d.t === filtroActivo);
+
+  if (q) {
+    const prefijo = (localStorage.getItem('vigia_prefijo_docs') || 'SG-SST').toLowerCase();
+    filtered = filtered.filter(d => {
+      const codigo = d.c.replace(/^SG-SST /i, prefijo + ' ').toLowerCase();
+      return codigo.includes(q) || d.n.toLowerCase().includes(q);
+    });
+  }
+
+  // Mostrar mensaje si no hay resultados
+  if (filtered.length === 0) {
+    document.getElementById('tabla-body').innerHTML =
+      `<tr><td colspan="13" style="text-align:center;padding:24px;color:var(--muted);font-size:13px">
+         No se encontraron documentos para "<strong>${q || filtroActivo}</strong>"
+       </td></tr>`;
+    return;
+  }
+
+  const fechaFmt = formatFecha(fecha);
+
+  document.getElementById('tabla-body').innerHTML = filtered.map(d => {
+    const isMin     = d.min ? ' highlight' : '';
+    const badgeClass= `t-${d.t}`;
+    const linkHtml  = d.link
+      ? `<a href="${d.link}" class="link-modulo">${d.linkLabel}</a>`
+      : '<span style="color:var(--muted);font-size:10px">—</span>';
+    const minStar   = d.min ? ' <span style="color:#D97706;font-size:9px">⭐</span>' : '';
+    const codigo    = d.c.replace(/^SG-SST /, PREFIJO_DOCS + ' ');
+    const retStyle  = d.retencion === 20 ? 'color:#065F46;font-weight:800' : 'color:var(--muted)';
+    const medioLabel= MEDIO_LABEL[d.medio] || d.medio;
+    const dispClass = `disp-${d.disposicion}`;
+    const dispLabel = DISP_LABEL[d.disposicion] || d.disposicion;
+    const lugarCell = lugar + (empresa ? ` · ${empresa}` : '');
+
+    return `<tr class="${isMin}">
+      <td class="code-cell" style="color:${TIPO_COLORS[d.t]}">${codigo}</td>
+      <td style="max-width:280px;line-height:1.35">${d.n}${minStar}</td>
+      <td><span class="tipo-badge ${badgeClass}">${TIPO_LABEL[d.t]}</span></td>
+      <td style="font-size:10px;color:var(--muted)">${medioLabel}</td>
+      <td style="font-size:10px;color:var(--muted);max-width:160px">${lugarCell}</td>
+      <td style="font-size:10px;color:var(--muted)">${d.area}</td>
+      <td style="font-size:10px;white-space:nowrap">${fechaFmt}</td>
+      <td style="font-size:10px;color:var(--muted)">N/A</td>
+      <td style="text-align:center;font-size:10px;font-weight:700">${d.v}</td>
+      <td><span class="estado-vigente">Vigente</span></td>
+      <td style="text-align:center;font-size:10px;font-weight:800;${retStyle}">${d.retencion}</td>
+      <td><span class="${dispClass}">${dispLabel}</span></td>
+      <td class="no-print">${linkHtml}</td>
+      <td class="no-print">${renderDriveCell(d.c)}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ─── Drive links ──────────────────────────────────────────────────────────────
+let linksMap = {};   // { 'SG-SST F001': 'https://drive.google.com/...' }
+
+function renderDriveCell(codigo) {
+  const url = linksMap[codigo] || linksMap[codigo.replace(/^[^ ]+ /, 'SG-SST ')];
+  const uid = 'dl-' + codigo.replace(/[\s-]/g, '_');
+  if (url) {
+    return `<div class="drive-cell">
+      <a href="${url}" target="_blank" rel="noopener" class="drive-link">🔗 Ver</a>
+      <button class="drive-del" title="Quitar enlace" onclick="editarDriveLink('${codigo}','${uid}',true)">✕</button>
+    </div>`;
+  }
+  return `<div class="drive-cell">
+    <button class="drive-add" onclick="editarDriveLink('${codigo}','${uid}',false)">+ Pegar enlace</button>
+  </div>`;
+}
+
+function editarDriveLink(codigo, uid, borrar) {
+  if (borrar) {
+    if (!confirm('¿Quitar el enlace de este documento?')) return;
+    guardarDriveLink(codigo, '');
+    return;
+  }
+  const url = prompt('Pega el enlace de Google Drive (o cualquier URL):',
+    linksMap[codigo] || '');
+  if (url === null) return;
+  guardarDriveLink(codigo, url.trim());
+}
+
+async function guardarDriveLink(codigo, url) {
+  try {
+    await VigiaAPI.setDocLink(codigo, url);
+    if (url) linksMap[codigo] = url;
+    else delete linksMap[codigo];
+    renderTabla(DOCS);
+  } catch(e) {
+    alert('Error al guardar: ' + e.message);
+  }
+}
+
+function filtrar(tipo, btn) {
+  filtroActivo = tipo;
+  document.querySelectorAll('.tipo-pill').forEach(p => {
+    p.classList.remove('active');
+    p.style.background = ''; p.style.borderColor = ''; p.style.color = '';
+  });
+  btn.classList.add('active');
+  const col = tipo === '20' ? '#065F46' : (tipo === 'ALL' ? '#1A3A5C' : TIPO_COLORS[tipo] || '#1A3A5C');
+  btn.style.background = col; btn.style.borderColor = 'transparent'; btn.style.color = '#fff';
+  renderTabla(DOCS);
+}
+
+async function init() {
+  const ok = await VigiaAPI.requireAuth();
+  if (!ok) return;
+
+  // Precarga el nombre de la empresa en la config
+  if (!VigiaAPI.esAdmin()) {
+    try {
+      const empresas = await VigiaAPI.getEmpresas();
+      if (empresas?.[0]?.nombre) {
+        document.getElementById('nav-empresa').textContent = '🏢 ' + empresas[0].nombre;
+        if (!localStorage.getItem('vigia_lm_empresa'))
+          document.getElementById('cfg-empresa').value = empresas[0].nombre;
+      }
+    } catch(e) {}
+  } else {
+    document.getElementById('nav-empresa').textContent = '👑 Admin';
+  }
+
+  const codigo = `${PREFIJO_DOCS} F001`;
+  document.getElementById('lm-codigo').textContent = codigo;
+  document.getElementById('lm-subtitulo').innerHTML =
+    `${PREFIJO_DOCS} · Res. 0312/2019 · Dec. 1072/2015 art. 2.2.4.6.13 · Código: <strong>${codigo}</strong> · Versión: 1`;
+
+  cargarConfig();
+  renderResumen(DOCS);
+
+  // Cargar enlaces de Drive guardados por esta empresa
+  try {
+    linksMap = await VigiaAPI.getDocLinks() || {};
+  } catch(e) { linksMap = {}; }
+
+  renderTabla(DOCS);
+}
+
+init();
+</script>
+<script src="js/vigia-chat.js"></script>
+</body>
+</html>
+

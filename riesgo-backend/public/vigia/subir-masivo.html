@@ -1,0 +1,743 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vigía 360 — Carga masiva</title>
+  <link rel="stylesheet" href="vigia.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="dashboard.html" style="display:flex;align-items:center;gap:10px;text-decoration:none">
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="36" viewBox="0 0 34 38">
+      <path d="M17 1L2 7V21C2 30 9 37 17 39C25 37 32 30 32 21V7Z" fill="rgba(255,255,255,0.15)" stroke="white" stroke-width="1.5"/>
+      <circle cx="12" cy="19" r="4.5" fill="white" opacity="0.9"/>
+      <circle cx="22" cy="19" r="4.5" fill="white" opacity="0.9"/>
+      <circle cx="12" cy="19" r="2" fill="rgba(26,58,92,0.8)"/>
+      <circle cx="22" cy="19" r="2" fill="rgba(26,58,92,0.8)"/>
+      <polygon points="15,25 17,28 19,25" fill="white" opacity="0.7"/>
+    </svg>
+    <span style="color:white;font-weight:800;font-size:17px;letter-spacing:0.5px">VIGÍA <span style="color:#4ADE80;font-weight:900">360</span></span>
+  </a>
+  <div class="nav-links">
+    <a href="dashboard.html" class="nav-link-fixed">Dashboard</a>
+
+    <!-- P — Planear -->
+    <div class="nav-dropdown" id="dd-P">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-P')">
+        <span class="phva-pill phva-P">P</span> Planear <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="perfil-responsable.html">🩺 Responsable SST</a>
+        <a href="responsabilidades.html">👥 Roles y Responsabilidades</a>
+        <a href="copasst.html">🤝 COPASST y Convivencia</a>
+        <a href="documentos-sst.html">📄 Documentos del SG-SST</a>
+        <a href="matriz-peligros.html">⚠️ Matriz de Peligros (GTC-45)</a>
+        <a href="plan-trabajo.html">📅 Plan de Trabajo Anual</a>
+        <a href="presupuesto-sgsst.html">💰 Presupuesto SG-SST</a>
+        <a href="profesiograma.html">💊 Profesiograma</a>
+      </div>
+    </div>
+
+    <!-- H — Hacer -->
+    <div class="nav-dropdown" id="dd-H">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-H')">
+        <span class="phva-pill phva-H">H</span> Hacer <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="epp.html">🦺 EPP</a>
+        <a href="capacitaciones.html">🎓 Capacitaciones</a>
+        <a href="emergencias.html">🚨 Emergencias y Brigada</a>
+        <a href="inspecciones.html">🔍 Inspecciones y Mantenimiento</a>
+        <a href="perfil-salud.html">🏥 Salud Ocupacional</a>
+        <div class="nav-dd-divider"></div>
+        <a href="lista-personal.html">👥 Lista de Personal</a>
+        <a href="subir.html">⬆️ Subir Examen</a>
+        <a href="subir-masivo.html">📦 Carga Masiva</a>
+        <a href="cartas-masivas.html">📄 Cartas Masivas</a>
+        <a href="reporte-examenes.html">📊 Cobertura de Exámenes</a>
+        <a href="informe-condiciones.html">📋 Informe de Condiciones</a>
+      </div>
+    </div>
+
+    <!-- V — Verificar -->
+    <div class="nav-dropdown" id="dd-V">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-V')">
+        <span class="phva-pill phva-V">V</span> Verificar <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="evaluacion-sst.html">📋 Evaluación (Res. 0312)</a>
+        <a href="investigaciones.html">🔍 AT / Incidentes</a>
+        <a href="ausentismo.html">📉 Ausentismo laboral</a>
+        <a href="indicadores-sgsst.html">📊 Indicadores SG-SST</a>
+        <a href="analisis-phva.html">📈 Análisis e Indicadores</a>
+      </div>
+    </div>
+
+    <!-- A — Actuar -->
+    <div class="nav-dropdown" id="dd-A">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-A')">
+        <span class="phva-pill phva-A">A</span> Actuar <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="mejoramiento.html">✅ Acciones de Mejoramiento</a>
+        <a href="evaluacion-sst.html">📝 Plan de Mejoramiento (F002)</a>
+      </div>
+    </div>
+
+    <a href="listado-maestro.html" class="nav-link-fixed">📁 Listado Maestro</a>
+    <span id="nav-empresa" style="color:#CBD8E6;font-size:13px;padding:6px 0"></span>
+    <button onclick="VigiaAPI.logout()"
+      style="background:none;border:1px solid rgba(255,255,255,.2);color:#CBD8E6;
+             border-radius:6px;padding:6px 12px;cursor:pointer;font-size:13px">Salir</button>
+  </div>
+</nav>
+
+<div class="page" style="max-width:860px">
+  <div class="page-header">
+    <h1>Carga masiva de exámenes</h1>
+    <p>Sube varios exámenes a la vez: por PDF (extracción automática con IA) o por planilla Excel/CSV.</p>
+  </div>
+
+  <!-- Pestañas -->
+  <div style="display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:24px">
+    <button id="tab-pdf" onclick="cambiarTab('pdf')"
+      style="padding:10px 22px;border:none;background:none;font-size:14px;font-weight:700;
+             color:var(--blue);border-bottom:2px solid var(--blue);margin-bottom:-2px;cursor:pointer">
+      📂 PDFs con IA
+    </button>
+    <button id="tab-csv" onclick="cambiarTab('csv')"
+      style="padding:10px 22px;border:none;background:none;font-size:14px;font-weight:600;
+             color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer">
+      📊 Planilla CSV / Excel
+    </button>
+  </div>
+
+  <!-- ══════════════════ PESTAÑA PDF ══════════════════ -->
+  <div id="panel-pdf">
+    <div class="card" style="padding:28px;margin-bottom:20px">
+      <!-- Selector empresa (solo admin) -->
+      <div id="empresa-selector" class="hidden" style="margin-bottom:20px">
+        <div class="form-group">
+          <label>Empresa a la que pertenecen estos empleados</label>
+          <select id="sel-empresa" class="w-full">
+            <option value="">— Seleccionar empresa —</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="upload-zone" id="drop-zone" style="cursor:pointer">
+        <div class="upload-icon">📂</div>
+        <h3>Arrastra los PDFs aquí</h3>
+        <p>o haz clic para seleccionar varios archivos</p>
+        <p class="text-sm text-muted mt-4">Puedes seleccionar múltiples PDFs al mismo tiempo</p>
+      </div>
+      <input type="file" id="file-input" accept=".pdf" multiple class="hidden" />
+
+      <div id="files-info" class="hidden"
+           style="margin-top:14px;padding:10px 14px;background:var(--bg);border-radius:8px;
+                  font-size:14px;color:var(--blue);font-weight:600"></div>
+
+      <div class="mt-4 flex justify-between">
+        <a href="dashboard.html" class="btn btn-outline">← Volver</a>
+        <button class="btn btn-primary" id="btn-procesar" disabled onclick="procesarTodos()">
+          ▶ Procesar todos →
+        </button>
+      </div>
+    </div>
+
+    <!-- Resultados PDF -->
+    <div id="resultados" class="hidden">
+      <div class="flex justify-between items-center" style="margin-bottom:14px">
+        <h2 style="font-size:18px;color:var(--navy)">Resultados</h2>
+        <span id="resumen" style="font-size:13px;color:var(--muted)"></span>
+      </div>
+      <div id="lista" style="display:flex;flex-direction:column;gap:10px"></div>
+      <div class="flex gap-3 justify-end mt-6">
+        <button class="btn btn-outline" onclick="reiniciar()">Cargar más PDFs</button>
+        <a href="dashboard.html" class="btn btn-primary">Ver dashboard →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════ PESTAÑA CSV ══════════════════ -->
+  <div id="panel-csv" style="display:none">
+    <div class="card" style="padding:28px;margin-bottom:20px">
+
+      <!-- Selector empresa admin -->
+      <div id="csv-empresa-selector" class="hidden" style="margin-bottom:20px">
+        <div class="form-group">
+          <label>Empresa</label>
+          <select id="csv-sel-empresa" class="w-full">
+            <option value="">— Seleccionar empresa —</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Paso 1: descargar plantilla -->
+      <div style="background:var(--bg);border-radius:10px;padding:18px 20px;margin-bottom:20px;
+                  border:1px solid var(--border)">
+        <div style="font-weight:700;color:var(--navy);margin-bottom:6px">
+          Paso 1 — Descarga la plantilla y llénala
+        </div>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:12px">
+          El archivo tiene una fila de ejemplo. Completa una fila por examen. Guárdalo como <strong>CSV</strong> desde Excel/LibreOffice.
+        </p>
+        <button class="btn btn-outline" onclick="descargarPlantilla()" style="font-size:13px">
+          ⬇️ Descargar plantilla CSV
+        </button>
+      </div>
+
+      <!-- Paso 2: subir archivo -->
+      <div style="background:var(--bg);border-radius:10px;padding:18px 20px;margin-bottom:20px;
+                  border:1px solid var(--border)">
+        <div style="font-weight:700;color:var(--navy);margin-bottom:6px">
+          Paso 2 — Sube el archivo diligenciado
+        </div>
+        <label class="btn btn-outline" style="cursor:pointer;font-size:13px;display:inline-block">
+          📂 Seleccionar archivo CSV
+          <input type="file" id="csv-file-input" accept=".csv,.txt" style="display:none" onchange="leerCSV(this)" />
+        </label>
+        <span id="csv-file-nombre" style="font-size:12px;color:var(--muted);margin-left:10px"></span>
+      </div>
+
+      <!-- Paso 3: previsualización -->
+      <div id="csv-preview-section" style="display:none">
+        <div style="font-weight:700;color:var(--navy);margin-bottom:10px">
+          Paso 3 — Revisa y confirma
+          <span id="csv-count-badge" style="font-weight:400;font-size:12px;color:var(--muted);margin-left:8px"></span>
+        </div>
+        <div style="overflow-x:auto;margin-bottom:16px;border:1px solid var(--border);border-radius:8px">
+          <table id="csv-preview-table" style="width:100%;border-collapse:collapse;font-size:12px">
+            <thead id="csv-thead" style="background:var(--bg)"></thead>
+            <tbody id="csv-tbody"></tbody>
+          </table>
+        </div>
+        <div id="csv-errores-prev" style="font-size:12px;color:#B45309;margin-bottom:12px"></div>
+        <div class="flex gap-3 justify-between">
+          <button class="btn btn-outline" onclick="limpiarCSV()">✕ Cancelar</button>
+          <button class="btn btn-primary" id="csv-btn-importar" onclick="importarCSV()">
+            ✅ Importar <span id="csv-n-importar"></span> exámenes
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Resultados CSV -->
+    <div id="csv-resultados" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <h2 style="font-size:18px;color:var(--navy)">Resultados de la importación</h2>
+        <span id="csv-resumen-txt" style="font-size:13px;color:var(--muted)"></span>
+      </div>
+      <div id="csv-lista-resultados" style="display:flex;flex-direction:column;gap:8px"></div>
+      <div class="flex gap-3 justify-end mt-6">
+        <button class="btn btn-outline" onclick="limpiarCSV()">Importar otro archivo</button>
+        <a href="lista-personal.html" class="btn btn-primary">Ver personal →</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="js/vigia-api.js"></script>
+<script src="js/alertas.js"></script>
+<script>
+  const SST_URL = 'https://riesgo-backend-production.up.railway.app/api/sst/analizar-examen';
+  pdfjsLib.GlobalWorkerOptions.workerSrc =
+    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+  let archivos = [];
+  let empresaId = null;
+
+  async function init() {
+    const ok = await VigiaAPI.requireAuth();
+    if (!ok) return;
+
+    if (VigiaAPI.esAdmin()) {
+      document.getElementById('empresa-selector').classList.remove('hidden');
+      document.getElementById('csv-empresa-selector').classList.remove('hidden');
+      const lista = await VigiaAPI.getEmpresas() || [];
+      const opts = '<option value="">— Seleccionar empresa —</option>' +
+        lista.map(e => `<option value="${e.id}">${e.nombre}</option>`).join('');
+      const sel    = document.getElementById('sel-empresa');
+      const selCsv = document.getElementById('csv-sel-empresa');
+      sel.innerHTML    = opts;
+      selCsv.innerHTML = opts;
+      sel.addEventListener('change',    () => { empresaId = sel.value; });
+      selCsv.addEventListener('change', () => { empresaId = selCsv.value; });
+    } else {
+      empresaId = VigiaAPI.empresaId();
+    }
+  }
+
+  // ── Drop zone ─────────────────────────────────────────────
+
+  const dropZone  = document.getElementById('drop-zone');
+  const fileInput = document.getElementById('file-input');
+
+  dropZone.addEventListener('click', () => fileInput.click());
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault(); dropZone.classList.remove('drag-over');
+    setArchivos(Array.from(e.dataTransfer.files).filter(f => f.type === 'application/pdf'));
+  });
+  fileInput.addEventListener('change', () => setArchivos(Array.from(fileInput.files)));
+
+  function setArchivos(files) {
+    archivos = files;
+    if (!files.length) return;
+
+    dropZone.innerHTML = `
+      <div class="upload-icon">📂</div>
+      <h3>${files.length} archivo${files.length > 1 ? 's' : ''} seleccionado${files.length > 1 ? 's' : ''}</h3>
+      <p class="text-muted" style="font-size:13px;max-width:500px;margin:0 auto;line-height:1.6">
+        ${files.map(f => f.name).join(' · ')}
+      </p>
+      <p class="text-sm text-muted mt-4">Haz clic para cambiar</p>`;
+
+    const info = document.getElementById('files-info');
+    info.textContent = `${files.length} PDF${files.length > 1 ? 's' : ''} listos para procesar`;
+    info.classList.remove('hidden');
+
+    document.getElementById('btn-procesar').disabled = false;
+  }
+
+  // ── Procesamiento ─────────────────────────────────────────
+
+  async function extraerTextoPDF(file) {
+    const buf = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+    let texto = '';
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const c    = await page.getTextContent();
+      texto += c.items.map(s => s.str).join(' ') + '\n';
+    }
+    return texto;
+  }
+
+  function crearFila(nombre) {
+    const id  = 'f' + Math.random().toString(36).slice(2);
+    const div = document.createElement('div');
+    div.id = id;
+    div.style.cssText =
+      'border:1px solid var(--border);border-radius:10px;padding:14px 18px;background:var(--card);transition:border-color .2s';
+    div.innerHTML = `
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-size:22px" id="${id}-ic">⏳</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:600;color:var(--navy);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${nombre}</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px" id="${id}-msg">En cola…</div>
+        </div>
+      </div>`;
+    document.getElementById('lista').appendChild(div);
+    return id;
+  }
+
+  function actualizarFila(id, icono, msg, tipo) {
+    const ic  = document.getElementById(`${id}-ic`);
+    const ms  = document.getElementById(`${id}-msg`);
+    const div = document.getElementById(id);
+    if (ic) ic.textContent = icono;
+    if (ms) { ms.textContent = msg; ms.style.color = tipo === 'error' ? 'var(--critico)' : 'var(--muted)'; }
+    if (div && tipo === 'error') div.style.borderColor = 'var(--critico)';
+    if (div && tipo === 'ok')    div.style.borderColor = 'var(--ok)';
+  }
+
+  function reemplazarFila(id, empId, nombre, cc, concepto, alertas) {
+    const div = document.getElementById(id);
+    const nivelCrit = alertas.some(a => a.nivel === 'CRITICO');
+    div.style.borderColor = nivelCrit ? 'var(--advertencia)' : 'var(--ok)';
+    div.innerHTML = `
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-size:22px">${nivelCrit ? '⚠️' : '✅'}</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:600;color:var(--navy);font-size:14px">
+            <a href="empleado.html?id=${empId}" target="_blank"
+               style="color:var(--navy);text-decoration:none">${nombre}</a>
+          </div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">
+            CC ${cc} · ${concepto || '—'} · ${alertas.length} alerta${alertas.length !== 1 ? 's' : ''}
+          </div>
+        </div>
+        <a href="empleado.html?id=${empId}" target="_blank"
+           class="btn btn-outline btn-sm" style="white-space:nowrap">Ver →</a>
+      </div>`;
+  }
+
+  async function procesarTodos() {
+    if (!archivos.length) return;
+    if (VigiaAPI.esAdmin() && !empresaId) {
+      mostrarToast('Selecciona la empresa primero', 'error'); return;
+    }
+
+    document.getElementById('btn-procesar').disabled = true;
+    document.getElementById('resultados').classList.remove('hidden');
+    document.getElementById('lista').innerHTML = '';
+    document.getElementById('resumen').textContent = '';
+
+    // Crear todas las filas en cola
+    const filaIds = archivos.map(f => crearFila(f.name));
+
+    let ok = 0, errores = 0;
+
+    for (let i = 0; i < archivos.length; i++) {
+      const file  = archivos[i];
+      const filaId = filaIds[i];
+
+      try {
+        actualizarFila(filaId, '📄', 'Leyendo PDF…');
+        const texto = await extraerTextoPDF(file);
+
+        if (!texto.trim()) {
+          throw new Error('PDF de imagen escaneada — no contiene texto extraíble. Usa "Subir Examen" para ingresar este examen manualmente.');
+        }
+
+        actualizarFila(filaId, '🤖', 'Analizando con IA…');
+        if (i > 0) await new Promise(r => setTimeout(r, 12000)); // 12s entre llamadas a Groq
+
+        // Llamada con reintento automático si Groq aplica rate limit
+        let resp, datos;
+        for (let intento = 1; intento <= 3; intento++) {
+          resp  = await fetch(SST_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ texto })
+          });
+          datos = await resp.json();
+          if (resp.ok) break;
+          const esRateLimit = resp.status === 429
+            || (datos.error || '').toLowerCase().includes('demasiados')
+            || (datos.error || '').includes('IA')
+            || (datos.detalle || '').includes('rate_limit');
+          if (esRateLimit) {
+            const espera = intento === 3 ? 120 : 60;
+            actualizarFila(filaId, '⏳', `Límite de IA — reintentando en ${espera} s… (intento ${intento}/3)`);
+            await new Promise(r => setTimeout(r, espera * 1000));
+          } else {
+            break;
+          }
+        }
+        if (!resp.ok) throw new Error(datos.error || `HTTP ${resp.status}`);
+
+        const emp = datos.empleado || {};
+        const ems = datos.empresa  || {};
+        const exa = datos.examen   || {};
+
+        if (!emp.cc)     throw new Error('No se encontró número de cédula en el PDF');
+        if (!emp.nombre) throw new Error('No se encontró nombre del empleado en el PDF');
+
+        actualizarFila(filaId, '💾', `Guardando ${emp.nombre}…`);
+
+        const empGuardado = await VigiaAPI.crearEmpleado({
+          cc:            emp.cc,
+          nombre:        emp.nombre,
+          empresa_id:    empresaId,
+          fecha_nac:     emp.fecha_nac    || null,
+          sexo:          emp.sexo         || null,
+          celular:       emp.celular      || null,
+          eps:           emp.eps          || null,
+          arl:           emp.arl          || null,
+          fondo_pension: emp.fondo_pension || null,
+          cargo:         ems.cargo        || null,
+          departamento:  ems.departamento || null,
+        });
+
+        const alertas = generarAlertas(
+          {
+            tipo:             exa.tipo,
+            fecha:            exa.fecha,
+            concepto_aptitud: exa.concepto_aptitud,
+            restricciones:    exa.restricciones   || [],
+            recomendaciones:  exa.recomendaciones || [],
+          },
+          { arl: emp.arl }
+        );
+
+        await VigiaAPI.agregarExamen({
+          empleado_id:         empGuardado.id,
+          tipo:                exa.tipo,
+          fecha:               exa.fecha,
+          ips:                 exa.ips          || null,
+          medico:              exa.medico       || null,
+          licencia_sst:        exa.licencia_sst || null,
+          concepto_aptitud:    exa.concepto_aptitud,
+          examenes_realizados: exa.examenes_realizados || [],
+          restricciones:       exa.restricciones       || [],
+          recomendaciones:     exa.recomendaciones     || [],
+          alertas,
+          pdf_nombre: file.name,
+        });
+
+        reemplazarFila(filaId, empGuardado.id, emp.nombre, emp.cc, exa.concepto_aptitud, alertas);
+        ok++;
+
+      } catch(e) {
+        actualizarFila(filaId, '❌', e.message, 'error');
+        errores++;
+      }
+    }
+
+    document.getElementById('resumen').textContent =
+      `${ok} guardado${ok !== 1 ? 's' : ''} · ${errores > 0 ? errores + ' con error' : 'sin errores'}`;
+  }
+
+  function reiniciar() {
+    archivos = [];
+    fileInput.value = '';
+    document.getElementById('resultados').classList.add('hidden');
+    document.getElementById('files-info').classList.add('hidden');
+    document.getElementById('btn-procesar').disabled = true;
+    dropZone.innerHTML = `
+      <div class="upload-icon">📂</div>
+      <h3>Arrastra los PDFs aquí</h3>
+      <p>o haz clic para seleccionar varios archivos</p>
+      <p class="text-sm text-muted mt-4">Puedes seleccionar múltiples PDFs al mismo tiempo</p>`;
+  }
+
+  function mostrarToast(msg, tipo = 'ok') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = `toast toast-${tipo} show`;
+    setTimeout(() => t.classList.remove('show'), 3500);
+  }
+
+  // ══════════════════════════════════════════════════════
+  // PESTAÑA CSV
+  // ══════════════════════════════════════════════════════
+
+  const CSV_COLS = [
+    { key:'cedula',              label:'Cédula *',             req:true  },
+    { key:'nombre',              label:'Nombre completo',      req:false },
+    { key:'cargo',               label:'Cargo',                req:false },
+    { key:'tipo',                label:'Tipo examen *',        req:true,
+      hint:'PREOCUPACIONAL | PERIODICO | RETIRO | POSINCAPACIDAD' },
+    { key:'fecha',               label:'Fecha (AAAA-MM-DD) *', req:true  },
+    { key:'ips',                 label:'IPS / Clínica',        req:false },
+    { key:'medico',              label:'Médico evaluador',     req:false },
+    { key:'licencia_sst',        label:'Licencia SST médico',  req:false },
+    { key:'concepto_aptitud',    label:'Concepto *',           req:true,
+      hint:'APTO | APTO CON RESTRICCION | NO APTO | PENDIENTE' },
+    { key:'examenes_realizados', label:'Exámenes realizados (separar con ;)', req:false },
+    { key:'restricciones',       label:'Restricciones (separar con ;)',       req:false },
+    { key:'recomendaciones',     label:'Recomendaciones (separar con ;)',     req:false },
+  ];
+
+  let csvFilas = [];
+
+  function cambiarTab(tab) {
+    const esPdf = tab === 'pdf';
+    document.getElementById('panel-pdf').style.display = esPdf ? '' : 'none';
+    document.getElementById('panel-csv').style.display = esPdf ? 'none' : '';
+    const btnPdf = document.getElementById('tab-pdf');
+    const btnCsv = document.getElementById('tab-csv');
+    btnPdf.style.color = esPdf ? 'var(--blue)' : 'var(--muted)';
+    btnPdf.style.borderBottomColor = esPdf ? 'var(--blue)' : 'transparent';
+    btnPdf.style.fontWeight = esPdf ? '700' : '600';
+    btnCsv.style.color = esPdf ? 'var(--muted)' : 'var(--blue)';
+    btnCsv.style.borderBottomColor = esPdf ? 'transparent' : 'var(--blue)';
+    btnCsv.style.fontWeight = esPdf ? '600' : '700';
+  }
+
+  function descargarPlantilla() {
+    const headers = CSV_COLS.map(c => c.label.replace(' *','').replace(/\s*\(.*?\)/,'')).join(',');
+    const ejemplo = [
+      '12345678','Juan Pérez García','Operario','PERIODICO','2025-03-15',
+      'IPS Salud Total','Dr. Ramírez','M-00123','APTO',
+      'Audiometría;Visiometría;Espirometría','','Usar protección auditiva'
+    ].join(',');
+    // Fila de ayuda (comentario)
+    const ayuda = CSV_COLS.map(c => c.hint ? `(${c.hint})` : '').join(',');
+    const csv = '﻿' + headers + '\r\n' + ayuda + '\r\n' + ejemplo + '\r\n';
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], { type:'text/csv;charset=utf-8' }));
+    a.download = 'plantilla_examenes_ocupacionales.csv';
+    a.click();
+  }
+
+  function parsearCSV(texto) {
+    // Parser robusto: maneja comillas y comas dentro de campos
+    const lineas = texto.replace(/\r\n/g,'\n').replace(/\r/g,'\n').split('\n');
+    const resultado = [];
+    for (const linea of lineas) {
+      if (!linea.trim()) continue;
+      const campos = [];
+      let actual = '', dentroComillas = false;
+      for (let i = 0; i < linea.length; i++) {
+        const c = linea[i];
+        if (c === '"' && !dentroComillas) { dentroComillas = true; }
+        else if (c === '"' && dentroComillas && linea[i+1] === '"') { actual += '"'; i++; }
+        else if (c === '"' && dentroComillas) { dentroComillas = false; }
+        else if (c === ',' && !dentroComillas) { campos.push(actual.trim()); actual = ''; }
+        else { actual += c; }
+      }
+      campos.push(actual.trim());
+      resultado.push(campos);
+    }
+    return resultado;
+  }
+
+  function leerCSV(input) {
+    const file = input.files[0];
+    if (!file) return;
+    document.getElementById('csv-file-nombre').textContent = file.name;
+    const reader = new FileReader();
+    reader.onload = e => procesarCSVTexto(e.target.result);
+    reader.readAsText(file, 'utf-8');
+  }
+
+  function procesarCSVTexto(texto) {
+    const filas = parsearCSV(texto);
+    if (filas.length < 2) { mostrarToast('El archivo está vacío o solo tiene encabezados', 'error'); return; }
+
+    // Detectar encabezados: primera fila real (ignorar filas de pistas/ayuda)
+    // La primera fila es encabezados, la segunda puede ser una fila de ayuda si empieza con "("
+    let datoInicio = 1;
+    if (filas.length > 1 && (filas[1][0] || '').startsWith('(')) datoInicio = 2;
+
+    const claves = CSV_COLS.map(c => c.key);
+    csvFilas = [];
+    const errores = [];
+
+    for (let r = datoInicio; r < filas.length; r++) {
+      const fila = filas[r];
+      if (fila.every(f => !f.trim())) continue; // skip fila vacía
+      const obj = {};
+      claves.forEach((k, i) => { obj[k] = (fila[i] || '').trim(); });
+
+      // Convertir campos de array (separados por ;)
+      ['examenes_realizados','restricciones','recomendaciones'].forEach(k => {
+        obj[k] = obj[k] ? obj[k].split(';').map(v => v.trim()).filter(Boolean) : [];
+      });
+
+      // Validar requeridos
+      const faltantes = CSV_COLS.filter(c => c.req && !obj[c.key]).map(c => c.key);
+      if (faltantes.length) {
+        errores.push(`Fila ${r+1}: faltan campos obligatorios (${faltantes.join(', ')})`);
+      }
+
+      csvFilas.push({ ...obj, _fila: r + 1, _error: faltantes.length ? faltantes : null });
+    }
+
+    mostrarPreviaCSV(errores);
+  }
+
+  function mostrarPreviaCSV(errores) {
+    if (!csvFilas.length) { mostrarToast('No se encontraron datos en el archivo', 'error'); return; }
+
+    document.getElementById('csv-preview-section').style.display = '';
+    document.getElementById('csv-resultados').style.display = 'none';
+    document.getElementById('csv-count-badge').textContent =
+      `${csvFilas.length} fila${csvFilas.length !== 1 ? 's' : ''} encontrada${csvFilas.length !== 1 ? 's' : ''}`;
+
+    // Encabezado tabla
+    const thead = document.getElementById('csv-thead');
+    thead.innerHTML = '<tr>' +
+      ['#','Cédula','Nombre','Tipo','Fecha','IPS','Concepto','Exámenes','Estado'].map(h =>
+        `<th style="padding:8px 10px;text-align:left;font-size:11px;font-weight:800;
+          color:var(--muted);text-transform:uppercase;letter-spacing:.4px;
+          white-space:nowrap;border-bottom:2px solid var(--border)">${h}</th>`
+      ).join('') + '</tr>';
+
+    // Filas
+    const tbody = document.getElementById('csv-tbody');
+    tbody.innerHTML = csvFilas.map((f, i) => {
+      const estado = f._error
+        ? `<span style="color:#E74C3C;font-size:11px">⚠️ Faltan: ${f._error.join(', ')}</span>`
+        : `<span style="color:var(--ok);font-size:11px">✓ OK</span>`;
+      const exa = Array.isArray(f.examenes_realizados) ? f.examenes_realizados.join('; ') : '';
+      return `<tr style="${i%2===0?'background:var(--bg)':''}">
+        <td style="padding:7px 10px;font-size:11px;color:var(--muted)">${f._fila}</td>
+        <td style="padding:7px 10px;font-size:12px;font-family:monospace">${f.cedula}</td>
+        <td style="padding:7px 10px;font-size:12px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.nombre||'<em style="color:var(--muted)">vacío</em>'}</td>
+        <td style="padding:7px 10px;font-size:11px">${f.tipo}</td>
+        <td style="padding:7px 10px;font-size:11px;white-space:nowrap">${f.fecha}</td>
+        <td style="padding:7px 10px;font-size:11px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.ips||'—'}</td>
+        <td style="padding:7px 10px;font-size:11px;white-space:nowrap">${f.concepto_aptitud}</td>
+        <td style="padding:7px 10px;font-size:11px;color:var(--muted);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${exa||'—'}</td>
+        <td style="padding:7px 10px">${estado}</td>
+      </tr>`;
+    }).join('');
+
+    const conError = csvFilas.filter(f => f._error).length;
+    const sinError = csvFilas.length - conError;
+    document.getElementById('csv-errores-prev').textContent =
+      conError ? `⚠️ ${conError} fila${conError>1?'s':''} con errores — no se importarán.` : '';
+    document.getElementById('csv-n-importar').textContent = `(${sinError})`;
+    document.getElementById('csv-btn-importar').disabled = sinError === 0;
+  }
+
+  async function importarCSV() {
+    const empId = VigiaAPI.esAdmin()
+      ? document.getElementById('csv-sel-empresa').value
+      : VigiaAPI.empresaId();
+
+    if (VigiaAPI.esAdmin() && !empId) {
+      mostrarToast('Selecciona la empresa primero', 'error'); return;
+    }
+
+    const validas = csvFilas.filter(f => !f._error);
+    if (!validas.length) { mostrarToast('Sin filas válidas para importar', 'error'); return; }
+
+    const btn = document.getElementById('csv-btn-importar');
+    btn.disabled = true;
+    btn.textContent = `⏳ Importando ${validas.length} exámenes…`;
+
+    try {
+      const resultados = await VigiaAPI.agregarExamenesBulk(empId, validas);
+      mostrarResultadosCSV(resultados);
+    } catch (err) {
+      mostrarToast('Error: ' + (err.message || err), 'error');
+      btn.disabled = false;
+      btn.innerHTML = `✅ Importar <span id="csv-n-importar">(${validas.length})</span> exámenes`;
+    }
+  }
+
+  function mostrarResultadosCSV(resultados) {
+    document.getElementById('csv-preview-section').style.display = 'none';
+    document.getElementById('csv-resultados').style.display = '';
+
+    const ok  = resultados.filter(r => r.ok).length;
+    const err = resultados.filter(r => !r.ok).length;
+    document.getElementById('csv-resumen-txt').textContent =
+      `${ok} importado${ok!==1?'s':''} · ${err} con error`;
+
+    document.getElementById('csv-lista-resultados').innerHTML = resultados.map(r => `
+      <div style="border:1px solid ${r.ok?'var(--ok)':'var(--critico)'};border-radius:8px;
+                  padding:10px 14px;display:flex;align-items:center;gap:12px">
+        <span style="font-size:18px">${r.ok ? '✅' : '❌'}</span>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:600;color:var(--navy)">
+            ${r.nombre || 'CC ' + r.cedula}
+            <span style="font-weight:400;font-size:11px;color:var(--muted)"> — CC ${r.cedula}</span>
+          </div>
+          <div style="font-size:12px;color:var(--muted)">
+            ${r.ok ? `Guardado · ${r.alertas} alerta${r.alertas!==1?'s':''}` : 'Error: ' + r.error}
+          </div>
+        </div>
+        ${r.ok ? `<a href="empleado.html?id=${r.empleado_id}" target="_blank"
+          class="btn btn-outline btn-sm" style="white-space:nowrap;font-size:12px">Ver →</a>` : ''}
+      </div>`).join('');
+  }
+
+  function limpiarCSV() {
+    csvFilas = [];
+    document.getElementById('csv-file-input').value = '';
+    document.getElementById('csv-file-nombre').textContent = '';
+    document.getElementById('csv-preview-section').style.display = 'none';
+    document.getElementById('csv-resultados').style.display = 'none';
+    document.getElementById('csv-btn-importar').disabled = false;
+    document.getElementById('csv-btn-importar').innerHTML =
+      '✅ Importar <span id="csv-n-importar"></span> exámenes';
+  }
+
+  init();
+</script>
+<script src="js/vigia-chat.js"></script>
+</body>
+</html>
+

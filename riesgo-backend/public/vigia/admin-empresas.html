@@ -1,0 +1,904 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vigía 360 Admin — Empresas</title>
+  <link rel="stylesheet" href="vigia.css" />
+  <style>
+    /* ── Table ────────────────── */
+    .admin-table  { width:100%;border-collapse:collapse;font-size:13px }
+    .admin-table th { padding:10px 12px;text-align:left;font-size:11px;font-weight:800;
+      color:var(--muted);text-transform:uppercase;letter-spacing:.5px;
+      border-bottom:2px solid var(--border);white-space:nowrap }
+    .admin-table td { padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle }
+    .admin-table tr:last-child td { border-bottom:none }
+    .admin-table tr:hover td { background:rgba(46,134,171,.04) }
+
+    /* ── Score badge ──────────── */
+    .score-badge { display:inline-flex;align-items:center;gap:5px;padding:4px 10px;
+      border-radius:12px;font-size:12px;font-weight:700;white-space:nowrap }
+    .score-verde  { background:#D1FAE5;color:#065F46 }
+    .score-naranja{ background:#FEF3C7;color:#92400E }
+    .score-rojo   { background:#FEE2E2;color:#7F1D1D }
+    .score-gris   { background:#F1F5F9;color:#64748B }
+
+    /* ── Status pill ──────────── */
+    .pill-activa   { background:#D1FAE5;color:#065F46;padding:3px 9px;border-radius:10px;font-size:11px;font-weight:700 }
+    .pill-inactiva { background:#FEE2E2;color:#7F1D1D;padding:3px 9px;border-radius:10px;font-size:11px;font-weight:700 }
+
+    /* ── Modal ────────────────── */
+    .modal-backdrop { position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;display:none;align-items:center;justify-content:center }
+    .modal-backdrop.open { display:flex }
+    .modal-box { background:var(--card);border-radius:14px;padding:28px;width:100%;max-width:500px;
+      box-shadow:0 20px 60px rgba(0,0,0,.2);max-height:90vh;overflow-y:auto }
+    .modal-box h3 { margin:0 0 18px;font-size:17px;color:var(--navy) }
+    .modal-sep { border:none;border-top:1px solid var(--border);margin:16px 0 }
+    .modal-actions { display:flex;gap:10px;justify-content:flex-end;margin-top:20px }
+
+    /* ── Config chips ─────────── */
+    .cfg-chip { display:inline-block;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:700;
+      background:rgba(46,134,171,.12);color:var(--blue) }
+
+    /* ── Nueva empresa drawer ─── */
+    .nueva-form { background:var(--bg);border:1px solid var(--border);border-radius:10px;
+      padding:20px;margin-bottom:20px;display:none }
+    .nueva-form.open { display:block }
+
+    .no-eval { color:var(--muted);font-size:12px }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="dashboard.html" style="display:flex;align-items:center;gap:10px;text-decoration:none">
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="36" viewBox="0 0 34 38">
+      <path d="M17 1L2 7V21C2 30 9 37 17 39C25 37 32 30 32 21V7Z" fill="rgba(255,255,255,0.15)" stroke="white" stroke-width="1.5"/>
+      <circle cx="12" cy="19" r="4.5" fill="white" opacity="0.9"/>
+      <circle cx="22" cy="19" r="4.5" fill="white" opacity="0.9"/>
+      <circle cx="12" cy="19" r="2" fill="rgba(26,58,92,0.8)"/>
+      <circle cx="22" cy="19" r="2" fill="rgba(26,58,92,0.8)"/>
+      <polygon points="15,25 17,28 19,25" fill="white" opacity="0.7"/>
+    </svg>
+    <span style="color:white;font-weight:800;font-size:17px;letter-spacing:0.5px">VIGÍA <span style="color:#4ADE80;font-weight:900">360</span></span>
+  </a>
+  <div class="nav-links">
+    <a href="dashboard.html" class="nav-link-fixed">Dashboard</a>
+
+    <!-- P — Planear -->
+    <div class="nav-dropdown" id="dd-P">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-P')">
+        <span class="phva-pill phva-P">P</span> Planear <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="perfil-responsable.html">🩺 Responsable SST</a>
+        <a href="responsabilidades.html">👥 Roles y Responsabilidades</a>
+        <a href="copasst.html">🤝 COPASST y Convivencia</a>
+        <a href="documentos-sst.html">📄 Documentos del SG-SST</a>
+        <a href="matriz-peligros.html">⚠️ Matriz de Peligros (GTC-45)</a>
+        <a href="plan-trabajo.html">📅 Plan de Trabajo Anual</a>
+        <a href="presupuesto-sgsst.html">💰 Presupuesto SG-SST</a>
+        <a href="profesiograma.html">💊 Profesiograma</a>
+      </div>
+    </div>
+
+    <!-- H — Hacer -->
+    <div class="nav-dropdown" id="dd-H">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-H')">
+        <span class="phva-pill phva-H">H</span> Hacer <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="epp.html">🦺 EPP</a>
+        <a href="capacitaciones.html">🎓 Capacitaciones</a>
+        <a href="emergencias.html">🚨 Emergencias y Brigada</a>
+        <a href="inspecciones.html">🔍 Inspecciones y Mantenimiento</a>
+        <a href="perfil-salud.html">🏥 Salud Ocupacional</a>
+        <div class="nav-dd-divider"></div>
+        <a href="lista-personal.html">👥 Lista de Personal</a>
+        <a href="subir.html">⬆️ Subir Examen</a>
+        <a href="subir-masivo.html">📦 Carga Masiva</a>
+        <a href="cartas-masivas.html">📄 Cartas Masivas</a>
+        <a href="reporte-examenes.html">📊 Cobertura de Exámenes</a>
+        <a href="informe-condiciones.html">📋 Informe de Condiciones</a>
+      </div>
+    </div>
+
+    <!-- V — Verificar -->
+    <div class="nav-dropdown" id="dd-V">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-V')">
+        <span class="phva-pill phva-V">V</span> Verificar <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="evaluacion-sst.html">📋 Evaluación (Res. 0312)</a>
+        <a href="investigaciones.html">🔍 AT / Incidentes</a>
+        <a href="ausentismo.html">📉 Ausentismo laboral</a>
+        <a href="indicadores-sgsst.html">📊 Indicadores SG-SST</a>
+        <a href="analisis-phva.html">📈 Análisis e Indicadores</a>
+      </div>
+    </div>
+
+    <!-- A — Actuar -->
+    <div class="nav-dropdown" id="dd-A">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-A')">
+        <span class="phva-pill phva-A">A</span> Actuar <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="mejoramiento.html">✅ Acciones de Mejoramiento</a>
+        <a href="evaluacion-sst.html">📝 Plan de Mejoramiento (F002)</a>
+      </div>
+    </div>
+
+    <a href="listado-maestro.html" class="nav-link-fixed">📁 Listado Maestro</a>
+    <span id="nav-empresa" style="color:#CBD8E6;font-size:13px;padding:6px 0"></span>
+    <button onclick="VigiaAPI.logout()"
+      style="background:none;border:1px solid rgba(255,255,255,.2);color:#CBD8E6;
+             border-radius:6px;padding:6px 12px;cursor:pointer;font-size:13px">Salir</button>
+  </div>
+</nav>
+
+<div class="page">
+  <div id="cargando" class="empty-state mt-8">
+    <div class="spinner" style="margin:0 auto 16px;border-color:rgba(46,134,171,.2);border-top-color:var(--blue)"></div>
+    <p class="text-muted">Cargando datos…</p>
+  </div>
+
+  <div id="contenido" style="display:none">
+
+    <!-- Cabecera -->
+    <div class="flex justify-between items-center mb-4">
+      <div>
+        <h2 style="font-size:20px;font-weight:800;color:var(--navy)">👥 Gestión de Empresas</h2>
+        <p class="text-muted text-sm">Panel administrativo Vigía SST</p>
+      </div>
+      <button class="btn btn-navy" onclick="toggleNuevaForm()">+ Nueva empresa</button>
+    </div>
+
+    <!-- Formulario nueva empresa -->
+    <div id="nueva-form" class="nueva-form">
+      <h3 style="margin:0 0 14px;font-size:15px;color:var(--navy)">Crear empresa</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="form-group">
+          <label>Nombre empresa *</label>
+          <input type="text" id="nv-nombre" placeholder="Acme S.A.S." />
+        </div>
+        <div class="form-group">
+          <label>NIT</label>
+          <input type="text" id="nv-nit" placeholder="900.123.456-7" />
+        </div>
+        <div class="form-group">
+          <label>Correo encargado</label>
+          <input type="email" id="nv-email" placeholder="sst@empresa.com" />
+        </div>
+        <div class="form-group">
+          <label>Contraseña inicial *</label>
+          <input type="text" id="nv-password" placeholder="mínimo 6 caracteres" />
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:12px">
+        <button class="btn btn-navy" onclick="crearEmpresa()">Guardar empresa</button>
+        <button class="btn btn-outline" onclick="toggleNuevaForm()">Cancelar</button>
+      </div>
+    </div>
+
+    <!-- Summary cards -->
+    <div id="summary-cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:20px"></div>
+
+    <!-- Tabla -->
+    <div class="card" style="overflow-x:auto">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Empresa</th>
+            <th>Config.</th>
+            <th>Última evaluación</th>
+            <th style="text-align:center">Empleados</th>
+            <th style="text-align:center">Peligros</th>
+            <th>Vigencia</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tabla-body">
+          <tr><td colspan="8" style="text-align:center;padding:32px;color:var(--muted)">Cargando…</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal edición -->
+<div class="modal-backdrop" id="modal-backdrop" onclick="cerrarModal(event)">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <h3 id="modal-titulo">Editar empresa</h3>
+
+    <div class="form-group">
+      <label>Nombre</label>
+      <input type="text" id="m-nombre" readonly style="opacity:.6;cursor:not-allowed" />
+    </div>
+    <div class="form-group">
+      <label>NIT</label>
+      <input type="text" id="m-nit" readonly style="opacity:.6;cursor:not-allowed" />
+    </div>
+    <div class="form-group">
+      <label>Correo encargado</label>
+      <input type="email" id="m-email" placeholder="sst@empresa.com" />
+    </div>
+
+    <hr class="modal-sep" />
+
+    <div style="display:grid;grid-template-columns:120px 1fr;gap:12px;align-items:start;margin-bottom:10px">
+      <div class="form-group" style="margin:0">
+        <label>Código CIIU</label>
+        <input type="text" id="m-ciiu" maxlength="4" placeholder="Ej: 4663"
+          style="font-family:monospace;font-size:16px;letter-spacing:3px;text-align:center"
+          oninput="this.value=this.value.replace(/\D/g,'').substring(0,4)"
+          onblur="autoClaseRiesgo()" />
+      </div>
+      <div style="padding-top:22px">
+        <span id="ciiu-hint" style="font-size:12px;color:var(--muted)">
+          Código de actividad económica del RUT (4 dígitos).
+          La clase de riesgo se asigna automáticamente según <strong>Decreto 768/2022</strong>.
+        </span>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+      <div class="form-group">
+        <label>N° de trabajadores <span style="color:#E74C3C">*</span></label>
+        <input type="number" id="m-num-trab" min="1" max="99999" placeholder="Ej: 25" />
+      </div>
+      <div class="form-group">
+        <label>Clase de riesgo <span style="color:#E74C3C">*</span></label>
+        <select id="m-clase-riesgo">
+          <option value="">— Seleccionar —</option>
+          <option value="I">I — Riesgo mínimo</option>
+          <option value="II">II — Riesgo bajo</option>
+          <option value="III">III — Riesgo medio</option>
+          <option value="IV">IV — Riesgo alto</option>
+          <option value="V">V — Riesgo máximo</option>
+        </select>
+      </div>
+    </div>
+    <p style="font-size:11px;color:var(--muted);margin:-6px 0 12px">
+      Requerido para determinar los estándares Res. 0312/2019 aplicables.
+    </p>
+
+    <hr class="modal-sep" />
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-group">
+        <label>Vigencia SG-SST (meses)</label>
+        <input type="number" id="m-vigencia" min="1" max="36" step="1" />
+      </div>
+      <div class="form-group">
+        <label>Fecha de vigencia de formatos</label>
+        <input type="date" id="m-vigencia-desde" />
+        <p style="font-size:11px;color:var(--muted);margin:4px 0 0">Desde cuándo se empezó a usar este formato (aparece en el encabezado de los documentos)</p>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+      <div></div>
+      <div class="form-group">
+        <label>Estado</label>
+        <select id="m-activa">
+          <option value="true">Activa</option>
+          <option value="false">Inactiva</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group" style="margin-top:12px">
+      <label>Prefijo de codificación documental</label>
+      <input type="text" id="m-prefijo" placeholder="SG-SST" maxlength="20"
+        style="text-transform:uppercase"
+        title="Prefijo que aparecerá en el código de cada documento (ej: SG-SST, HSEQ, SST-ABC)" />
+      <p style="font-size:11px;color:var(--muted);margin:4px 0 0">
+        Ej: <strong>SG-SST F001</strong>, <strong>HSEQ F001</strong>, <strong>SST-XYZ F001</strong>
+      </p>
+    </div>
+
+    <hr class="modal-sep" />
+    <p style="font-size:12px;color:var(--muted);margin-bottom:10px">Logo para encabezado de documentos (PNG, JPG — max 500 KB)</p>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+      <img id="m-logo-preview" src="" alt="Logo actual" onerror="this.style.display='none'"
+        style="max-height:48px;max-width:120px;object-fit:contain;border:1px solid var(--border);border-radius:6px;padding:4px" />
+      <label class="btn btn-outline" style="cursor:pointer;font-size:12px;margin:0">
+        📁 Seleccionar logo
+        <input type="file" id="m-logo-file" accept="image/*" style="display:none" onchange="previsualizarLogo(this)" />
+      </label>
+      <button id="m-logo-clear" class="btn btn-outline" style="font-size:12px;display:none" onclick="limpiarLogo()">✕ Quitar logo</button>
+    </div>
+
+    <hr class="modal-sep" />
+    <p style="font-size:12px;color:var(--muted);margin-bottom:10px">Cambiar contraseña (dejar vacío para no cambiar)</p>
+    <div class="form-group">
+      <label>Nueva contraseña</label>
+      <input type="text" id="m-password" placeholder="mínimo 6 caracteres" />
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="cerrarModal()">Cancelar</button>
+      <button class="btn btn-navy" onclick="guardarEdicion()">Guardar cambios</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="js/vigia-api.js"></script>
+<script>
+
+let empresaEditandoId = null;
+let datosResumen = [];
+
+// ═══════════════════════════════════════════════════════
+// Helpers de formato
+// ═══════════════════════════════════════════════════════
+function scoreBadge(last_eval) {
+  if (!last_eval || last_eval.puntaje == null) {
+    return `<span class="score-gris score-badge">Sin evaluación</span>`;
+  }
+  const p = Math.round(last_eval.puntaje);
+  const cls = p >= 85 ? 'score-verde' : p >= 60 ? 'score-naranja' : 'score-rojo';
+  const cat = { ACEPTABLE:'Aceptable', MODERADO:'Moderado', CRITICO:'Crítico' }[last_eval.categoria] || '';
+  return `<span class="${cls} score-badge">${p}% · ${cat}</span>`;
+}
+
+function fmtFecha(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('es-CO', { day:'2-digit', month:'short', year:'numeric' });
+}
+
+function cfgChips(emp) {
+  const chips = [];
+  if (emp.num_trabajadores) chips.push(`${emp.num_trabajadores} trab.`);
+  if (emp.clase_riesgo)     chips.push(`Riesgo ${emp.clase_riesgo}`);
+  if (!chips.length) return '<span class="no-eval">Sin configurar</span>';
+  return chips.map(c => `<span class="cfg-chip">${c}</span>`).join(' ');
+}
+
+// ═══════════════════════════════════════════════════════
+// Render tabla
+// ═══════════════════════════════════════════════════════
+function renderTabla(data) {
+  const tbody = document.getElementById('tabla-body');
+  if (!data.length) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--muted)">Sin empresas registradas</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = data.map(emp => {
+    const activaBadge = emp.activa
+      ? '<span class="pill-activa">Activa</span>'
+      : '<span class="pill-inactiva">Inactiva</span>';
+
+    const periodoTag = emp.last_eval?.periodo
+      ? `<br><span style="font-size:11px;color:var(--muted)">Período ${emp.last_eval.periodo} · ${fmtFecha(emp.last_eval.creado_en)}</span>`
+      : '';
+
+    return `
+      <tr>
+        <td>
+          <div style="font-weight:700;color:var(--navy)">${emp.nombre}</div>
+          <div style="font-size:11px;color:var(--muted)">${emp.nit || '—'} ${emp.email_encargado ? '· ' + emp.email_encargado : ''}</div>
+        </td>
+        <td>${cfgChips(emp)}</td>
+        <td>${scoreBadge(emp.last_eval)}${periodoTag}</td>
+        <td style="text-align:center;font-weight:700">${emp.empleados_count || 0}</td>
+        <td style="text-align:center;font-weight:700">${emp.peligros_count || 0}</td>
+        <td style="white-space:nowrap">${emp.vigencia_meses || 12} meses</td>
+        <td>${activaBadge}</td>
+        <td>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="btn btn-outline" style="padding:5px 10px;font-size:12px"
+              onclick="abrirModal('${emp.id}')">✏️ Editar</button>
+            ${emp.last_eval ? `<a href="analisis-phva.html?empresa_id=${emp.id}"
+              class="btn btn-outline" style="padding:5px 10px;font-size:12px;text-decoration:none">📊 Análisis</a>` : ''}
+            <button class="btn btn-outline" style="padding:5px 10px;font-size:12px;color:#DC2626;border-color:#FABEC2"
+              onclick="eliminarEmpresa('${emp.id}','${emp.nombre.replace(/'/g,"\\'")}')">🗑 Eliminar</button>
+          </div>
+        </td>
+      </tr>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════
+// Summary cards
+// ═══════════════════════════════════════════════════════
+function renderCards(data) {
+  const total    = data.length;
+  const activas  = data.filter(e => e.activa).length;
+  const criticas = data.filter(e => e.last_eval && e.last_eval.puntaje != null && e.last_eval.puntaje < 60).length;
+  const sinEval  = data.filter(e => !e.last_eval).length;
+  const totEmp   = data.reduce((s, e) => s + (e.empleados_count || 0), 0);
+
+  document.getElementById('summary-cards').innerHTML = `
+    <div class="summary-card"><div class="num">${total}</div><div class="lbl">Empresas registradas</div></div>
+    <div class="summary-card"><div class="num" style="color:#27AE60">${activas}</div><div class="lbl">Empresas activas</div></div>
+    <div class="summary-card"><div class="num" style="color:#C0392B">${criticas}</div><div class="lbl">Evaluación crítica</div></div>
+    <div class="summary-card"><div class="num" style="color:var(--muted)">${sinEval}</div><div class="lbl">Sin evaluación</div></div>
+    <div class="summary-card"><div class="num">${totEmp}</div><div class="lbl">Empleados totales</div></div>
+  `;
+}
+
+// ═══════════════════════════════════════════════════════
+// Modal de edición
+// ═══════════════════════════════════════════════════════
+function previsualizarLogo(input) {
+  if (!input.files[0]) return;
+  if (input.files[0].size > 512000) { mostrarToast('El logo debe pesar menos de 500 KB', 'error'); input.value = ''; return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    const prev = document.getElementById('m-logo-preview');
+    prev.src = e.target.result;
+    prev.style.display = '';
+    document.getElementById('m-logo-clear').style.display = '';
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+
+let _logoQuitado = false;
+
+function limpiarLogo() {
+  _logoQuitado = true;
+  document.getElementById('m-logo-file').value = '';
+  document.getElementById('m-logo-preview').src = '';
+  document.getElementById('m-logo-preview').style.display = 'none';
+  document.getElementById('m-logo-clear').style.display = 'none';
+}
+
+// ── Decreto 768/2022 — CIIU Rev. 4 A.C. → Clase de riesgo ARL ───────────────
+const CIIU_CLASE = {
+  // A — Agricultura, ganadería, caza, silvicultura y pesca
+  '0111':'III','0112':'III','0113':'III','0114':'III','0115':'III','0119':'III',
+  '0121':'III','0122':'III','0123':'III','0124':'III','0125':'III','0126':'III',
+  '0127':'III','0128':'III','0129':'III','0130':'III',
+  '0141':'III','0142':'III','0143':'III','0144':'III','0145':'III','0149':'III',
+  '0150':'IV','0161':'II','0162':'II','0163':'II','0164':'II','0170':'IV',
+  '0210':'IV','0220':'IV','0230':'IV','0240':'IV',
+  '0311':'III','0312':'III','0321':'III','0322':'III',
+  // B — Explotación de minas y canteras
+  '0510':'V','0520':'V','0610':'V','0620':'V',
+  '0710':'V','0721':'V','0722':'V','0723':'V','0724':'V','0729':'V',
+  '0810':'V','0820':'V','0891':'V','0892':'V','0893':'V','0899':'V',
+  '0910':'V','0990':'V',
+  // C — Industrias manufactureras
+  '1011':'III','1012':'III','1013':'III','1020':'III','1030':'II','1040':'II',
+  '1051':'II','1052':'II','1061':'II','1062':'II','1063':'II',
+  '1071':'II','1072':'II','1073':'II','1081':'II','1082':'II','1083':'II',
+  '1084':'II','1085':'II','1086':'II','1089':'II','1090':'II',
+  '1101':'III','1102':'III','1103':'III','1104':'III','1200':'III',
+  '1311':'III','1312':'III','1313':'III','1321':'III','1322':'III','1323':'III',
+  '1391':'III','1392':'III','1393':'III','1394':'III','1399':'III',
+  '1410':'II','1420':'II','1430':'II',
+  '1511':'III','1512':'III','1521':'III','1522':'III',
+  '1610':'IV','1620':'IV','1630':'IV','1640':'IV','1690':'IV',
+  '1701':'III','1702':'III','1709':'III',
+  '1811':'II','1812':'II','1813':'II','1820':'II',
+  '1910':'IV','1920':'IV',
+  '2011':'V','2012':'V','2013':'V','2014':'V',
+  '2021':'V','2022':'V','2029':'V','2030':'V',
+  '2100':'III',
+  '2211':'III','2212':'III','2219':'III','2221':'III','2229':'III',
+  '2310':'IV','2391':'IV','2392':'IV','2393':'IV','2394':'IV','2395':'IV','2396':'IV','2399':'IV',
+  '2410':'IV','2421':'IV','2422':'IV','2429':'IV','2431':'IV','2432':'IV',
+  '2511':'IV','2512':'IV','2521':'IV','2529':'IV',
+  '2591':'IV','2592':'IV','2593':'IV','2599':'IV',
+  '2610':'III','2620':'III','2630':'III','2640':'III',
+  '2651':'II','2652':'II','2660':'II','2670':'II','2680':'III',
+  '2711':'III','2712':'III','2720':'III','2731':'III','2732':'III','2733':'III',
+  '2740':'III','2750':'III','2790':'III',
+  '2811':'IV','2812':'IV','2813':'IV','2814':'IV','2815':'IV','2816':'IV',
+  '2817':'IV','2818':'IV','2819':'IV',
+  '2821':'IV','2822':'IV','2823':'IV','2824':'IV','2825':'IV','2826':'IV','2829':'IV',
+  '2910':'IV','2920':'IV','2930':'IV',
+  '3011':'IV','3012':'IV','3020':'IV','3030':'IV','3040':'IV','3091':'IV','3092':'IV','3099':'IV',
+  '3110':'III','3120':'III','3130':'III','3140':'III','3190':'III',
+  '3210':'III','3220':'III','3230':'III','3240':'III','3250':'III','3290':'III',
+  '3311':'IV','3312':'IV','3313':'IV','3314':'IV','3315':'IV','3319':'IV','3320':'IV',
+  // D — Suministro de electricidad, gas, vapor y aire acondicionado
+  '3511':'V','3512':'V','3513':'V','3514':'V','3520':'IV','3530':'IV',
+  // E — Distribución de agua, alcantarillado, gestión de desechos
+  '3600':'III','3700':'III',
+  '3811':'III','3812':'III','3821':'IV','3822':'IV','3830':'III','3900':'IV',
+  // F — Construcción
+  '4111':'V','4112':'V','4120':'V',
+  '4210':'V','4220':'V','4290':'V',
+  '4311':'V','4312':'V','4321':'V','4322':'V','4329':'V','4330':'V','4390':'V',
+  // G — Comercio al por mayor y al por menor
+  '4511':'II','4512':'II','4520':'III','4530':'II','4541':'II','4542':'II',
+  '4610':'II','4620':'II',
+  '4631':'II','4632':'II','4633':'II','4634':'II','4635':'II','4636':'II',
+  '4637':'II','4638':'II','4639':'II',
+  '4641':'II','4642':'II','4643':'II','4644':'II','4645':'II','4646':'II',
+  '4647':'II','4648':'II','4649':'II',
+  '4651':'II','4652':'II','4653':'II','4659':'II',
+  '4661':'II','4662':'II','4663':'II','4664':'II','4665':'II','4669':'II',
+  '4671':'II','4672':'II','4673':'II','4674':'II','4675':'II','4679':'II',
+  '4690':'II',
+  '4711':'II','4719':'II','4721':'II','4722':'II','4723':'II','4724':'II',
+  '4725':'II','4729':'II','4731':'II','4732':'II',
+  '4741':'II','4742':'II','4751':'II','4752':'II','4753':'II','4754':'II',
+  '4755':'II','4759':'II',
+  '4761':'II','4762':'II','4763':'II','4764':'II','4769':'II',
+  '4771':'II','4772':'II','4773':'II','4774':'II',
+  '4781':'II','4782':'II','4789':'II','4791':'II','4792':'II','4799':'II',
+  // H — Transporte y almacenamiento
+  '4911':'IV','4912':'IV','4921':'IV','4922':'IV','4923':'IV','4924':'IV','4930':'IV',
+  '5011':'IV','5012':'IV','5021':'IV','5022':'IV',
+  '5111':'IV','5112':'IV','5121':'IV','5122':'IV',
+  '5210':'III','5221':'III','5222':'III','5223':'III','5224':'III','5229':'III',
+  '5310':'III','5320':'III',
+  // I — Alojamiento y servicios de comida
+  '5511':'II','5512':'II','5513':'II','5514':'II','5519':'II',
+  '5520':'II','5530':'II','5590':'II',
+  '5611':'II','5612':'II','5619':'II','5621':'II','5629':'II','5630':'II',
+  // J — Información y comunicaciones
+  '5811':'I','5812':'I','5813':'I','5814':'I','5819':'I','5820':'I',
+  '5911':'I','5912':'I','5913':'I','5914':'I','5920':'I',
+  '6010':'II','6020':'II',
+  '6110':'I','6120':'I','6130':'I','6190':'I',
+  '6201':'I','6202':'I','6209':'I',
+  '6311':'I','6312':'I','6391':'I','6399':'I',
+  // K — Actividades financieras y de seguros
+  '6411':'I','6412':'I','6421':'I','6422':'I','6423':'I','6424':'I',
+  '6491':'I','6492':'I','6493':'I','6494':'I','6495':'I','6496':'I','6499':'I',
+  '6511':'I','6512':'I','6513':'I','6514':'I','6515':'I','6519':'I',
+  '6521':'I','6522':'I','6523':'I','6531':'I','6532':'I',
+  '6611':'I','6612':'I','6613':'I','6614':'I','6615':'I','6619':'I',
+  '6621':'I','6622':'I','6629':'I','6630':'I',
+  // L — Actividades inmobiliarias
+  '6810':'I','6820':'I',
+  // M — Actividades profesionales, científicas y técnicas
+  '6910':'I','6920':'I','7010':'I','7020':'I',
+  '7110':'I','7120':'I','7210':'I','7220':'I',
+  '7310':'I','7320':'I','7410':'I','7420':'I','7490':'I','7500':'II',
+  // N — Actividades de servicios administrativos y de apoyo
+  '7710':'II','7721':'II','7722':'II','7729':'II','7730':'II','7740':'II',
+  '7810':'I','7820':'I','7830':'I',
+  '7911':'I','7912':'I','7990':'I',
+  '8010':'III','8020':'II','8030':'II',
+  '8110':'II','8121':'II','8122':'III','8129':'II','8130':'II',
+  '8211':'I','8219':'I','8220':'I','8230':'I','8291':'I','8292':'I','8299':'I',
+  // O — Administración pública y defensa
+  '8411':'I','8412':'I','8413':'I','8414':'I','8415':'I','8416':'I','8417':'I',
+  '8421':'I','8422':'II','8423':'II','8424':'II','8425':'III','8430':'I',
+  // P — Educación
+  '8511':'I','8512':'I','8513':'I','8521':'I','8522':'I','8523':'I',
+  '8530':'I','8541':'I','8542':'I','8543':'I','8544':'I','8550':'I','8560':'I',
+  // Q — Actividades de atención de la salud humana y de asistencia social
+  '8610':'II','8621':'II','8622':'II','8623':'II',
+  '8691':'II','8692':'II','8699':'II',
+  '8710':'II','8720':'II','8730':'II','8790':'II',
+  '8811':'II','8812':'II','8890':'II',
+  // R — Actividades artísticas, de entretenimiento y recreación
+  '9000':'II','9101':'I','9102':'I','9103':'I','9200':'III',
+  '9311':'II','9312':'II','9319':'II','9321':'II','9329':'II',
+  // S — Otras actividades de servicios
+  '9411':'I','9412':'I','9420':'I','9491':'I','9492':'I','9499':'I',
+  '9511':'II','9512':'II','9521':'II','9522':'II','9523':'II','9524':'II','9529':'II',
+  '9601':'II','9602':'II','9603':'III','9609':'II',
+  '9700':'I','9810':'I','9820':'I','9900':'I',
+};
+
+const CIIU_DESC = {
+  '0111':'Cultivo de cereales','0112':'Cultivo de arroz','0113':'Cultivo de hortalizas',
+  '0121':'Cultivo de café','0122':'Cultivo de plátano y banano','0123':'Cultivo de caña de azúcar',
+  '0150':'Cría de porcinos','0210':'Silvicultura y extracción de madera',
+  '0311':'Pesca marítima','0321':'Acuicultura marítima',
+  '0510':'Extracción de hulla (carbón de piedra)','0610':'Extracción de petróleo crudo',
+  '0710':'Extracción de minerales de hierro','0810':'Extracción de piedra, arena y arcillas',
+  '1011':'Procesamiento y conservación de carne','1030':'Procesamiento y conservación de frutas',
+  '1061':'Trilla de café','1071':'Elaboración de productos de panadería',
+  '1101':'Destilación, rectificación y mezcla de bebidas alcohólicas',
+  '1200':'Elaboración de productos de tabaco',
+  '1410':'Confección de prendas de vestir','1511':'Curtido y recurtido de cueros',
+  '1610':'Aserrado, acepillado y manufactura de madera',
+  '1811':'Actividades de impresión','1910':'Fabricación de productos de hornos de coque',
+  '1920':'Fabricación de productos de la refinación del petróleo',
+  '2011':'Fabricación de sustancias y productos químicos básicos',
+  '2021':'Fabricación de plaguicidas y agroquímicos',
+  '2100':'Fabricación de productos farmacéuticos',
+  '2211':'Fabricación de llantas y neumáticos de caucho',
+  '2310':'Fabricación de vidrio y productos de vidrio',
+  '2410':'Industrias básicas de hierro y de acero',
+  '2511':'Fabricación de productos metálicos para uso estructural',
+  '2610':'Fabricación de componentes y tableros electrónicos',
+  '2651':'Fabricación de instrumentos y aparatos para medir',
+  '2711':'Fabricación de motores, generadores y transformadores eléctricos',
+  '2750':'Fabricación de aparatos de uso doméstico',
+  '2811':'Fabricación de motores y turbinas',
+  '2910':'Fabricación de vehículos automotores y sus motores',
+  '3011':'Construcción de barcos y estructuras flotantes',
+  '3110':'Fabricación de muebles','3210':'Fabricación de joyas y artículos conexos',
+  '3311':'Mantenimiento y reparación especializado de productos elaborados de metal',
+  '3511':'Generación de energía eléctrica',
+  '3600':'Captación, tratamiento y distribución de agua',
+  '3700':'Evacuación y tratamiento de aguas residuales',
+  '3811':'Recolección de desechos no peligrosos',
+  '4111':'Construcción de edificios residenciales',
+  '4112':'Construcción de edificios no residenciales',
+  '4120':'Obras de ingeniería civil - no viales',
+  '4210':'Construcción de carreteras y vías de ferrocarril',
+  '4220':'Construcción de proyectos de servicio público',
+  '4311':'Demolición','4312':'Preparación del terreno',
+  '4321':'Instalaciones eléctricas','4322':'Instalaciones de fontanería',
+  '4330':'Terminación y acabado de edificios',
+  '4511':'Comercio de vehículos automotores','4520':'Mantenimiento y reparación de vehículos',
+  '4610':'Comercio al por mayor a cambio de una retribución o por contrata',
+  '4663':'Comercio al por mayor de materiales de construcción',
+  '4711':'Comercio al por menor en establecimientos no especializados',
+  '4731':'Comercio al por menor de combustible para automotores',
+  '4921':'Transporte urbano de pasajeros','4922':'Transporte intermunicipal de pasajeros',
+  '4923':'Transporte de carga por carretera','4930':'Transporte por tuberías',
+  '5011':'Transporte marítimo de pasajeros',
+  '5111':'Transporte aéreo nacional de pasajeros',
+  '5210':'Almacenamiento y depósito','5310':'Actividades postales',
+  '5511':'Actividades de alojamiento en hoteles',
+  '5611':'Expendio a la mesa de comidas preparadas',
+  '5630':'Expendio de bebidas alcohólicas para el consumo dentro del establecimiento',
+  '5811':'Edición de libros','5912':'Actividades de posproducción de películas',
+  '6010':'Actividades de radiodifusión','6110':'Actividades de telecomunicaciones',
+  '6201':'Actividades de desarrollo de sistemas informáticos',
+  '6311':'Procesamiento de datos, alojamiento y actividades relacionadas',
+  '6411':'Banco central','6412':'Bancos comerciales',
+  '6491':'Leasing financiero','6511':'Seguros de vida',
+  '6611':'Administración de mercados financieros',
+  '6810':'Actividades inmobiliarias realizadas con bienes propios',
+  '6910':'Actividades jurídicas','6920':'Actividades de contabilidad y auditoría',
+  '7010':'Actividades de administración empresarial','7110':'Actividades de arquitectura',
+  '7210':'Investigaciones y desarrollo experimental en ciencias naturales',
+  '7310':'Publicidad','7500':'Actividades veterinarias',
+  '7710':'Alquiler y arrendamiento de vehículos automotores',
+  '7810':'Actividades de agencias de empleo','8010':'Actividades de seguridad privada',
+  '8020':'Actividades de servicios de sistemas de seguridad',
+  '8110':'Actividades combinadas de apoyo a instalaciones',
+  '8121':'Limpieza general interior de edificios',
+  '8122':'Otras actividades de limpieza de edificios','8130':'Actividades de paisajismo',
+  '8211':'Actividades combinadas de servicios administrativos de oficina',
+  '8230':'Organización de convenciones y eventos comerciales',
+  '8411':'Actividades de la administración pública en general',
+  '8510':'Educación de la primera infancia','8511':'Educación preescolar',
+  '8512':'Educación básica primaria','8513':'Educación básica secundaria',
+  '8521':'Educación técnica y tecnológica','8522':'Educación universitaria',
+  '8530':'Establecimientos que combinan diferentes niveles de educación',
+  '8550':'Actividades de otras organizaciones de enseñanza',
+  '8610':'Actividades de hospitales y clínicas','8621':'Actividades de la práctica médica',
+  '8622':'Actividades de la práctica odontológica',
+  '8691':'Actividades de apoyo diagnóstico','8699':'Otras actividades de atención de la salud',
+  '8710':'Actividades de atención residencial medicalizada',
+  '8811':'Actividades de asistencia social sin alojamiento para personas mayores',
+  '9000':'Actividades creativas, artísticas y de entretenimiento',
+  '9200':'Actividades de juegos de azar y apuestas',
+  '9311':'Gestión de instalaciones deportivas','9321':'Actividades de parques de atracciones',
+  '9511':'Mantenimiento y reparación de computadores','9521':'Mantenimiento y reparación de aparatos electrónicos',
+  '9601':'Lavado y limpieza de prendas de tela y de piel',
+  '9602':'Peluquería y otros tratamientos de belleza',
+  '9700':'Actividades de los hogares individuales como empleadores',
+};
+
+const CLASE_LABELS = {
+  'I':   'I — Riesgo mínimo',
+  'II':  'II — Riesgo bajo',
+  'III': 'III — Riesgo medio',
+  'IV':  'IV — Riesgo alto',
+  'V':   'V — Riesgo máximo',
+};
+
+function autoClaseRiesgo() {
+  const ciiu  = (document.getElementById('m-ciiu').value || '').trim();
+  const hint  = document.getElementById('ciiu-hint');
+  if (ciiu.length !== 4) {
+    hint.innerHTML = 'Código de actividad económica del RUT (4 dígitos). La clase de riesgo se asigna automáticamente según <strong>Decreto 768/2022</strong>.';
+    hint.style.color = 'var(--muted)';
+    return;
+  }
+  const clase = CIIU_CLASE[ciiu];
+  if (clase) {
+    document.getElementById('m-clase-riesgo').value = clase;
+    const desc = CIIU_DESC[ciiu] ? ` — ${CIIU_DESC[ciiu]}` : '';
+    hint.innerHTML = `✅ CIIU ${ciiu}${desc}<br><strong style="color:var(--green)">${CLASE_LABELS[clase]}</strong> asignada automáticamente (Decreto 768/2022)`;
+    hint.style.color = 'inherit';
+  } else {
+    hint.innerHTML = `⚠️ Código <strong>${ciiu}</strong> no encontrado en el Decreto 768/2022. Seleccione la clase manualmente.`;
+    hint.style.color = '#B45309';
+  }
+}
+
+function abrirModal(id) {
+  const emp = datosResumen.find(e => e.id === id);
+  if (!emp) return;
+  empresaEditandoId = id;
+
+  document.getElementById('modal-titulo').textContent = `Editar — ${emp.nombre}`;
+  document.getElementById('m-nombre').value      = emp.nombre;
+  document.getElementById('m-nit').value         = emp.nit || '';
+  document.getElementById('m-email').value       = emp.email_encargado || '';
+  document.getElementById('m-ciiu').value         = emp.ciiu || '';
+  document.getElementById('m-num-trab').value    = emp.num_trabajadores || '';
+  document.getElementById('m-clase-riesgo').value= emp.clase_riesgo || '';
+  document.getElementById('ciiu-hint').textContent =
+    emp.ciiu ? `CIIU ${emp.ciiu} — Clase ${emp.clase_riesgo || '?'} según Decreto 768/2022` :
+    'Código de actividad económica del RUT (4 dígitos). La clase de riesgo se asigna automáticamente según Decreto 768/2022.';
+  document.getElementById('m-vigencia').value       = emp.vigencia_meses || 12;
+  document.getElementById('m-vigencia-desde').value = emp.vigencia_docs_desde || '';
+  document.getElementById('m-activa').value         = String(emp.activa !== false);
+  document.getElementById('m-password').value = '';
+
+  // Logo actual
+  const prev = document.getElementById('m-logo-preview');
+  if (emp.logo_url) { prev.src = emp.logo_url; prev.style.display = ''; document.getElementById('m-logo-clear').style.display = ''; }
+  else { prev.src = ''; prev.style.display = 'none'; document.getElementById('m-logo-clear').style.display = 'none'; }
+  document.getElementById('m-logo-file').value = '';
+  document.getElementById('m-prefijo').value = emp.prefijo_docs || 'SG-SST';
+  _logoQuitado = false;
+
+  document.getElementById('modal-backdrop').classList.add('open');
+}
+
+function cerrarModal(e) {
+  if (e && e.target !== document.getElementById('modal-backdrop')) return;
+  document.getElementById('modal-backdrop').classList.remove('open');
+  empresaEditandoId = null;
+}
+
+async function guardarEdicion() {
+  if (!empresaEditandoId) return;
+  const id      = empresaEditandoId;
+  const email   = document.getElementById('m-email').value.trim();
+  const vigencia= parseInt(document.getElementById('m-vigencia').value);
+  const activa  = document.getElementById('m-activa').value === 'true';
+  const pwd     = document.getElementById('m-password').value.trim();
+  const logoFile= document.getElementById('m-logo-file').files[0];
+  const prefijo = document.getElementById('m-prefijo').value.trim().toUpperCase() || 'SG-SST';
+
+  try {
+    if (_logoQuitado && !logoFile) {
+      await VigiaAPI.quitarLogo(id);
+    } else if (logoFile) {
+      await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = async e => {
+          try { await VigiaAPI.subirLogo(id, e.target.result, logoFile.type, logoFile.name); resolve(); }
+          catch (err) { reject(err); }
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(logoFile);
+      });
+    }
+
+    const numTrab        = parseInt(document.getElementById('m-num-trab').value) || null;
+    const claseRiesgo    = document.getElementById('m-clase-riesgo').value || null;
+    const ciiu           = document.getElementById('m-ciiu').value.trim() || null;
+    const vigenciaDesde  = document.getElementById('m-vigencia-desde').value || null;
+
+    const ops = [];
+    if (email)                             ops.push(VigiaAPI.setEmail(id, email));
+    if (!isNaN(vigencia) && vigencia >= 1) ops.push(VigiaAPI.setVigencia(id, vigencia));
+    ops.push(VigiaAPI.setActiva(id, activa));
+    if (pwd && pwd.length >= 6)           ops.push(VigiaAPI.resetPassword(id, pwd));
+    ops.push(VigiaAPI.setPrefijoDocs(id, prefijo));
+    {
+      const cfg = {};
+      if (numTrab)                cfg.num_trabajadores  = numTrab;
+      if (claseRiesgo)            cfg.clase_riesgo      = claseRiesgo;
+      cfg.ciiu                  = ciiu;
+      cfg.vigencia_docs_desde   = vigenciaDesde;
+      ops.push(VigiaAPI.actualizarConfiguracion(id, cfg));
+    }
+    await Promise.all(ops);
+
+    mostrarToast('Cambios guardados', 'ok');
+    document.getElementById('modal-backdrop').classList.remove('open');
+    empresaEditandoId = null;
+    await cargarDatos();
+  } catch (err) {
+    mostrarToast('Error al guardar: ' + (err.message || err), 'error');
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// Nueva empresa
+// ═══════════════════════════════════════════════════════
+function toggleNuevaForm() {
+  const f = document.getElementById('nueva-form');
+  f.classList.toggle('open');
+}
+
+async function crearEmpresa() {
+  const nombre   = document.getElementById('nv-nombre').value.trim();
+  const nit      = document.getElementById('nv-nit').value.trim();
+  const email    = document.getElementById('nv-email').value.trim();
+  const password = document.getElementById('nv-password').value.trim();
+
+  if (!nombre || !password) {
+    mostrarToast('Nombre y contraseña son obligatorios', 'error'); return;
+  }
+  if (password.length < 6) {
+    mostrarToast('La contraseña debe tener mínimo 6 caracteres', 'error'); return;
+  }
+
+  try {
+    await VigiaAPI.crearEmpresa(nombre, nit || null, password, email || null);
+    mostrarToast('Empresa creada', 'ok');
+    document.getElementById('nv-nombre').value = '';
+    document.getElementById('nv-nit').value    = '';
+    document.getElementById('nv-email').value  = '';
+    document.getElementById('nv-password').value = '';
+    document.getElementById('nueva-form').classList.remove('open');
+    await cargarDatos();
+  } catch (err) {
+    mostrarToast('Error: ' + (err.message || err), 'error');
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// Carga de datos
+// ═══════════════════════════════════════════════════════
+async function cargarDatos() {
+  try {
+    datosResumen = await VigiaAPI.getAdminResumen() || [];
+  } catch (err) {
+    const msg = err?.message || String(err);
+    mostrarToast('Error al cargar: ' + msg, 'error');
+    document.getElementById('tabla-body').innerHTML =
+      `<tr><td colspan="8" style="padding:20px;color:#E74C3C;text-align:center">
+        <strong>Error al cargar empresas:</strong> ${msg}<br>
+        <small style="color:#94A3B8;margin-top:4px;display:block">
+          Token: ${VigiaAPI.token().substring(0,12)}… | Admin: ${VigiaAPI.esAdmin()}
+        </small>
+        <button class="btn btn-sm" onclick="cargarDatos()" style="margin-top:10px">Reintentar</button>
+      </td></tr>`;
+    datosResumen = [];
+    renderCards([]);
+    return;
+  }
+  renderCards(datosResumen);
+  renderTabla(datosResumen);
+}
+
+// ═══════════════════════════════════════════════════════
+// Init
+// ═══════════════════════════════════════════════════════
+async function init() {
+  const ok = await VigiaAPI.requireAuth();
+  if (!ok) return;
+
+  if (!VigiaAPI.esAdmin()) {
+    // Si no es admin, redirigir a dashboard
+    window.location.replace('dashboard.html');
+    return;
+  }
+
+  document.getElementById('cargando').style.display = 'none';
+  document.getElementById('contenido').style.display = '';
+
+  await cargarDatos();
+}
+
+async function eliminarEmpresa(id, nombre) {
+  const conf = confirm(`⚠️ ¿Eliminar PERMANENTEMENTE la empresa "${nombre}" y todos sus datos (empleados, exámenes, evaluaciones)?\n\nEsta acción NO se puede deshacer.`);
+  if (!conf) return;
+  const conf2 = confirm(`Confirma de nuevo: eliminar "${nombre}" de forma irreversible.`);
+  if (!conf2) return;
+  try {
+    await VigiaAPI.eliminarEmpresa(id);
+    mostrarToast(`Empresa "${nombre}" eliminada`, 'ok');
+    await cargarDatos();
+  } catch(err) {
+    mostrarToast('Error al eliminar: ' + err.message, 'error');
+  }
+}
+
+function mostrarToast(msg, tipo = 'ok') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = `toast toast-${tipo} show`;
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+init();
+</script>
+<script src="js/vigia-chat.js"></script>
+</body>
+</html>
+

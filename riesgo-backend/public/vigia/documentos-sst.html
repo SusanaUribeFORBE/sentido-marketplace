@@ -1,0 +1,252 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vigía 360 — Documentos del SG-SST</title>
+  <link rel="stylesheet" href="vigia.css" />
+  <style>
+    .doc-group { margin-bottom:28px }
+    .doc-group-title { font-size:13px;font-weight:800;color:var(--navy);text-transform:uppercase;
+                       letter-spacing:.05em;margin-bottom:12px;padding-bottom:6px;
+                       border-bottom:2px solid var(--blue);display:flex;align-items:center;gap:8px }
+    .doc-row { display:flex;align-items:center;gap:12px;padding:12px 16px;
+               border:1.5px solid var(--border);border-radius:8px;margin-bottom:8px;
+               background:var(--card);transition:border-color .15s }
+    .doc-row:hover { border-color:var(--blue) }
+    .doc-icon { font-size:20px;flex-shrink:0 }
+    .doc-info { flex:1;min-width:0 }
+    .doc-nombre { font-size:14px;font-weight:700;color:var(--navy) }
+    .doc-estandar { font-size:11px;color:var(--muted) }
+    .doc-actions { display:flex;align-items:center;gap:8px;flex-shrink:0 }
+    .doc-link-display { font-size:12px;color:var(--blue);max-width:200px;overflow:hidden;
+                        text-overflow:ellipsis;white-space:nowrap }
+    .badge-ok  { background:#ECFDF5;color:#059669;border:1.5px solid #6EE7B7;
+                 padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;flex-shrink:0 }
+    .badge-pend{ background:#FEF3C7;color:#D97706;border:1.5px solid #FCD34D;
+                 padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;flex-shrink:0 }
+    .progress-bar { height:8px;background:#E2E8F0;border-radius:4px;margin-bottom:20px;overflow:hidden }
+    .progress-fill { height:100%;background:var(--blue);border-radius:4px;transition:width .5s }
+    .progress-txt { font-size:13px;font-weight:700;color:var(--navy);margin-bottom:6px }
+  </style>
+</head>
+<body>
+<nav class="navbar">
+  <a href="dashboard.html" class="nav-brand">
+    <span class="brand-vigia">Vigía</span><span class="brand-sst">360</span>
+  </a>
+  <div class="nav-links">
+    <a href="dashboard.html" class="nav-link-fixed">Dashboard</a>
+    <div class="nav-dropdown" id="dd-P">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-P')">
+        <span class="phva-pill phva-P">P</span> Planear <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="perfil-responsable.html">🩺 Responsable SST</a>
+        <a href="responsabilidades.html">👥 Roles y Responsabilidades</a>
+        <a href="copasst.html">🤝 COPASST y Convivencia</a>
+        <a href="documentos-sst.html">📄 Documentos del SG-SST</a>
+        <a href="matriz-peligros.html">⚠️ Matriz de Peligros (GTC-45)</a>
+        <a href="plan-trabajo.html">📅 Plan de Trabajo Anual</a>
+        <a href="presupuesto-sgsst.html">💰 Presupuesto SG-SST</a>
+        <a href="profesiograma.html">💊 Profesiograma</a>
+      </div>
+    </div>
+    <div class="nav-dropdown" id="dd-H">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-H')">
+        <span class="phva-pill phva-H">H</span> Hacer <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="epp.html">🦺 EPP</a>
+        <a href="capacitaciones.html">🎓 Capacitaciones</a>
+        <a href="emergencias.html">🚨 Emergencias y Brigada</a>
+        <a href="inspecciones.html">🔍 Inspecciones y Mantenimiento</a>
+        <a href="perfil-salud.html">🏥 Salud Ocupacional</a>
+        <div class="nav-dd-divider"></div>
+        <a href="lista-personal.html">👥 Lista de Personal</a>
+        <a href="subir.html">⬆️ Subir Examen</a>
+        <a href="subir-masivo.html">📦 Carga Masiva</a>
+        <a href="cartas-masivas.html">📄 Cartas Masivas</a>
+        <a href="reporte-examenes.html">📊 Cobertura de Exámenes</a>
+        <a href="informe-condiciones.html">📋 Informe de Condiciones</a>
+      </div>
+    </div>
+    <div class="nav-dropdown" id="dd-V">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-V')">
+        <span class="phva-pill phva-V">V</span> Verificar <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="evaluacion-sst.html">📋 Evaluación (Res. 0312)</a>
+        <a href="investigaciones.html">🔍 AT / Incidentes</a>
+        <a href="auditoria.html">🗒️ Auditoría Interna</a>
+        <a href="ausentismo.html">📉 Ausentismo laboral</a>
+        <a href="indicadores-sgsst.html">📊 Indicadores SG-SST</a>
+        <a href="analisis-phva.html">📈 Análisis e Indicadores</a>
+      </div>
+    </div>
+    <div class="nav-dropdown" id="dd-A">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-A')">
+        <span class="phva-pill phva-A">A</span> Actuar <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="mejoramiento.html">✅ Acciones de Mejoramiento</a>
+        <a href="evaluacion-sst.html">📝 Plan de Mejoramiento (F002)</a>
+      </div>
+    </div>
+    <a href="listado-maestro.html" class="nav-link-fixed">📁 Listado Maestro</a>
+    <span id="nav-empresa" style="color:#CBD8E6;font-size:13px;padding:6px 0"></span>
+    <button onclick="VigiaAPI.logout()"
+      style="background:none;border:1px solid rgba(255,255,255,.2);color:#CBD8E6;
+             border-radius:6px;padding:6px 12px;cursor:pointer;font-size:13px">Salir</button>
+  </div>
+</nav>
+
+<div class="page">
+  <div style="margin-bottom:20px">
+    <h2 style="margin:0 0 4px;font-size:18px;color:var(--navy)">Documentos corporativos del SG-SST</h2>
+    <p style="margin:0;font-size:13px;color:var(--muted)">Enlace o referencia a cada documento requerido por la Res. 0312/2019. Pega la URL del documento (Drive, SharePoint, etc.) en cada campo.</p>
+  </div>
+
+  <div class="progress-txt" id="progreso-txt"></div>
+  <div class="progress-bar"><div class="progress-fill" id="progreso-fill" style="width:0%"></div></div>
+
+  <div id="grupos-docs"></div>
+</div>
+
+<!-- MODAL enlace -->
+<div class="modal-overlay" id="modal-enlace" style="display:none">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <span id="modal-enlace-titulo" class="modal-title">Actualizar enlace</span>
+      <button class="modal-close" onclick="cerrarModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="en-codigo">
+      <div class="form-group">
+        <label id="en-label">Documento</label>
+        <input id="en-url" class="form-control" placeholder="https://drive.google.com/… o https://sharepoint.com/…">
+        <small style="color:var(--muted)">Pega la URL al documento. Déjalo en blanco para eliminar el enlace.</small>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="cerrarModal()">Cancelar</button>
+      <button class="btn" onclick="guardarEnlace()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/vigia-api.js"></script>
+<script>
+const DOCS = [
+  {
+    grupo: 'I. PLANEAR — Recursos y Gestión',
+    items: [
+      { codigo:'DOC-POLITICA-SST',     icon:'📋', nombre:'Política de Seguridad y Salud en el Trabajo',          estandar:'Est. 2.1.1 · 1%' },
+      { codigo:'DOC-OBJETIVOS-SST',    icon:'🎯', nombre:'Objetivos del SG-SST',                                   estandar:'Est. 2.2.1 · 1%' },
+      { codigo:'DOC-PRESUPUESTO-SST',  icon:'💰', nombre:'Presupuesto / Recursos asignados al SG-SST',             estandar:'Est. 1.1.3 · 0.5%' },
+      { codigo:'DOC-PLANILLA-SS',      icon:'📄', nombre:'Planilla de afiliación a Seguridad Social',             estandar:'Est. 1.1.4 · 0.5%' },
+      { codigo:'DOC-RENDICION-CUENTAS',icon:'📊', nombre:'Acta de Rendición de Cuentas del SG-SST',               estandar:'Est. 2.6.1 · 1%' },
+    ]
+  },
+  {
+    grupo: 'II. PLANEAR — Gestión integral',
+    items: [
+      { codigo:'DOC-MATRIZ-LEGAL',     icon:'⚖️', nombre:'Matriz de requisitos legales SST',                      estandar:'Est. 2.7.1 · 2%' },
+      { codigo:'DOC-COMUNICACION',     icon:'📢', nombre:'Programa de comunicación interna y externa',            estandar:'Est. 2.8.1 · 1%' },
+      { codigo:'DOC-COMPRAS',          icon:'🛒', nombre:'Procedimiento de compras y adquisiciones (SST)',         estandar:'Est. 2.9.1 · 1%' },
+      { codigo:'DOC-PROVEEDORES',      icon:'🤝', nombre:'Criterios de evaluación y selección de proveedores',    estandar:'Est. 2.10.1 · 2%' },
+      { codigo:'DOC-CAMBIO',           icon:'🔄', nombre:'Procedimiento de gestión del cambio',                   estandar:'Est. 2.11.1 · 1%' },
+    ]
+  },
+  {
+    grupo: 'II. HACER — Gestión de la Salud',
+    items: [
+      { codigo:'DOC-SOCIODEMOGRAFICO', icon:'👥', nombre:'Perfil sociodemográfico y diagnóstico de condiciones de salud', estandar:'Est. 3.1.1 · 1%' },
+      { codigo:'DOC-PVE',              icon:'🏥', nombre:'Programas de Vigilancia Epidemiológica (PVE)',           estandar:'Est. 3.1.2 · 1%' },
+      { codigo:'DOC-CUSTODIA-HC',      icon:'📁', nombre:'Carta de custodia de historias clínicas',               estandar:'Est. 3.1.5 · 1%' },
+      { codigo:'DOC-ESTILOS-SALUDABLES',icon:'🍎',nombre:'Programa de estilos de vida y entorno saludable',       estandar:'Est. 3.1.7 · 1%' },
+      { codigo:'DOC-PMIRS',            icon:'♻️', nombre:'Plan de manejo integral de residuos (PMIRS)',            estandar:'Est. 3.1.9 · 1%' },
+    ]
+  },
+  {
+    grupo: 'II. HACER — Peligros y Riesgos',
+    items: [
+      { codigo:'DOC-PROCEDIMIENTOS-SST',icon:'📝',nombre:'Procedimientos e instructivos internos de SST',          estandar:'Est. 4.2.3 · 2.5%' },
+      { codigo:'DOC-MEDICIONES-AMB',   icon:'🌡️', nombre:'Mediciones ambientales (ruido, iluminación, etc.)',     estandar:'Est. 4.1.4 · 4%' },
+    ]
+  },
+];
+
+let _links = {};
+
+function cerrarModal() { document.getElementById('modal-enlace').style.display = 'none'; }
+
+function editarEnlace(codigo, nombre) {
+  document.getElementById('en-codigo').value = codigo;
+  document.getElementById('en-label').textContent = nombre;
+  document.getElementById('en-url').value = _links[codigo] || '';
+  document.getElementById('modal-enlace-titulo').textContent = 'Actualizar enlace';
+  document.getElementById('modal-enlace').style.display = 'flex';
+}
+
+async function guardarEnlace() {
+  const codigo = document.getElementById('en-codigo').value;
+  const url    = document.getElementById('en-url').value.trim();
+  try {
+    await VigiaAPI.setDocLink(codigo, url);
+    cerrarModal();
+    await cargar();
+  } catch(e) { alert('Error: '+e.message); }
+}
+
+async function cargar() {
+  _links = await VigiaAPI.getDocLinks() || {};
+  renderGrupos();
+  renderProgreso();
+}
+
+function renderProgreso() {
+  const total = DOCS.reduce((s, g) => s + g.items.length, 0);
+  const conLink = DOCS.reduce((s, g) => s + g.items.filter(i => _links[i.codigo]).length, 0);
+  const pct = total ? Math.round(conLink * 100 / total) : 0;
+  document.getElementById('progreso-txt').textContent = `${conLink} de ${total} documentos enlazados (${pct}% completado)`;
+  document.getElementById('progreso-fill').style.width = pct + '%';
+}
+
+function renderGrupos() {
+  const cont = document.getElementById('grupos-docs');
+  cont.innerHTML = DOCS.map(g => `
+    <div class="doc-group">
+      <div class="doc-group-title">${g.grupo}</div>
+      ${g.items.map(doc => {
+        const url = _links[doc.codigo];
+        return `
+        <div class="doc-row">
+          <span class="doc-icon">${doc.icon}</span>
+          <div class="doc-info">
+            <div class="doc-nombre">${doc.nombre}</div>
+            <div class="doc-estandar">${doc.estandar}</div>
+            ${url ? `<a href="${url}" target="_blank" class="doc-link-display">${url}</a>` : ''}
+          </div>
+          <div class="doc-actions">
+            <span class="${url ? 'badge-ok' : 'badge-pend'}">${url ? '✓ Enlazado' : 'Pendiente'}</span>
+            <button class="btn-xs" onclick="editarEnlace('${doc.codigo}','${doc.nombre.replace(/'/g,"\\'")}')">
+              ${url ? 'Cambiar' : 'Agregar enlace'}
+            </button>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`).join('');
+}
+
+async function init() {
+  const ok = await VigiaAPI.requireAuth(); if (!ok) return;
+  document.getElementById('nav-empresa').textContent = localStorage.getItem('vigia_nombre_empresa')||'';
+  await cargar();
+}
+init();
+</script>
+<script src="js/vigia-chat.js"></script>
+</body>
+</html>
+

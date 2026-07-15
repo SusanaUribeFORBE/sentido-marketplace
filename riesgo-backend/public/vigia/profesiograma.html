@@ -1,0 +1,472 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vigía 360 — Profesiograma</title>
+  <link rel="stylesheet" href="vigia.css" />
+  <style>
+    .area-card { border:1.5px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px }
+    .area-header {
+      display:flex;align-items:center;justify-content:space-between;
+      padding:14px 20px;background:var(--bg);cursor:pointer;
+      border-bottom:1.5px solid var(--border)
+    }
+    .area-header:hover { background:#F0F4F8 }
+    .area-nombre { font-size:15px;font-weight:800;color:var(--navy) }
+    .area-badges { display:flex;gap:6px;flex-wrap:wrap }
+    .clase-chip {
+      font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;
+      border:1.5px solid currentColor;white-space:nowrap
+    }
+    .area-body { padding:16px 20px }
+    .section-label { font-size:11px;font-weight:700;color:var(--muted);
+      text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;margin-top:14px }
+    .section-label:first-child { margin-top:0 }
+    .peligros-list { display:flex;flex-direction:column;gap:4px }
+    .peligro-item { font-size:13px;color:var(--text);padding:4px 0;
+      border-bottom:1px dotted var(--border) }
+    .peligro-item:last-child { border-bottom:none }
+    .examen-list { display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px }
+    .examen-tag {
+      display:flex;align-items:center;gap:6px;
+      background:#EFF6FF;border:1px solid #BFDBFE;border-radius:6px;
+      padding:6px 10px;font-size:12px;color:#1E40AF;font-weight:600
+    }
+    .periodicidad-badge {
+      display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;
+      border-radius:20px;background:#F1F5F9;color:var(--muted);
+      border:1px solid var(--border);margin-top:8px
+    }
+
+    /* Colores por clase (igual que en matriz-peligros) */
+    .c-BIOLOGICO       { color:#7C3AED }
+    .c-BIOMECANICO     { color:#D97706 }
+    .c-FISICO          { color:#2563EB }
+    .c-QUIMICO         { color:#DC2626 }
+    .c-PSICOSOCIAL     { color:#059669 }
+    .c-SEGURIDAD       { color:#1A3A5C }
+    .c-FENOMENO_NATURAL{ color:#0891B2 }
+
+    .empty-area { padding:48px;text-align:center }
+
+    /* Print */
+    @media print {
+      nav, .no-print { display:none !important }
+      .area-body { display:block !important }
+      .area-card { break-inside:avoid }
+      body { background:white }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="dashboard.html" style="display:flex;align-items:center;gap:10px;text-decoration:none">
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="36" viewBox="0 0 34 38">
+      <path d="M17 1L2 7V21C2 30 9 37 17 39C25 37 32 30 32 21V7Z" fill="rgba(255,255,255,0.15)" stroke="white" stroke-width="1.5"/>
+      <circle cx="12" cy="19" r="4.5" fill="white" opacity="0.9"/>
+      <circle cx="22" cy="19" r="4.5" fill="white" opacity="0.9"/>
+      <circle cx="12" cy="19" r="2" fill="rgba(26,58,92,0.8)"/>
+      <circle cx="22" cy="19" r="2" fill="rgba(26,58,92,0.8)"/>
+      <polygon points="15,25 17,28 19,25" fill="white" opacity="0.7"/>
+    </svg>
+    <span style="color:white;font-weight:800;font-size:17px;letter-spacing:0.5px">VIGÍA <span style="color:#4ADE80;font-weight:900">360</span></span>
+  </a>
+  <div class="nav-links">
+    <a href="dashboard.html" class="nav-link-fixed">Dashboard</a>
+
+    <!-- P — Planear -->
+    <div class="nav-dropdown" id="dd-P">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-P')">
+        <span class="phva-pill phva-P">P</span> Planear <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="perfil-responsable.html">🩺 Responsable SST</a>
+        <a href="responsabilidades.html">👥 Roles y Responsabilidades</a>
+        <a href="copasst.html">🤝 COPASST y Convivencia</a>
+        <a href="documentos-sst.html">📄 Documentos del SG-SST</a>
+        <a href="matriz-peligros.html">⚠️ Matriz de Peligros (GTC-45)</a>
+        <a href="plan-trabajo.html">📅 Plan de Trabajo Anual</a>
+        <a href="presupuesto-sgsst.html">💰 Presupuesto SG-SST</a>
+        <a href="profesiograma.html">💊 Profesiograma</a>
+      </div>
+    </div>
+
+    <!-- H — Hacer -->
+    <div class="nav-dropdown" id="dd-H">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-H')">
+        <span class="phva-pill phva-H">H</span> Hacer <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="epp.html">🦺 EPP</a>
+        <a href="capacitaciones.html">🎓 Capacitaciones</a>
+        <a href="emergencias.html">🚨 Emergencias y Brigada</a>
+        <a href="inspecciones.html">🔍 Inspecciones y Mantenimiento</a>
+        <a href="perfil-salud.html">🏥 Salud Ocupacional</a>
+        <div class="nav-dd-divider"></div>
+        <a href="lista-personal.html">👥 Lista de Personal</a>
+        <a href="subir.html">⬆️ Subir Examen</a>
+        <a href="subir-masivo.html">📦 Carga Masiva</a>
+        <a href="cartas-masivas.html">📄 Cartas Masivas</a>
+        <a href="reporte-examenes.html">📊 Cobertura de Exámenes</a>
+        <a href="informe-condiciones.html">📋 Informe de Condiciones</a>
+      </div>
+    </div>
+
+    <!-- V — Verificar -->
+    <div class="nav-dropdown" id="dd-V">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-V')">
+        <span class="phva-pill phva-V">V</span> Verificar <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="evaluacion-sst.html">📋 Evaluación (Res. 0312)</a>
+        <a href="investigaciones.html">🔍 AT / Incidentes</a>
+        <a href="ausentismo.html">📉 Ausentismo laboral</a>
+        <a href="indicadores-sgsst.html">📊 Indicadores SG-SST</a>
+        <a href="analisis-phva.html">📈 Análisis e Indicadores</a>
+      </div>
+    </div>
+
+    <!-- A — Actuar -->
+    <div class="nav-dropdown" id="dd-A">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-A')">
+        <span class="phva-pill phva-A">A</span> Actuar <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="mejoramiento.html">✅ Acciones de Mejoramiento</a>
+        <a href="evaluacion-sst.html">📝 Plan de Mejoramiento (F002)</a>
+      </div>
+    </div>
+
+    <a href="listado-maestro.html" class="nav-link-fixed">📁 Listado Maestro</a>
+    <span id="nav-empresa" style="color:#CBD8E6;font-size:13px;padding:6px 0"></span>
+    <button onclick="VigiaAPI.logout()"
+      style="background:none;border:1px solid rgba(255,255,255,.2);color:#CBD8E6;
+             border-radius:6px;padding:6px 12px;cursor:pointer;font-size:13px">Salir</button>
+  </div>
+</nav>
+
+<div class="page">
+  <div id="cargando" class="empty-state mt-8">
+    <div class="spinner" style="margin:0 auto 16px;border-color:rgba(46,134,171,.2);border-top-color:var(--blue)"></div>
+    <p class="text-muted">Cargando profesiograma…</p>
+  </div>
+
+  <div id="contenido" style="display:none">
+
+    <!-- Cabecera -->
+    <div class="flex justify-between items-center mb-4 no-print">
+      <div>
+        <h2 style="font-size:20px;font-weight:800;color:var(--navy)">💊 Profesiograma de Exámenes Médicos</h2>
+        <p class="text-muted text-sm">
+          Res. 1843/2025 · Exámenes recomendados por área según peligros identificados en la matriz GTC-45
+        </p>
+      </div>
+      <div class="flex gap-3">
+        <a href="matriz-peligros.html" class="btn btn-outline">⚠️ Ver matriz</a>
+        <button class="btn btn-outline" onclick="window.print()">🖨️ Imprimir</button>
+      </div>
+    </div>
+
+    <!-- Cards de resumen -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:24px"
+         id="summary-cards"></div>
+
+    <!-- Sin peligros -->
+    <div id="sin-peligros" style="display:none" class="card">
+      <div class="empty-area">
+        <div style="font-size:48px;margin-bottom:12px">⚠️</div>
+        <h3 style="color:var(--navy);margin-bottom:8px">Sin peligros registrados</h3>
+        <p class="text-muted text-sm">Registra los peligros en la Matriz GTC-45 para generar el profesiograma.</p>
+        <a href="matriz-peligros.html" class="btn btn-navy mt-4">Ir a Matriz de Peligros</a>
+      </div>
+    </div>
+
+    <!-- Nota de referencia normativa -->
+    <div id="nota-norma" class="card mb-4" style="padding:14px 20px;background:#FFFBEB;border:1.5px solid #FCD34D;display:none">
+      <p style="font-size:12.5px;color:#92400E;margin:0">
+        <strong>Base normativa:</strong> Res. 1843/2025 (reemplaza Res. 2346/2007) — Establece los requisitos de las
+        evaluaciones médicas ocupacionales. El profesiograma es el documento que define los exámenes requeridos
+        por cargo en función de los factores de riesgo identificados. Debe ser validado por el médico ocupacional.
+      </p>
+    </div>
+
+    <!-- Profesiograma por área -->
+    <div id="lista-areas"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="js/vigia-api.js"></script>
+<script>
+
+// ═══════════════════════════════════════════════════════════════
+// MAPA DE EXÁMENES — peligro_clase + keywords → exámenes
+// Base: Res. 1843/2025 y criterios de medicina laboral
+// ═══════════════════════════════════════════════════════════════
+const MAPA = {
+  BIOLOGICO: {
+    ico: '🦠', label: 'Biológico',
+    base: ['Historia clínica ocupacional', 'Hemograma completo con diferencial', 'Hepatitis B (antígeno de superficie)', 'Vacunas al día (tétanos, hepatitis)'],
+    keywords: {
+      'sangre|cortopunzante|punzocortante|salpicadura': ['VIH (con consentimiento informado)', 'Hepatitis C (anticuerpos)'],
+      'material biológico|patógeno|bacteria|virus': ['Serología específica según agente biológico'],
+      'animal|zoonosis|roedor': ['Prueba de tuberculina (PPD)', 'Leptospira'],
+    },
+    periodicidad: 'Anual',
+  },
+  BIOMECANICO: {
+    ico: '🦴', label: 'Biomecánico',
+    base: ['Historia clínica ocupacional', 'Evaluación osteomuscular', 'Evaluación osteoarticular de columna vertebral'],
+    keywords: {
+      'mano|muñeca|carpo|dedo|prensión': ['Evaluación de extremidades superiores (Phalen, Tinel)'],
+      'hombro|cuello|cervical|trapecio': ['Evaluación de miembro superior y columna cervical'],
+      'rodilla|cadera|tobillo|pie': ['Evaluación de extremidades inferiores'],
+      'carga|levantamiento|empuje': ['Evaluación de columna lumbar', 'Evaluación de esfuerzo físico'],
+      'postura|sedentario|sentado': ['Evaluación de columna vertebral completa'],
+    },
+    periodicidad: 'Cada 2 años',
+  },
+  FISICO: {
+    ico: '⚡', label: 'Físico',
+    base: ['Historia clínica ocupacional'],
+    keywords: {
+      'ruido|decibel|db|acústic|sonido': ['Audiometría tonal y vocal', 'Evaluación otorrinolaringológica'],
+      'vibr': ['Evaluación neurológica periférica', 'Evaluación osteoarticular de manos y muñecas'],
+      'calor|temperatura alta|térmico|calorífico|horno|soldadura': ['Evaluación cardiovascular', 'Evaluación dermatológica'],
+      'frío|congelación|temperatura baja|nevera|refrigeración': ['Evaluación cardiovascular', 'Evaluación dermatológica'],
+      'radiaci|ultraviolet|uv|infrarroj|láser|rayos': ['Evaluación oftalmológica', 'Evaluación dermatológica'],
+      'iluminaci|luz|visual|brillo|deslumbramiento': ['Evaluación oftalmológica', 'Agudeza visual (Snellen)'],
+      'presión|barotrauma|inmersión|buceo|hiperbárico': ['Evaluación otorrinolaringológica', 'Evaluación cardiovascular'],
+      'radiación ionizante|rayos x|gamma|nuclear': ['Hemograma completo seriado', 'Evaluación oftalmológica'],
+    },
+    periodicidad: 'Anual',
+  },
+  QUIMICO: {
+    ico: '☢️', label: 'Químico',
+    base: ['Historia clínica ocupacional', 'Espirometría', 'Hemograma completo'],
+    keywords: {
+      'polvo|partícula|sílice|asbest|fibra|mineral': ['Radiografía de tórax PA', 'Función pulmonar (espirometría)'],
+      'plomo|mercurio|cadmio|cromo|arsénico|metal pesado': ['Niveles de metales pesados en sangre', 'Función renal y hepática (creatinina, ALT, AST)'],
+      'solvente|disolvente|benceno|tolueno|xilen|acetona': ['Función hepática (ALT, AST, bilirrubinas)', 'Evaluación neurológica', 'Uroanálisis'],
+      'ácido|base|cáustico|corrosivo|álcali': ['Evaluación dermatológica', 'Evaluación oftalmológica'],
+      'pesticida|plaguicida|organofosfato|herbicida|fungicida': ['Colinesterasa sérica o eritrocitaria', 'Función hepática'],
+      'gas|vapores|monóxido|cloro|amoniaco': ['Función pulmonar (espirometría)', 'Radiografía de tórax PA'],
+      'pintura|barniz|laca|revestimiento': ['Función hepática', 'Hemograma', 'Evaluación neurológica'],
+    },
+    periodicidad: 'Anual',
+  },
+  PSICOSOCIAL: {
+    ico: '🧠', label: 'Psicosocial',
+    base: ['Historia clínica ocupacional', 'Evaluación psicológica ocupacional'],
+    keywords: {
+      'turno nocturno|nocturno|turno rotativo|noche': ['Evaluación de fatiga laboral', 'Evaluación cardiovascular'],
+      'violencia|acoso|agresión|hostigamiento|mobbing': ['Evaluación psicológica especializada'],
+      'estrés|carga mental|alta demanda|presión': ['Evaluación de estrés laboral (batería Min. Trabajo)'],
+      'alta responsabilidad|toma de decisión|vidas': ['Evaluación psicofísica integral'],
+    },
+    periodicidad: 'Anual',
+  },
+  SEGURIDAD: {
+    ico: '🔒', label: 'Condiciones de Seguridad',
+    base: ['Historia clínica ocupacional', 'Evaluación física general'],
+    keywords: {
+      'altura|andamio|escalera|cubierta|tejado|trepado|trabajo en alturas': [
+        'Examen de trabajo en alturas (Res. 4272/2021)',
+        'Evaluación cardiovascular (EKG, tensión arterial)',
+        'Evaluación vestibular y equilibrio (vértigo)',
+        'Evaluación oftalmológica',
+      ],
+      'eléctric|electricidad|alta tensión|voltaje|arco eléctrico': ['Evaluación cardiovascular', 'Evaluación neurológica'],
+      'vehículo|vehiculo|conduc|transport|moto|carro|camión|bus': [
+        'Agudeza visual (Snellen)',
+        'Evaluación psicofísica para conductores (Res. 1223/2014)',
+        'Evaluación cardiovascular',
+        'Evaluación neurológica',
+      ],
+      'máquina|maquinaria|prensa|torno|fresadora|herramienta': ['Evaluación osteoarticular', 'Evaluación oftalmológica'],
+      'calzada|trabajo en vías|tránsito vehicular': ['Agudeza visual', 'Evaluación cardiovascular'],
+      'espacios confinados|espacio confinado|tanque': ['Evaluación cardiovascular', 'Evaluación pulmonar'],
+      'explosivo|material explosivo|pirotecnia': ['Evaluación neurológica', 'Evaluación cardiovascular'],
+      'incendio|fuego|llama': ['Evaluación pulmonar', 'Evaluación dermatológica'],
+    },
+    periodicidad: 'Anual',
+  },
+  FENOMENO_NATURAL: {
+    ico: '🌪️', label: 'Fenómenos Naturales',
+    base: ['Historia clínica ocupacional', 'Evaluación física general', 'Evaluación cardiovascular'],
+    keywords: {
+      'sismo|terremoto|inundación|deslizamiento': ['Evaluación psicológica (manejo de estrés postraumático)'],
+    },
+    periodicidad: 'Cada 2 años',
+  },
+};
+
+const CLASE_COLOR = {
+  BIOLOGICO:'#7C3AED', BIOMECANICO:'#D97706', FISICO:'#2563EB',
+  QUIMICO:'#DC2626', PSICOSOCIAL:'#059669', SEGURIDAD:'#1A3A5C', FENOMENO_NATURAL:'#0891B2',
+};
+
+// ─── Motor de recomendación ────────────────────────────────────
+function getExamenes(peligroClase, peligroDesc) {
+  const mapa = MAPA[peligroClase];
+  if (!mapa) return { examenes: ['Historia clínica ocupacional'], periodicidad: 'Anual' };
+
+  const examenes = new Set(mapa.base);
+  const desc = (peligroDesc || '').toLowerCase();
+
+  for (const [pattern, exams] of Object.entries(mapa.keywords || {})) {
+    if (new RegExp(pattern, 'i').test(desc)) {
+      exams.forEach(e => examenes.add(e));
+    }
+  }
+  return { examenes: Array.from(examenes), periodicidad: mapa.periodicidad };
+}
+
+// ─── Agrupar peligros por proceso ─────────────────────────────
+function agruparPorProceso(peligros) {
+  const map = {};
+  for (const p of peligros) {
+    const proceso = (p.proceso || 'Sin proceso definido').trim();
+    if (!map[proceso]) map[proceso] = [];
+    map[proceso].push(p);
+  }
+  return map;
+}
+
+// ─── Calcular perfil de exámenes para un área ─────────────────
+function calcularPerfil(listaPeligros) {
+  const examenesSet  = new Set();
+  const clasesSet    = new Set();
+  let maxPeriodo     = 24; // meses (máx = menos frecuente)
+
+  for (const p of listaPeligros) {
+    const { examenes, periodicidad } = getExamenes(p.peligro_clase, p.peligro_descripcion);
+    examenes.forEach(e => examenesSet.add(e));
+    if (p.peligro_clase) clasesSet.add(p.peligro_clase);
+    // El examen más frecuente manda: "Anual" = 12 meses, "Cada 2 años" = 24
+    if (periodicidad === 'Anual') maxPeriodo = Math.min(maxPeriodo, 12);
+  }
+
+  return {
+    examenes:     Array.from(examenesSet).sort(),
+    clases:       Array.from(clasesSet),
+    periodicidad: maxPeriodo === 12 ? 'Anual' : 'Cada 2 años',
+  };
+}
+
+// ─── Render ───────────────────────────────────────────────────
+function renderProfesiograma(peligros) {
+  const agrupado   = agruparPorProceso(peligros);
+  const areas      = Object.keys(agrupado).sort();
+  const totalExamenes = new Set();
+  peligros.forEach(p => getExamenes(p.peligro_clase, p.peligro_descripcion).examenes.forEach(e => totalExamenes.add(e)));
+
+  // Summary cards
+  document.getElementById('summary-cards').innerHTML = `
+    <div class="summary-card"><div class="num">${areas.length}</div><div class="lbl">Áreas / procesos</div></div>
+    <div class="summary-card"><div class="num">${peligros.length}</div><div class="lbl">Peligros identificados</div></div>
+    <div class="summary-card"><div class="num">${totalExamenes.size}</div><div class="lbl">Tipos de examen</div></div>
+    <div class="summary-card"><div class="num">${[...new Set(peligros.map(p=>p.peligro_clase).filter(Boolean))].length}</div><div class="lbl">Clases de riesgo</div></div>
+  `;
+  document.getElementById('nota-norma').style.display = '';
+
+  const cont = document.getElementById('lista-areas');
+  cont.innerHTML = areas.map((area, idx) => {
+    const lista    = agrupado[area];
+    const perfil   = calcularPerfil(lista);
+    const claseChips = perfil.clases.map(c => {
+      const m = MAPA[c];
+      const color = CLASE_COLOR[c] || 'var(--muted)';
+      return `<span class="clase-chip c-${c}" style="border-color:${color};background:${color}18;color:${color}">${m?.ico || ''} ${m?.label || c}</span>`;
+    }).join('');
+
+    const examenTags = perfil.examenes.map(e =>
+      `<div class="examen-tag">💉 ${e}</div>`
+    ).join('');
+
+    const peligroItems = lista.map(p => {
+      const m = MAPA[p.peligro_clase];
+      return `<div class="peligro-item">
+        <span style="color:${CLASE_COLOR[p.peligro_clase]||'var(--muted)'}">
+          ${m?.ico||'❓'} <strong>${m?.label||p.peligro_clase||'—'}</strong>
+        </span>
+        — ${p.peligro_descripcion || '(sin descripción)'}
+        ${p.zona ? `<span class="text-muted" style="font-size:11px"> · ${p.zona}</span>` : ''}
+      </div>`;
+    }).join('');
+
+    return `
+      <div class="area-card">
+        <div class="area-header" onclick="toggleArea('area-body-${idx}')">
+          <div>
+            <div class="area-nombre">📁 ${area}</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:3px">${lista.length} peligro${lista.length!==1?'s':''} · ${perfil.examenes.length} examen${perfil.examenes.length!==1?'es':''} recomendado${perfil.examenes.length!==1?'s':''}</div>
+          </div>
+          <div class="area-badges">${claseChips}</div>
+        </div>
+        <div id="area-body-${idx}" class="area-body">
+          <div class="section-label">Peligros identificados (GTC-45)</div>
+          <div class="peligros-list">${peligroItems}</div>
+
+          <div class="section-label" style="margin-top:16px">Exámenes médicos recomendados</div>
+          <div class="examen-list">${examenTags}</div>
+
+          <div>
+            <span class="periodicidad-badge">🗓 Periodicidad: ${perfil.periodicidad}</span>
+            <span class="periodicidad-badge" style="margin-left:8px">📋 Res. 1843/2025</span>
+          </div>
+
+          <p class="text-muted" style="font-size:11px;margin-top:12px;margin-bottom:0">
+            ⚠️ Este perfil es una recomendación automática basada en los peligros registrados.
+            Debe ser revisado y firmado por un médico especialista en salud ocupacional.
+          </p>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function toggleArea(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.style.display = el.style.display === 'none' ? '' : 'none';
+}
+
+// ─── Init ─────────────────────────────────────────────────────
+async function init() {
+  const ok = await VigiaAPI.requireAuth();
+  if (!ok) return;
+
+  try {
+    const empresaId = VigiaAPI.esAdmin() ? null : VigiaAPI.empresaId();
+    const peligros  = await VigiaAPI.getPeligros(empresaId) || [];
+
+    document.getElementById('cargando').style.display = 'none';
+    document.getElementById('contenido').style.display = '';
+
+    if (!peligros.length) {
+      document.getElementById('sin-peligros').style.display = '';
+      document.getElementById('lista-areas').innerHTML = '';
+    } else {
+      document.getElementById('sin-peligros').style.display = 'none';
+      renderProfesiograma(peligros);
+    }
+  } catch (err) {
+    document.getElementById('cargando').innerHTML = `
+      <p class="text-muted">Error al cargar: ${err.message}</p>`;
+  }
+}
+
+function mostrarToast(msg, tipo = 'ok') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = `toast toast-${tipo} show`;
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+init();
+</script>
+<script src="js/vigia-chat.js"></script>
+</body>
+</html>
+

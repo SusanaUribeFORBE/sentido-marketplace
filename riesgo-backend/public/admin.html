@@ -26,7 +26,11 @@
     <div class="admin-header">
       <img src="/assets/logo-riesgo.png" alt="RiesGO!" class="logo-sm" />
       <h1>Panel de administración</h1>
-      <button type="button" id="logout-btn" class="ghost-btn">Salir</button>
+      <div style="display:flex;gap:8px;align-items:center">
+        <a href="/vial.html" target="_blank" class="ghost-btn" style="text-decoration:none;font-size:12px">🛣️ riesGO Vial</a>
+        <a href="/" target="_blank" class="ghost-btn" style="text-decoration:none;font-size:12px">🎮 Plataforma SST</a>
+        <button type="button" id="logout-btn" class="ghost-btn">Salir</button>
+      </div>
     </div>
 
     <div class="tabs">
@@ -52,6 +56,9 @@
           <span class="stat-label">Certificados emitidos</span>
         </div>
       </div>
+
+      <h2 style="margin-top:28px">Links de acceso</h2>
+      <div id="links-acceso" style="display:flex;flex-direction:column;gap:10px;margin-top:12px"></div>
     </section>
 
     <section id="tab-empresas" class="tab-panel" hidden>
@@ -72,6 +79,20 @@
           <tbody></tbody>
         </table>
       </div>
+
+      <h2>Actualizar email SST</h2>
+      <form id="email-sst-form">
+        <div class="field">
+          <label for="email_empresa_select">Empresa</label>
+          <select id="email_empresa_select"></select>
+        </div>
+        <div class="field">
+          <label for="email_sst_input">Nuevo email SST (recibe los certificados)</label>
+          <input type="email" id="email_sst_input" placeholder="ejemplo@empresa.com" required autocomplete="off" />
+        </div>
+        <button type="submit">Guardar email</button>
+        <div id="email-sst-message" class="message"></div>
+      </form>
 
       <h2>Nueva empresa</h2>
       <form id="empresa-form">
@@ -139,6 +160,8 @@
             <option value="PAS Vial – Emergencias en Ruta">PAS Vial – Emergencias en Ruta</option>
             <option value="Liderazgo Vial">Liderazgo Vial</option>
             <option value="Reto del Motero Auteco">Reto del Motero Auteco</option>
+            <option value="Controladores Viales">Controladores Viales</option>
+            <option value="Inducción ProAves">Inducción ProAves</option>
           </select>
         </div>
         <div class="field">
@@ -174,6 +197,8 @@
             <option value="PAS Vial – Emergencias en Ruta">PAS Vial – Emergencias en Ruta</option>
             <option value="Liderazgo Vial">Liderazgo Vial</option>
             <option value="Reto del Motero Auteco">Reto del Motero Auteco</option>
+            <option value="Controladores Viales">Controladores Viales</option>
+            <option value="Inducción ProAves">Inducción ProAves</option>
           </select>
         </div>
         <button type="submit">Descargar Excel</button>
@@ -243,6 +268,8 @@
             <option value="PAS Vial – Emergencias en Ruta">PAS Vial – Emergencias en Ruta</option>
             <option value="Liderazgo Vial">Liderazgo Vial</option>
             <option value="Reto del Motero Auteco">Reto del Motero Auteco</option>
+            <option value="Controladores Viales">Controladores Viales</option>
+            <option value="Inducción ProAves">Inducción ProAves</option>
         </select>
       </div>
       <div class="field">

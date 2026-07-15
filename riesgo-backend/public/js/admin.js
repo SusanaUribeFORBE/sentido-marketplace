@@ -96,6 +96,36 @@ async function cargarResumen() {
   document.getElementById('stat-instalaciones').textContent = data.instalaciones;
   document.getElementById('stat-usuarios').textContent = data.usuarios_activos;
   document.getElementById('stat-certificados').textContent = data.certificados_emitidos;
+  renderLinksAcceso();
+}
+
+function renderLinksAcceso() {
+  const base = `${location.protocol}//${location.host}`;
+  const links = [
+    { label: '🛣️ riesGO! Vial',          desc: 'Ingreso exclusivo para módulos de seguridad vial (CESV + Andina)', path: '/vial.html' },
+    { label: '🎮 Plataforma SST General', desc: 'Ingreso para todos los módulos SST de RiesGO!',                  path: '/' },
+    { label: '🪪 Pasaporte de Movilidad', desc: 'Consulta pública del pasaporte por cédula',                      path: '/pasaporte.html' },
+  ];
+
+  document.getElementById('links-acceso').innerHTML = links.map(l => {
+    const url = `${base}${l.path}`;
+    return `
+      <div style="background:#f8f7f4;border:1px solid #e5e1da;border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+        <div style="flex:1;min-width:200px">
+          <div style="font-weight:700;font-size:14px;color:#0B1F3A;margin-bottom:2px">${l.label}</div>
+          <div style="font-size:12px;color:#5C554A;margin-bottom:6px">${l.desc}</div>
+          <a href="${url}" target="_blank" style="font-size:12px;color:#0B1F3A;word-break:break-all">${url}</a>
+        </div>
+        <button onclick="navigator.clipboard.writeText('${url}').then(()=>{ this.textContent='✅ Copiado'; setTimeout(()=>this.textContent='📋 Copiar',1500) })"
+          style="background:#0B1F3A;color:#fff;border:none;border-radius:7px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap">
+          📋 Copiar
+        </button>
+        <a href="${url}" target="_blank"
+          style="background:#FFC727;color:#0B1F3A;border:none;border-radius:7px;padding:8px 16px;font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap">
+          Abrir →
+        </a>
+      </div>`;
+  }).join('');
 }
 
 async function cargarEmpresas() {
@@ -141,7 +171,36 @@ async function cargarEmpresas() {
   analiticaSelect.innerHTML =
     '<option value="">Todas las empresas</option>' +
     empresas.map((e) => `<option value="${e.id_empresa}">${e.nombre_constructora}</option>`).join('');
+
+  const emailEmpresaSelect = document.getElementById('email_empresa_select');
+  if (emailEmpresaSelect) {
+    emailEmpresaSelect.innerHTML =
+      '<option value="">Selecciona una empresa</option>' +
+      empresas.map((e) => `<option value="${e.id_empresa}">${e.nombre_constructora} — ${e.email_sst || 'sin email'}</option>`).join('');
+  }
 }
+
+document.getElementById('email-sst-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const msg = document.getElementById('email-sst-message');
+  msg.className = 'message';
+  const idEmpresa = document.getElementById('email_empresa_select').value;
+  const emailSst  = document.getElementById('email_sst_input').value.trim();
+  if (!idEmpresa) { msg.textContent = 'Selecciona una empresa.'; msg.classList.add('error'); return; }
+  const res = await adminFetch(`/empresas/${idEmpresa}/email`, {
+    method: 'PATCH',
+    body: JSON.stringify({ email_sst: emailSst }),
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    msg.textContent = err.error || 'Error actualizando el email.';
+    msg.classList.add('error');
+    return;
+  }
+  msg.textContent = `✅ Email actualizado a: ${emailSst}`;
+  msg.classList.add('success');
+  await cargarEmpresas();
+});
 
 document.getElementById('empresa-form').addEventListener('submit', async (e) => {
   e.preventDefault();

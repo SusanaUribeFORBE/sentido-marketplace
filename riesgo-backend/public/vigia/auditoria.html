@@ -1,0 +1,323 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vigía 360 — Auditoría Interna SG-SST</title>
+  <link rel="stylesheet" href="vigia.css" />
+  <style>
+    .audit-card { border:1.5px solid var(--border);border-radius:12px;padding:20px;margin-bottom:14px }
+    .audit-card:hover { border-color:var(--blue) }
+    .audit-anio { font-size:22px;font-weight:800;color:var(--blue);margin-right:12px }
+    .audit-auditor { font-size:14px;font-weight:600;color:var(--navy) }
+    .audit-fechas { font-size:12px;color:var(--muted);margin-top:4px }
+    .audit-section { margin-top:12px }
+    .audit-section-title { font-size:11px;font-weight:700;color:var(--muted);
+                           text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px }
+    .audit-text { font-size:13px;color:var(--text);white-space:pre-wrap }
+
+    .badge-ok  { background:#ECFDF5;color:#059669;border:1.5px solid #6EE7B7;
+                 padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700 }
+    .badge-no  { background:#FEF3C7;color:#D97706;border:1.5px solid #FCD34D;
+                 padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700 }
+
+    .stat-box { background:var(--card);border:1.5px solid var(--border);border-radius:10px;padding:16px;text-align:center }
+    .stat-num { font-size:28px;font-weight:800;color:var(--blue) }
+    .stat-lbl { font-size:12px;color:var(--muted);margin-top:2px }
+    .stats-row { display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px }
+    @media(max-width:600px){ .stats-row { grid-template-columns:1fr 1fr } }
+  </style>
+</head>
+<body>
+<nav class="navbar">
+  <a href="dashboard.html" class="nav-brand">
+    <span class="brand-vigia">Vigía</span><span class="brand-sst">360</span>
+  </a>
+  <div class="nav-links">
+    <a href="dashboard.html" class="nav-link-fixed">Dashboard</a>
+    <div class="nav-dropdown" id="dd-P">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-P')">
+        <span class="phva-pill phva-P">P</span> Planear <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="perfil-responsable.html">🩺 Responsable SST</a>
+        <a href="responsabilidades.html">👥 Roles y Responsabilidades</a>
+        <a href="copasst.html">🤝 COPASST y Convivencia</a>
+        <a href="documentos-sst.html">📄 Documentos del SG-SST</a>
+        <a href="matriz-peligros.html">⚠️ Matriz de Peligros (GTC-45)</a>
+        <a href="plan-trabajo.html">📅 Plan de Trabajo Anual</a>
+        <a href="presupuesto-sgsst.html">💰 Presupuesto SG-SST</a>
+        <a href="profesiograma.html">💊 Profesiograma</a>
+      </div>
+    </div>
+    <div class="nav-dropdown" id="dd-H">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-H')">
+        <span class="phva-pill phva-H">H</span> Hacer <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="epp.html">🦺 EPP</a>
+        <a href="capacitaciones.html">🎓 Capacitaciones</a>
+        <a href="emergencias.html">🚨 Emergencias y Brigada</a>
+        <a href="inspecciones.html">🔍 Inspecciones y Mantenimiento</a>
+        <a href="perfil-salud.html">🏥 Salud Ocupacional</a>
+        <div class="nav-dd-divider"></div>
+        <a href="lista-personal.html">👥 Lista de Personal</a>
+        <a href="subir.html">⬆️ Subir Examen</a>
+        <a href="subir-masivo.html">📦 Carga Masiva</a>
+        <a href="cartas-masivas.html">📄 Cartas Masivas</a>
+        <a href="reporte-examenes.html">📊 Cobertura de Exámenes</a>
+        <a href="informe-condiciones.html">📋 Informe de Condiciones</a>
+      </div>
+    </div>
+    <div class="nav-dropdown" id="dd-V">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-V')">
+        <span class="phva-pill phva-V">V</span> Verificar <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="evaluacion-sst.html">📋 Evaluación (Res. 0312)</a>
+        <a href="investigaciones.html">🔍 AT / Incidentes</a>
+        <a href="auditoria.html">🗒️ Auditoría Interna</a>
+        <a href="ausentismo.html">📉 Ausentismo laboral</a>
+        <a href="indicadores-sgsst.html">📊 Indicadores SG-SST</a>
+        <a href="analisis-phva.html">📈 Análisis e Indicadores</a>
+      </div>
+    </div>
+    <div class="nav-dropdown" id="dd-A">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-A')">
+        <span class="phva-pill phva-A">A</span> Actuar <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="mejoramiento.html">✅ Acciones de Mejoramiento</a>
+        <a href="evaluacion-sst.html">📝 Plan de Mejoramiento (F002)</a>
+      </div>
+    </div>
+    <a href="listado-maestro.html" class="nav-link-fixed">📁 Listado Maestro</a>
+    <span id="nav-empresa" style="color:#CBD8E6;font-size:13px;padding:6px 0"></span>
+    <button onclick="VigiaAPI.logout()"
+      style="background:none;border:1px solid rgba(255,255,255,.2);color:#CBD8E6;
+             border-radius:6px;padding:6px 12px;cursor:pointer;font-size:13px">Salir</button>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="doc-header" style="display:flex;align-items:center;gap:16px;margin-bottom:20px;padding:12px 16px;
+       border:1.5px solid var(--border);border-radius:10px;background:var(--card)">
+    <img class="doc-logo-img" alt="Logo" style="max-height:48px;max-width:120px;object-fit:contain">
+    <div style="flex:1">
+      <div style="font-size:16px;font-weight:800;color:var(--navy)">Auditoría Interna del SG-SST</div>
+      <div style="font-size:12px;color:var(--muted)">Res. 0312/2019 · Est. 6.1.2 · 6.1.3 · 6.1.4 · Decreto 1072/2015 Art. 2.2.4.6.29</div>
+    </div>
+    <div style="text-align:right;font-size:12px;color:var(--muted)">
+      <div class="doc-codigo" data-sufijo="F010"></div>
+      <div class="doc-fecha"></div>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-box"><div class="stat-num" id="st-total">–</div><div class="stat-lbl">Auditorías registradas</div></div>
+    <div class="stat-box"><div class="stat-num" id="st-anio-actual">–</div><div class="stat-lbl">Año actual completadas</div></div>
+    <div class="stat-box"><div class="stat-num" id="st-pendiente">–</div><div class="stat-lbl">Años sin auditoría</div></div>
+  </div>
+
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+    <p style="margin:0;font-size:13px;color:var(--muted)">La auditoría interna debe realizarse <strong>mínimo una vez al año</strong>, planificada con el COPASST (Est. 6.1.4).</p>
+    <button class="btn" onclick="abrirModal()">+ Nueva auditoría</button>
+  </div>
+
+  <div id="lista-auditorias"><p class="empty-msg">Cargando…</p></div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal-auditoria" style="display:none">
+  <div class="modal" style="max-width:600px">
+    <div class="modal-header">
+      <span id="modal-titulo" class="modal-title">Nueva auditoría interna</span>
+      <button class="modal-close" onclick="cerrarModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="au-id">
+      <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+        <div class="form-group">
+          <label>Año *</label>
+          <input type="number" id="au-anio" class="form-control" min="2019">
+        </div>
+        <div class="form-group">
+          <label>Fecha planificación</label>
+          <input type="date" id="au-fecha-plan" class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Fecha ejecución</label>
+          <input type="date" id="au-fecha-ejec" class="form-control">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Auditor (nombre / cargo / licencia) *</label>
+        <input id="au-auditor" class="form-control" placeholder="Nombre completo y licencia SST si aplica">
+      </div>
+      <div class="form-group">
+        <label>Alcance de la auditoría</label>
+        <textarea id="au-alcance" class="form-control" rows="2" placeholder="Áreas, procesos y estándares auditados…"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Metodología</label>
+        <input id="au-metodologia" class="form-control" placeholder="Entrevistas, revisión documental, observación…">
+      </div>
+      <div class="form-group">
+        <label>Hallazgos (no conformidades)</label>
+        <textarea id="au-hallazgos" class="form-control" rows="3" placeholder="Describa las no conformidades identificadas…"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Oportunidades de mejora</label>
+        <textarea id="au-oportunidades" class="form-control" rows="2"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Conclusión general</label>
+        <textarea id="au-conclusion" class="form-control" rows="2"></textarea>
+      </div>
+      <div class="form-group">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+          <input type="checkbox" id="au-copasst"> Resultados comunicados al COPASST (Est. 6.1.4)
+        </label>
+      </div>
+      <div class="form-group">
+        <label>Enlace al informe de auditoría (URL)</label>
+        <input id="au-informe" class="form-control" placeholder="https://…">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="cerrarModal()">Cancelar</button>
+      <button class="btn" onclick="guardar()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/vigia-api.js"></script>
+<script>
+let _auditorias = [];
+
+function cerrarModal() { document.getElementById('modal-auditoria').style.display = 'none'; }
+function abrirModal() {
+  document.getElementById('au-id').value = '';
+  document.getElementById('au-anio').value = new Date().getFullYear();
+  document.getElementById('au-fecha-plan').value = '';
+  document.getElementById('au-fecha-ejec').value = '';
+  document.getElementById('au-auditor').value = '';
+  document.getElementById('au-alcance').value = '';
+  document.getElementById('au-metodologia').value = '';
+  document.getElementById('au-hallazgos').value = '';
+  document.getElementById('au-oportunidades').value = '';
+  document.getElementById('au-conclusion').value = '';
+  document.getElementById('au-copasst').checked = false;
+  document.getElementById('au-informe').value = '';
+  document.getElementById('modal-titulo').textContent = 'Nueva auditoría interna';
+  document.getElementById('modal-auditoria').style.display = 'flex';
+}
+
+async function cargar() {
+  _auditorias = await VigiaAPI.getAuditorias() || [];
+  renderStats();
+  renderLista();
+}
+
+function renderStats() {
+  const anioActual = new Date().getFullYear();
+  document.getElementById('st-total').textContent = _auditorias.length;
+  document.getElementById('st-anio-actual').textContent = _auditorias.filter(a => a.anio === anioActual).length;
+  // Años sin auditoría (últimos 3 años)
+  const aniosConAuditoria = new Set(_auditorias.map(a => a.anio));
+  let sinAuditoria = 0;
+  for (let y = anioActual - 2; y <= anioActual; y++) { if (!aniosConAuditoria.has(y)) sinAuditoria++; }
+  document.getElementById('st-pendiente').textContent = sinAuditoria;
+}
+
+function renderLista() {
+  const cont = document.getElementById('lista-auditorias');
+  if (!_auditorias.length) {
+    cont.innerHTML = '<p class="empty-msg">Sin auditorías registradas. La Res. 0312/2019 exige mínimo una auditoría interna por año.</p>';
+    return;
+  }
+  cont.innerHTML = _auditorias.map(a => `
+    <div class="audit-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div>
+          <span class="audit-anio">${a.anio}</span>
+          <span class="audit-auditor">${a.auditor}</span>
+          <div class="audit-fechas">
+            ${a.fecha_plan ? `Plan: ${new Date(a.fecha_plan+'T12:00:00').toLocaleDateString('es-CO')}` : ''}
+            ${a.fecha_ejecucion ? ` · Ejecución: ${new Date(a.fecha_ejecucion+'T12:00:00').toLocaleDateString('es-CO')}` : ''}
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <span class="${a.comunicado_copasst ? 'badge-ok' : 'badge-no'}">${a.comunicado_copasst ? '✓ Comunicado a COPASST' : '⏳ Sin comunicar a COPASST'}</span>
+          ${a.informe_url ? `<a href="${a.informe_url}" target="_blank" class="btn-xs">Informe</a>` : ''}
+          <button class="btn-xs" onclick="editar('${a.id}')">Editar</button>
+          <button class="btn-xs del" onclick="eliminar('${a.id}')">Eliminar</button>
+        </div>
+      </div>
+      ${a.alcance ? `<div class="audit-section"><div class="audit-section-title">Alcance</div><div class="audit-text">${a.alcance}</div></div>` : ''}
+      ${a.hallazgos ? `<div class="audit-section"><div class="audit-section-title">Hallazgos / No conformidades</div><div class="audit-text">${a.hallazgos}</div></div>` : ''}
+      ${a.oportunidades ? `<div class="audit-section"><div class="audit-section-title">Oportunidades de mejora</div><div class="audit-text">${a.oportunidades}</div></div>` : ''}
+      ${a.conclusion ? `<div class="audit-section"><div class="audit-section-title">Conclusión</div><div class="audit-text">${a.conclusion}</div></div>` : ''}
+    </div>`).join('');
+}
+
+function editar(id) {
+  const a = _auditorias.find(x => x.id === id); if (!a) return;
+  document.getElementById('au-id').value = id;
+  document.getElementById('au-anio').value = a.anio;
+  document.getElementById('au-fecha-plan').value = a.fecha_plan||'';
+  document.getElementById('au-fecha-ejec').value = a.fecha_ejecucion||'';
+  document.getElementById('au-auditor').value = a.auditor||'';
+  document.getElementById('au-alcance').value = a.alcance||'';
+  document.getElementById('au-metodologia').value = a.metodologia||'';
+  document.getElementById('au-hallazgos').value = a.hallazgos||'';
+  document.getElementById('au-oportunidades').value = a.oportunidades||'';
+  document.getElementById('au-conclusion').value = a.conclusion||'';
+  document.getElementById('au-copasst').checked = !!a.comunicado_copasst;
+  document.getElementById('au-informe').value = a.informe_url||'';
+  document.getElementById('modal-titulo').textContent = 'Editar auditoría';
+  document.getElementById('modal-auditoria').style.display = 'flex';
+}
+
+async function guardar() {
+  const anio    = parseInt(document.getElementById('au-anio').value);
+  const auditor = document.getElementById('au-auditor').value.trim();
+  if (!anio || !auditor) { alert('Año y auditor son obligatorios.'); return; }
+  const datos = {
+    anio,
+    auditor,
+    fecha_plan:         document.getElementById('au-fecha-plan').value||null,
+    fecha_ejecucion:    document.getElementById('au-fecha-ejec').value||null,
+    alcance:            document.getElementById('au-alcance').value.trim()||null,
+    metodologia:        document.getElementById('au-metodologia').value.trim()||null,
+    hallazgos:          document.getElementById('au-hallazgos').value.trim()||null,
+    oportunidades:      document.getElementById('au-oportunidades').value.trim()||null,
+    conclusion:         document.getElementById('au-conclusion').value.trim()||null,
+    comunicado_copasst: document.getElementById('au-copasst').checked,
+    informe_url:        document.getElementById('au-informe').value.trim()||null,
+  };
+  const id = document.getElementById('au-id').value;
+  try {
+    if (id) await VigiaAPI.editarAuditoria(id, datos);
+    else    await VigiaAPI.crearAuditoria(datos);
+    cerrarModal(); await cargar();
+  } catch(e) { alert('Error: '+e.message); }
+}
+
+async function eliminar(id) {
+  if (!confirm('¿Eliminar esta auditoría?')) return;
+  await VigiaAPI.eliminarAuditoria(id); await cargar();
+}
+
+async function init() {
+  const ok = await VigiaAPI.requireAuth(); if (!ok) return;
+  document.getElementById('nav-empresa').textContent = localStorage.getItem('vigia_nombre_empresa')||'';
+  VigiaAPI.initDocHeader();
+  await cargar();
+}
+init();
+</script>
+<script src="js/vigia-chat.js"></script>
+</body>
+</html>
+

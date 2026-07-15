@@ -1,0 +1,1007 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vigía 360 — Investigación AT/Incidentes</title>
+  <link rel="stylesheet" href="vigia.css" />
+  <style>
+    /* ── Chips de tipo y estado ──────────────────── */
+    .chip { padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap }
+    .chip-at         { background:#FDECEA;color:#C0392B;border:1.5px solid #FABEC2 }
+    .chip-incidente  { background:#FEF3C7;color:#D97706;border:1.5px solid #FCD34D }
+    .chip-el         { background:#EFF6FF;color:#2563EB;border:1.5px solid #BFD7F0 }
+    .chip-abierta      { background:#FDECEA;color:#C0392B;border:1.5px solid #FABEC2 }
+    .chip-investigando { background:#FEF3C7;color:#D97706;border:1.5px solid #FCD34D }
+    .chip-cerrada      { background:#ECFDF5;color:#065F46;border:1.5px solid #6EE7B7 }
+
+    /* ── Card investigación ──────────────────────── */
+    .inv-card { border:1.5px solid var(--border);border-radius:10px;padding:16px 20px;
+      margin-bottom:10px;cursor:pointer;transition:border-color .15s }
+    .inv-card:hover { border-color:var(--blue) }
+    .inv-grave { border-left:4px solid #C0392B !important }
+
+    /* ── Resumen ─────────────────────────────────── */
+    .resumen-grid { display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px }
+    @media(max-width:700px){ .resumen-grid { grid-template-columns:repeat(3,1fr) } }
+    .res-card { background:var(--card);border:1.5px solid var(--border);border-radius:10px;
+      padding:14px;text-align:center }
+    .res-num { font-size:26px;font-weight:800;color:var(--navy) }
+    .res-lbl { font-size:10px;color:var(--muted);margin-top:3px;line-height:1.3 }
+
+    /* ── Formulario en panel lateral ─────────────── */
+    .detalle-panel { display:none;position:fixed;right:0;top:0;bottom:0;width:620px;
+      background:var(--card);border-left:1.5px solid var(--border);
+      overflow-y:auto;padding:28px 28px;z-index:100;
+      box-shadow:-8px 0 32px rgba(0,0,0,.12) }
+    .detalle-panel.open { display:block }
+    @media(max-width:700px){
+      .detalle-panel { width:100%;left:0;right:0 }
+    }
+
+    /* ── Sección del formulario ───────────────────── */
+    .seccion { border:1.5px solid var(--border);border-radius:10px;padding:16px 18px;
+      margin-bottom:14px }
+    .seccion-title { font-size:13px;font-weight:800;color:var(--navy);
+      margin-bottom:12px;display:flex;align-items:center;gap:8px }
+
+    /* ── Causas ───────────────────────────────────── */
+    .causa-tag { display:inline-flex;align-items:center;gap:5px;padding:4px 10px;
+      border-radius:20px;font-size:12px;border:1.5px solid var(--border);
+      background:var(--bg);margin:3px;cursor:pointer;user-select:none }
+    .causa-tag.on { background:var(--navy);color:white;border-color:var(--navy) }
+    .causa-tag:hover:not(.on) { border-color:var(--blue);color:var(--blue) }
+
+    /* ── Acciones correctivas ─────────────────────── */
+    .accion-row { display:grid;grid-template-columns:1fr auto auto auto;
+      gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border) }
+    .accion-row:last-child { border-bottom:none }
+    .estado-accion { font-size:11px;font-weight:700;padding:3px 8px;border-radius:12px }
+    .ea-pendiente  { background:#FEF3C7;color:#D97706 }
+    .ea-en_proceso { background:#EFF6FF;color:#2563EB }
+    .ea-cumplida   { background:#ECFDF5;color:#065F46 }
+
+    /* ── Filtros ─────────────────────────────────── */
+    .filtros { display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px }
+    .filtros select, .filtros input {
+      padding:6px 10px;border-radius:7px;border:1.5px solid var(--border);
+      background:var(--bg);color:var(--text);font-size:13px;font-family:inherit }
+
+    /* ── Overlay cuando panel abierto ────────────── */
+    .overlay { display:none;position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:90 }
+    .overlay.open { display:block }
+
+    /* ── Tabs del formulario ─────────────────────── */
+    .form-tabs { display:flex;border-bottom:2px solid var(--border);margin-bottom:18px;gap:0 }
+    .form-tab  { padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;
+      border-bottom:2px solid transparent;margin-bottom:-2px;color:var(--muted) }
+    .form-tab.active { color:var(--navy);border-bottom-color:var(--navy) }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="dashboard.html" style="display:flex;align-items:center;gap:10px;text-decoration:none">
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="36" viewBox="0 0 34 38">
+      <path d="M17 1L2 7V21C2 30 9 37 17 39C25 37 32 30 32 21V7Z" fill="rgba(255,255,255,0.15)" stroke="white" stroke-width="1.5"/>
+      <circle cx="12" cy="19" r="4.5" fill="white" opacity="0.9"/>
+      <circle cx="22" cy="19" r="4.5" fill="white" opacity="0.9"/>
+      <circle cx="12" cy="19" r="2" fill="rgba(26,58,92,0.8)"/>
+      <circle cx="22" cy="19" r="2" fill="rgba(26,58,92,0.8)"/>
+      <polygon points="15,25 17,28 19,25" fill="white" opacity="0.7"/>
+    </svg>
+    <span style="color:white;font-weight:800;font-size:17px;letter-spacing:0.5px">VIGÍA <span style="color:#4ADE80;font-weight:900">360</span></span>
+  </a>
+  <div class="nav-links">
+    <a href="dashboard.html" class="nav-link-fixed">Dashboard</a>
+
+    <!-- P — Planear -->
+    <div class="nav-dropdown" id="dd-P">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-P')">
+        <span class="phva-pill phva-P">P</span> Planear <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="perfil-responsable.html">🩺 Responsable SST</a>
+        <a href="responsabilidades.html">👥 Roles y Responsabilidades</a>
+        <a href="copasst.html">🤝 COPASST y Convivencia</a>
+        <a href="documentos-sst.html">📄 Documentos del SG-SST</a>
+        <a href="matriz-peligros.html">⚠️ Matriz de Peligros (GTC-45)</a>
+        <a href="plan-trabajo.html">📅 Plan de Trabajo Anual</a>
+        <a href="presupuesto-sgsst.html">💰 Presupuesto SG-SST</a>
+        <a href="profesiograma.html">💊 Profesiograma</a>
+      </div>
+    </div>
+
+    <!-- H — Hacer -->
+    <div class="nav-dropdown" id="dd-H">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-H')">
+        <span class="phva-pill phva-H">H</span> Hacer <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="epp.html">🦺 EPP</a>
+        <a href="capacitaciones.html">🎓 Capacitaciones</a>
+        <a href="emergencias.html">🚨 Emergencias y Brigada</a>
+        <a href="inspecciones.html">🔍 Inspecciones y Mantenimiento</a>
+        <a href="perfil-salud.html">🏥 Salud Ocupacional</a>
+        <div class="nav-dd-divider"></div>
+        <a href="lista-personal.html">👥 Lista de Personal</a>
+        <a href="subir.html">⬆️ Subir Examen</a>
+        <a href="subir-masivo.html">📦 Carga Masiva</a>
+        <a href="cartas-masivas.html">📄 Cartas Masivas</a>
+        <a href="reporte-examenes.html">📊 Cobertura de Exámenes</a>
+        <a href="informe-condiciones.html">📋 Informe de Condiciones</a>
+      </div>
+    </div>
+
+    <!-- V — Verificar -->
+    <div class="nav-dropdown" id="dd-V">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-V')">
+        <span class="phva-pill phva-V">V</span> Verificar <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="evaluacion-sst.html">📋 Evaluación (Res. 0312)</a>
+        <a href="investigaciones.html">🔍 AT / Incidentes</a>
+        <a href="ausentismo.html">📉 Ausentismo laboral</a>
+        <a href="indicadores-sgsst.html">📊 Indicadores SG-SST</a>
+        <a href="analisis-phva.html">📈 Análisis e Indicadores</a>
+      </div>
+    </div>
+
+    <!-- A — Actuar -->
+    <div class="nav-dropdown" id="dd-A">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-A')">
+        <span class="phva-pill phva-A">A</span> Actuar <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="mejoramiento.html">✅ Acciones de Mejoramiento</a>
+        <a href="evaluacion-sst.html">📝 Plan de Mejoramiento (F002)</a>
+      </div>
+    </div>
+
+    <a href="listado-maestro.html" class="nav-link-fixed">📁 Listado Maestro</a>
+    <span id="nav-empresa" style="color:#CBD8E6;font-size:13px;padding:6px 0"></span>
+    <button onclick="VigiaAPI.logout()"
+      style="background:none;border:1px solid rgba(255,255,255,.2);color:#CBD8E6;
+             border-radius:6px;padding:6px 12px;cursor:pointer;font-size:13px">Salir</button>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="doc-header">
+    <div class="doc-header-logo-col">
+      <img class="doc-logo-img" src="" alt="" onerror="this.style.display='none'" />
+    </div>
+    <div class="doc-header-title-col">Registro de Investigación de AT/Incidentes<br>Res. 1401/2007</div>
+    <div class="doc-header-code-col">
+      <span class="doc-header-code-line"><strong>CÓDIGO:</strong> <span class="doc-codigo" data-sufijo="R003">SG-SST R003</span></span>
+      <span class="doc-header-code-line"><strong>VERSIÓN</strong> 1</span>
+      <span class="doc-header-code-line"><strong>FECHA DE VIGENCIA:</strong><br><span class="doc-fecha"></span></span>
+    </div>
+  </div>
+  <div id="cargando" class="empty-state mt-8">
+    <div class="spinner" style="margin:0 auto 16px;border-color:rgba(46,134,171,.2);border-top-color:var(--blue)"></div>
+    <p class="text-muted">Cargando…</p>
+  </div>
+
+  <div id="contenido" style="display:none">
+
+    <div class="flex justify-between items-center mb-4" style="flex-wrap:wrap;gap:12px">
+      <div>
+        <h2 style="font-size:20px;font-weight:800;color:var(--navy)">Investigación AT / Incidentes</h2>
+        <p class="text-muted text-sm">Resolución 1401 de 2007 · Decreto 1072/2015</p>
+      </div>
+      <div class="flex gap-3 items-center">
+        <select id="sel-anio"
+          style="padding:8px 12px;border-radius:8px;border:1.5px solid var(--border);
+                 background:var(--bg);color:var(--text);font-size:14px;font-family:inherit"
+          onchange="cargarAnio(this.value)"></select>
+        <button class="btn btn-navy" onclick="abrirNueva()">+ Registrar evento</button>
+      </div>
+    </div>
+
+    <!-- Resumen estadístico -->
+    <div class="resumen-grid" id="resumen"></div>
+
+    <!-- Filtros -->
+    <div class="filtros">
+      <select id="f-tipo" onchange="filtrar()">
+        <option value="">Todos los tipos</option>
+        <option value="accidente_trabajo">Accidente de trabajo</option>
+        <option value="incidente">Incidente / Casi-accidente</option>
+        <option value="enfermedad_laboral">Enfermedad laboral</option>
+      </select>
+      <select id="f-estado" onchange="filtrar()">
+        <option value="">Todos los estados</option>
+        <option value="abierta">Abierta</option>
+        <option value="investigando">Investigando</option>
+        <option value="cerrada">Cerrada</option>
+      </select>
+      <input type="text" id="f-texto" placeholder="Buscar por empleado o descripción…"
+        oninput="filtrar()" style="min-width:200px">
+    </div>
+
+    <!-- Lista -->
+    <div id="lista"></div>
+    <div id="lista-vacia" style="display:none">
+      <div class="card" style="padding:48px;text-align:center">
+        <div style="font-size:48px;margin-bottom:12px">🔍</div>
+        <h3 style="color:var(--navy);margin-bottom:8px">Sin eventos registrados</h3>
+        <p class="text-muted text-sm">Registra accidentes de trabajo, incidentes y enfermedades laborales.</p>
+        <button class="btn btn-navy mt-4" onclick="abrirNueva()">+ Registrar evento</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Overlay -->
+<div class="overlay" id="overlay" onclick="cerrarPanel()"></div>
+
+<!-- Panel lateral de formulario -->
+<div class="detalle-panel" id="panel">
+  <div class="flex justify-between items-center mb-4">
+    <h3 id="panel-titulo" style="font-size:17px;font-weight:800;color:var(--navy)">Nueva investigación</h3>
+    <button onclick="cerrarPanel()"
+      style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted)">✕</button>
+  </div>
+
+  <!-- Tabs -->
+  <div class="form-tabs">
+    <div class="form-tab active" onclick="switchTab('evento')">📋 Evento</div>
+    <div class="form-tab"        onclick="switchTab('causas')">🔎 Causas</div>
+    <div class="form-tab"        onclick="switchTab('acciones')">✅ Acciones</div>
+    <div class="form-tab"        onclick="switchTab('cierre')">📁 Cierre</div>
+  </div>
+
+  <!-- ── TAB: EVENTO ── -->
+  <div id="tab-evento">
+    <div class="seccion">
+      <div class="seccion-title">🏷️ Tipo de evento</div>
+      <div class="flex gap-2" style="flex-wrap:wrap">
+        <button class="btn btn-outline btn-sm sel-tipo" data-v="accidente_trabajo"
+          onclick="selTipo(this)">🔴 Accidente de trabajo</button>
+        <button class="btn btn-outline btn-sm sel-tipo" data-v="incidente"
+          onclick="selTipo(this)">🟡 Incidente / Casi-accidente</button>
+        <button class="btn btn-outline btn-sm sel-tipo" data-v="enfermedad_laboral"
+          onclick="selTipo(this)">🔵 Enfermedad laboral</button>
+      </div>
+      <input type="hidden" id="f-tipo-val" value="accidente_trabajo">
+    </div>
+
+    <div class="seccion">
+      <div class="seccion-title">📅 Datos del evento</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div>
+          <label class="label">Fecha del evento *</label>
+          <input type="date" id="f-fecha" class="input mt-1">
+        </div>
+        <div>
+          <label class="label">Hora aproximada</label>
+          <input type="time" id="f-hora" class="input mt-1">
+        </div>
+        <div>
+          <label class="label">Fecha de reporte a la empresa</label>
+          <input type="date" id="f-fecha-rep" class="input mt-1">
+        </div>
+        <div>
+          <label class="label">Área / Lugar del evento</label>
+          <input type="text" id="f-area" class="input mt-1" placeholder="Bodega, oficina, vía…">
+        </div>
+        <div style="grid-column:1/-1">
+          <label class="label">Descripción del evento *</label>
+          <textarea id="f-desc" class="input mt-1" rows="3"
+            placeholder="¿Qué pasó? Describir el evento en detalle…"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="seccion">
+      <div class="seccion-title">👤 Trabajador involucrado</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div style="grid-column:1/-1">
+          <label class="label">Seleccionar de la nómina</label>
+          <select id="f-empleado" class="input mt-1" onchange="onEmpleadoChange()">
+            <option value="">— Seleccionar trabajador —</option>
+          </select>
+        </div>
+        <div style="grid-column:1/-1;text-align:center;font-size:12px;color:var(--muted)">
+          o ingresar manualmente (contratista, visitante…)
+        </div>
+        <div>
+          <label class="label">Nombre completo</label>
+          <input type="text" id="f-nombre" class="input mt-1" placeholder="Nombre del trabajador">
+        </div>
+        <div>
+          <label class="label">Cargo</label>
+          <input type="text" id="f-cargo" class="input mt-1" placeholder="Cargo al momento del evento">
+        </div>
+      </div>
+    </div>
+
+    <div class="seccion" id="sec-lesion">
+      <div class="seccion-title">🩹 Lesión / Consecuencias</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div>
+          <label class="label">Parte del cuerpo afectada</label>
+          <select id="f-parte" class="input mt-1">
+            <option value="">— Seleccionar —</option>
+            <option>Cabeza / Cráneo</option><option>Cara / Ojos</option>
+            <option>Cuello</option><option>Hombro</option>
+            <option>Brazo / Antebrazo</option><option>Codo</option>
+            <option>Mano / Dedos</option><option>Tórax / Espalda</option>
+            <option>Columna lumbar</option><option>Abdomen</option>
+            <option>Cadera / Pelvis</option><option>Muslo / Rodilla</option>
+            <option>Pierna / Tobillo</option><option>Pie / Dedos del pie</option>
+            <option>Múltiples partes</option><option>Sistema nervioso</option>
+            <option>Sin lesión física (incidente)</option>
+          </select>
+        </div>
+        <div>
+          <label class="label">Tipo de lesión</label>
+          <select id="f-lesion" class="input mt-1">
+            <option value="">— Seleccionar —</option>
+            <option>Herida / Laceración</option><option>Contusión / Golpe</option>
+            <option>Fractura</option><option>Esguince / Luxación</option>
+            <option>Quemadura</option><option>Amputación</option>
+            <option>Intoxicación</option><option>Enfermedad profesional</option>
+            <option>Trauma múltiple</option><option>Sin lesión (incidente)</option>
+          </select>
+        </div>
+        <div>
+          <label class="label">Días de incapacidad</label>
+          <input type="number" id="f-dias" class="input mt-1" min="0" placeholder="0">
+        </div>
+        <div style="display:flex;align-items:flex-end;gap:10px;padding-bottom:2px">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+            <input type="checkbox" id="f-fallecio" style="width:16px;height:16px">
+            <span>Accidente fatal (fallecimiento)</span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="seccion">
+      <div class="seccion-title">📨 Reportes oficiales</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;margin-bottom:6px">
+            <input type="checkbox" id="f-arl" style="width:16px;height:16px"
+              onchange="document.getElementById('f-fecha-arl').style.display=this.checked?'':'none'">
+            <span>Reportado a la ARL</span>
+          </label>
+          <input type="date" id="f-fecha-arl" class="input" style="display:none" title="Fecha reporte ARL">
+        </div>
+        <div>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;margin-bottom:6px">
+            <input type="checkbox" id="f-mint" style="width:16px;height:16px"
+              onchange="document.getElementById('f-fecha-mint').style.display=this.checked?'':'none'">
+            <span>Reportado a MinTrabajo</span>
+          </label>
+          <input type="date" id="f-fecha-mint" class="input" style="display:none" title="Fecha reporte MinTrabajo">
+        </div>
+      </div>
+    </div>
+
+    <div class="seccion">
+      <div class="seccion-title">📊 Estado de la investigación</div>
+      <select id="f-estado" class="input">
+        <option value="abierta">Abierta</option>
+        <option value="investigando">En investigación</option>
+        <option value="cerrada">Cerrada</option>
+      </select>
+    </div>
+
+    <div class="flex justify-between mt-4">
+      <button id="btn-elim-inv" class="btn btn-outline"
+        style="color:#C0392B;border-color:#FABEC2;display:none"
+        onclick="eliminarInv()">🗑 Eliminar</button>
+      <button class="btn btn-navy" onclick="guardar()">Guardar y continuar →</button>
+    </div>
+  </div>
+
+  <!-- ── TAB: CAUSAS ── -->
+  <div id="tab-causas" style="display:none">
+    <div class="seccion">
+      <div class="seccion-title">⚡ Causas inmediatas — Actos inseguros</div>
+      <div id="tags-actos">
+        <span class="causa-tag" onclick="this.classList.toggle('on')">Operar sin autorización</span>
+        <span class="causa-tag" onclick="this.classList.toggle('on')">No usar EPP</span>
+        <span class="causa-tag" onclick="this.classList.toggle('on')">Posición incorrecta</span>
+        <span class="causa-tag" onclick="this.classList.toggle('on')">Velocidad inadecuada</span>
+        <span class="causa-tag" onclick="this.classList.toggle('on')">Desactivar dispositivos de seguridad</span>
+        <span class="causa-tag" onclick="this.classList.toggle('on')">Uso inadecuado de equipos</span>
+        <span class="causa-tag" onclick="this.classList.toggle('on')">Distracciones / distracción</span>
+        <span class="causa-tag" onclick="this.classList.toggle('on')">No seguir procedimientos</span>
+      </div>
+    </div>
+
+    <div class="seccion">
+      <div class="seccion-title">⚠️ Causas inmediatas — Condiciones inseguras</div>
+      <div id="tags-condiciones">
+        <span class="causa-tag" onclick="this.classList.toggle('on')">Equipos defectuosos</span>
+        <span class="causa-tag" onclick="this.classList.toggle('on')">Falta de orden y aseo</span>
+        <span class="causa-tag" onclick="this.classList.toggle('on')">Iluminación deficiente</span>
+        <span class="causa-tag" onclick="this.classList.toggle('on')">Pisos resbaladizos</span>
+        <span class="causa-tag" onclick="this.classList.toggle('on')">Sin señalización</span>
+        <span class="causa-tag" onclick="this.classList.toggle('on')">Herramientas inadecuadas</span>
+        <span class="causa-tag" onclick="this.classList.toggle('on')">Guardas sin protección</span>
+        <span class="causa-tag" onclick="this.classList.toggle('on')">Exposición a agentes químicos/físicos</span>
+      </div>
+    </div>
+
+    <div class="seccion">
+      <div class="seccion-title">🔩 Causas básicas — Factores de trabajo</div>
+      <div id="tags-factores">
+        <span class="causa-tag" onclick="this.classList.toggle('on')">Sin procedimiento documentado</span>
+        <span class="causa-tag" onclick="this.classList.toggle('on')">Diseño inadecuado del puesto</span>
+        <span class="causa-tag" onclick="this.classList.toggle('on')">Mantenimiento deficiente</span>
+        <span class="causa-tag" onclick="this.classList.toggle('on')">Sin capacitación suficiente</span>
+        <span class="causa-tag" onclick="this.classList.toggle('on')">Supervisión insuficiente</span>
+        <span class="causa-tag" onclick="this.classList.toggle('on')">Carga de trabajo excesiva</span>
+        <span class="causa-tag" onclick="this.classList.toggle('on')">Compras inadecuadas de EPP</span>
+        <span class="causa-tag" onclick="this.classList.toggle('on')">Sin análisis previo de riesgos</span>
+      </div>
+    </div>
+
+    <div class="seccion">
+      <div class="seccion-title">📝 Descripción de causas y causa raíz</div>
+      <div>
+        <label class="label">Descripción detallada de causas</label>
+        <textarea id="f-desc-causas" class="input mt-1" rows="3"
+          placeholder="Explica cómo las causas identificadas llevaron al evento…"></textarea>
+      </div>
+      <div class="mt-3">
+        <label class="label">Causa raíz identificada</label>
+        <textarea id="f-causa-raiz" class="input mt-1" rows="2"
+          placeholder="La causa fundamental que originó el evento…"></textarea>
+      </div>
+    </div>
+
+    <div class="flex justify-between mt-4">
+      <button class="btn btn-outline" onclick="switchTab('evento')">← Volver</button>
+      <button class="btn btn-navy" onclick="guardarCausas()">Guardar causas →</button>
+    </div>
+  </div>
+
+  <!-- ── TAB: ACCIONES CORRECTIVAS ── -->
+  <div id="tab-acciones" style="display:none">
+    <div class="seccion">
+      <div class="seccion-title">➕ Nueva acción correctiva</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div style="grid-column:1/-1">
+          <label class="label">Acción a implementar *</label>
+          <textarea id="a-accion" class="input mt-1" rows="2"
+            placeholder="Describe la acción preventiva o correctiva…"></textarea>
+        </div>
+        <div>
+          <label class="label">Responsable</label>
+          <input type="text" id="a-resp" class="input mt-1" placeholder="Nombre y cargo">
+        </div>
+        <div>
+          <label class="label">Fecha límite</label>
+          <input type="date" id="a-fecha" class="input mt-1">
+        </div>
+      </div>
+      <button class="btn btn-outline mt-3" style="width:100%" onclick="agregarAccion()">
+        + Agregar acción
+      </button>
+    </div>
+
+    <div class="seccion">
+      <div class="seccion-title">📋 Plan de acción</div>
+      <div id="lista-acciones">
+        <p class="text-muted text-sm" style="text-align:center;padding:16px">
+          Sin acciones registradas
+        </p>
+      </div>
+    </div>
+
+    <div class="flex justify-between mt-4">
+      <button class="btn btn-outline" onclick="switchTab('causas')">← Volver</button>
+      <button class="btn btn-navy" onclick="switchTab('cierre')">Continuar →</button>
+    </div>
+  </div>
+
+  <!-- ── TAB: CIERRE ── -->
+  <div id="tab-cierre" style="display:none">
+    <div class="seccion">
+      <div class="seccion-title">📁 Conclusiones y cierre</div>
+      <div>
+        <label class="label">Conclusiones de la investigación</label>
+        <textarea id="f-concl" class="input mt-1" rows="3"
+          placeholder="Resumen de los hallazgos de la investigación…"></textarea>
+      </div>
+      <div class="mt-3">
+        <label class="label">Lecciones aprendidas</label>
+        <textarea id="f-lecciones" class="input mt-1" rows="3"
+          placeholder="¿Qué aprendemos para prevenir eventos similares?"></textarea>
+      </div>
+      <div class="mt-3">
+        <label class="label">Estado final</label>
+        <select id="f-estado-cierre" class="input mt-1">
+          <option value="investigando">En investigación</option>
+          <option value="cerrada">Cerrada</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="flex justify-between mt-4">
+      <button class="btn btn-outline" onclick="switchTab('acciones')">← Volver</button>
+      <button class="btn btn-navy" onclick="guardarCierre()">💾 Finalizar investigación</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="js/vigia-api.js"></script>
+<script>
+
+let invs       = [];
+let invActual  = null;   // objeto completo con acciones (null = nueva)
+let editandoId = null;
+let empleados  = [];
+let tabActiva  = 'evento';
+
+// ── Init ────────────────────────────────────────────────────
+async function init() {
+  const ok = await VigiaAPI.requireAuth();
+  if (!ok) return;
+  VigiaAPI.initDocHeader();
+
+  const anioActual = new Date().getFullYear();
+  const sel = document.getElementById('sel-anio');
+  for (let a = anioActual; a >= anioActual - 4; a--) {
+    const opt = document.createElement('option');
+    opt.value = a; opt.textContent = a;
+    if (a === anioActual) opt.selected = true;
+    sel.appendChild(opt);
+  }
+
+  empleados = await VigiaAPI.getEmpleados() || [];
+  const selEmp = document.getElementById('f-empleado');
+  selEmp.innerHTML = '<option value="">— Seleccionar trabajador —</option>' +
+    empleados.map(e => `<option value="${e.id}" data-nombre="${e.nombre}" data-cargo="${e.cargo||''}">${e.nombre}</option>`).join('');
+
+  await cargarAnio(anioActual);
+  document.getElementById('cargando').style.display  = 'none';
+  document.getElementById('contenido').style.display = '';
+}
+
+async function cargarAnio(anio) {
+  const empresaId = VigiaAPI.esAdmin() ? VigiaAPI.empresaId() : null;
+  invs = await VigiaAPI.getInvestigaciones(empresaId, anio) || [];
+  filtrar();
+}
+
+// ── Filtros ─────────────────────────────────────────────────
+function filtrar() {
+  const tipo   = document.getElementById('f-tipo').value;
+  const estado = document.getElementById('f-estado').value;
+  const texto  = document.getElementById('f-texto').value.toLowerCase();
+
+  const lista = invs.filter(i => {
+    if (tipo   && i.tipo   !== tipo)                   return false;
+    if (estado && i.estado !== estado)                 return false;
+    if (texto  && !(
+      (i.nombre_empleado||'').toLowerCase().includes(texto) ||
+      (i.descripcion_evento||'').toLowerCase().includes(texto)
+    )) return false;
+    return true;
+  });
+
+  renderLista(lista);
+  renderResumen();
+}
+
+// ── Render lista ────────────────────────────────────────────
+function renderLista(lista) {
+  const cont  = document.getElementById('lista');
+  const empty = document.getElementById('lista-vacia');
+  if (!lista.length) { cont.innerHTML = ''; empty.style.display = ''; return; }
+  empty.style.display = 'none';
+
+  const MESES = ['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  const tipoLabel = { accidente_trabajo:'AT', incidente:'Incidente', enfermedad_laboral:'EL' };
+  const tipoChip  = { accidente_trabajo:'chip-at', incidente:'chip-incidente', enfermedad_laboral:'chip-el' };
+  const estLabel  = { abierta:'Abierta', investigando:'Investigando', cerrada:'Cerrada' };
+
+  cont.innerHTML = lista.map(i => {
+    const fecha = i.fecha_evento ? (() => {
+      const d = new Date(i.fecha_evento + 'T12:00:00');
+      return `${d.getDate()} ${MESES[d.getMonth()+1]} ${d.getFullYear()}`;
+    })() : '—';
+    const grave = i.fallecio || (i.dias_incapacidad || 0) >= 30;
+
+    return `
+      <div class="inv-card ${grave ? 'inv-grave' : ''}" onclick="abrirEditar('${i.id}')">
+        <div class="flex justify-between" style="gap:12px">
+          <div style="flex:1">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+              <span class="chip ${tipoChip[i.tipo]}">${tipoLabel[i.tipo]}</span>
+              ${i.fallecio ? '<span style="font-size:12px;font-weight:700;color:#C0392B">⚠️ FATAL</span>' : ''}
+              <span style="font-size:12px;color:var(--muted)">${fecha}</span>
+            </div>
+            <div style="font-weight:700;font-size:14px;color:var(--navy)">
+              ${i.nombre_empleado || 'Trabajador no especificado'}
+            </div>
+            <div style="font-size:12px;color:var(--muted);margin-top:3px">
+              ${[i.cargo, i.area].filter(Boolean).join(' · ')}
+            </div>
+            ${i.descripcion_evento ? `
+              <div style="font-size:12px;color:var(--text);margin-top:6px;
+                          overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">
+                ${i.descripcion_evento}
+              </div>` : ''}
+            <div style="font-size:11px;color:var(--muted);margin-top:6px;display:flex;gap:14px">
+              ${i.dias_incapacidad ? `<span>⏱ ${i.dias_incapacidad} días incapacidad</span>` : ''}
+              ${i.reportado_arl ? '<span>✅ Reportado ARL</span>' : '<span style="color:#C0392B">❌ Sin reporte ARL</span>'}
+            </div>
+          </div>
+          <div style="flex-shrink:0">
+            <span class="chip chip-${i.estado}">${estLabel[i.estado]||i.estado}</span>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ── Resumen ─────────────────────────────────────────────────
+function renderResumen() {
+  const ats      = invs.filter(i => i.tipo === 'accidente_trabajo').length;
+  const incs     = invs.filter(i => i.tipo === 'incidente').length;
+  const dias     = invs.reduce((s, i) => s + (parseInt(i.dias_incapacidad)||0), 0);
+  const sinARL   = invs.filter(i => i.tipo === 'accidente_trabajo' && !i.reportado_arl).length;
+  const abiertas = invs.filter(i => i.estado !== 'cerrada').length;
+
+  document.getElementById('resumen').innerHTML = `
+    <div class="res-card">
+      <div class="res-num" style="color:#C0392B">${ats}</div>
+      <div class="res-lbl">Accidentes de trabajo</div>
+    </div>
+    <div class="res-card">
+      <div class="res-num" style="color:#D97706">${incs}</div>
+      <div class="res-lbl">Incidentes</div>
+    </div>
+    <div class="res-card">
+      <div class="res-num">${dias}</div>
+      <div class="res-lbl">Días de incapacidad</div>
+    </div>
+    <div class="res-card">
+      <div class="res-num" style="color:${sinARL?'#C0392B':'#27AE60'}">${sinARL}</div>
+      <div class="res-lbl">AT sin reporte ARL</div>
+    </div>
+    <div class="res-card">
+      <div class="res-num" style="color:${abiertas?'#D97706':'#27AE60'}">${abiertas}</div>
+      <div class="res-lbl">Investigaciones abiertas</div>
+    </div>`;
+}
+
+// ── Abrir / cerrar panel ─────────────────────────────────────
+function abrirNueva() {
+  editandoId = null;
+  invActual  = null;
+  document.getElementById('panel-titulo').textContent = 'Nueva investigación';
+  document.getElementById('btn-elim-inv').style.display = 'none';
+  _resetForm();
+  switchTab('evento');
+  _abrirPanel();
+}
+
+async function abrirEditar(id) {
+  editandoId = id;
+  document.getElementById('panel-titulo').textContent = 'Editar investigación';
+  document.getElementById('btn-elim-inv').style.display = '';
+  try {
+    invActual = await VigiaAPI.getInvestigacion(id);
+    _rellenarForm(invActual);
+    _renderAcciones(invActual.acciones || []);
+    switchTab('evento');
+    _abrirPanel();
+  } catch (err) { mostrarToast('Error: ' + err.message, 'error'); }
+}
+
+function _abrirPanel() {
+  document.getElementById('panel').classList.add('open');
+  document.getElementById('overlay').classList.add('open');
+}
+function cerrarPanel() {
+  document.getElementById('panel').classList.remove('open');
+  document.getElementById('overlay').classList.remove('open');
+}
+
+function switchTab(tab) {
+  tabActiva = tab;
+  ['evento','causas','acciones','cierre'].forEach(t => {
+    document.getElementById(`tab-${t}`).style.display = t === tab ? '' : 'none';
+    document.querySelectorAll('.form-tab').forEach((el, i) => {
+      const tabs = ['evento','causas','acciones','cierre'];
+      el.classList.toggle('active', tabs[i] === tab);
+    });
+  });
+}
+
+// ── Formulario ───────────────────────────────────────────────
+function _resetForm() {
+  document.getElementById('f-tipo-val').value = 'accidente_trabajo';
+  document.querySelectorAll('.sel-tipo').forEach((b,i) => {
+    b.style.background = i === 0 ? 'var(--navy)' : '';
+    b.style.color      = i === 0 ? 'white' : '';
+  });
+  ['f-fecha','f-hora','f-fecha-rep','f-area','f-desc',
+   'f-nombre','f-cargo','f-desc-causas','f-causa-raiz',
+   'f-concl','f-lecciones'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.getElementById('f-empleado').value = '';
+  document.getElementById('f-parte').value  = '';
+  document.getElementById('f-lesion').value = '';
+  document.getElementById('f-dias').value   = '';
+  document.getElementById('f-fallecio').checked = false;
+  document.getElementById('f-arl').checked  = false;
+  document.getElementById('f-mint').checked = false;
+  document.getElementById('f-fecha-arl').style.display  = 'none';
+  document.getElementById('f-fecha-mint').style.display = 'none';
+  document.getElementById('f-fecha-arl').value  = '';
+  document.getElementById('f-fecha-mint').value = '';
+  document.getElementById('f-estado').value = 'abierta';
+  document.getElementById('f-estado-cierre').value = 'investigando';
+  document.querySelectorAll('.causa-tag').forEach(t => t.classList.remove('on'));
+  document.getElementById('lista-acciones').innerHTML =
+    '<p class="text-muted text-sm" style="text-align:center;padding:16px">Sin acciones registradas</p>';
+}
+
+function _rellenarForm(inv) {
+  _resetForm();
+  // Tipo
+  selTipo(document.querySelector(`.sel-tipo[data-v="${inv.tipo || 'accidente_trabajo'}"]`));
+  // Evento
+  document.getElementById('f-fecha').value     = inv.fecha_evento     || '';
+  document.getElementById('f-hora').value      = inv.hora_evento      || '';
+  document.getElementById('f-fecha-rep').value = inv.fecha_reporte    || '';
+  document.getElementById('f-area').value      = inv.area             || '';
+  document.getElementById('f-desc').value      = inv.descripcion_evento || '';
+  // Trabajador
+  if (inv.empleado_id) {
+    document.getElementById('f-empleado').value = inv.empleado_id;
+  }
+  document.getElementById('f-nombre').value = inv.nombre_empleado || '';
+  document.getElementById('f-cargo').value  = inv.cargo           || '';
+  // Lesión
+  document.getElementById('f-parte').value   = inv.parte_cuerpo   || '';
+  document.getElementById('f-lesion').value  = inv.tipo_lesion    || '';
+  document.getElementById('f-dias').value    = inv.dias_incapacidad ?? '';
+  document.getElementById('f-fallecio').checked = !!inv.fallecio;
+  // Reportes
+  document.getElementById('f-arl').checked  = !!inv.reportado_arl;
+  document.getElementById('f-mint').checked = !!inv.reportado_mintrabajo;
+  if (inv.reportado_arl) {
+    document.getElementById('f-fecha-arl').style.display = '';
+    document.getElementById('f-fecha-arl').value = inv.fecha_reporte_arl || '';
+  }
+  if (inv.reportado_mintrabajo) {
+    document.getElementById('f-fecha-mint').style.display = '';
+    document.getElementById('f-fecha-mint').value = inv.fecha_reporte_mintrabajo || '';
+  }
+  document.getElementById('f-estado').value = inv.estado || 'abierta';
+  // Causas
+  const ci = inv.causas_inmediatas || [];
+  const cb = inv.causas_basicas    || [];
+  document.querySelectorAll('#tags-actos .causa-tag').forEach(t =>
+    t.classList.toggle('on', ci.includes(t.textContent.trim())));
+  document.querySelectorAll('#tags-condiciones .causa-tag').forEach(t =>
+    t.classList.toggle('on', ci.includes(t.textContent.trim())));
+  document.querySelectorAll('#tags-factores .causa-tag').forEach(t =>
+    t.classList.toggle('on', cb.includes(t.textContent.trim())));
+  document.getElementById('f-desc-causas').value = inv.descripcion_causas || '';
+  document.getElementById('f-causa-raiz').value  = inv.causa_raiz         || '';
+  // Cierre
+  document.getElementById('f-concl').value    = inv.conclusiones || '';
+  document.getElementById('f-lecciones').value = inv.lecciones   || '';
+  document.getElementById('f-estado-cierre').value = inv.estado  || 'investigando';
+}
+
+function selTipo(btn) {
+  if (!btn) return;
+  document.querySelectorAll('.sel-tipo').forEach(b => {
+    b.style.background = ''; b.style.color = '';
+  });
+  btn.style.background = 'var(--navy)';
+  btn.style.color      = 'white';
+  document.getElementById('f-tipo-val').value = btn.dataset.v;
+}
+
+function onEmpleadoChange() {
+  const sel = document.getElementById('f-empleado');
+  const opt = sel.selectedOptions[0];
+  if (opt && opt.value) {
+    document.getElementById('f-nombre').value = opt.dataset.nombre || '';
+    document.getElementById('f-cargo').value  = opt.dataset.cargo  || '';
+  }
+}
+
+// ── Guardar evento ───────────────────────────────────────────
+async function guardar() {
+  const fecha = document.getElementById('f-fecha').value;
+  const desc  = document.getElementById('f-desc').value.trim();
+  if (!fecha || !desc) {
+    mostrarToast('Fecha y descripción son obligatorias', 'error'); return;
+  }
+
+  const datos = {
+    tipo:                     document.getElementById('f-tipo-val').value,
+    fecha_evento:             fecha,
+    hora_evento:              document.getElementById('f-hora').value       || null,
+    fecha_reporte:            document.getElementById('f-fecha-rep').value  || null,
+    area:                     document.getElementById('f-area').value.trim()|| null,
+    descripcion_evento:       desc,
+    empleado_id:              document.getElementById('f-empleado').value   || null,
+    nombre_empleado:          document.getElementById('f-nombre').value.trim() || null,
+    cargo:                    document.getElementById('f-cargo').value.trim()  || null,
+    parte_cuerpo:             document.getElementById('f-parte').value      || null,
+    tipo_lesion:              document.getElementById('f-lesion').value     || null,
+    dias_incapacidad:         parseInt(document.getElementById('f-dias').value) || null,
+    fallecio:                 document.getElementById('f-fallecio').checked,
+    reportado_arl:            document.getElementById('f-arl').checked,
+    fecha_reporte_arl:        document.getElementById('f-fecha-arl').value  || null,
+    reportado_mintrabajo:     document.getElementById('f-mint').checked,
+    fecha_reporte_mintrabajo: document.getElementById('f-fecha-mint').value || null,
+    estado:                   document.getElementById('f-estado').value,
+  };
+
+  try {
+    if (editandoId) {
+      const upd = await VigiaAPI.editarInvestigacion(editandoId, datos);
+      const idx = invs.findIndex(i => i.id === editandoId);
+      if (idx !== -1) invs[idx] = { ...invs[idx], ...upd };
+    } else {
+      const nueva = await VigiaAPI.crearInvestigacion(datos);
+      invs.unshift(nueva);
+      editandoId = nueva.id;
+      invActual  = { ...nueva, acciones: [] };
+      document.getElementById('btn-elim-inv').style.display = '';
+    }
+    filtrar();
+    mostrarToast('Guardado', 'ok');
+    switchTab('causas');
+  } catch (err) { mostrarToast('Error: ' + err.message, 'error'); }
+}
+
+// ── Guardar causas ───────────────────────────────────────────
+async function guardarCausas() {
+  if (!editandoId) { mostrarToast('Guarda primero el evento', 'error'); return; }
+
+  const ci = [
+    ...[...document.querySelectorAll('#tags-actos .causa-tag.on')].map(t => t.textContent.trim()),
+    ...[...document.querySelectorAll('#tags-condiciones .causa-tag.on')].map(t => t.textContent.trim()),
+  ];
+  const cb = [...document.querySelectorAll('#tags-factores .causa-tag.on')].map(t => t.textContent.trim());
+
+  const datos = {
+    causas_inmediatas:  ci,
+    causas_basicas:     cb,
+    descripcion_causas: document.getElementById('f-desc-causas').value.trim() || null,
+    causa_raiz:         document.getElementById('f-causa-raiz').value.trim()  || null,
+  };
+
+  try {
+    await VigiaAPI.editarInvestigacion(editandoId, datos);
+    mostrarToast('Causas guardadas', 'ok');
+    switchTab('acciones');
+  } catch (err) { mostrarToast('Error: ' + err.message, 'error'); }
+}
+
+// ── Acciones correctivas ─────────────────────────────────────
+async function agregarAccion() {
+  if (!editandoId) { mostrarToast('Guarda primero el evento', 'error'); return; }
+  const accion = document.getElementById('a-accion').value.trim();
+  if (!accion) { mostrarToast('Escribe la acción', 'error'); return; }
+
+  const datos = {
+    accion,
+    responsable:  document.getElementById('a-resp').value.trim()  || null,
+    fecha_limite: document.getElementById('a-fecha').value         || null,
+  };
+
+  try {
+    const nueva = await VigiaAPI.crearAccionInv(editandoId, datos);
+    invActual.acciones = [...(invActual.acciones||[]), nueva];
+    _renderAcciones(invActual.acciones);
+    document.getElementById('a-accion').value = '';
+    document.getElementById('a-resp').value   = '';
+    document.getElementById('a-fecha').value  = '';
+    mostrarToast('Acción agregada', 'ok');
+  } catch (err) { mostrarToast('Error: ' + err.message, 'error'); }
+}
+
+async function cambiarEstadoAccion(id, estado) {
+  try {
+    const datos = { estado };
+    if (estado === 'cumplida') datos.fecha_cumplimiento = new Date().toISOString().slice(0,10);
+    await VigiaAPI.editarAccionInv(id, datos);
+    const a = invActual.acciones.find(x => x.id === id);
+    if (a) { a.estado = estado; if (estado === 'cumplida') a.fecha_cumplimiento = datos.fecha_cumplimiento; }
+    _renderAcciones(invActual.acciones);
+  } catch (err) { mostrarToast('Error: ' + err.message, 'error'); }
+}
+
+async function eliminarAccion(id) {
+  try {
+    await VigiaAPI.eliminarAccionInv(id);
+    invActual.acciones = invActual.acciones.filter(a => a.id !== id);
+    _renderAcciones(invActual.acciones);
+    mostrarToast('Acción eliminada', 'ok');
+  } catch (err) { mostrarToast('Error: ' + err.message, 'error'); }
+}
+
+function _renderAcciones(lista) {
+  const cont = document.getElementById('lista-acciones');
+  if (!lista.length) {
+    cont.innerHTML = '<p class="text-muted text-sm" style="text-align:center;padding:16px">Sin acciones registradas</p>';
+    return;
+  }
+  cont.innerHTML = lista.map(a => `
+    <div class="accion-row">
+      <div>
+        <div style="font-size:13px;font-weight:600;color:var(--navy)">${a.accion}</div>
+        <div style="font-size:11px;color:var(--muted)">
+          ${[a.responsable, a.fecha_limite ? '📅 ' + a.fecha_limite : ''].filter(Boolean).join(' · ')}
+        </div>
+      </div>
+      <select onchange="cambiarEstadoAccion('${a.id}',this.value)"
+        style="font-size:11px;border:1.5px solid var(--border);border-radius:7px;
+               padding:3px 6px;background:var(--bg);color:var(--text)">
+        <option value="pendiente"  ${a.estado==='pendiente'  ?'selected':''}>Pendiente</option>
+        <option value="en_proceso" ${a.estado==='en_proceso' ?'selected':''}>En proceso</option>
+        <option value="cumplida"   ${a.estado==='cumplida'   ?'selected':''}>Cumplida</option>
+      </select>
+      <span class="estado-accion ea-${a.estado}">
+        ${a.estado==='pendiente'?'⏳':a.estado==='en_proceso'?'🔄':'✅'}
+      </span>
+      <button onclick="eliminarAccion('${a.id}')"
+        style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:14px">✕</button>
+    </div>`).join('');
+}
+
+// ── Guardar cierre ───────────────────────────────────────────
+async function guardarCierre() {
+  if (!editandoId) { mostrarToast('Guarda primero el evento', 'error'); return; }
+  const datos = {
+    conclusiones: document.getElementById('f-concl').value.trim()    || null,
+    lecciones:    document.getElementById('f-lecciones').value.trim()|| null,
+    estado:       document.getElementById('f-estado-cierre').value,
+  };
+  try {
+    const upd = await VigiaAPI.editarInvestigacion(editandoId, datos);
+    const idx = invs.findIndex(i => i.id === editandoId);
+    if (idx !== -1) invs[idx] = { ...invs[idx], ...upd };
+    filtrar();
+    cerrarPanel();
+    mostrarToast('Investigación finalizada', 'ok');
+  } catch (err) { mostrarToast('Error: ' + err.message, 'error'); }
+}
+
+// ── Eliminar investigación ───────────────────────────────────
+async function eliminarInv() {
+  if (!confirm('¿Eliminar esta investigación y su plan de acción?')) return;
+  try {
+    await VigiaAPI.eliminarInvestigacion(editandoId);
+    invs = invs.filter(i => i.id !== editandoId);
+    filtrar();
+    cerrarPanel();
+    mostrarToast('Investigación eliminada', 'ok');
+  } catch (err) { mostrarToast('Error: ' + err.message, 'error'); }
+}
+
+function mostrarToast(msg, tipo = 'ok') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast toast-${tipo} show`;
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+init();
+</script>
+<script src="js/vigia-chat.js"></script>
+</body>
+</html>
+

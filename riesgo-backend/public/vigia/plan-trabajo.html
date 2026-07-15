@@ -1,0 +1,807 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vigía 360 — Plan de Trabajo Anual SST</title>
+  <link rel="stylesheet" href="vigia.css" />
+  <style>
+    /* ── Gantt mini ──────────────────────────────── */
+    .gantt-row  { display:flex;gap:3px;margin-top:6px }
+    .gantt-cell { width:22px;height:22px;border-radius:4px;border:1.5px solid var(--border);
+      font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;
+      cursor:pointer;user-select:none;transition:all .12s;color:var(--muted);flex-shrink:0 }
+    .gantt-cell.on  { background:var(--navy);border-color:var(--navy);color:white }
+    .gantt-cell:hover { border-color:var(--blue);color:var(--blue) }
+    .gantt-cell.on:hover { background:var(--blue);border-color:var(--blue) }
+
+    /* ── Actividad card ──────────────────────────── */
+    .act-card { border:1.5px solid var(--border);border-radius:10px;padding:14px 16px;
+      margin-bottom:10px;transition:border-color .15s }
+    .act-card:hover { border-color:var(--blue) }
+    .act-head  { display:flex;justify-content:space-between;align-items:flex-start;gap:12px }
+    .act-titulo { font-size:14px;font-weight:700;color:var(--navy);flex:1 }
+    .act-area  { font-size:11px;color:var(--muted);margin-top:3px }
+    .act-meta  { font-size:12px;color:var(--muted);margin-top:6px;display:flex;gap:16px;flex-wrap:wrap }
+
+    /* ── Estado chips ────────────────────────────── */
+    .chip-programado   { background:#EFF6FF;color:#2563EB;border:1.5px solid #BFD7F0 }
+    .chip-en_proceso   { background:#FEF3C7;color:#D97706;border:1.5px solid #FCD34D }
+    .chip-cumplido     { background:#ECFDF5;color:#065F46;border:1.5px solid #6EE7B7 }
+    .chip-no_cumplido  { background:#FDECEA;color:#C0392B;border:1.5px solid #FABEC2 }
+    .chip { padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap }
+
+    /* ── Barra de progreso ──────────────────────── */
+    .prog-bar { height:6px;border-radius:4px;background:#E2E8F0;margin-top:8px }
+    .prog-fill { height:100%;border-radius:4px;transition:width .3s }
+
+    /* ── Resumen anual ────────────────────────────── */
+    .resumen-grid { display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px }
+    @media(max-width:600px){ .resumen-grid { grid-template-columns:repeat(2,1fr) } }
+    .res-card { background:var(--card);border:1.5px solid var(--border);border-radius:10px;
+      padding:16px;text-align:center }
+    .res-num { font-size:28px;font-weight:800;color:var(--navy) }
+    .res-lbl { font-size:11px;color:var(--muted);margin-top:4px }
+
+    /* ── Modal ───────────────────────────────────── */
+    .modal-overlay { position:fixed;inset:0;background:rgba(0,0,0,.45);
+      display:flex;align-items:center;justify-content:center;z-index:200;padding:16px }
+    .modal-box { background:var(--card);border-radius:14px;width:100%;max-width:660px;
+      max-height:90vh;overflow-y:auto;padding:28px 32px;box-shadow:0 16px 48px rgba(0,0,0,.25) }
+    .modal-box h3 { font-size:17px;font-weight:800;color:var(--navy);margin-bottom:20px }
+
+    /* ── Selector objetivo rápido ────────────────── */
+    .obj-pill { display:inline-block;padding:5px 11px;border-radius:20px;font-size:12px;
+      border:1.5px solid var(--border);cursor:pointer;margin:3px;transition:all .12s }
+    .obj-pill:hover { border-color:var(--blue);color:var(--blue) }
+    .obj-pill.sel { background:var(--navy);color:white;border-color:var(--navy) }
+
+    /* ── Filtros ─────────────────────────────────── */
+    .filtros { display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px }
+    .filtros select, .filtros input { padding:6px 10px;border-radius:7px;
+      border:1.5px solid var(--border);background:var(--bg);color:var(--text);
+      font-size:13px;font-family:inherit }
+
+    /* ── % ejecución slider ──────────────────────── */
+    .pct-wrap { display:flex;align-items:center;gap:10px }
+    .pct-wrap input[type=range] { flex:1 }
+    .pct-lbl { font-size:14px;font-weight:800;color:var(--navy);min-width:36px }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="dashboard.html" style="display:flex;align-items:center;gap:10px;text-decoration:none">
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="36" viewBox="0 0 34 38">
+      <path d="M17 1L2 7V21C2 30 9 37 17 39C25 37 32 30 32 21V7Z" fill="rgba(255,255,255,0.15)" stroke="white" stroke-width="1.5"/>
+      <circle cx="12" cy="19" r="4.5" fill="white" opacity="0.9"/>
+      <circle cx="22" cy="19" r="4.5" fill="white" opacity="0.9"/>
+      <circle cx="12" cy="19" r="2" fill="rgba(26,58,92,0.8)"/>
+      <circle cx="22" cy="19" r="2" fill="rgba(26,58,92,0.8)"/>
+      <polygon points="15,25 17,28 19,25" fill="white" opacity="0.7"/>
+    </svg>
+    <span style="color:white;font-weight:800;font-size:17px;letter-spacing:0.5px">VIGÍA <span style="color:#4ADE80;font-weight:900">360</span></span>
+  </a>
+  <div class="nav-links">
+    <a href="dashboard.html" class="nav-link-fixed">Dashboard</a>
+
+    <!-- P — Planear -->
+    <div class="nav-dropdown" id="dd-P">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-P')">
+        <span class="phva-pill phva-P">P</span> Planear <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="perfil-responsable.html">🩺 Responsable SST</a>
+        <a href="responsabilidades.html">👥 Roles y Responsabilidades</a>
+        <a href="copasst.html">🤝 COPASST y Convivencia</a>
+        <a href="documentos-sst.html">📄 Documentos del SG-SST</a>
+        <a href="matriz-peligros.html">⚠️ Matriz de Peligros (GTC-45)</a>
+        <a href="plan-trabajo.html">📅 Plan de Trabajo Anual</a>
+        <a href="presupuesto-sgsst.html">💰 Presupuesto SG-SST</a>
+        <a href="profesiograma.html">💊 Profesiograma</a>
+      </div>
+    </div>
+
+    <!-- H — Hacer -->
+    <div class="nav-dropdown" id="dd-H">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-H')">
+        <span class="phva-pill phva-H">H</span> Hacer <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="epp.html">🦺 EPP</a>
+        <a href="capacitaciones.html">🎓 Capacitaciones</a>
+        <a href="emergencias.html">🚨 Emergencias y Brigada</a>
+        <a href="inspecciones.html">🔍 Inspecciones y Mantenimiento</a>
+        <a href="perfil-salud.html">🏥 Salud Ocupacional</a>
+        <div class="nav-dd-divider"></div>
+        <a href="lista-personal.html">👥 Lista de Personal</a>
+        <a href="subir.html">⬆️ Subir Examen</a>
+        <a href="subir-masivo.html">📦 Carga Masiva</a>
+        <a href="cartas-masivas.html">📄 Cartas Masivas</a>
+        <a href="reporte-examenes.html">📊 Cobertura de Exámenes</a>
+        <a href="informe-condiciones.html">📋 Informe de Condiciones</a>
+      </div>
+    </div>
+
+    <!-- V — Verificar -->
+    <div class="nav-dropdown" id="dd-V">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-V')">
+        <span class="phva-pill phva-V">V</span> Verificar <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="evaluacion-sst.html">📋 Evaluación (Res. 0312)</a>
+        <a href="investigaciones.html">🔍 AT / Incidentes</a>
+        <a href="ausentismo.html">📉 Ausentismo laboral</a>
+        <a href="indicadores-sgsst.html">📊 Indicadores SG-SST</a>
+        <a href="analisis-phva.html">📈 Análisis e Indicadores</a>
+      </div>
+    </div>
+
+    <!-- A — Actuar -->
+    <div class="nav-dropdown" id="dd-A">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-A')">
+        <span class="phva-pill phva-A">A</span> Actuar <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="mejoramiento.html">✅ Acciones de Mejoramiento</a>
+        <a href="evaluacion-sst.html">📝 Plan de Mejoramiento (F002)</a>
+      </div>
+    </div>
+
+    <a href="listado-maestro.html" class="nav-link-fixed">📁 Listado Maestro</a>
+    <span id="nav-empresa" style="color:#CBD8E6;font-size:13px;padding:6px 0"></span>
+    <button onclick="VigiaAPI.logout()"
+      style="background:none;border:1px solid rgba(255,255,255,.2);color:#CBD8E6;
+             border-radius:6px;padding:6px 12px;cursor:pointer;font-size:13px">Salir</button>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="doc-header">
+    <div class="doc-header-logo-col">
+      <img class="doc-logo-img" src="" alt="" onerror="this.style.display='none'" />
+    </div>
+    <div class="doc-header-title-col">Plan Anual de Trabajo<br>en Seguridad y Salud en el Trabajo</div>
+    <div class="doc-header-code-col">
+      <span class="doc-header-code-line"><strong>CÓDIGO:</strong> <span class="doc-codigo" data-sufijo="F018">SG-SST F018</span></span>
+      <span class="doc-header-code-line"><strong>VERSIÓN</strong> 1</span>
+      <span class="doc-header-code-line"><strong>FECHA DE VIGENCIA:</strong><br><span class="doc-fecha"></span></span>
+    </div>
+  </div>
+  <div id="cargando" class="empty-state mt-8">
+    <div class="spinner" style="margin:0 auto 16px;border-color:rgba(46,134,171,.2);border-top-color:var(--blue)"></div>
+    <p class="text-muted">Cargando…</p>
+  </div>
+
+  <div id="contenido" style="display:none">
+
+    <!-- Cabecera con selector de año -->
+    <div class="flex justify-between items-center mb-4" style="flex-wrap:wrap;gap:12px">
+      <div>
+        <h2 style="font-size:20px;font-weight:800;color:var(--navy)">Plan de Trabajo Anual SST</h2>
+        <p class="text-muted text-sm">Decreto 1072 de 2015 — Art. 2.2.4.6.22</p>
+      </div>
+      <div class="flex gap-3 items-center">
+        <select id="sel-periodo" onchange="cambiarPeriodo(this.value)"
+          style="padding:8px 12px;border-radius:8px;border:1.5px solid var(--border);
+                 background:var(--bg);color:var(--text);font-size:14px;font-family:inherit">
+        </select>
+        <button class="btn btn-outline" onclick="abrirNuevoPlan()">+ Nuevo período</button>
+        <button class="btn btn-navy" onclick="abrirModal()">+ Agregar actividad</button>
+      </div>
+    </div>
+
+    <!-- Sin plan para este período -->
+    <div id="sin-plan" style="display:none">
+      <div class="card" style="padding:48px;text-align:center">
+        <div style="font-size:48px;margin-bottom:12px">📅</div>
+        <h3 style="color:var(--navy);margin-bottom:8px">Sin plan para este período</h3>
+        <p class="text-muted text-sm">Crea el plan de trabajo para comenzar a registrar actividades.</p>
+        <button class="btn btn-navy mt-4" onclick="crearPlanEsteAnio()">Crear plan <span id="btn-anio-crear"></span></button>
+      </div>
+    </div>
+
+    <!-- Plan activo -->
+    <div id="plan-activo" style="display:none">
+
+      <!-- Responsable del plan -->
+      <div class="card mb-4" style="padding:16px 20px">
+        <div class="flex justify-between items-center" style="flex-wrap:wrap;gap:12px">
+          <div class="flex items-center gap-3">
+            <div>
+              <div class="label">Responsable del plan</div>
+              <input type="text" id="resp-plan" class="input" style="margin-top:4px;width:280px"
+                placeholder="Nombre y cargo del responsable SST"
+                onchange="actualizarResponsable(this.value)">
+            </div>
+          </div>
+          <div class="flex gap-3 items-center">
+            <div>
+              <div class="label">Estado del plan</div>
+              <select id="estado-plan" class="input" style="margin-top:4px"
+                onchange="actualizarEstado(this.value)">
+                <option value="activo">Activo</option>
+                <option value="borrador">Borrador</option>
+                <option value="cerrado">Cerrado</option>
+              </select>
+            </div>
+            <button class="btn btn-outline btn-sm" style="color:#C0392B;border-color:#FABEC2"
+              onclick="eliminarPlanConfirm()">🗑 Eliminar plan</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tarjetas resumen -->
+      <div class="resumen-grid" id="resumen-cards"></div>
+
+      <!-- Filtros -->
+      <div class="filtros">
+        <select id="filtro-objetivo" onchange="filtrarActividades()">
+          <option value="">Todos los objetivos</option>
+        </select>
+        <select id="filtro-estado" onchange="filtrarActividades()">
+          <option value="">Todos los estados</option>
+          <option value="programado">Programado</option>
+          <option value="en_proceso">En proceso</option>
+          <option value="cumplido">Cumplido</option>
+          <option value="no_cumplido">No cumplido</option>
+        </select>
+        <select id="filtro-mes" onchange="filtrarActividades()">
+          <option value="">Todos los meses</option>
+          <option value="1">Enero</option><option value="2">Febrero</option>
+          <option value="3">Marzo</option><option value="4">Abril</option>
+          <option value="5">Mayo</option><option value="6">Junio</option>
+          <option value="7">Julio</option><option value="8">Agosto</option>
+          <option value="9">Septiembre</option><option value="10">Octubre</option>
+          <option value="11">Noviembre</option><option value="12">Diciembre</option>
+        </select>
+        <input type="text" id="filtro-texto" placeholder="Buscar actividad…"
+          oninput="filtrarActividades()" style="min-width:180px">
+      </div>
+
+      <!-- Lista de actividades -->
+      <div id="lista-actividades"></div>
+
+      <div id="lista-vacia" style="display:none">
+        <div class="card" style="padding:36px;text-align:center">
+          <p class="text-muted">No hay actividades registradas. Haz clic en "+ Agregar actividad".</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ACTIVIDAD -->
+<div class="modal-overlay" id="modal" style="display:none" onclick="cerrarModalFuera(event)">
+  <div class="modal-box" id="modal-box">
+    <h3 id="modal-titulo">Nueva actividad</h3>
+
+    <!-- Objetivo rápido -->
+    <div style="margin-bottom:14px">
+      <div class="label" style="margin-bottom:6px">Objetivo del SG-SST</div>
+      <div id="obj-pills">
+        <span class="obj-pill" onclick="selObj(this, 'Identificar y controlar los peligros')">Peligros y riesgos</span>
+        <span class="obj-pill" onclick="selObj(this, 'Promover la salud y prevenir enfermedades laborales')">Salud ocupacional</span>
+        <span class="obj-pill" onclick="selObj(this, 'Gestionar la preparación y respuesta ante emergencias')">Emergencias</span>
+        <span class="obj-pill" onclick="selObj(this, 'Cumplir los requisitos legales aplicables en SST')">Requisitos legales</span>
+        <span class="obj-pill" onclick="selObj(this, 'Fortalecer la cultura de seguridad y capacitación')">Capacitación</span>
+        <span class="obj-pill" onclick="selObj(this, 'Investigar y prevenir accidentes e incidentes')">Accidentes e incidentes</span>
+        <span class="obj-pill" onclick="selObj(this, 'Medir y mejorar el desempeño del SG-SST')">Mejora continua</span>
+      </div>
+      <input type="text" id="m-objetivo" class="input mt-2" placeholder="O escribe el objetivo…">
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div style="grid-column:1/-1">
+        <label class="label">Actividad *</label>
+        <textarea id="m-actividad" class="input mt-1" rows="2"
+          placeholder="Descripción específica de la actividad"></textarea>
+      </div>
+      <div>
+        <label class="label">Área / Proceso</label>
+        <input type="text" id="m-area" class="input mt-1" placeholder="Ej: Producción, Logística">
+      </div>
+      <div>
+        <label class="label">Responsable</label>
+        <input type="text" id="m-responsable" class="input mt-1" placeholder="Nombre y cargo">
+      </div>
+      <div>
+        <label class="label">Recursos necesarios</label>
+        <input type="text" id="m-recursos" class="input mt-1" placeholder="Humanos, técnicos, financieros">
+      </div>
+      <div>
+        <label class="label">Presupuesto estimado ($)</label>
+        <input type="number" id="m-presupuesto" class="input mt-1" placeholder="0" min="0">
+      </div>
+      <div>
+        <label class="label">Indicador de seguimiento</label>
+        <input type="text" id="m-indicador" class="input mt-1" placeholder="Ej: # capacitaciones realizadas">
+      </div>
+      <div>
+        <label class="label">Meta</label>
+        <input type="text" id="m-meta" class="input mt-1" placeholder="Ej: 4 capacitaciones / año">
+      </div>
+    </div>
+
+    <!-- Cronograma mensual -->
+    <div style="margin-top:14px">
+      <div class="label" style="margin-bottom:6px">Meses programados (clic para seleccionar)</div>
+      <div class="gantt-row" id="m-meses">
+        <span class="gantt-cell" data-m="1"  onclick="toggleMes(this)">E</span>
+        <span class="gantt-cell" data-m="2"  onclick="toggleMes(this)">F</span>
+        <span class="gantt-cell" data-m="3"  onclick="toggleMes(this)">M</span>
+        <span class="gantt-cell" data-m="4"  onclick="toggleMes(this)">A</span>
+        <span class="gantt-cell" data-m="5"  onclick="toggleMes(this)">M</span>
+        <span class="gantt-cell" data-m="6"  onclick="toggleMes(this)">J</span>
+        <span class="gantt-cell" data-m="7"  onclick="toggleMes(this)">J</span>
+        <span class="gantt-cell" data-m="8"  onclick="toggleMes(this)">A</span>
+        <span class="gantt-cell" data-m="9"  onclick="toggleMes(this)">S</span>
+        <span class="gantt-cell" data-m="10" onclick="toggleMes(this)">O</span>
+        <span class="gantt-cell" data-m="11" onclick="toggleMes(this)">N</span>
+        <span class="gantt-cell" data-m="12" onclick="toggleMes(this)">D</span>
+      </div>
+    </div>
+
+    <!-- Estado + % (solo en edición) -->
+    <div id="m-seguimiento" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div>
+          <label class="label">Estado de ejecución</label>
+          <select id="m-estado" class="input mt-1">
+            <option value="programado">Programado</option>
+            <option value="en_proceso">En proceso</option>
+            <option value="cumplido">Cumplido</option>
+            <option value="no_cumplido">No cumplido</option>
+          </select>
+        </div>
+        <div>
+          <label class="label">% de ejecución</label>
+          <div class="pct-wrap mt-1">
+            <input type="range" id="m-pct" min="0" max="100" step="5" value="0"
+              oninput="document.getElementById('m-pct-lbl').textContent=this.value+'%'">
+            <span id="m-pct-lbl" class="pct-lbl">0%</span>
+          </div>
+        </div>
+        <div style="grid-column:1/-1">
+          <label class="label">Observaciones de seguimiento</label>
+          <textarea id="m-obs" class="input mt-1" rows="2"
+            placeholder="Avances, pendientes, evidencias…"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex justify-between mt-6">
+      <button class="btn btn-outline" onclick="cerrarModal()">Cancelar</button>
+      <button class="btn btn-navy" onclick="guardarActividad()">Guardar actividad</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NUEVO PLAN -->
+<div class="modal-overlay" id="modal-plan" style="display:none" onclick="if(event.target===this)cerrarModalPlan()">
+  <div class="modal-box" style="max-width:400px">
+    <h3>Nuevo período</h3>
+    <div>
+      <label class="label">Año</label>
+      <input type="number" id="np-periodo" class="input mt-1"
+        placeholder="2026" min="2020" max="2040">
+    </div>
+    <div class="mt-4">
+      <label class="label">Responsable SST</label>
+      <input type="text" id="np-responsable" class="input mt-1"
+        placeholder="Nombre y cargo del responsable">
+    </div>
+    <div class="flex justify-between mt-6">
+      <button class="btn btn-outline" onclick="cerrarModalPlan()">Cancelar</button>
+      <button class="btn btn-navy" onclick="crearNuevoPlan()">Crear plan</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="js/vigia-api.js"></script>
+<script>
+
+const MESES_LABEL = ['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+let planes      = [];     // todos los planes de la empresa
+let planActual  = null;   // objeto del plan seleccionado
+let actividades = [];     // actividades del plan actual
+let editandoId  = null;   // id de actividad en edición (null = nueva)
+
+// ── Inicialización ──────────────────────────────────────────
+async function init() {
+  const ok = await VigiaAPI.requireAuth();
+  if (!ok) return;
+  VigiaAPI.initDocHeader();
+  await cargarPlanes();
+  document.getElementById('cargando').style.display  = 'none';
+  document.getElementById('contenido').style.display = '';
+}
+
+async function cargarPlanes() {
+  const empresaId = VigiaAPI.esAdmin() ? VigiaAPI.empresaId() : null;
+  planes = await VigiaAPI.getPlanestrabajo(empresaId) || [];
+
+  // Poblar selector de años
+  const sel = document.getElementById('sel-periodo');
+  const anioActual = new Date().getFullYear();
+
+  // Incluir años de planes existentes + año actual + ±1
+  const anios = new Set([anioActual - 1, anioActual, anioActual + 1,
+                          ...planes.map(p => p.periodo)]);
+  const aniosOrdenados = [...anios].sort((a, b) => b - a);
+
+  sel.innerHTML = aniosOrdenados.map(a =>
+    `<option value="${a}">${a}</option>`
+  ).join('');
+
+  sel.value = anioActual;
+  await seleccionarPeriodo(anioActual);
+}
+
+async function cambiarPeriodo(anio) {
+  await seleccionarPeriodo(parseInt(anio));
+}
+
+async function seleccionarPeriodo(anio) {
+  planActual = planes.find(p => p.periodo === anio) || null;
+  document.getElementById('sin-plan').style.display   = planActual ? 'none' : '';
+  document.getElementById('plan-activo').style.display = planActual ? '' : 'none';
+  document.getElementById('btn-anio-crear').textContent = anio;
+
+  if (!planActual) return;
+
+  // Llenar campos de cabecera
+  document.getElementById('resp-plan').value   = planActual.responsable || '';
+  document.getElementById('estado-plan').value = planActual.estado      || 'activo';
+
+  // Cargar actividades
+  actividades = await VigiaAPI.getPlanActividades(planActual.id) || [];
+  poblarFiltroObjetivos();
+  filtrarActividades();
+}
+
+// ── Crear plan para el año seleccionado (botón rápido) ──────
+async function crearPlanEsteAnio() {
+  const anio = parseInt(document.getElementById('sel-periodo').value);
+  try {
+    const nuevo = await VigiaAPI.crearPlanTrabajo({ periodo: anio });
+    planes.push(nuevo);
+    planActual = nuevo;
+    actividades = [];
+    document.getElementById('sin-plan').style.display   = 'none';
+    document.getElementById('plan-activo').style.display = '';
+    document.getElementById('resp-plan').value   = '';
+    document.getElementById('estado-plan').value = 'activo';
+    renderActividades([]);
+    mostrarToast('Plan creado', 'ok');
+  } catch (err) { mostrarToast('Error: ' + err.message, 'error'); }
+}
+
+// ── Modal nuevo plan ────────────────────────────────────────
+function abrirNuevoPlan() {
+  document.getElementById('np-periodo').value    = new Date().getFullYear() + 1;
+  document.getElementById('np-responsable').value = '';
+  document.getElementById('modal-plan').style.display = 'flex';
+}
+function cerrarModalPlan() {
+  document.getElementById('modal-plan').style.display = 'none';
+}
+async function crearNuevoPlan() {
+  const periodo    = parseInt(document.getElementById('np-periodo').value);
+  const responsable = document.getElementById('np-responsable').value.trim();
+  if (!periodo) { mostrarToast('Ingresa el año', 'error'); return; }
+  if (planes.find(p => p.periodo === periodo)) {
+    mostrarToast('Ya existe un plan para ese año', 'error'); return;
+  }
+  try {
+    const nuevo = await VigiaAPI.crearPlanTrabajo({ periodo, responsable });
+    planes.push(nuevo);
+    planes.sort((a, b) => b.periodo - a.periodo);
+
+    // Actualizar selector
+    const sel = document.getElementById('sel-periodo');
+    const opt = document.createElement('option');
+    opt.value = periodo; opt.textContent = periodo;
+    sel.prepend(opt);
+    sel.value = periodo;
+
+    cerrarModalPlan();
+    await seleccionarPeriodo(periodo);
+    mostrarToast(`Plan ${periodo} creado`, 'ok');
+  } catch (err) { mostrarToast('Error: ' + err.message, 'error'); }
+}
+
+// ── Actualizar cabecera del plan ────────────────────────────
+let _respTimeout = null;
+function actualizarResponsable(val) {
+  clearTimeout(_respTimeout);
+  _respTimeout = setTimeout(async () => {
+    try {
+      await VigiaAPI.editarPlanTrabajo(planActual.id, { responsable: val });
+      planActual.responsable = val;
+    } catch {}
+  }, 800);
+}
+async function actualizarEstado(val) {
+  try {
+    await VigiaAPI.editarPlanTrabajo(planActual.id, { estado: val });
+    planActual.estado = val;
+    mostrarToast('Estado actualizado', 'ok');
+  } catch (err) { mostrarToast('Error: ' + err.message, 'error'); }
+}
+async function eliminarPlanConfirm() {
+  if (!confirm(`¿Eliminar el plan ${planActual.periodo} y todas sus actividades? Esta acción no se puede deshacer.`)) return;
+  try {
+    await VigiaAPI.eliminarPlanTrabajo(planActual.id);
+    planes = planes.filter(p => p.id !== planActual.id);
+    planActual  = null;
+    actividades = [];
+    document.getElementById('sin-plan').style.display   = '';
+    document.getElementById('plan-activo').style.display = 'none';
+    mostrarToast('Plan eliminado', 'ok');
+  } catch (err) { mostrarToast('Error: ' + err.message, 'error'); }
+}
+
+// ── Filtros ─────────────────────────────────────────────────
+function poblarFiltroObjetivos() {
+  const sel = document.getElementById('filtro-objetivo');
+  const objs = [...new Set(actividades.map(a => a.objetivo).filter(Boolean))];
+  sel.innerHTML = '<option value="">Todos los objetivos</option>' +
+    objs.map(o => `<option value="${o}">${o}</option>`).join('');
+}
+
+function filtrarActividades() {
+  const obj   = document.getElementById('filtro-objetivo').value;
+  const est   = document.getElementById('filtro-estado').value;
+  const mes   = parseInt(document.getElementById('filtro-mes').value) || null;
+  const texto = document.getElementById('filtro-texto').value.toLowerCase();
+
+  const filtradas = actividades.filter(a => {
+    if (obj   && a.objetivo !== obj)                           return false;
+    if (est   && a.estado_ejecucion !== est)                  return false;
+    if (mes   && !(a.meses || []).includes(mes))              return false;
+    if (texto && !a.actividad.toLowerCase().includes(texto))  return false;
+    return true;
+  });
+  renderActividades(filtradas);
+  renderResumen();
+}
+
+// ── Render actividades ──────────────────────────────────────
+function renderActividades(lista) {
+  const cont  = document.getElementById('lista-actividades');
+  const empty = document.getElementById('lista-vacia');
+
+  if (!lista.length) {
+    cont.innerHTML = ''; empty.style.display = ''; return;
+  }
+  empty.style.display = 'none';
+
+  // Agrupar por objetivo
+  const grupos = {};
+  for (const a of lista) {
+    const k = a.objetivo || '(Sin objetivo)';
+    if (!grupos[k]) grupos[k] = [];
+    grupos[k].push(a);
+  }
+
+  cont.innerHTML = Object.entries(grupos).map(([obj, acts]) => `
+    <div style="margin-bottom:20px">
+      <div style="font-size:12px;font-weight:800;color:var(--muted);
+                  text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">
+        ${obj}
+      </div>
+      ${acts.map(a => renderActCard(a)).join('')}
+    </div>
+  `).join('');
+}
+
+function renderActCard(a) {
+  const pct       = a.porcentaje_ejecucion || 0;
+  const chipClass = `chip chip-${a.estado_ejecucion || 'programado'}`;
+  const chipLabel = { programado:'Programado', en_proceso:'En proceso',
+                      cumplido:'Cumplido', no_cumplido:'No cumplido' };
+  const color     = pct >= 100 ? '#27AE60' : pct >= 50 ? '#D97706' : '#2E86AB';
+
+  const meses = (a.meses || []).sort((x,y)=>x-y);
+  const gantt  = Array.from({length:12}, (_, i) => {
+    const m = i + 1;
+    const on = meses.includes(m);
+    return `<span class="gantt-cell${on?' on':''}" style="cursor:default">${'EFMAMJJASOND'[i]}</span>`;
+  }).join('');
+
+  return `
+    <div class="act-card">
+      <div class="act-head">
+        <div style="flex:1">
+          <div class="act-titulo">${a.actividad}</div>
+          ${a.area_proceso ? `<div class="act-area">📍 ${a.area_proceso}</div>` : ''}
+          <div class="act-meta">
+            ${a.responsable  ? `<span>👤 ${a.responsable}</span>` : ''}
+            ${a.indicador    ? `<span>📊 ${a.indicador}${a.meta ? ' · meta: '+a.meta : ''}</span>` : ''}
+            ${a.presupuesto  ? `<span>💰 $${Number(a.presupuesto).toLocaleString('es-CO')}</span>` : ''}
+            ${a.observaciones? `<span style="color:var(--text)">📝 ${a.observaciones}</span>` : ''}
+          </div>
+          <div class="gantt-row" style="pointer-events:none">${gantt}</div>
+          <div class="prog-bar">
+            <div class="prog-fill" style="width:${pct}%;background:${color}"></div>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-top:3px">${pct}% ejecutado</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0">
+          <span class="${chipClass}">${chipLabel[a.estado_ejecucion] || 'Programado'}</span>
+          <div class="flex gap-2">
+            <button onclick="editarActividad('${a.id}')"
+              style="background:none;border:none;cursor:pointer;font-size:16px"
+              title="Editar">✏️</button>
+            <button onclick="eliminarActividad('${a.id}')"
+              style="background:none;border:none;cursor:pointer;font-size:16px"
+              title="Eliminar">🗑</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ── Resumen ─────────────────────────────────────────────────
+function renderResumen() {
+  const total       = actividades.length;
+  const cumplidas   = actividades.filter(a => a.estado_ejecucion === 'cumplido').length;
+  const enProceso   = actividades.filter(a => a.estado_ejecucion === 'en_proceso').length;
+  const presupuesto = actividades.reduce((s, a) => s + (parseFloat(a.presupuesto)||0), 0);
+  const pctGlobal   = total > 0
+    ? Math.round(actividades.reduce((s,a) => s + (a.porcentaje_ejecucion||0), 0) / total)
+    : 0;
+
+  document.getElementById('resumen-cards').innerHTML = `
+    <div class="res-card">
+      <div class="res-num">${pctGlobal}%</div>
+      <div class="res-lbl">Ejecución global</div>
+    </div>
+    <div class="res-card">
+      <div class="res-num">${cumplidas}/${total}</div>
+      <div class="res-lbl">Actividades cumplidas</div>
+    </div>
+    <div class="res-card">
+      <div class="res-num">${enProceso}</div>
+      <div class="res-lbl">En proceso</div>
+    </div>
+    <div class="res-card">
+      <div class="res-num">$${presupuesto.toLocaleString('es-CO',{maximumFractionDigits:0})}</div>
+      <div class="res-lbl">Presupuesto total</div>
+    </div>`;
+}
+
+// ── Modal agregar / editar actividad ───────────────────────
+function abrirModal(act = null) {
+  if (!planActual) { mostrarToast('Primero crea o selecciona un plan', 'error'); return; }
+  editandoId = act ? act.id : null;
+
+  document.getElementById('modal-titulo').textContent = act ? 'Editar actividad' : 'Nueva actividad';
+  document.getElementById('m-objetivo').value    = act?.objetivo    || '';
+  document.getElementById('m-actividad').value   = act?.actividad   || '';
+  document.getElementById('m-area').value        = act?.area_proceso || '';
+  document.getElementById('m-responsable').value = act?.responsable  || '';
+  document.getElementById('m-recursos').value    = act?.recursos     || '';
+  document.getElementById('m-presupuesto').value = act?.presupuesto  || '';
+  document.getElementById('m-indicador').value   = act?.indicador    || '';
+  document.getElementById('m-meta').value        = act?.meta         || '';
+
+  // Resetear pills de objetivo
+  document.querySelectorAll('#obj-pills .obj-pill').forEach(p => {
+    p.classList.toggle('sel', p.dataset.obj === act?.objetivo);
+    // guarda data-obj al primer render
+    if (!p.dataset.obj) p.dataset.obj = p.textContent.trim();
+  });
+
+  // Cronograma
+  const meses = act?.meses || [];
+  document.querySelectorAll('#m-meses .gantt-cell').forEach(c => {
+    c.classList.toggle('on', meses.includes(parseInt(c.dataset.m)));
+  });
+
+  // Seguimiento (solo al editar)
+  const seg = document.getElementById('m-seguimiento');
+  if (act) {
+    seg.style.display = '';
+    document.getElementById('m-estado').value = act.estado_ejecucion || 'programado';
+    const pct = act.porcentaje_ejecucion || 0;
+    document.getElementById('m-pct').value = pct;
+    document.getElementById('m-pct-lbl').textContent = pct + '%';
+    document.getElementById('m-obs').value = act.observaciones || '';
+  } else {
+    seg.style.display = 'none';
+  }
+
+  document.getElementById('modal').style.display = 'flex';
+}
+
+function editarActividad(id) {
+  const act = actividades.find(a => a.id === id);
+  if (act) abrirModal(act);
+}
+
+function cerrarModal() { document.getElementById('modal').style.display = 'none'; }
+function cerrarModalFuera(e) { if (e.target === document.getElementById('modal')) cerrarModal(); }
+
+function selObj(el, texto) {
+  document.querySelectorAll('#obj-pills .obj-pill').forEach(p => p.classList.remove('sel'));
+  el.classList.add('sel');
+  document.getElementById('m-objetivo').value = texto;
+}
+
+function toggleMes(el) { el.classList.toggle('on'); }
+
+async function guardarActividad() {
+  const actividad = document.getElementById('m-actividad').value.trim();
+  if (!actividad) { mostrarToast('Escribe la actividad', 'error'); return; }
+
+  const meses = [...document.querySelectorAll('#m-meses .gantt-cell.on')]
+    .map(c => parseInt(c.dataset.m));
+
+  const datos = {
+    objetivo:    document.getElementById('m-objetivo').value.trim()    || null,
+    actividad,
+    area_proceso: document.getElementById('m-area').value.trim()       || null,
+    responsable:  document.getElementById('m-responsable').value.trim()|| null,
+    recursos:     document.getElementById('m-recursos').value.trim()   || null,
+    presupuesto:  parseFloat(document.getElementById('m-presupuesto').value) || null,
+    meses,
+    indicador:    document.getElementById('m-indicador').value.trim()  || null,
+    meta:         document.getElementById('m-meta').value.trim()       || null,
+  };
+
+  if (editandoId) {
+    datos.estado_ejecucion    = document.getElementById('m-estado').value;
+    datos.porcentaje_ejecucion= parseInt(document.getElementById('m-pct').value) || 0;
+    datos.observaciones       = document.getElementById('m-obs').value.trim() || null;
+  } else {
+    datos.plan_id = planActual.id;
+  }
+
+  try {
+    if (editandoId) {
+      const actualizada = await VigiaAPI.editarActividad(editandoId, datos);
+      const idx = actividades.findIndex(a => a.id === editandoId);
+      if (idx !== -1) actividades[idx] = actualizada;
+    } else {
+      const nueva = await VigiaAPI.crearActividad(datos);
+      actividades.push(nueva);
+      poblarFiltroObjetivos();
+    }
+    cerrarModal();
+    filtrarActividades();
+    mostrarToast(editandoId ? 'Actividad actualizada' : 'Actividad agregada', 'ok');
+  } catch (err) {
+    mostrarToast('Error: ' + err.message, 'error');
+  }
+}
+
+async function eliminarActividad(id) {
+  if (!confirm('¿Eliminar esta actividad?')) return;
+  try {
+    await VigiaAPI.eliminarActividad(id);
+    actividades = actividades.filter(a => a.id !== id);
+    poblarFiltroObjetivos();
+    filtrarActividades();
+    mostrarToast('Actividad eliminada', 'ok');
+  } catch (err) {
+    mostrarToast('Error: ' + err.message, 'error');
+  }
+}
+
+function mostrarToast(msg, tipo = 'ok') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast toast-${tipo} show`;
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+init();
+</script>
+<script src="js/vigia-chat.js"></script>
+</body>
+</html>
+

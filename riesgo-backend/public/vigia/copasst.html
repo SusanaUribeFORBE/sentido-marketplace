@@ -1,0 +1,486 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vigía 360 — COPASST y Comité de Convivencia</title>
+  <link rel="stylesheet" href="vigia.css" />
+  <style>
+    .tabs { display:flex;gap:4px;margin-bottom:20px;flex-wrap:wrap }
+    .tab  { padding:8px 18px;border-radius:8px;border:1.5px solid var(--border);
+            background:var(--card);cursor:pointer;font-size:13px;font-weight:600;color:var(--muted) }
+    .tab.active { background:var(--blue);color:#fff;border-color:var(--blue) }
+
+    .rol-EMPLEADOR  { background:#EFF6FF;color:#1D4ED8 }
+    .rol-TRABAJADOR { background:#F3E8FF;color:#7C3AED }
+    .cargo-PRESIDENTE { background:#FFF7ED;color:#C2410C }
+    .cargo-SECRETARIO { background:#ECFDF5;color:#059669 }
+    .miembro-chip { padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700 }
+
+    .stat-box { background:var(--card);border:1.5px solid var(--border);border-radius:10px;padding:16px;text-align:center }
+    .stat-num { font-size:28px;font-weight:800;color:var(--blue) }
+    .stat-lbl { font-size:12px;color:var(--muted);margin-top:2px }
+    .stats-row { display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px }
+    @media(max-width:600px){ .stats-row { grid-template-columns:repeat(2,1fr) } }
+
+    .alerta-venc { background:#FEF3C7;border:1.5px solid #FCD34D;border-radius:8px;
+                   padding:10px 14px;margin-bottom:16px;font-size:13px;color:#92400E }
+  </style>
+</head>
+<body>
+<nav class="navbar">
+  <a href="dashboard.html" class="nav-brand">
+    <span class="brand-vigia">Vigía</span><span class="brand-sst">360</span>
+  </a>
+  <div class="nav-links">
+    <a href="dashboard.html" class="nav-link-fixed">Dashboard</a>
+    <div class="nav-dropdown" id="dd-P">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-P')">
+        <span class="phva-pill phva-P">P</span> Planear <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="perfil-responsable.html">🩺 Responsable SST</a>
+        <a href="responsabilidades.html">👥 Roles y Responsabilidades</a>
+        <a href="copasst.html">🤝 COPASST y Convivencia</a>
+        <a href="documentos-sst.html">📄 Documentos del SG-SST</a>
+        <a href="matriz-peligros.html">⚠️ Matriz de Peligros (GTC-45)</a>
+        <a href="plan-trabajo.html">📅 Plan de Trabajo Anual</a>
+        <a href="presupuesto-sgsst.html">💰 Presupuesto SG-SST</a>
+        <a href="profesiograma.html">💊 Profesiograma</a>
+      </div>
+    </div>
+    <div class="nav-dropdown" id="dd-H">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-H')">
+        <span class="phva-pill phva-H">H</span> Hacer <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="epp.html">🦺 EPP</a>
+        <a href="capacitaciones.html">🎓 Capacitaciones</a>
+        <a href="emergencias.html">🚨 Emergencias y Brigada</a>
+        <a href="inspecciones.html">🔍 Inspecciones y Mantenimiento</a>
+        <a href="perfil-salud.html">🏥 Salud Ocupacional</a>
+        <div class="nav-dd-divider"></div>
+        <a href="lista-personal.html">👥 Lista de Personal</a>
+        <a href="subir.html">⬆️ Subir Examen</a>
+        <a href="subir-masivo.html">📦 Carga Masiva</a>
+        <a href="cartas-masivas.html">📄 Cartas Masivas</a>
+        <a href="reporte-examenes.html">📊 Cobertura de Exámenes</a>
+        <a href="informe-condiciones.html">📋 Informe de Condiciones</a>
+      </div>
+    </div>
+    <div class="nav-dropdown" id="dd-V">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-V')">
+        <span class="phva-pill phva-V">V</span> Verificar <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="evaluacion-sst.html">📋 Evaluación (Res. 0312)</a>
+        <a href="investigaciones.html">🔍 AT / Incidentes</a>
+        <a href="auditoria.html">🗒️ Auditoría Interna</a>
+        <a href="ausentismo.html">📉 Ausentismo laboral</a>
+        <a href="indicadores-sgsst.html">📊 Indicadores SG-SST</a>
+        <a href="analisis-phva.html">📈 Análisis e Indicadores</a>
+      </div>
+    </div>
+    <div class="nav-dropdown" id="dd-A">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-A')">
+        <span class="phva-pill phva-A">A</span> Actuar <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="mejoramiento.html">✅ Acciones de Mejoramiento</a>
+        <a href="evaluacion-sst.html">📝 Plan de Mejoramiento (F002)</a>
+      </div>
+    </div>
+    <a href="listado-maestro.html" class="nav-link-fixed">📁 Listado Maestro</a>
+    <span id="nav-empresa" style="color:#CBD8E6;font-size:13px;padding:6px 0"></span>
+    <button onclick="VigiaAPI.logout()"
+      style="background:none;border:1px solid rgba(255,255,255,.2);color:#CBD8E6;
+             border-radius:6px;padding:6px 12px;cursor:pointer;font-size:13px">Salir</button>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="doc-header" style="display:flex;align-items:center;gap:16px;margin-bottom:20px;padding:12px 16px;
+       border:1.5px solid var(--border);border-radius:10px;background:var(--card)">
+    <img class="doc-logo-img" alt="Logo" style="max-height:48px;max-width:120px;object-fit:contain">
+    <div style="flex:1">
+      <div style="font-size:16px;font-weight:800;color:var(--navy)">COPASST y Comité de Convivencia Laboral</div>
+      <div style="font-size:12px;color:var(--muted)">Res. 0312/2019 · Est. 1.1.6 · 1.1.7 · 1.1.8 · Decreto 1072/2015</div>
+    </div>
+    <div style="text-align:right;font-size:12px;color:var(--muted)">
+      <div class="doc-codigo" data-sufijo="F005"></div>
+      <div class="doc-fecha"></div>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-box"><div class="stat-num" id="st-cop-miembros">–</div><div class="stat-lbl">Miembros COPASST</div></div>
+    <div class="stat-box"><div class="stat-num" id="st-ccl-miembros">–</div><div class="stat-lbl">Miembros CCL</div></div>
+    <div class="stat-box"><div class="stat-num" id="st-cop-actas">–</div><div class="stat-lbl">Actas COPASST</div></div>
+    <div class="stat-box"><div class="stat-num" id="st-ccl-actas">–</div><div class="stat-lbl">Actas CCL</div></div>
+  </div>
+
+  <div id="alerta-vigencia" class="alerta-venc" style="display:none"></div>
+
+  <div class="export-bar" style="display:flex;gap:8px;justify-content:flex-end;margin-bottom:12px;flex-wrap:wrap">
+    <button class="btn-outline btn" style="font-size:12px;padding:6px 12px" onclick="VigiaAPI.imprimirModulo()">🖨️ PDF</button>
+    <button class="btn-outline btn" style="font-size:12px;padding:6px 12px" onclick="exportCSV_miembros()">📊 CSV Miembros</button>
+    <button class="btn-outline btn" style="font-size:12px;padding:6px 12px" onclick="exportCSV_actas()">📊 CSV Actas</button>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="mostrarTab('cop-miembros',this)">👷 Miembros COPASST</button>
+    <button class="tab" onclick="mostrarTab('ccl-miembros',this)">🤝 Miembros CCL</button>
+    <button class="tab" onclick="mostrarTab('actas',this)">📋 Actas de Reunión</button>
+  </div>
+
+  <!-- Miembros COPASST -->
+  <div id="tab-cop-miembros">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div>
+        <h3 style="margin:0;font-size:15px;color:var(--navy)">Comité Paritario de SST (COPASST)</h3>
+        <p style="margin:4px 0 0;font-size:12px;color:var(--muted)">Igual número de representantes del empleador y los trabajadores. Vigencia: 2 años.</p>
+      </div>
+      <button class="btn" onclick="abrirModalMiembro('COPASST')">+ Agregar miembro</button>
+    </div>
+    <table class="data-table" style="width:100%">
+      <thead><tr><th>Nombre</th><th>Cargo empresa</th><th>Representación</th><th>Rol en COPASST</th><th>Vigencia hasta</th><th></th></tr></thead>
+      <tbody id="tbody-cop"></tbody>
+    </table>
+  </div>
+
+  <!-- Miembros CCL -->
+  <div id="tab-ccl-miembros" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div>
+        <h3 style="margin:0;font-size:15px;color:var(--navy)">Comité de Convivencia Laboral (CCL)</h3>
+        <p style="margin:4px 0 0;font-size:12px;color:var(--muted)">Reúne mínimo cada 3 meses. Resuelve conflictos en el trabajo.</p>
+      </div>
+      <button class="btn" onclick="abrirModalMiembro('CCL')">+ Agregar miembro</button>
+    </div>
+    <table class="data-table" style="width:100%">
+      <thead><tr><th>Nombre</th><th>Cargo empresa</th><th>Representación</th><th>Rol</th><th>Vigencia hasta</th><th></th></tr></thead>
+      <tbody id="tbody-ccl"></tbody>
+    </table>
+  </div>
+
+  <!-- Actas -->
+  <div id="tab-actas" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <h3 style="margin:0;font-size:15px;color:var(--navy)">Actas de reunión</h3>
+      <button class="btn" onclick="abrirModalActa()">+ Nueva acta</button>
+    </div>
+    <table class="data-table" style="width:100%">
+      <thead><tr><th>N°</th><th>Comité</th><th>Fecha</th><th>Temas tratados</th><th>Compromisos</th><th></th></tr></thead>
+      <tbody id="tbody-actas"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- MODAL miembro -->
+<div class="modal-overlay" id="modal-miembro" style="display:none">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-header">
+      <span id="modal-miem-titulo" class="modal-title">Agregar miembro</span>
+      <button class="modal-close" onclick="cerrarModal('modal-miembro')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="mi-id">
+      <input type="hidden" id="mi-tipo">
+      <div class="form-group">
+        <label>Nombre completo *</label>
+        <input id="mi-nombre" class="form-control">
+      </div>
+      <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="form-group">
+          <label>Cédula</label>
+          <input id="mi-cedula" class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Cargo en la empresa</label>
+          <input id="mi-cargo" class="form-control">
+        </div>
+      </div>
+      <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="form-group">
+          <label>Representación</label>
+          <select id="mi-rol" class="form-control">
+            <option value="EMPLEADOR">Empleador</option>
+            <option value="TRABAJADOR">Trabajador</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Cargo en el comité</label>
+          <select id="mi-cargo-cop" class="form-control">
+            <option value="PRESIDENTE">Presidente</option>
+            <option value="SECRETARIO">Secretario</option>
+            <option value="VOCAL">Vocal</option>
+            <option value="SUPLENTE">Suplente</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="form-group">
+          <label>Fecha inicio período</label>
+          <input type="date" id="mi-inicio" class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Fecha fin período</label>
+          <input type="date" id="mi-fin" class="form-control">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="cerrarModal('modal-miembro')">Cancelar</button>
+      <button class="btn" onclick="guardarMiembro()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL acta -->
+<div class="modal-overlay" id="modal-acta" style="display:none">
+  <div class="modal" style="max-width:540px">
+    <div class="modal-header">
+      <span id="modal-acta-titulo" class="modal-title">Nueva acta de reunión</span>
+      <button class="modal-close" onclick="cerrarModal('modal-acta')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="ac-id">
+      <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+        <div class="form-group">
+          <label>Comité *</label>
+          <select id="ac-tipo" class="form-control">
+            <option value="COPASST">COPASST</option>
+            <option value="CCL">CCL (Convivencia)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>N° acta</label>
+          <input type="number" id="ac-numero" class="form-control" min="1">
+        </div>
+        <div class="form-group">
+          <label>Fecha *</label>
+          <input type="date" id="ac-fecha" class="form-control">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Temas tratados</label>
+        <textarea id="ac-temas" class="form-control" rows="3"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Compromisos / Decisiones</label>
+        <textarea id="ac-compromisos" class="form-control" rows="3"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Asistentes</label>
+        <input id="ac-asistentes" class="form-control" placeholder="Nombres separados por coma">
+      </div>
+      <div class="form-group">
+        <label>Enlace al acta (PDF/Drive)</label>
+        <input id="ac-url" class="form-control" placeholder="https://…">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="cerrarModal('modal-acta')">Cancelar</button>
+      <button class="btn" onclick="guardarActa()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/vigia-api.js"></script>
+<script>
+let _datos = { miembros: [], actas: [] };
+
+function mostrarTab(tab, btn) {
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  ['cop-miembros','ccl-miembros','actas'].forEach(t =>
+    document.getElementById(`tab-${t}`).style.display = t === tab ? '' : 'none');
+}
+function cerrarModal(id) { document.getElementById(id).style.display = 'none'; }
+function abrirModal(id)  { document.getElementById(id).style.display = 'flex'; }
+
+async function cargar() {
+  _datos = await VigiaAPI.getCopasst() || { miembros: [], actas: [] };
+  renderStats();
+  renderMiembros();
+  renderActas();
+  verificarVigencia();
+}
+
+function renderStats() {
+  const cop = _datos.miembros.filter(m => m.tipo === 'COPASST');
+  const ccl = _datos.miembros.filter(m => m.tipo === 'CCL');
+  document.getElementById('st-cop-miembros').textContent = cop.length;
+  document.getElementById('st-ccl-miembros').textContent = ccl.length;
+  document.getElementById('st-cop-actas').textContent = _datos.actas.filter(a => a.tipo === 'COPASST').length;
+  document.getElementById('st-ccl-actas').textContent = _datos.actas.filter(a => a.tipo === 'CCL').length;
+}
+
+function filasMiembro(lista) {
+  if (!lista.length) return '<tr><td colspan="6" class="empty-msg">Sin miembros registrados.</td></tr>';
+  return lista.map(m => `
+    <tr>
+      <td style="font-weight:700">${m.nombre}</td>
+      <td>${m.cargo_empresa || '–'}</td>
+      <td><span class="miembro-chip rol-${m.rol}">${m.rol === 'EMPLEADOR' ? 'Empleador' : 'Trabajador'}</span></td>
+      <td><span class="miembro-chip ${m.cargo_copasst === 'PRESIDENTE' ? 'cargo-PRESIDENTE' : m.cargo_copasst === 'SECRETARIO' ? 'cargo-SECRETARIO' : ''}" style="background:var(--bg)">${m.cargo_copasst}</span></td>
+      <td>${m.fecha_fin ? new Date(m.fecha_fin+'T12:00:00').toLocaleDateString('es-CO') : '–'}</td>
+      <td>
+        <button class="btn-xs" onclick="editarMiembro('${m.id}')">Editar</button>
+        <button class="btn-xs del" onclick="eliminarMiembro('${m.id}')">Retirar</button>
+      </td>
+    </tr>`).join('');
+}
+
+function renderMiembros() {
+  document.getElementById('tbody-cop').innerHTML = filasMiembro(_datos.miembros.filter(m => m.tipo === 'COPASST'));
+  document.getElementById('tbody-ccl').innerHTML = filasMiembro(_datos.miembros.filter(m => m.tipo === 'CCL'));
+}
+
+function renderActas() {
+  const tbody = document.getElementById('tbody-actas');
+  if (!_datos.actas.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty-msg">Sin actas registradas.</td></tr>'; return; }
+  tbody.innerHTML = _datos.actas.map(a => `
+    <tr>
+      <td>${a.numero || '–'}</td>
+      <td><span style="font-weight:700">${a.tipo}</span></td>
+      <td>${new Date(a.fecha+'T12:00:00').toLocaleDateString('es-CO')}</td>
+      <td style="max-width:220px;font-size:12px">${a.temas || '–'}</td>
+      <td style="max-width:180px;font-size:12px">${a.compromisos || '–'}</td>
+      <td>
+        ${a.url_acta ? `<a href="${a.url_acta}" target="_blank" class="btn-xs">Ver</a>` : ''}
+        <button class="btn-xs" onclick="editarActa('${a.id}')">Editar</button>
+        <button class="btn-xs del" onclick="eliminarActa('${a.id}')">Eliminar</button>
+      </td>
+    </tr>`).join('');
+}
+
+function verificarVigencia() {
+  const hoy = new Date();
+  const prox = _datos.miembros.filter(m => m.fecha_fin && new Date(m.fecha_fin) < new Date(hoy.getTime() + 60*24*3600*1000));
+  const av = document.getElementById('alerta-vigencia');
+  if (prox.length) {
+    av.style.display = '';
+    av.textContent = `⚠️ ${prox.length} miembro(s) con período vencido o próximo a vencer (en los próximos 60 días). Realice nueva convocatoria.`;
+  } else av.style.display = 'none';
+}
+
+// Miembro
+function abrirModalMiembro(tipo) {
+  ['mi-id','mi-nombre','mi-cedula','mi-cargo','mi-inicio','mi-fin'].forEach(id => document.getElementById(id).value='');
+  document.getElementById('mi-tipo').value = tipo;
+  document.getElementById('mi-rol').value = 'TRABAJADOR';
+  document.getElementById('mi-cargo-cop').value = 'VOCAL';
+  document.getElementById('modal-miem-titulo').textContent = `Agregar miembro ${tipo === 'CCL' ? 'CCL' : 'COPASST'}`;
+  abrirModal('modal-miembro');
+}
+function editarMiembro(id) {
+  const m = _datos.miembros.find(x => x.id === id); if (!m) return;
+  document.getElementById('mi-id').value = id;
+  document.getElementById('mi-tipo').value = m.tipo;
+  document.getElementById('mi-nombre').value = m.nombre||'';
+  document.getElementById('mi-cedula').value = m.cedula||'';
+  document.getElementById('mi-cargo').value = m.cargo_empresa||'';
+  document.getElementById('mi-rol').value = m.rol||'TRABAJADOR';
+  document.getElementById('mi-cargo-cop').value = m.cargo_copasst||'VOCAL';
+  document.getElementById('mi-inicio').value = m.fecha_inicio||'';
+  document.getElementById('mi-fin').value = m.fecha_fin||'';
+  document.getElementById('modal-miem-titulo').textContent = 'Editar miembro';
+  abrirModal('modal-miembro');
+}
+async function guardarMiembro() {
+  const nombre = document.getElementById('mi-nombre').value.trim();
+  if (!nombre) { alert('Nombre requerido'); return; }
+  const datos = {
+    tipo: document.getElementById('mi-tipo').value,
+    nombre,
+    cedula:        document.getElementById('mi-cedula').value.trim()||null,
+    cargo_empresa: document.getElementById('mi-cargo').value.trim()||null,
+    rol:           document.getElementById('mi-rol').value,
+    cargo_copasst: document.getElementById('mi-cargo-cop').value,
+    fecha_inicio:  document.getElementById('mi-inicio').value||null,
+    fecha_fin:     document.getElementById('mi-fin').value||null,
+  };
+  const id = document.getElementById('mi-id').value;
+  try {
+    if (id) await VigiaAPI.editarMiembroCopasst(id, datos);
+    else    await VigiaAPI.crearMiembroCopasst(datos);
+    cerrarModal('modal-miembro'); await cargar();
+  } catch(e) { alert('Error: '+e.message); }
+}
+async function eliminarMiembro(id) {
+  if (!confirm('¿Retirar este miembro?')) return;
+  await VigiaAPI.eliminarMiembroCopasst(id); await cargar();
+}
+
+// Acta
+function abrirModalActa() {
+  ['ac-id','ac-temas','ac-compromisos','ac-asistentes','ac-url','ac-numero'].forEach(i => document.getElementById(i).value='');
+  document.getElementById('ac-fecha').value = new Date().toISOString().slice(0,10);
+  document.getElementById('ac-tipo').value = 'COPASST';
+  document.getElementById('modal-acta-titulo').textContent = 'Nueva acta de reunión';
+  abrirModal('modal-acta');
+}
+function editarActa(id) {
+  const a = _datos.actas.find(x => x.id === id); if (!a) return;
+  document.getElementById('ac-id').value = id;
+  document.getElementById('ac-tipo').value = a.tipo||'COPASST';
+  document.getElementById('ac-numero').value = a.numero||'';
+  document.getElementById('ac-fecha').value = a.fecha||'';
+  document.getElementById('ac-temas').value = a.temas||'';
+  document.getElementById('ac-compromisos').value = a.compromisos||'';
+  document.getElementById('ac-asistentes').value = a.asistentes||'';
+  document.getElementById('ac-url').value = a.url_acta||'';
+  document.getElementById('modal-acta-titulo').textContent = 'Editar acta';
+  abrirModal('modal-acta');
+}
+async function guardarActa() {
+  const fecha = document.getElementById('ac-fecha').value;
+  if (!fecha) { alert('Fecha requerida'); return; }
+  const datos = {
+    tipo:        document.getElementById('ac-tipo').value,
+    numero:      parseInt(document.getElementById('ac-numero').value)||null,
+    fecha,
+    temas:       document.getElementById('ac-temas').value.trim()||null,
+    compromisos: document.getElementById('ac-compromisos').value.trim()||null,
+    asistentes:  document.getElementById('ac-asistentes').value.trim()||null,
+    url_acta:    document.getElementById('ac-url').value.trim()||null,
+  };
+  const id = document.getElementById('ac-id').value;
+  try {
+    if (id) await VigiaAPI.editarActaCopasst(id, datos);
+    else    await VigiaAPI.crearActaCopasst(datos);
+    cerrarModal('modal-acta'); await cargar();
+  } catch(e) { alert('Error: '+e.message); }
+}
+async function eliminarActa(id) {
+  if (!confirm('¿Eliminar esta acta?')) return;
+  await VigiaAPI.eliminarActaCopasst(id); await cargar();
+}
+
+function exportCSV_miembros() {
+  VigiaAPI.exportarCSV(_datos.miembros, [
+    ['Comite','tipo'],['Nombre','nombre'],['Cedula','cedula'],
+    ['Cargo empresa','cargo_empresa'],['Representacion','rol'],
+    ['Cargo comite','cargo_copasst'],['Fecha inicio','fecha_inicio'],['Fecha fin','fecha_fin'],
+  ], `COPASST_Miembros_${new Date().toISOString().slice(0,10)}`);
+}
+function exportCSV_actas() {
+  VigiaAPI.exportarCSV(_datos.actas, [
+    ['Comite','tipo'],['N acta','numero'],['Fecha','fecha'],
+    ['Temas','temas'],['Compromisos','compromisos'],['Asistentes','asistentes'],
+  ], `COPASST_Actas_${new Date().toISOString().slice(0,10)}`);
+}
+
+async function init() {
+  const ok = await VigiaAPI.requireAuth(); if (!ok) return;
+  document.getElementById('nav-empresa').textContent = localStorage.getItem('vigia_nombre_empresa')||'';
+  VigiaAPI.initDocHeader();
+  await cargar();
+}
+init();
+</script>
+<script src="js/vigia-chat.js"></script>
+</body>
+</html>
+

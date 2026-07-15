@@ -1,0 +1,696 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vigía 360 — Ausentismo laboral</title>
+  <link rel="stylesheet" href="vigia.css" />
+  <style>
+    .kpi-grid { display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px }
+    .kpi-grid2 { display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px }
+    @media(max-width:700px){ .kpi-grid,.kpi-grid2 { grid-template-columns:repeat(2,1fr) } }
+    .kpi-card { background:var(--card);border:1.5px solid var(--border);border-radius:10px;padding:16px;text-align:center }
+    .kpi-val  { font-size:28px;font-weight:900;color:var(--navy);line-height:1 }
+    .kpi-lbl  { font-size:11px;color:var(--muted);margin-top:6px;line-height:1.4 }
+    .kpi-sub  { font-size:10px;color:var(--muted);margin-top:3px }
+    .kpi-card.warn  .kpi-val { color:#D97706 }
+    .kpi-card.crit  .kpi-val { color:#C0392B }
+
+    .charts-row { display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:20px }
+    @media(max-width:800px){ .charts-row { grid-template-columns:1fr } }
+    .chart-card { background:var(--card);border:1.5px solid var(--border);border-radius:10px;padding:16px }
+    .chart-title { font-size:13px;font-weight:700;color:var(--navy);margin-bottom:12px }
+
+    /* SVG Bar chart */
+    .bar-chart { width:100%;overflow-x:auto }
+    svg.bars { font-family:inherit }
+
+    /* Tipo list */
+    .tipo-row { display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border) }
+    .tipo-row:last-child { border-bottom:none }
+    .tipo-bar-bg { flex:1;height:8px;background:var(--bg);border-radius:4px;overflow:hidden }
+    .tipo-bar-fill { height:100%;border-radius:4px;background:var(--blue) }
+    .tipo-label { font-size:12px;color:var(--text);min-width:130px;font-weight:600 }
+    .tipo-val   { font-size:12px;font-weight:700;color:var(--navy);min-width:30px;text-align:right }
+
+    /* Table */
+    .tipo-chip { padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap }
+    .tipo-EG    { background:#EFF6FF;color:#1D4ED8 }
+    .tipo-EL    { background:#FEF3C7;color:#D97706 }
+    .tipo-AT    { background:#FDECEA;color:#C0392B }
+    .tipo-LIC   { background:#ECFDF5;color:#059669 }
+    .tipo-OTRO  { background:#F1F5F9;color:#64748B }
+
+    /* Power BI section */
+    .pbi-section { background:var(--card);border:1.5px solid #93C5FD;border-radius:10px;padding:20px;margin-top:20px }
+    .pbi-title   { font-size:14px;font-weight:800;color:#1D4ED8;margin-bottom:12px }
+    .pbi-step    { font-size:13px;color:var(--text);margin-bottom:6px }
+    .pbi-step strong { color:var(--navy) }
+    .code-block  { background:#0F172A;color:#E2E8F0;border-radius:8px;padding:12px 16px;
+                   font-family:monospace;font-size:12px;overflow-x:auto;margin:8px 0;position:relative }
+    .copy-btn    { position:absolute;top:8px;right:8px;background:#334155;color:#94A3B8;
+                   border:none;border-radius:4px;padding:3px 8px;font-size:11px;cursor:pointer }
+    .copy-btn:hover { background:#475569;color:white }
+    .url-display { background:var(--bg);border:1.5px solid var(--border);border-radius:7px;
+                   padding:8px 12px;font-family:monospace;font-size:12px;word-break:break-all;
+                   color:var(--navy) }
+
+    /* Export bar */
+    .export-bar { display:flex;gap:8px;justify-content:flex-end;margin-bottom:12px;flex-wrap:wrap }
+
+    /* Filtros */
+    .filter-row { display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px }
+    .filter-row select, .filter-row input {
+      padding:6px 10px;border-radius:7px;border:1.5px solid var(--border);
+      background:var(--bg);color:var(--text);font-size:13px;font-family:inherit }
+  </style>
+</head>
+<body>
+<nav class="navbar">
+  <a href="dashboard.html" class="nav-brand">
+    <span class="brand-vigia">Vigía</span><span class="brand-sst">360</span>
+  </a>
+  <div class="nav-links">
+    <a href="dashboard.html" class="nav-link-fixed">Dashboard</a>
+    <div class="nav-dropdown" id="dd-P">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-P')">
+        <span class="phva-pill phva-P">P</span> Planear <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="perfil-responsable.html">🩺 Responsable SST</a>
+        <a href="responsabilidades.html">👥 Roles y Responsabilidades</a>
+        <a href="copasst.html">🤝 COPASST y Convivencia</a>
+        <a href="documentos-sst.html">📄 Documentos del SG-SST</a>
+        <a href="matriz-peligros.html">⚠️ Matriz de Peligros (GTC-45)</a>
+        <a href="plan-trabajo.html">📅 Plan de Trabajo Anual</a>
+        <a href="presupuesto-sgsst.html">💰 Presupuesto SG-SST</a>
+        <a href="profesiograma.html">💊 Profesiograma</a>
+      </div>
+    </div>
+    <div class="nav-dropdown" id="dd-H">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-H')">
+        <span class="phva-pill phva-H">H</span> Hacer <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="epp.html">🦺 EPP</a>
+        <a href="capacitaciones.html">🎓 Capacitaciones</a>
+        <a href="emergencias.html">🚨 Emergencias y Brigada</a>
+        <a href="inspecciones.html">🔍 Inspecciones y Mantenimiento</a>
+        <a href="perfil-salud.html">🏥 Salud Ocupacional</a>
+        <div class="nav-dd-divider"></div>
+        <a href="lista-personal.html">👥 Lista de Personal</a>
+        <a href="subir.html">⬆️ Subir Examen</a>
+        <a href="subir-masivo.html">📦 Carga Masiva</a>
+        <a href="cartas-masivas.html">📄 Cartas Masivas</a>
+        <a href="reporte-examenes.html">📊 Cobertura de Exámenes</a>
+        <a href="informe-condiciones.html">📋 Informe de Condiciones</a>
+      </div>
+    </div>
+    <div class="nav-dropdown" id="dd-V">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-V')">
+        <span class="phva-pill phva-V">V</span> Verificar <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="evaluacion-sst.html">📋 Evaluación (Res. 0312)</a>
+        <a href="investigaciones.html">🔍 AT / Incidentes</a>
+        <a href="auditoria.html">🗒️ Auditoría Interna</a>
+        <a href="ausentismo.html">📉 Ausentismo laboral</a>
+        <a href="indicadores-sgsst.html">📊 Indicadores SG-SST</a>
+        <a href="analisis-phva.html">📈 Análisis e Indicadores</a>
+      </div>
+    </div>
+    <div class="nav-dropdown" id="dd-A">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-A')">
+        <span class="phva-pill phva-A">A</span> Actuar <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="mejoramiento.html">✅ Acciones de Mejoramiento</a>
+        <a href="evaluacion-sst.html">📝 Plan de Mejoramiento (F002)</a>
+      </div>
+    </div>
+    <a href="listado-maestro.html" class="nav-link-fixed">📁 Listado Maestro</a>
+    <span id="nav-empresa" style="color:#CBD8E6;font-size:13px;padding:6px 0"></span>
+    <button onclick="VigiaAPI.logout()"
+      style="background:none;border:1px solid rgba(255,255,255,.2);color:#CBD8E6;
+             border-radius:6px;padding:6px 12px;cursor:pointer;font-size:13px">Salir</button>
+  </div>
+</nav>
+
+<div class="page">
+  <!-- Header -->
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;margin-bottom:20px">
+    <div>
+      <h2 style="margin:0 0 4px;font-size:18px;color:var(--navy)">📉 Ausentismo laboral</h2>
+      <p style="margin:0;font-size:12px;color:var(--muted)">Res. 0312/2019 Est. 6.1.1 · Decreto 1072/2015 Art. 2.2.4.6.21 · Indicadores para ARL y Power BI</p>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <select id="sel-anio" onchange="cambiarAnio()" style="padding:7px 11px;border-radius:7px;border:1.5px solid var(--border);background:var(--bg);color:var(--text);font-size:13px;font-family:inherit"></select>
+      <button class="btn-outline btn" style="font-size:12px" onclick="exportarCSV()">📊 CSV</button>
+      <button class="btn" onclick="abrirModal()">+ Registrar ausencia</button>
+    </div>
+  </div>
+
+  <!-- Spinner -->
+  <div id="cargando" style="text-align:center;padding:48px">
+    <div class="spinner" style="margin:0 auto 16px;border-color:rgba(46,134,171,.2);border-top-color:var(--blue)"></div>
+    <p class="text-muted">Cargando indicadores…</p>
+  </div>
+
+  <div id="contenido" style="display:none">
+
+    <!-- KPI Row 1 -->
+    <div class="kpi-grid">
+      <div class="kpi-card" id="kpi-tasa">
+        <div class="kpi-val" id="v-tasa">—</div>
+        <div class="kpi-lbl">Tasa de ausentismo</div>
+        <div class="kpi-sub">Meta: &lt; 5%</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-val" id="v-dias">—</div>
+        <div class="kpi-lbl">Días perdidos</div>
+        <div class="kpi-sub" id="v-dias-sub"></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-val" id="v-eventos">—</div>
+        <div class="kpi-lbl">Eventos registrados</div>
+        <div class="kpi-sub">Ausencias del período</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-val" id="v-afectados">—</div>
+        <div class="kpi-lbl">Trabajadores afectados</div>
+        <div class="kpi-sub" id="v-afect-pct"></div>
+      </div>
+    </div>
+
+    <!-- KPI Row 2 — indicadores técnicos SST -->
+    <div class="kpi-grid2">
+      <div class="kpi-card" style="background:#EFF6FF;border-color:#BFDBFE">
+        <div class="kpi-val" style="font-size:22px" id="v-ifrec">—</div>
+        <div class="kpi-lbl" style="font-size:12px">Índice de frecuencia</div>
+        <div class="kpi-sub">Eventos × 200,000 / HH trabajadas</div>
+      </div>
+      <div class="kpi-card" style="background:#ECFDF5;border-color:#6EE7B7">
+        <div class="kpi-val" style="font-size:22px" id="v-isev">—</div>
+        <div class="kpi-lbl" style="font-size:12px">Índice de severidad</div>
+        <div class="kpi-sub">Días × 200,000 / HH trabajadas</div>
+      </div>
+      <div class="kpi-card" style="background:#FEF3C7;border-color:#FCD34D">
+        <div class="kpi-val" style="font-size:22px" id="v-ilesion">—</div>
+        <div class="kpi-lbl" style="font-size:12px">Índice de lesión incapacitante</div>
+        <div class="kpi-sub">I. Frecuencia × I. Severidad / 1000</div>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="charts-row">
+      <div class="chart-card">
+        <div class="chart-title">Días perdidos por mes</div>
+        <div class="bar-chart" id="chart-mes"></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Por tipo de ausencia</div>
+        <div id="chart-tipo"></div>
+      </div>
+    </div>
+
+    <!-- Tabla de registros -->
+    <div style="background:var(--card);border:1.5px solid var(--border);border-radius:10px;padding:16px">
+      <div class="filter-row">
+        <span style="font-size:13px;font-weight:700;color:var(--navy);flex:1">Registros de ausentismo</span>
+        <select id="filtro-tipo" onchange="filtrar()">
+          <option value="">Todos los tipos</option>
+          <option value="ENFERMEDAD_GENERAL">Enfermedad general</option>
+          <option value="ENFERMEDAD_LABORAL">Enfermedad laboral</option>
+          <option value="ACCIDENTE_TRABAJO">Accidente de trabajo</option>
+          <option value="LICENCIA">Licencia / Calamidad</option>
+          <option value="PERMISO">Permiso</option>
+          <option value="SUSPENSION">Suspensión</option>
+          <option value="OTRO">Otro</option>
+        </select>
+        <input type="text" id="filtro-texto" placeholder="Buscar empleado / área…" oninput="filtrar()" style="min-width:180px">
+      </div>
+      <table class="data-table" style="width:100%">
+        <thead>
+          <tr>
+            <th>Empleado</th>
+            <th>Área / Cargo</th>
+            <th>Tipo</th>
+            <th>Fecha inicio</th>
+            <th>Fecha fin</th>
+            <th>Días</th>
+            <th>Incapacidad</th>
+            <th>Diagnóstico</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="tbody-aus"></tbody>
+      </table>
+    </div>
+
+    <!-- Power BI Integration -->
+    <div class="pbi-section">
+      <div class="pbi-title">⚡ Conectar con Power BI</div>
+      <p style="font-size:13px;color:var(--muted);margin:0 0 14px">
+        Importa los indicadores de ausentismo directamente en Power BI Desktop usando el conector Web con autenticación por API Key. Los datos se actualizan en tiempo real con cada actualización del informe.
+      </p>
+      <div class="pbi-step"><strong>1. URL del endpoint (copia esta URL):</strong></div>
+      <div class="url-display" id="pbi-url" style="margin:6px 0 14px"></div>
+      <div class="pbi-step"><strong>2. En Power BI Desktop → Inicio → Obtener datos → Web</strong></div>
+      <div class="pbi-step" style="margin-left:16px;margin-bottom:10px">
+        • Pega la URL → selecciona <strong>Avanzado</strong> → en "Encabezados HTTP de solicitud":<br>
+        &nbsp;&nbsp;Encabezado: <code style="background:var(--bg);padding:1px 5px;border-radius:3px">Authorization</code> &nbsp; Valor: <code style="background:var(--bg);padding:1px 5px;border-radius:3px" id="pbi-token-display">Bearer [tu token]</code>
+      </div>
+      <div class="pbi-step"><strong>3. O usa este código M en Power Query (Editor avanzado):</strong></div>
+      <div class="code-block" id="pbi-code">
+        <button class="copy-btn" onclick="copiarCodigo()">Copiar</button>
+        <span id="code-text"></span>
+      </div>
+      <p style="font-size:11px;color:var(--muted);margin:8px 0 0">
+        Los campos disponibles son: <code>indicadores</code>, <code>por_mes</code>, <code>por_tipo</code>, <code>por_area</code> y <code>detalle</code>.
+        En Power BI, usa <em>Expandir columna</em> sobre cada tabla anidada para crear los reportes visuales.
+      </p>
+    </div>
+
+  </div><!-- /contenido -->
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal-aus" style="display:none">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-header">
+      <span id="modal-titulo" class="modal-title">Registrar ausencia</span>
+      <button class="modal-close" onclick="cerrarModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="aus-id">
+      <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="form-group" style="grid-column:1/-1">
+          <label>Empleado *</label>
+          <select id="aus-empleado" class="form-control" onchange="onEmpleadoChange()">
+            <option value="">— Seleccionar empleado —</option>
+            <option value="__externo__">Externo / Contratista</option>
+          </select>
+        </div>
+        <div class="form-group" id="grupo-nombre-ext" style="display:none;grid-column:1/-1">
+          <label>Nombre del trabajador *</label>
+          <input id="aus-nombre" class="form-control" placeholder="Nombre completo">
+        </div>
+        <div class="form-group">
+          <label>Cargo</label>
+          <input id="aus-cargo" class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Área / Proceso</label>
+          <input id="aus-area" class="form-control">
+        </div>
+      </div>
+      <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="form-group">
+          <label>Tipo de ausencia *</label>
+          <select id="aus-tipo" class="form-control">
+            <option value="ENFERMEDAD_GENERAL">Enfermedad general</option>
+            <option value="ENFERMEDAD_LABORAL">Enfermedad laboral</option>
+            <option value="ACCIDENTE_TRABAJO">Accidente de trabajo</option>
+            <option value="LICENCIA">Licencia / Calamidad</option>
+            <option value="PERMISO">Permiso remunerado</option>
+            <option value="SUSPENSION">Suspensión disciplinaria</option>
+            <option value="OTRO">Otro</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-top:22px">
+            <input type="checkbox" id="aus-incapacidad"> Con incapacidad médica
+          </label>
+        </div>
+      </div>
+      <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+        <div class="form-group">
+          <label>Fecha inicio *</label>
+          <input type="date" id="aus-inicio" class="form-control" oninput="calcularDias()">
+        </div>
+        <div class="form-group">
+          <label>Fecha fin *</label>
+          <input type="date" id="aus-fin" class="form-control" oninput="calcularDias()">
+        </div>
+        <div class="form-group">
+          <label>Días perdidos *</label>
+          <input type="number" id="aus-dias" class="form-control" min="1">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Diagnóstico (CIE-10)</label>
+        <input id="aus-diag" class="form-control" placeholder="Ej: J06 — Infección respiratoria aguda">
+      </div>
+      <div class="form-group">
+        <label>Observaciones</label>
+        <textarea id="aus-obs" class="form-control" rows="2"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="cerrarModal()">Cancelar</button>
+      <button class="btn" onclick="guardar()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/vigia-api.js"></script>
+<script>
+let _registros   = [];
+let _indicadores = null;
+let _empleados   = [];
+let _anio        = new Date().getFullYear();
+
+const TIPO_LABEL = {
+  ENFERMEDAD_GENERAL: 'Enf. general',
+  ENFERMEDAD_LABORAL: 'Enf. laboral',
+  ACCIDENTE_TRABAJO:  'Accidente T.',
+  LICENCIA:           'Licencia',
+  PERMISO:            'Permiso',
+  SUSPENSION:         'Suspensión',
+  OTRO:               'Otro',
+};
+const TIPO_CLASS = {
+  ENFERMEDAD_GENERAL:'tipo-EG', ENFERMEDAD_LABORAL:'tipo-EL',
+  ACCIDENTE_TRABAJO:'tipo-AT',  LICENCIA:'tipo-LIC',
+  PERMISO:'tipo-LIC', SUSPENSION:'tipo-OTRO', OTRO:'tipo-OTRO',
+};
+
+// ── Inicialización ────────────────────────────────────────
+async function init() {
+  const ok = await VigiaAPI.requireAuth(); if (!ok) return;
+  document.getElementById('nav-empresa').textContent = localStorage.getItem('vigia_nombre_empresa') || '';
+
+  // Selector de años
+  const sel = document.getElementById('sel-anio');
+  for (let a = _anio + 1; a >= _anio - 3; a--) {
+    const opt = document.createElement('option');
+    opt.value = a; opt.textContent = a; if (a === _anio) opt.selected = true;
+    sel.appendChild(opt);
+  }
+
+  _empleados = await VigiaAPI.getEmpleados() || [];
+  const selEmp = document.getElementById('aus-empleado');
+  for (const e of _empleados) {
+    const opt = document.createElement('option');
+    opt.value = e.id; opt.textContent = e.nombre;
+    opt.dataset.cargo = e.cargo || ''; opt.dataset.area = '';
+    selEmp.appendChild(opt);
+  }
+
+  await cargar();
+  document.getElementById('cargando').style.display = 'none';
+  document.getElementById('contenido').style.display = '';
+}
+
+async function cargar() {
+  const eid = VigiaAPI.esAdmin() ? VigiaAPI.empresaId() || null : null;
+  [_registros, _indicadores] = await Promise.all([
+    VigiaAPI.getAusentismo(eid, _anio),
+    VigiaAPI.getAusentismoIndicadores(eid, _anio),
+  ]);
+  _registros = _registros || [];
+  renderKpis();
+  renderCharts();
+  filtrar();
+  renderPBI();
+}
+
+async function cambiarAnio() {
+  _anio = parseInt(document.getElementById('sel-anio').value);
+  await cargar();
+}
+
+// ── KPIs ──────────────────────────────────────────────────
+function renderKpis() {
+  if (!_indicadores) return;
+  const ind = _indicadores.indicadores;
+  const numT = _indicadores.num_trabajadores || 1;
+
+  const tasa = ind.tasa_ausentismo_pct;
+  document.getElementById('v-tasa').textContent = tasa + '%';
+  const kpiTasa = document.getElementById('kpi-tasa');
+  kpiTasa.className = 'kpi-card' + (tasa >= 10 ? ' crit' : tasa >= 5 ? ' warn' : '');
+
+  document.getElementById('v-dias').textContent = ind.dias_perdidos_total;
+  document.getElementById('v-dias-sub').textContent = `de ${numT} trabajador(es)`;
+
+  document.getElementById('v-eventos').textContent = ind.eventos_total;
+  document.getElementById('v-afectados').textContent = ind.trabajadores_afectados;
+  document.getElementById('v-afect-pct').textContent =
+    numT > 0 ? Math.round(ind.trabajadores_afectados / numT * 100) + '% de la plantilla' : '';
+
+  document.getElementById('v-ifrec').textContent  = ind.indice_frecuencia;
+  document.getElementById('v-isev').textContent   = ind.indice_severidad;
+  document.getElementById('v-ilesion').textContent = ind.indice_lesion_incapacitante;
+}
+
+// ── Charts ────────────────────────────────────────────────
+function renderCharts() {
+  if (!_indicadores) return;
+  renderBarChart(_indicadores.por_mes);
+  renderTipoList(_indicadores.por_tipo);
+}
+
+function renderBarChart(porMes) {
+  const W = 560, H = 130, pad = { t: 8, r: 8, b: 30, l: 36 };
+  const iw = W - pad.l - pad.r, ih = H - pad.t - pad.b;
+  const maxVal = Math.max(1, ...porMes.map(m => m.dias_perdidos));
+  const bw = iw / 12;
+
+  const bars = porMes.map((m, i) => {
+    const bh = (m.dias_perdidos / maxVal) * ih;
+    const x  = pad.l + i * bw + bw * 0.15;
+    const y  = pad.t + ih - bh;
+    const lbl = m.mes_label || m.mes.slice(5, 7);
+    return `
+      <rect x="${x}" y="${y}" width="${bw * 0.7}" height="${bh}"
+        fill="${m.dias_perdidos > 0 ? '#2E86AB' : '#E2E8F0'}" rx="2"
+        title="${m.mes}: ${m.dias_perdidos} días">
+        <title>${lbl}: ${m.dias_perdidos} días perdidos, ${m.eventos} evento(s)</title>
+      </rect>
+      <text x="${x + bw*0.35}" y="${H - 4}" text-anchor="middle"
+        fill="var(--muted)" font-size="9">${lbl}</text>
+      ${m.dias_perdidos > 0 ? `<text x="${x+bw*0.35}" y="${y - 3}" text-anchor="middle" fill="var(--navy)" font-size="9" font-weight="700">${m.dias_perdidos}</text>` : ''}
+    `;
+  });
+
+  // Y-axis labels
+  const yLabels = [0, Math.ceil(maxVal/2), maxVal].map(v => {
+    const y = pad.t + ih - (v / maxVal) * ih;
+    return `<text x="${pad.l - 4}" y="${y + 3}" text-anchor="end" fill="var(--muted)" font-size="8">${v}</text>`;
+  });
+
+  document.getElementById('chart-mes').innerHTML =
+    `<svg class="bars" viewBox="0 0 ${W} ${H}" style="width:100%;height:auto">${yLabels.join('')}${bars.join('')}</svg>`;
+}
+
+function renderTipoList(porTipo) {
+  if (!porTipo.length) { document.getElementById('chart-tipo').innerHTML = '<p class="text-muted text-sm" style="padding:20px;text-align:center">Sin datos</p>'; return; }
+  const max = Math.max(1, ...porTipo.map(t => t.dias_perdidos));
+  document.getElementById('chart-tipo').innerHTML = porTipo.map(t => `
+    <div class="tipo-row">
+      <div class="tipo-label">${TIPO_LABEL[t.tipo] || t.tipo}</div>
+      <div class="tipo-bar-bg"><div class="tipo-bar-fill" style="width:${t.dias_perdidos/max*100}%"></div></div>
+      <div class="tipo-val">${t.dias_perdidos}d</div>
+      <div style="font-size:11px;color:var(--muted);min-width:34px;text-align:right">${t.pct_dias}%</div>
+    </div>`).join('');
+}
+
+// ── Tabla ─────────────────────────────────────────────────
+function filtrar() {
+  const tipo  = document.getElementById('filtro-tipo').value;
+  const texto = document.getElementById('filtro-texto').value.toLowerCase();
+  const lista = _registros.filter(r => {
+    if (tipo  && r.tipo !== tipo) return false;
+    if (texto && !((r.nombre_empleado || '').toLowerCase().includes(texto) ||
+                   (r.area || '').toLowerCase().includes(texto))) return false;
+    return true;
+  });
+  const tbody = document.getElementById('tbody-aus');
+  if (!lista.length) {
+    tbody.innerHTML = '<tr><td colspan="9" class="empty-msg">Sin registros con esos filtros.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = lista.map(r => `
+    <tr>
+      <td style="font-weight:600">${r.nombre_empleado || '—'}</td>
+      <td style="font-size:12px">${[r.area, r.cargo].filter(Boolean).join(' · ') || '—'}</td>
+      <td><span class="tipo-chip ${TIPO_CLASS[r.tipo] || 'tipo-OTRO'}">${TIPO_LABEL[r.tipo] || r.tipo}</span></td>
+      <td>${fmtFecha(r.fecha_inicio)}</td>
+      <td>${fmtFecha(r.fecha_fin)}</td>
+      <td style="font-weight:700;text-align:center">${r.dias_perdidos}</td>
+      <td style="text-align:center">${r.con_incapacidad ? '✓' : '–'}</td>
+      <td style="font-size:12px;max-width:140px">${r.diagnostico || '–'}</td>
+      <td>
+        <button class="btn-xs" onclick="editar('${r.id}')">Editar</button>
+        <button class="btn-xs del" onclick="eliminar('${r.id}')">Eliminar</button>
+      </td>
+    </tr>`).join('');
+}
+
+function fmtFecha(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso + 'T12:00:00');
+  return d.toLocaleDateString('es-CO', { day:'2-digit', month:'2-digit', year:'numeric' });
+}
+
+// ── Modal ─────────────────────────────────────────────────
+function cerrarModal() { document.getElementById('modal-aus').style.display = 'none'; }
+
+function abrirModal() {
+  document.getElementById('aus-id').value = '';
+  document.getElementById('aus-empleado').value = '';
+  document.getElementById('aus-nombre').value = '';
+  document.getElementById('aus-cargo').value = '';
+  document.getElementById('aus-area').value = '';
+  document.getElementById('aus-tipo').value = 'ENFERMEDAD_GENERAL';
+  document.getElementById('aus-incapacidad').checked = false;
+  document.getElementById('aus-inicio').value = '';
+  document.getElementById('aus-fin').value = '';
+  document.getElementById('aus-dias').value = '';
+  document.getElementById('aus-diag').value = '';
+  document.getElementById('aus-obs').value = '';
+  document.getElementById('grupo-nombre-ext').style.display = 'none';
+  document.getElementById('modal-titulo').textContent = 'Registrar ausencia';
+  document.getElementById('modal-aus').style.display = 'flex';
+}
+
+function onEmpleadoChange() {
+  const sel = document.getElementById('aus-empleado');
+  const ext = sel.value === '__externo__';
+  document.getElementById('grupo-nombre-ext').style.display = ext ? '' : 'none';
+  if (!ext && sel.value) {
+    const opt = sel.selectedOptions[0];
+    document.getElementById('aus-cargo').value = opt.dataset.cargo || '';
+  }
+  if (!ext && !sel.value) {
+    document.getElementById('aus-nombre').value = '';
+    document.getElementById('aus-cargo').value = '';
+  }
+}
+
+function calcularDias() {
+  const a = document.getElementById('aus-inicio').value;
+  const b = document.getElementById('aus-fin').value;
+  if (a && b && b >= a) {
+    const ms = new Date(b) - new Date(a);
+    document.getElementById('aus-dias').value = Math.max(1, Math.round(ms / 86400000) + 1);
+  }
+}
+
+function editar(id) {
+  const r = _registros.find(x => x.id === id); if (!r) return;
+  document.getElementById('aus-id').value = id;
+  if (r.empleado_id) {
+    document.getElementById('aus-empleado').value = r.empleado_id;
+    document.getElementById('grupo-nombre-ext').style.display = 'none';
+  } else {
+    document.getElementById('aus-empleado').value = '__externo__';
+    document.getElementById('grupo-nombre-ext').style.display = '';
+  }
+  document.getElementById('aus-nombre').value = r.nombre_empleado || '';
+  document.getElementById('aus-cargo').value  = r.cargo || '';
+  document.getElementById('aus-area').value   = r.area || '';
+  document.getElementById('aus-tipo').value   = r.tipo || 'ENFERMEDAD_GENERAL';
+  document.getElementById('aus-incapacidad').checked = !!r.con_incapacidad;
+  document.getElementById('aus-inicio').value = r.fecha_inicio || '';
+  document.getElementById('aus-fin').value    = r.fecha_fin || '';
+  document.getElementById('aus-dias').value   = r.dias_perdidos || '';
+  document.getElementById('aus-diag').value   = r.diagnostico || '';
+  document.getElementById('aus-obs').value    = r.observaciones || '';
+  document.getElementById('modal-titulo').textContent = 'Editar ausencia';
+  document.getElementById('modal-aus').style.display = 'flex';
+}
+
+async function guardar() {
+  const empleadoSel = document.getElementById('aus-empleado').value;
+  const externo     = empleadoSel === '__externo__';
+  const nombre      = externo ? document.getElementById('aus-nombre').value.trim() : null;
+  const empleadoId  = (!externo && empleadoSel) ? empleadoSel : null;
+
+  if (!empleadoId && !nombre) { alert('Selecciona un empleado o ingresa el nombre.'); return; }
+  const tipo     = document.getElementById('aus-tipo').value;
+  const inicio   = document.getElementById('aus-inicio').value;
+  const fin      = document.getElementById('aus-fin').value;
+  const dias     = parseInt(document.getElementById('aus-dias').value);
+  if (!inicio || !fin || !dias) { alert('Fechas y días perdidos son requeridos.'); return; }
+
+  const nombreFinal = empleadoId
+    ? (document.getElementById('aus-empleado').selectedOptions[0]?.textContent || null)
+    : nombre;
+
+  const datos = {
+    empleado_id:     empleadoId,
+    nombre_empleado: nombreFinal,
+    cargo:           document.getElementById('aus-cargo').value.trim() || null,
+    area:            document.getElementById('aus-area').value.trim() || null,
+    tipo, fecha_inicio: inicio, fecha_fin: fin, dias_perdidos: dias,
+    con_incapacidad: document.getElementById('aus-incapacidad').checked,
+    diagnostico:     document.getElementById('aus-diag').value.trim() || null,
+    observaciones:   document.getElementById('aus-obs').value.trim() || null,
+  };
+
+  const id = document.getElementById('aus-id').value;
+  try {
+    if (id) await VigiaAPI.editarAusentismo(id, datos);
+    else    await VigiaAPI.crearAusentismo(datos);
+    cerrarModal(); await cargar();
+  } catch(e) { alert('Error: ' + e.message); }
+}
+
+async function eliminar(id) {
+  if (!confirm('¿Eliminar este registro?')) return;
+  await VigiaAPI.eliminarAusentismo(id); await cargar();
+}
+
+// ── CSV Export ────────────────────────────────────────────
+function exportarCSV() {
+  VigiaAPI.exportarCSV(_registros, [
+    ['Empleado','nombre_empleado'],['Cargo','cargo'],['Area','area'],['Tipo','tipo'],
+    ['Fecha inicio','fecha_inicio'],['Fecha fin','fecha_fin'],['Dias perdidos','dias_perdidos'],
+    ['Con incapacidad','con_incapacidad'],['Diagnostico','diagnostico'],['Observaciones','observaciones'],
+  ], `Ausentismo_${_anio}`);
+}
+
+// ── Power BI section ──────────────────────────────────────
+function renderPBI() {
+  const token = VigiaAPI.token();
+  const eid   = VigiaAPI.esAdmin() ? (VigiaAPI.empresaId() ? `&empresa_id=${VigiaAPI.empresaId()}` : '') : '';
+  const url   = `https://riesgo-backend-production.up.railway.app/api/vigia/ausentismo/indicadores?anio=${_anio}${eid}`;
+  document.getElementById('pbi-url').textContent = url;
+  document.getElementById('pbi-token-display').textContent = `Bearer ${token}`;
+
+  const mCode = `let
+    URL   = "${url}",
+    Token = "Bearer ${token}",
+    Source = Json.Document(
+        Web.Contents(URL, [
+            Headers = [Authorization = Token]
+        ])
+    ),
+    Indicadores = Source[indicadores],
+    PorMes      = Table.FromList(Source[por_mes],   Splitter.SplitByNothing(), null, null, ExtraValues.Error),
+    PorTipo     = Table.FromList(Source[por_tipo],  Splitter.SplitByNothing(), null, null, ExtraValues.Error),
+    Detalle     = Table.FromList(Source[detalle],   Splitter.SplitByNothing(), null, null, ExtraValues.Error)
+in
+    // Cambia "Detalle" por "PorMes" o "PorTipo" según lo que quieras visualizar
+    Table.ExpandRecordColumn(Detalle, "Column1", {"fecha_inicio","dias_perdidos","nombre","cargo","area","tipo","con_incapacidad","diagnostico"})`.trim();
+
+  document.getElementById('code-text').textContent = mCode;
+}
+
+function copiarCodigo() {
+  const code = document.getElementById('code-text').textContent;
+  navigator.clipboard.writeText(code).then(() => {
+    const btn = document.querySelector('.copy-btn');
+    btn.textContent = '¡Copiado!';
+    setTimeout(() => btn.textContent = 'Copiar', 2000);
+  });
+}
+
+init();
+</script>
+<script src="js/vigia-chat.js"></script>
+</body>
+</html>
+

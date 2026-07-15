@@ -1,0 +1,367 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vigía 360 — Salud Ocupacional</title>
+  <link rel="stylesheet" href="vigia.css" />
+  <style>
+    .section-card { border:1.5px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px;background:var(--card) }
+    .section-title { font-size:15px;font-weight:800;color:var(--navy);margin-bottom:14px;
+                     display:flex;align-items:center;gap:8px }
+    .estandar-tag { font-size:11px;font-weight:600;color:var(--muted);background:var(--bg);
+                    padding:2px 8px;border-radius:12px;border:1px solid var(--border) }
+    .form-grid-2 { display:grid;grid-template-columns:1fr 1fr;gap:12px }
+    .form-grid-3 { display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px }
+    @media(max-width:600px){ .form-grid-2,.form-grid-3 { grid-template-columns:1fr } }
+    .pve-row { display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;
+               border:1px solid var(--border);border-radius:8px;padding:10px 12px;background:var(--bg) }
+    .doc-link-row { display:flex;align-items:center;gap:10px;margin-bottom:8px }
+    .doc-link-label { font-size:13px;font-weight:600;color:var(--navy);min-width:200px }
+    .badge-ok  { background:#ECFDF5;color:#059669;border:1.5px solid #6EE7B7;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700 }
+    .badge-pend{ background:#FEF3C7;color:#D97706;border:1.5px solid #FCD34D;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700 }
+    .selector-anio { display:flex;align-items:center;gap:10px;margin-bottom:20px }
+    .selector-anio select { padding:8px 12px;border-radius:8px;border:1.5px solid var(--border);
+                             background:var(--card);font-size:14px;font-weight:700;color:var(--navy) }
+  </style>
+</head>
+<body>
+<nav class="navbar">
+  <a href="dashboard.html" class="nav-brand">
+    <span class="brand-vigia">Vigía</span><span class="brand-sst">360</span>
+  </a>
+  <div class="nav-links">
+    <a href="dashboard.html" class="nav-link-fixed">Dashboard</a>
+    <div class="nav-dropdown" id="dd-P">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-P')">
+        <span class="phva-pill phva-P">P</span> Planear <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="perfil-responsable.html">🩺 Responsable SST</a>
+        <a href="responsabilidades.html">👥 Roles y Responsabilidades</a>
+        <a href="copasst.html">🤝 COPASST y Convivencia</a>
+        <a href="documentos-sst.html">📄 Documentos del SG-SST</a>
+        <a href="matriz-peligros.html">⚠️ Matriz de Peligros (GTC-45)</a>
+        <a href="plan-trabajo.html">📅 Plan de Trabajo Anual</a>
+        <a href="presupuesto-sgsst.html">💰 Presupuesto SG-SST</a>
+        <a href="profesiograma.html">💊 Profesiograma</a>
+      </div>
+    </div>
+    <div class="nav-dropdown" id="dd-H">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-H')">
+        <span class="phva-pill phva-H">H</span> Hacer <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="epp.html">🦺 EPP</a>
+        <a href="capacitaciones.html">🎓 Capacitaciones</a>
+        <a href="emergencias.html">🚨 Emergencias y Brigada</a>
+        <a href="inspecciones.html">🔍 Inspecciones y Mantenimiento</a>
+        <a href="perfil-salud.html">🏥 Salud Ocupacional</a>
+        <div class="nav-dd-divider"></div>
+        <a href="lista-personal.html">👥 Lista de Personal</a>
+        <a href="subir.html">⬆️ Subir Examen</a>
+        <a href="subir-masivo.html">📦 Carga Masiva</a>
+        <a href="cartas-masivas.html">📄 Cartas Masivas</a>
+        <a href="reporte-examenes.html">📊 Cobertura de Exámenes</a>
+        <a href="informe-condiciones.html">📋 Informe de Condiciones</a>
+      </div>
+    </div>
+    <div class="nav-dropdown" id="dd-V">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-V')">
+        <span class="phva-pill phva-V">V</span> Verificar <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="evaluacion-sst.html">📋 Evaluación (Res. 0312)</a>
+        <a href="investigaciones.html">🔍 AT / Incidentes</a>
+        <a href="auditoria.html">🗒️ Auditoría Interna</a>
+        <a href="ausentismo.html">📉 Ausentismo laboral</a>
+        <a href="indicadores-sgsst.html">📊 Indicadores SG-SST</a>
+        <a href="analisis-phva.html">📈 Análisis e Indicadores</a>
+      </div>
+    </div>
+    <div class="nav-dropdown" id="dd-A">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-A')">
+        <span class="phva-pill phva-A">A</span> Actuar <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="mejoramiento.html">✅ Acciones de Mejoramiento</a>
+        <a href="evaluacion-sst.html">📝 Plan de Mejoramiento (F002)</a>
+      </div>
+    </div>
+    <a href="listado-maestro.html" class="nav-link-fixed">📁 Listado Maestro</a>
+    <span id="nav-empresa" style="color:#CBD8E6;font-size:13px;padding:6px 0"></span>
+    <button onclick="VigiaAPI.logout()"
+      style="background:none;border:1px solid rgba(255,255,255,.2);color:#CBD8E6;
+             border-radius:6px;padding:6px 12px;cursor:pointer;font-size:13px">Salir</button>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="selector-anio">
+    <label style="font-size:14px;font-weight:700;color:var(--navy)">Año de reporte:</label>
+    <select id="sel-anio" onchange="cambiarAnio()"></select>
+    <button class="btn" onclick="guardar()" id="btn-guardar">Guardar</button>
+  </div>
+
+  <!-- Perfil sociodemográfico -->
+  <div class="section-card">
+    <div class="section-title">
+      👥 Perfil Sociodemográfico y Diagnóstico de Salud
+      <span class="estandar-tag">Est. 3.1.1 · 1%</span>
+    </div>
+    <div class="form-grid-3" style="margin-bottom:12px">
+      <div class="form-group">
+        <label>Total trabajadores</label>
+        <input type="number" id="ps-total" class="form-control" min="0">
+      </div>
+      <div class="form-group">
+        <label>Edad promedio</label>
+        <input type="number" id="ps-edad" class="form-control" min="0" step="0.1">
+      </div>
+      <div class="form-group">
+        <label>Ausentismo total (días/año)</label>
+        <input type="number" id="ps-ausentismo" class="form-control" min="0">
+      </div>
+    </div>
+    <div class="form-grid-2" style="margin-bottom:12px">
+      <div class="form-group">
+        <label>% Masculino</label>
+        <input type="number" id="ps-masc" class="form-control" min="0" max="100" step="0.1">
+      </div>
+      <div class="form-group">
+        <label>% Femenino</label>
+        <input type="number" id="ps-fem" class="form-control" min="0" max="100" step="0.1">
+      </div>
+    </div>
+    <p style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:8px">Nivel educativo (%)</p>
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label>Primaria</label>
+        <input type="number" id="ps-prim" class="form-control" min="0" max="100" step="0.1">
+      </div>
+      <div class="form-group">
+        <label>Bachillerato</label>
+        <input type="number" id="ps-bach" class="form-control" min="0" max="100" step="0.1">
+      </div>
+      <div class="form-group">
+        <label>Técnico / Tecnológico</label>
+        <input type="number" id="ps-tec" class="form-control" min="0" max="100" step="0.1">
+      </div>
+      <div class="form-group">
+        <label>Universitario o superior</label>
+        <input type="number" id="ps-uni" class="form-control" min="0" max="100" step="0.1">
+      </div>
+    </div>
+    <div class="form-group" style="margin-top:12px">
+      <label>Diagnósticos / condiciones de salud principales</label>
+      <textarea id="ps-dx" class="form-control" rows="2" placeholder="Ej: lumbalgia 30%, síndrome de túnel carpiano 15%…"></textarea>
+    </div>
+  </div>
+
+  <!-- PVE -->
+  <div class="section-card">
+    <div class="section-title">
+      🔬 Programas de Vigilancia Epidemiológica (PVE)
+      <span class="estandar-tag">Est. 3.1.2 · 1%</span>
+    </div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:14px">Defina los PVE de acuerdo con los riesgos prioritarios identificados en la matriz de peligros.</p>
+    <div class="pve-row">
+      <div class="form-group" style="margin:0">
+        <label>Riesgo / Peligro prioritario 1</label>
+        <input id="pve-r1" class="form-control" placeholder="Ej: Riesgo ergonómico">
+      </div>
+      <div class="form-group" style="margin:0">
+        <label>Estado del PVE</label>
+        <select id="pve-e1" class="form-control">
+          <option value="">Seleccionar…</option>
+          <option>Implementado</option><option>En implementación</option><option>Pendiente</option>
+        </select>
+      </div>
+    </div>
+    <div class="pve-row">
+      <div class="form-group" style="margin:0">
+        <label>Riesgo / Peligro prioritario 2</label>
+        <input id="pve-r2" class="form-control" placeholder="Ej: Riesgo psicosocial">
+      </div>
+      <div class="form-group" style="margin:0">
+        <label>Estado del PVE</label>
+        <select id="pve-e2" class="form-control">
+          <option value="">Seleccionar…</option>
+          <option>Implementado</option><option>En implementación</option><option>Pendiente</option>
+        </select>
+      </div>
+    </div>
+    <div class="pve-row">
+      <div class="form-group" style="margin:0">
+        <label>Riesgo / Peligro prioritario 3</label>
+        <input id="pve-r3" class="form-control" placeholder="Ej: Riesgo biomecánico">
+      </div>
+      <div class="form-group" style="margin:0">
+        <label>Estado del PVE</label>
+        <select id="pve-e3" class="form-control">
+          <option value="">Seleccionar…</option>
+          <option>Implementado</option><option>En implementación</option><option>Pendiente</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Documentos de salud -->
+  <div class="section-card">
+    <div class="section-title">
+      🔗 Documentos y evidencias de salud
+      <span class="estandar-tag">Est. 3.1.5 · 3.1.7 · 3.1.9 · 4.1.4</span>
+    </div>
+    <div class="doc-link-row">
+      <span class="doc-link-label">🍎 Programa de Estilos de Vida Saludable (3.1.7)</span>
+      <input id="url-estilos" class="form-control" placeholder="https://…" style="max-width:280px">
+      <span id="badge-estilos" class="badge-pend">Pendiente</span>
+    </div>
+    <div class="doc-link-row">
+      <span class="doc-link-label">♻️ Plan de Manejo de Residuos — PMIRS (3.1.9)</span>
+      <input id="url-pmirs" class="form-control" placeholder="https://…" style="max-width:280px">
+      <span id="badge-pmirs" class="badge-pend">Pendiente</span>
+    </div>
+    <div class="doc-link-row">
+      <span class="doc-link-label">📁 Carta de custodia historias clínicas (3.1.5)</span>
+      <input id="url-custodia" class="form-control" placeholder="https://…" style="max-width:280px">
+      <span id="badge-custodia" class="badge-pend">Pendiente</span>
+    </div>
+    <div class="doc-link-row">
+      <span class="doc-link-label">🌡️ Mediciones ambientales (4.1.4)</span>
+      <input id="url-mediciones" class="form-control" placeholder="https://…" style="max-width:280px">
+      <span id="badge-mediciones" class="badge-pend">Pendiente</span>
+    </div>
+    <p style="font-size:12px;color:var(--muted);margin-top:8px">
+      Los enlaces anteriores también se pueden gestionar en
+      <a href="documentos-sst.html" style="color:var(--blue)">Documentos del SG-SST</a>.
+    </p>
+  </div>
+</div>
+
+<script src="js/vigia-api.js"></script>
+<script>
+let _anio   = new Date().getFullYear();
+let _datos  = null;
+let _links  = {};
+
+function cambiarAnio() {
+  _anio = parseInt(document.getElementById('sel-anio').value);
+  cargarDatos();
+}
+
+async function cargar() {
+  const anios = document.getElementById('sel-anio');
+  const y = new Date().getFullYear();
+  for (let i = y; i >= y - 4; i--) {
+    const o = document.createElement('option');
+    o.value = i; o.textContent = i;
+    if (i === _anio) o.selected = true;
+    anios.appendChild(o);
+  }
+  await Promise.all([cargarDatos(), cargarLinks()]);
+}
+
+async function cargarLinks() {
+  _links = await VigiaAPI.getDocLinks() || {};
+  actualizarBadgesLinks();
+}
+
+function actualizarBadgesLinks() {
+  [
+    ['url-estilos',   'DOC-ESTILOS-SALUDABLES', 'badge-estilos'],
+    ['url-pmirs',     'DOC-PMIRS',               'badge-pmirs'],
+    ['url-custodia',  'DOC-CUSTODIA-HC',         'badge-custodia'],
+    ['url-mediciones','DOC-MEDICIONES-AMB',      'badge-mediciones'],
+  ].forEach(([inpId, codigo, badgeId]) => {
+    const url = _links[codigo] || '';
+    document.getElementById(inpId).value = url;
+    document.getElementById(badgeId).className = url ? 'badge-ok' : 'badge-pend';
+    document.getElementById(badgeId).textContent = url ? '✓ Enlazado' : 'Pendiente';
+  });
+}
+
+async function cargarDatos() {
+  const lista = await VigiaAPI.getPerfilSalud(null, _anio);
+  _datos = (lista && lista[0]) || null;
+  rellenarFormulario(_datos);
+}
+
+function rellenarFormulario(d) {
+  const v = (id, val) => { const el = document.getElementById(id); if (el) el.value = val ?? ''; };
+  v('ps-total', d?.total_trabajadores);
+  v('ps-edad',  d?.promedio_edad);
+  v('ps-masc',  d?.pct_masculino);
+  v('ps-fem',   d?.pct_femenino);
+  v('ps-prim',  d?.pct_primaria);
+  v('ps-bach',  d?.pct_bachillerato);
+  v('ps-tec',   d?.pct_tecnico);
+  v('ps-uni',   d?.pct_universitario);
+  v('ps-ausentismo', d?.ausentismo_dias);
+  v('ps-dx',    d?.dx_principales);
+  v('pve-r1',   d?.pve_riesgo1);
+  v('pve-e1',   d?.pve_estado1);
+  v('pve-r2',   d?.pve_riesgo2);
+  v('pve-e2',   d?.pve_estado2);
+  v('pve-r3',   d?.pve_riesgo3);
+  v('pve-e3',   d?.pve_estado3);
+}
+
+async function guardar() {
+  const btn = document.getElementById('btn-guardar');
+  btn.disabled = true; btn.textContent = 'Guardando…';
+
+  // Guardar datos de salud
+  const datos = {
+    total_trabajadores: parseInt(document.getElementById('ps-total').value)||null,
+    promedio_edad:      parseFloat(document.getElementById('ps-edad').value)||null,
+    pct_masculino:      parseFloat(document.getElementById('ps-masc').value)||null,
+    pct_femenino:       parseFloat(document.getElementById('ps-fem').value)||null,
+    pct_primaria:       parseFloat(document.getElementById('ps-prim').value)||null,
+    pct_bachillerato:   parseFloat(document.getElementById('ps-bach').value)||null,
+    pct_tecnico:        parseFloat(document.getElementById('ps-tec').value)||null,
+    pct_universitario:  parseFloat(document.getElementById('ps-uni').value)||null,
+    ausentismo_dias:    parseInt(document.getElementById('ps-ausentismo').value)||null,
+    dx_principales:     document.getElementById('ps-dx').value.trim()||null,
+    pve_riesgo1:        document.getElementById('pve-r1').value.trim()||null,
+    pve_estado1:        document.getElementById('pve-e1').value||null,
+    pve_riesgo2:        document.getElementById('pve-r2').value.trim()||null,
+    pve_estado2:        document.getElementById('pve-e2').value||null,
+    pve_riesgo3:        document.getElementById('pve-r3').value.trim()||null,
+    pve_estado3:        document.getElementById('pve-e3').value||null,
+  };
+
+  // Guardar doc-links de salud
+  const linkGuards = [
+    ['url-estilos',    'DOC-ESTILOS-SALUDABLES'],
+    ['url-pmirs',      'DOC-PMIRS'],
+    ['url-custodia',   'DOC-CUSTODIA-HC'],
+    ['url-mediciones', 'DOC-MEDICIONES-AMB'],
+  ].map(([inpId, codigo]) => VigiaAPI.setDocLink(codigo, document.getElementById(inpId).value.trim()));
+
+  try {
+    await Promise.all([VigiaAPI.guardarPerfilSalud(_anio, datos), ...linkGuards]);
+    await Promise.all([cargarDatos(), cargarLinks()]);
+    btn.textContent = '✓ Guardado';
+    setTimeout(() => { btn.textContent = 'Guardar'; btn.disabled = false; }, 1500);
+  } catch(e) {
+    alert('Error: '+e.message);
+    btn.textContent = 'Guardar'; btn.disabled = false;
+  }
+}
+
+async function init() {
+  const ok = await VigiaAPI.requireAuth(); if (!ok) return;
+  document.getElementById('nav-empresa').textContent = localStorage.getItem('vigia_nombre_empresa')||'';
+  VigiaAPI.initDocHeader();
+  if (VigiaAPI.esAdmin()) {
+    document.getElementById('btn-guardar').style.display = 'none';
+  }
+  await cargar();
+}
+init();
+</script>
+<script src="js/vigia-chat.js"></script>
+</body>
+</html>
+

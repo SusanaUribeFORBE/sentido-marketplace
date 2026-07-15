@@ -29,6 +29,7 @@ const LOGOS_MODULO = {
   rutasegura: '/assets/logo-riesgovial.png',
   pasvialemergenciasenruta: '/assets/logo-riesgovial.png',
   liderazgovial: '/assets/logo-riesgovial.png',
+  controladoresviales: '/assets/logo-riesgovial.png',
 };
 
 if (LOGOS_MODULO[moduloKey]) {

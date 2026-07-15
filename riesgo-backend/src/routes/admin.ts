@@ -56,6 +56,23 @@ adminRouter.post('/empresas', async (req, res) => {
   return res.status(201).json(data);
 });
 
+adminRouter.patch('/empresas/:id_empresa/email', async (req, res) => {
+  const { id_empresa } = req.params;
+  const { email_sst } = req.body;
+  if (!email_sst) return res.status(400).json({ error: 'Falta email_sst' });
+
+  const { data, error } = await supabase
+    .from('empresas')
+    .update({ email_sst })
+    .eq('id_empresa', id_empresa)
+    .select()
+    .maybeSingle();
+
+  if (error) return res.status(500).json({ error: error.message });
+  if (!data) return res.status(404).json({ error: 'Empresa no encontrada' });
+  return res.json({ ok: true, email_sst: data.email_sst });
+});
+
 adminRouter.post('/empresas/:id_empresa/regenerar-codigo', async (req, res) => {
   const { id_empresa } = req.params;
 

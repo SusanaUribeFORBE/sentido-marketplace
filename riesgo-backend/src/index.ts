@@ -9,13 +9,22 @@ import { clienteRouter } from './routes/cliente';
 import { arlRouter } from './routes/arl';
 import { analyticsRouter } from './routes/analytics';
 import { sentidoAgenteRouter } from './routes/sentidoAgente';
+import { sstExamenRouter } from './routes/sstExamen';
+import { vigiaRouter } from './routes/vigia';
 import { adminAuth } from './middleware/adminAuth';
 import { clientAuth } from './middleware/clientAuth';
 import { arlAuth } from './middleware/arlAuth';
 
 const app = express();
 app.set('trust proxy', 1);
-app.use(express.json());
+app.use((req, _res, next) => {
+  // Aumentar límite de payload para endpoint de visión (imágenes base64)
+  if (req.path.includes('analizar-examen-imagen')) {
+    express.json({ limit: '12mb' })(req, _res, next);
+  } else {
+    express.json({ limit: '1mb' })(req, _res, next);
+  }
+});
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Headers', 'Content-Type');
@@ -37,6 +46,13 @@ const sentidoLimiter = rateLimit({
   message: { error: 'Demasiados intentos. Espera 15 minutos.' }
 });
 
+// Límite más alto para análisis de exámenes (Groq maneja su propio rate limit)
+const examLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 200,
+  message: { error: 'Demasiados intentos. Espera 15 minutos.' }
+});
+
 app.use(express.static(path.join(__dirname, '..', 'public')));
 app.use('/assets', express.static(path.join(__dirname, '..', 'assets')));
 
@@ -44,10 +60,12 @@ app.get('/api', (_req, res) => {
   res.json({ status: 'RiesGO! backend corriendo ✅' });
 });
 
+app.use('/api/vigia', vigiaRouter);
+app.use('/api/sst', examLimiter, sstExamenRouter);
+app.use('/api/sentido', sentidoLimiter, sentidoAgenteRouter);
 app.use('/api', pinLimiter, authRouter);
 app.use('/api', gameRouter);
 app.use('/api', analyticsRouter);
-app.use('/api/sentido', sentidoLimiter, sentidoAgenteRouter);
 app.use('/api/admin', adminAuth, adminRouter);
 app.use('/api/cliente', clientAuth, clienteRouter);
 app.use('/api/arl', arlAuth, arlRouter);

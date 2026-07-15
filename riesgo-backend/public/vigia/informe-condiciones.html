@@ -1,0 +1,847 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vigía 360 — Informe de Condiciones de Salud</title>
+  <link rel="stylesheet" href="vigia.css" />
+  <style>
+    /* ── Informe styles ── */
+    .informe-wrap { max-width: 860px; margin: 0 auto; }
+
+    .informe-portada {
+      background: linear-gradient(135deg, #1A3A5C 0%, #2E86AB 100%);
+      color: white;
+      padding: 56px 48px;
+      border-radius: 12px;
+      margin-bottom: 32px;
+      position: relative;
+      overflow: hidden;
+    }
+    .informe-portada::after {
+      content: '';
+      position: absolute;
+      right: -60px; top: -60px;
+      width: 220px; height: 220px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.06);
+    }
+    .portada-marca { display: flex; align-items: center; gap: 14px; margin-bottom: 40px; }
+    .portada-marca span { font-size: 22px; font-weight: 800; letter-spacing: 1px; }
+    .portada-titulo { font-size: 28px; font-weight: 900; letter-spacing: 0.5px; margin-bottom: 8px; line-height: 1.2; }
+    .portada-sub { font-size: 15px; opacity: 0.75; margin-bottom: 36px; }
+    .portada-empresa { font-size: 20px; font-weight: 700; border-top: 1px solid rgba(255,255,255,0.25); padding-top: 24px; margin-bottom: 8px; }
+    .portada-meta { font-size: 14px; opacity: 0.7; display: flex; gap: 24px; flex-wrap: wrap; }
+
+    .seccion {
+      background: white;
+      border: 1px solid #E8EDF2;
+      border-radius: 10px;
+      padding: 28px 32px;
+      margin-bottom: 20px;
+    }
+    .seccion-titulo {
+      font-size: 13px;
+      font-weight: 800;
+      color: #2E86AB;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin: 0 0 20px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #E8EDF2;
+    }
+
+    /* Donut */
+    .donut-wrap { display: flex; align-items: center; gap: 28px; flex-wrap: wrap; }
+    .donut { border-radius: 50%; flex-shrink: 0; position: relative; }
+    .donut-center {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%,-50%);
+      background: white; border-radius: 50%;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center;
+    }
+    .donut-n    { font-size: 22px; font-weight: 900; color: #1A3A5C; line-height: 1; }
+    .donut-lbl  { font-size: 10px; color: #8899AA; font-weight: 600; text-transform: uppercase; }
+
+    .leyenda { display: flex; flex-direction: column; gap: 8px; font-size: 13px; flex: 1; min-width: 160px; }
+    .leyenda-item { display: flex; align-items: center; gap: 8px; }
+    .leyenda-dot { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; }
+    .leyenda-label { flex: 1; color: #444; }
+    .leyenda-val { font-weight: 700; color: #1A3A5C; }
+    .leyenda-pct { color: #8899AA; font-size: 12px; margin-left: 4px; }
+
+    /* Bar */
+    .bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 13px; }
+    .bar-label { width: 180px; color: #444; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .bar-track { flex: 1; height: 18px; background: #F0F4F8; border-radius: 9px; overflow: hidden; }
+    .bar-fill  { height: 100%; border-radius: 9px; min-width: 4px; }
+    .bar-val   { width: 40px; text-align: right; font-weight: 700; color: #1A3A5C; }
+
+    /* Grid de charts pequeños */
+    .charts-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    .charts-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+
+    /* Recomendaciones */
+    .rec-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .rec-table th { background: #F0F4F8; color: #1A3A5C; font-weight: 700; padding: 10px 14px; text-align: left; }
+    .rec-table td { padding: 9px 14px; border-bottom: 1px solid #F0F4F8; color: #333; }
+    .rec-table tr:last-child td { border-bottom: none; }
+
+    /* SG-SST recomendaciones */
+    .rec-sgsst { display: flex; flex-direction: column; gap: 14px; }
+    .rec-item { display: flex; gap: 14px; align-items: flex-start; padding: 14px 16px; border-radius: 8px; background: #F8FAFD; border-left: 4px solid #2E86AB; }
+    .rec-item.alerta { border-left-color: #E74C3C; background: #FEF8F8; }
+    .rec-item.habito { border-left-color: #27AE60; background: #F0FBF4; }
+    .rec-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+    .rec-body h4 { margin: 0 0 4px; font-size: 14px; color: #1A3A5C; }
+    .rec-body p  { margin: 0; font-size: 12.5px; color: #555; line-height: 1.5; }
+    .rec-norma   { font-size: 11px; color: #8899AA; margin-top: 4px; font-weight: 600; }
+
+    /* Stats row */
+    .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 0; }
+    .kpi { background: #F8FAFD; border: 1px solid #E8EDF2; border-radius: 8px; padding: 16px; text-align: center; }
+    .kpi-n { font-size: 28px; font-weight: 900; color: #1A3A5C; line-height: 1; }
+    .kpi-l { font-size: 12px; color: #8899AA; margin-top: 4px; font-weight: 600; text-transform: uppercase; }
+
+    /* Pie de página */
+    .informe-footer {
+      text-align: center;
+      padding: 24px;
+      color: #8899AA;
+      font-size: 12px;
+      border-top: 1px solid #E8EDF2;
+      margin-top: 32px;
+    }
+
+    /* Print */
+    @media print {
+      nav, .no-print { display: none !important; }
+      body { background: white !important; }
+      .page { padding: 0 !important; max-width: 100% !important; }
+      .informe-wrap { max-width: 100%; }
+      .seccion { break-inside: avoid; border: 1px solid #ddd; }
+      .informe-portada { break-after: page; }
+      .seccion-titulo { color: #2E86AB !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .bar-fill, .leyenda-dot { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .informe-portada { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="dashboard.html" style="display:flex;align-items:center;gap:10px;text-decoration:none">
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="36" viewBox="0 0 34 38">
+      <path d="M17 1L2 7V21C2 30 9 37 17 39C25 37 32 30 32 21V7Z" fill="rgba(255,255,255,0.15)" stroke="white" stroke-width="1.5"/>
+      <circle cx="12" cy="19" r="4.5" fill="white" opacity="0.9"/>
+      <circle cx="22" cy="19" r="4.5" fill="white" opacity="0.9"/>
+      <circle cx="12" cy="19" r="2" fill="rgba(26,58,92,0.8)"/>
+      <circle cx="22" cy="19" r="2" fill="rgba(26,58,92,0.8)"/>
+      <polygon points="15,25 17,28 19,25" fill="white" opacity="0.7"/>
+    </svg>
+    <span style="color:white;font-weight:800;font-size:17px;letter-spacing:0.5px">VIGÍA <span style="color:#4ADE80;font-weight:900">360</span></span>
+  </a>
+  <div class="nav-links">
+    <a href="dashboard.html" class="nav-link-fixed">Dashboard</a>
+    <div class="nav-dropdown" id="dd-P">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-P')">
+        <span class="phva-pill phva-P">P</span> Planear <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="perfil-responsable.html">🩺 Responsable SST</a>
+        <a href="responsabilidades.html">👥 Roles y Responsabilidades</a>
+        <a href="copasst.html">🤝 COPASST y Convivencia</a>
+        <a href="documentos-sst.html">📄 Documentos del SG-SST</a>
+        <a href="matriz-peligros.html">⚠️ Matriz de Peligros (GTC-45)</a>
+        <a href="plan-trabajo.html">📅 Plan de Trabajo Anual</a>
+        <a href="presupuesto-sgsst.html">💰 Presupuesto SG-SST</a>
+        <a href="profesiograma.html">💊 Profesiograma</a>
+      </div>
+    </div>
+    <div class="nav-dropdown" id="dd-H">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-H')">
+        <span class="phva-pill phva-H">H</span> Hacer <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="epp.html">🦺 EPP</a>
+        <a href="capacitaciones.html">🎓 Capacitaciones</a>
+        <a href="emergencias.html">🚨 Emergencias y Brigada</a>
+        <a href="inspecciones.html">🔍 Inspecciones y Mantenimiento</a>
+        <a href="perfil-salud.html">🏥 Salud Ocupacional</a>
+        <div class="nav-dd-divider"></div>
+        <a href="lista-personal.html">👥 Lista de Personal</a>
+        <a href="subir.html">⬆️ Subir Examen</a>
+        <a href="subir-masivo.html">📦 Carga Masiva</a>
+        <a href="cartas-masivas.html">📄 Cartas Masivas</a>
+        <a href="reporte-examenes.html">📊 Cobertura de Exámenes</a>
+        <a href="informe-condiciones.html">📋 Informe de Condiciones</a>
+      </div>
+    </div>
+    <div class="nav-dropdown" id="dd-V">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-V')">
+        <span class="phva-pill phva-V">V</span> Verificar <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="evaluacion-sst.html">📋 Evaluación (Res. 0312)</a>
+        <a href="investigaciones.html">🔍 AT / Incidentes</a>
+        <a href="auditoria.html">🗒️ Auditoría Interna</a>
+        <a href="ausentismo.html">📉 Ausentismo laboral</a>
+        <a href="indicadores-sgsst.html">📊 Indicadores SG-SST</a>
+        <a href="analisis-phva.html">📈 Análisis e Indicadores</a>
+      </div>
+    </div>
+    <div class="nav-dropdown" id="dd-A">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-A')">
+        <span class="phva-pill phva-A">A</span> Actuar <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="mejoramiento.html">✅ Acciones de Mejoramiento</a>
+        <a href="evaluacion-sst.html">📝 Plan de Mejoramiento (F002)</a>
+      </div>
+    </div>
+    <a href="listado-maestro.html" class="nav-link-fixed">📁 Listado Maestro</a>
+    <span id="nav-empresa" style="color:#CBD8E6;font-size:13px;padding:6px 0"></span>
+    <button onclick="VigiaAPI.logout()"
+      style="background:none;border:1px solid rgba(255,255,255,.2);color:#CBD8E6;
+             border-radius:6px;padding:6px 12px;cursor:pointer;font-size:13px">Salir</button>
+  </div>
+</nav>
+
+<!-- CONTROLES (no se imprimen) -->
+<div class="page no-print" style="max-width:860px">
+  <div class="page-header">
+    <h1>Informe de Condiciones de Salud</h1>
+    <p>Diagnóstico automático del estado de salud ocupacional de la empresa, con recomendaciones para el SG-SST.</p>
+  </div>
+
+  <div class="card" style="padding:24px;margin-bottom:24px">
+    <div id="empresa-selector" class="hidden form-group" style="margin-bottom:20px">
+      <label>Empresa</label>
+      <select id="sel-empresa" class="w-full">
+        <option value="">— Seleccionar empresa —</option>
+      </select>
+    </div>
+    <div class="flex gap-3">
+      <button class="btn btn-primary" id="btn-generar" onclick="generarInforme()">Generar informe</button>
+    </div>
+  </div>
+
+  <div id="cargando" class="hidden" style="text-align:center;padding:48px">
+    <div class="spinner" style="margin:0 auto 16px;border-color:rgba(46,134,171,.2);border-top-color:#2E86AB"></div>
+    <p class="text-muted">Calculando estadísticas…</p>
+  </div>
+</div>
+
+<!-- INFORME (se imprime) -->
+<div class="page" id="informe" style="display:none;max-width:860px">
+
+  <!-- Botones imprimir (no se imprimen) -->
+  <div class="no-print" style="text-align:right;margin-bottom:16px;display:flex;gap:10px;justify-content:flex-end">
+    <button class="btn btn-outline" onclick="reiniciar()">← Nuevo</button>
+    <button class="btn btn-outline" onclick="descargarWord()">⬇ Descargar Word</button>
+    <button class="btn btn-primary" onclick="window.print()">🖨️ Imprimir / PDF</button>
+  </div>
+
+  <div class="informe-wrap">
+
+    <!-- PORTADA -->
+    <div class="informe-portada">
+      <div class="portada-marca">
+        <svg xmlns="http://www.w3.org/2000/svg" width="38" height="42" viewBox="0 0 34 38">
+          <path d="M17 1L2 7V21C2 30 9 37 17 39C25 37 32 30 32 21V7Z" fill="rgba(255,255,255,0.2)" stroke="white" stroke-width="1.5"/>
+          <circle cx="12" cy="19" r="4.5" fill="white" opacity="0.9"/><circle cx="22" cy="19" r="4.5" fill="white" opacity="0.9"/>
+          <circle cx="12" cy="19" r="2" fill="rgba(26,58,92,0.7)"/><circle cx="22" cy="19" r="2" fill="rgba(26,58,92,0.7)"/>
+          <polygon points="15,25 17,28 19,25" fill="white" opacity="0.6"/>
+        </svg>
+        <span>VIGÍA SST</span>
+      </div>
+      <div class="portada-titulo">DIAGNÓSTICO DE<br>CONDICIONES DE SALUD</div>
+      <div class="portada-sub">Reporte generado automáticamente — Información para el SG-SST</div>
+      <div class="portada-empresa" id="p-empresa">—</div>
+      <div class="portada-meta">
+        <span id="p-periodo">—</span>
+        <span id="p-total">—</span>
+        <span id="p-fecha">—</span>
+      </div>
+    </div>
+
+    <!-- 1. RESUMEN -->
+    <div class="seccion">
+      <div class="seccion-titulo">1 · Resumen General</div>
+      <div class="kpi-row" id="kpi-row"></div>
+    </div>
+
+    <!-- 2. TIPO DE EXAMEN -->
+    <div class="seccion">
+      <div class="seccion-titulo">2 · Tipo de Examen Médico</div>
+      <div class="donut-wrap" id="chart-tipo"></div>
+    </div>
+
+    <!-- 3. GÉNERO -->
+    <div class="seccion">
+      <div class="seccion-titulo">3 · Distribución por Género</div>
+      <div class="donut-wrap" id="chart-genero"></div>
+    </div>
+
+    <!-- 4. GRUPOS DE EDAD -->
+    <div class="seccion">
+      <div class="seccion-titulo">4 · Grupos de Edad</div>
+      <div id="chart-edad"></div>
+    </div>
+
+    <!-- 5. CARGO -->
+    <div class="seccion">
+      <div class="seccion-titulo">5 · Distribución por Cargo</div>
+      <div id="chart-cargo"></div>
+    </div>
+
+    <!-- 6. CONCEPTO DE APTITUD -->
+    <div class="seccion">
+      <div class="seccion-titulo">6 · Concepto de Aptitud Médica</div>
+      <div class="donut-wrap" id="chart-aptitud"></div>
+    </div>
+
+    <!-- 7. HÁBITOS (condicional) -->
+    <div class="seccion" id="seccion-habitos" style="display:none">
+      <div class="seccion-titulo">7 · Hábitos de Vida Saludable</div>
+      <div class="charts-grid-3" id="chart-habitos"></div>
+    </div>
+
+    <!-- 8. COMPLEMENTARIOS (condicional) -->
+    <div class="seccion" id="seccion-complementarios" style="display:none">
+      <div class="seccion-titulo">8 · Exámenes Complementarios</div>
+      <div class="charts-grid-2" id="chart-complementarios"></div>
+    </div>
+
+    <!-- 9. RECOMENDACIONES FRECUENTES -->
+    <div class="seccion" id="seccion-recomendaciones" style="display:none">
+      <div class="seccion-titulo">9 · Recomendaciones Médicas Más Frecuentes</div>
+      <table class="rec-table" id="tabla-recomendaciones">
+        <thead><tr><th>Recomendación</th><th style="width:60px;text-align:center">N.°</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <!-- 10. RECOMENDACIONES SG-SST -->
+    <div class="seccion">
+      <div class="seccion-titulo">10 · Recomendaciones para el SG-SST</div>
+      <div class="rec-sgsst" id="rec-sgsst"></div>
+    </div>
+
+    <div class="informe-footer">
+      Informe generado por <strong>Vigía SST</strong> · Sistema de Gestión en Seguridad y Salud en el Trabajo ·
+      Conforme a Res. 1843/2025 y Dec. 1072/2015
+    </div>
+
+  </div><!-- /informe-wrap -->
+</div><!-- /informe -->
+
+<script src="js/vigia-api.js"></script>
+<script>
+  let datosInforme = null;
+
+  async function init() {
+    const ok = await VigiaAPI.requireAuth();
+    if (!ok) return;
+    if (VigiaAPI.esAdmin()) {
+      document.getElementById('empresa-selector').classList.remove('hidden');
+      const empresas = await VigiaAPI.getEmpresas() || [];
+      const sel = document.getElementById('sel-empresa');
+      sel.innerHTML = '<option value="">— Seleccionar empresa —</option>' +
+        empresas.map(e => `<option value="${e.id}">${e.nombre}</option>`).join('');
+    }
+  }
+
+  async function generarInforme() {
+    let empresaId = VigiaAPI.empresaId();
+    if (VigiaAPI.esAdmin()) {
+      empresaId = document.getElementById('sel-empresa').value;
+      if (!empresaId) { alert('Selecciona una empresa'); return; }
+    }
+
+    document.querySelector('.no-print.page').style.opacity = '0.4';
+    document.getElementById('cargando').classList.remove('hidden');
+
+    try {
+      datosInforme = await VigiaAPI.getInformeCondiciones(VigiaAPI.esAdmin() ? empresaId : null);
+      if (!datosInforme.total_empleados) {
+        alert('Esta empresa aún no tiene empleados registrados en Vigía.'); return;
+      }
+      renderInforme(datosInforme);
+      document.getElementById('informe').style.display = 'block';
+      document.getElementById('informe').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch(e) {
+      alert('Error al generar el informe: ' + e.message);
+    } finally {
+      document.querySelector('.no-print.page').style.opacity = '1';
+      document.getElementById('cargando').classList.add('hidden');
+    }
+  }
+
+  function reiniciar() {
+    document.getElementById('informe').style.display = 'none';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // ── Helpers ──────────────────────────────────────────────────
+
+  const COLORS = {
+    preingreso:  '#9B59B6',
+    periodico:   '#2E86AB',
+    retiro:      '#95A5A6',
+    postincap:   '#E67E22',
+    cambio:      '#1ABC9C',
+    masculino:   '#2E86AB',
+    femenino:    '#E84393',
+    otro:        '#95A5A6',
+    apto:        '#27AE60',
+    restriccion: '#F39C12',
+    no_apto:     '#E74C3C',
+    pendiente:   '#95A5A6',
+    normal:      '#27AE60',
+    alterada:    '#E74C3C',
+    critico:     '#E74C3C',
+    advertencia: '#F39C12',
+    seguimiento: '#3498DB',
+    ok:          '#27AE60',
+    c1: '#3498DB', c2: '#27AE60', c3: '#F39C12', c4: '#E74C3C',
+    c5: '#9B59B6', c6: '#1ABC9C', c7: '#E67E22', c8: '#2C3E50',
+  };
+
+  const PALETA = [COLORS.c1, COLORS.c2, COLORS.c3, COLORS.c4, COLORS.c5, COLORS.c6, COLORS.c7, COLORS.c8];
+
+  function pct(n, total) { return total ? Math.round(n / total * 100) : 0; }
+
+  function donut(items, total, size = 130) {
+    let p = 0;
+    const segs = items.map(i => {
+      const pp = total ? i.n / total * 100 : 0;
+      const s = `${i.color} ${p.toFixed(1)}% ${(p + pp).toFixed(1)}%`;
+      p += pp;
+      return s;
+    });
+    if (p < 100) segs.push(`#E8EDF2 ${p.toFixed(1)}% 100%`);
+    const inner = Math.round(size * 0.56);
+    return `
+      <div class="donut" style="width:${size}px;height:${size}px;background:conic-gradient(${segs.join(',')})">
+        <div class="donut-center" style="width:${inner}px;height:${inner}px">
+          <div class="donut-n">${total}</div>
+          <div class="donut-lbl">Total</div>
+        </div>
+      </div>`;
+  }
+
+  function leyenda(items, total) {
+    return `<div class="leyenda">${items.map(i => `
+      <div class="leyenda-item">
+        <span class="leyenda-dot" style="background:${i.color}"></span>
+        <span class="leyenda-label">${i.label}</span>
+        <span class="leyenda-val">${i.n}</span>
+        <span class="leyenda-pct">(${pct(i.n, total)}%)</span>
+      </div>`).join('')}</div>`;
+  }
+
+  function barras(items, color = COLORS.c1) {
+    const max = Math.max(...items.map(i => i.n), 1);
+    return items.map(i => `
+      <div class="bar-row">
+        <div class="bar-label" title="${i.label}">${i.label}</div>
+        <div class="bar-track">
+          <div class="bar-fill" style="width:${Math.round(i.n/max*100)}%;background:${color}"></div>
+        </div>
+        <div class="bar-val">${i.n}</div>
+      </div>`).join('');
+  }
+
+  function miniDonut(label, items, total) {
+    if (!total) return `<div style="text-align:center;padding:20px;color:#8899AA;font-size:13px">${label}<br><small>Sin datos</small></div>`;
+    let p = 0;
+    const segs = items.map(i => {
+      const pp = total ? i.n / total * 100 : 0;
+      const s = `${i.color} ${p.toFixed(1)}% ${(p + pp).toFixed(1)}%`;
+      p += pp;
+      return s;
+    });
+    if (p < 100) segs.push(`#E8EDF2 ${p.toFixed(1)}% 100%`);
+    const size = 90;
+    const inner = 52;
+    return `
+      <div style="text-align:center">
+        <div style="font-size:12px;font-weight:700;color:#1A3A5C;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:12px">${label}</div>
+        <div style="display:flex;justify-content:center;margin-bottom:10px">
+          <div class="donut" style="width:${size}px;height:${size}px;background:conic-gradient(${segs.join(',')})">
+            <div class="donut-center" style="width:${inner}px;height:${inner}px">
+              <div style="font-size:16px;font-weight:900;color:#1A3A5C">${total}</div>
+            </div>
+          </div>
+        </div>
+        <div style="font-size:12px;">${items.map(i => `
+          <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:4px">
+            <span style="width:9px;height:9px;border-radius:50%;background:${i.color};display:inline-block"></span>
+            <span style="color:#444">${i.label}: <strong>${i.n}</strong> (${pct(i.n, total)}%)</span>
+          </div>`).join('')}</div>
+      </div>`;
+  }
+
+  // ── Render ───────────────────────────────────────────────────
+
+  function renderInforme(d) {
+    const hoy = new Date();
+    const fmtFecha = s => { if (!s) return '—'; const [y,m,dd] = s.split('-'); const mes = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic']; return `${dd} ${mes[+m-1]} ${y}`; };
+
+    // Portada
+    document.getElementById('p-empresa').textContent = d.empresa?.nombre || '—';
+    const desde = d.periodo?.desde, hasta = d.periodo?.hasta;
+    document.getElementById('p-periodo').textContent = (desde && hasta) ? `Período: ${fmtFecha(desde)} — ${fmtFecha(hasta)}` : 'Sin período definido';
+    document.getElementById('p-total').textContent   = `${d.total_empleados} empleado${d.total_empleados !== 1 ? 's' : ''} evaluado${d.total_empleados !== 1 ? 's' : ''}`;
+    document.getElementById('p-fecha').textContent   = `Generado el ${hoy.toLocaleDateString('es-CO', { year:'numeric', month:'long', day:'numeric' })}`;
+
+    // KPIs
+    const ipsTop = Object.entries(d.ips_count || {}).sort(([,a],[,b]) => b - a)[0];
+    document.getElementById('kpi-row').innerHTML = `
+      <div class="kpi"><div class="kpi-n">${d.total_empleados}</div><div class="kpi-l">Empleados</div></div>
+      <div class="kpi"><div class="kpi-n">${d.total_examenes}</div><div class="kpi-l">Exámenes totales</div></div>
+      <div class="kpi"><div class="kpi-n">${d.alertas?.ok || 0}</div><div class="kpi-l" style="color:#27AE60">Al día</div></div>
+      <div class="kpi"><div class="kpi-n" style="color:#E74C3C">${d.alertas?.critico || 0}</div><div class="kpi-l" style="color:#E74C3C">Críticos</div></div>`;
+
+    // Tipo de examen
+    const TIPO_COLOR = { 'PRE-INGRESO': COLORS.preingreso, 'PERIODICO': COLORS.periodico, 'RETIRO': COLORS.retiro, 'EGRESO': COLORS.retiro, 'POST-INCAPACIDAD': COLORS.postincap, 'CAMBIO DE OCUPACION': COLORS.cambio, 'RETORNO LABORAL': '#8E44AD', 'SEGUIMIENTO': '#16A085' };
+    const TIPO_LABEL = { 'PRE-INGRESO': 'Pre-ingreso', 'PERIODICO': 'Periódico', 'RETIRO': 'Retiro/Egreso', 'EGRESO': 'Retiro/Egreso', 'POST-INCAPACIDAD': 'Post-incapacidad', 'CAMBIO DE OCUPACION': 'Cambio de ocupación', 'RETORNO LABORAL': 'Retorno laboral', 'SEGUIMIENTO': 'Seguimiento/Control' };
+    const tipoItems = Object.entries(d.tipos_examen || {}).sort(([,a],[,b]) => b - a).map(([k, n], i) => ({
+      label: TIPO_LABEL[k] || k, n, color: TIPO_COLOR[k] || PALETA[i % PALETA.length]
+    }));
+    const tipoTotal = tipoItems.reduce((s, i) => s + i.n, 0);
+    document.getElementById('chart-tipo').innerHTML = donut(tipoItems, tipoTotal) + leyenda(tipoItems, tipoTotal);
+
+    // Género
+    const genItems = [
+      { label: 'Masculino', n: d.sexo?.masculino || 0, color: COLORS.masculino },
+      { label: 'Femenino',  n: d.sexo?.femenino  || 0, color: COLORS.femenino  },
+    ].filter(i => i.n > 0);
+    if (d.sexo?.otro > 0) genItems.push({ label: 'Otro', n: d.sexo.otro, color: COLORS.otro });
+    const genTotal = genItems.reduce((s, i) => s + i.n, 0);
+    document.getElementById('chart-genero').innerHTML = donut(genItems, genTotal) + leyenda(genItems, genTotal);
+
+    // Grupos de edad
+    const edadKeys = ['18-25','26-35','36-45','46-55','56+'];
+    const edadItems = edadKeys.filter(k => (d.grupos_edad?.[k] || 0) > 0).map((k, i) => ({ label: k + ' años', n: d.grupos_edad[k], color: PALETA[i] }));
+    document.getElementById('chart-edad').innerHTML = barras(edadItems, COLORS.c1);
+
+    // Cargos (top 8)
+    const cargoItems = Object.entries(d.cargos || {}).sort(([,a],[,b]) => b - a).slice(0, 8).map(([k, n]) => ({ label: k, n }));
+    document.getElementById('chart-cargo').innerHTML = barras(cargoItems, COLORS.c2);
+
+    // Aptitud
+    const APT_COLOR = { 'APTO SIN RESTRICCIONES': COLORS.apto, 'APTO CON RESTRICCIONES': COLORS.restriccion, 'NO APTO': COLORS.no_apto, 'PENDIENTE': COLORS.pendiente };
+    const APT_LABEL = { 'APTO SIN RESTRICCIONES': 'Apto sin restricciones', 'APTO CON RESTRICCIONES': 'Apto con restricciones', 'NO APTO': 'No apto', 'PENDIENTE': 'Pendiente', 'SIN CONCEPTO': 'Sin concepto' };
+    const aptItems = Object.entries(d.conceptos || {}).sort(([,a],[,b]) => b - a).map(([k, n], i) => ({
+      label: APT_LABEL[k] || k, n, color: APT_COLOR[k] || PALETA[i]
+    }));
+    const aptTotal = aptItems.reduce((s, i) => s + i.n, 0);
+    document.getElementById('chart-aptitud').innerHTML = donut(aptItems, aptTotal) + leyenda(aptItems, aptTotal);
+
+    // Hábitos
+    if (d.habitos?.n > 0) {
+      document.getElementById('seccion-habitos').style.display = 'block';
+      const n = d.habitos.n;
+      document.getElementById('chart-habitos').innerHTML = `
+        ${miniDonut('Tabaquismo',
+          [{ label: 'Fumadores', n: d.habitos.fumadores, color: COLORS.no_apto }, { label: 'No fuman', n: d.habitos.no_fumadores, color: COLORS.apto }],
+          d.habitos.fumadores + d.habitos.no_fumadores)}
+        ${miniDonut('Consumo de Licor',
+          [{ label: 'Consumen', n: d.habitos.consume_licor, color: COLORS.restriccion }, { label: 'No consumen', n: d.habitos.no_licor, color: COLORS.apto }],
+          d.habitos.consume_licor + d.habitos.no_licor)}
+        ${miniDonut('Actividad Física',
+          [{ label: 'Practican deporte', n: d.habitos.practica_deporte, color: COLORS.apto }, { label: 'No activos', n: d.habitos.no_deporte, color: COLORS.restriccion }],
+          d.habitos.practica_deporte + d.habitos.no_deporte)}`;
+    }
+
+    // Complementarios
+    const comp = d.complementarios || {};
+    const tieneComp = Object.values(comp).some(v => v.n > 0);
+    if (tieneComp) {
+      document.getElementById('seccion-complementarios').style.display = 'block';
+      const COMP_LABEL = { audiometria: 'Audiometría', visiometria: 'Visiometría', espirometria: 'Espirometría', osteomuscular: 'Osteomuscular' };
+      document.getElementById('chart-complementarios').innerHTML = Object.entries(comp).map(([key, v]) => {
+        if (!v.n) return `<div style="text-align:center;padding:20px;color:#8899AA;font-size:12px">${COMP_LABEL[key]}<br><small>Sin datos</small></div>`;
+        return miniDonut(COMP_LABEL[key], [
+          { label: 'Normal',   n: v.normal,  color: COLORS.normal  },
+          { label: 'Alterada', n: v.alterada, color: COLORS.alterada },
+        ], v.n);
+      }).join('');
+    }
+
+    // Recomendaciones frecuentes
+    if (d.top_recomendaciones?.length) {
+      document.getElementById('seccion-recomendaciones').style.display = 'block';
+      document.querySelector('#tabla-recomendaciones tbody').innerHTML =
+        d.top_recomendaciones.map(r => `<tr><td>${r.rec}</td><td style="text-align:center;font-weight:700">${r.n}</td></tr>`).join('');
+    }
+
+    // Recomendaciones SG-SST
+    document.getElementById('rec-sgsst').innerHTML = generarRecSGSST(d).map(r => `
+      <div class="rec-item ${r.tipo}">
+        <div class="rec-icon">${r.icono}</div>
+        <div class="rec-body">
+          <h4>${r.titulo}</h4>
+          <p>${r.descripcion}</p>
+          <div class="rec-norma">${r.norma}</div>
+        </div>
+      </div>`).join('');
+  }
+
+  function generarRecSGSST(d) {
+    const recs = [];
+    const comp = d.complementarios || {};
+    const hab  = d.habitos || {};
+
+    // Dinámicas basadas en datos
+    if (comp.audiometria?.n > 0 && pct(comp.audiometria.alterada, comp.audiometria.n) >= 20) {
+      recs.push({ tipo:'alerta', icono:'🔊', titulo:'Programa de Conservación Auditiva (PCA)',
+        descripcion:`El ${pct(comp.audiometria.alterada, comp.audiometria.n)}% de las audiometrías presentaron alteraciones. Se recomienda implementar un PCA: evaluación de la fuente de ruido, controles de ingeniería, EPP auditivo y seguimiento semestral.`,
+        norma:'NTC 4876 — Resolución 1792 de 1990' });
+    }
+    if (comp.visiometria?.n > 0 && pct(comp.visiometria.alterada, comp.visiometria.n) >= 20) {
+      recs.push({ tipo:'alerta', icono:'👁️', titulo:'Programa de Higiene Visual',
+        descripcion:`El ${pct(comp.visiometria.alterada, comp.visiometria.n)}% de las visiometrías presentaron alteraciones. Evaluar condiciones de iluminación, pantallas de visualización de datos (PVD) y proveer corrección visual a quienes la requieran.`,
+        norma:'GTC 8 — NTC 2050' });
+    }
+    if (comp.osteomuscular?.n > 0 && pct(comp.osteomuscular.alterada, comp.osteomuscular.n) >= 20) {
+      recs.push({ tipo:'alerta', icono:'🦴', titulo:'Vigilancia Epidemiológica Osteomuscular',
+        descripcion:`El ${pct(comp.osteomuscular.alterada, comp.osteomuscular.n)}% presentaron hallazgos osteomusculares. Implementar SVE osteomuscular: evaluación ergonómica de puestos, pausas activas dirigidas y seguimiento médico periódico.`,
+        norma:'GTC 45 — Resolución 2844/2007' });
+    }
+
+    const aptTotal = Object.values(d.conceptos || {}).reduce((s, n) => s + n, 0);
+    const conRestr = d.conceptos?.['APTO CON RESTRICCIONES'] || 0;
+    if (aptTotal > 0 && pct(conRestr, aptTotal) >= 15) {
+      recs.push({ tipo:'alerta', icono:'⚙️', titulo:'Seguimiento a Adaptaciones de Puesto de Trabajo',
+        descripcion:`El ${pct(conRestr, aptTotal)}% de los trabajadores presentan aptitud con restricciones. Verificar que las adaptaciones de puesto estén implementadas, documentadas y sean revisadas periódicamente con el médico laboral.`,
+        norma:'Decreto 1072 de 2015 — Art. 2.2.4.6.24' });
+    }
+
+    if (hab.n > 0) {
+      const pctFuma = pct(hab.fumadores, hab.fumadores + hab.no_fumadores);
+      if (pctFuma >= 10) {
+        recs.push({ tipo:'habito', icono:'🚭', titulo:'Programa de Cesación del Tabaquismo',
+          descripcion:`El ${pctFuma}% de los evaluados refiere ser fumador. Implementar estrategias de ambientes libres de humo, charlas de riesgo cardiovascular y derivación a programas de cesación.`,
+          norma:'Ley 1335/2009 — Resolución 1075/1992' });
+      }
+      const pctDeporte = pct(hab.practica_deporte, hab.practica_deporte + hab.no_deporte);
+      if (pctDeporte < 50) {
+        recs.push({ tipo:'habito', icono:'🏃', titulo:'Promoción de Actividad Física',
+          descripcion:`Solo el ${pctDeporte}% practica deporte regularmente. Promover actividad física (mín. 150 min/semana según OMS), implementar pausas activas y convenios con centros deportivos como beneficio laboral.`,
+          norma:'OMS 2020 — Resolución 2404/2019' });
+      }
+    }
+
+    // Siempre
+    recs.push({ tipo:'base', icono:'📅', titulo:'Cronograma de Exámenes Médicos Periódicos',
+      descripcion:'Programar anualmente los exámenes médicos ocupacionales periódicos para todos los trabajadores. Garantizar la ejecución con las IPS contratadas y archivar los resultados en la historia clínica ocupacional.',
+      norma:'Resolución 1843 de 2025' });
+    recs.push({ tipo:'base', icono:'🧘', titulo:'Pausas Activas',
+      descripcion:'Implementar pausas activas de 5-10 minutos cada 2 horas durante la jornada laboral. Incluir ejercicios de estiramiento osteomuscular, relajación visual y movilidad articular adaptados al puesto de trabajo.',
+      norma:'Resolución 0312 de 2019' });
+    recs.push({ tipo:'base', icono:'🔬', titulo:'Sistemas de Vigilancia Epidemiológica',
+      descripcion:'Establecer o fortalecer los SVE según los factores de riesgo prioritarios de la empresa (osteomuscular, auditivo, visual, psicosocial). Definir indicadores de seguimiento y revisarlos en el Comité Paritario de SST (COPASST).',
+      norma:'Decreto 1072 de 2015 — Art. 2.2.4.6.21' });
+    recs.push({ tipo:'base', icono:'🪑', titulo:'Evaluación Ergonómica de Puestos de Trabajo',
+      descripcion:'Realizar análisis ergonómico de los puestos con mayor carga física o postural. Implementar mejoras en mobiliario, herramientas y organización del trabajo para reducir lesiones osteomusculares.',
+      norma:'GTC 45 — ISO 9241' });
+    recs.push({ tipo:'base', icono:'📚', titulo:'Capacitación en Salud y Autocuidado',
+      descripcion:'Desarrollar jornadas de capacitación en hábitos de vida saludable, higiene postural, manejo del estrés y prevención de enfermedades laborales. Mínimo 20 horas/año por trabajador en SST.',
+      norma:'Resolución 0312 de 2019 — Art. 11' });
+
+    return recs;
+  }
+
+  // ── Descargar Word ───────────────────────────────────────────
+
+  function descargarWord() {
+    if (!datosInforme) return;
+    const d = datosInforme;
+    const hoy = new Date();
+    const fmtFecha = s => { if (!s) return '—'; const [y,m,dd] = s.split('-'); const mes = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre']; return `${parseInt(dd)} de ${mes[+m-1]} de ${y}`; };
+    const fmtPct = (n, total) => total ? ` (${Math.round(n/total*100)}%)` : '';
+
+    const filaTabla = (label, n, total) =>
+      `<tr><td>${label}</td><td style="text-align:center;font-weight:bold">${n}</td><td style="text-align:center;color:#666">${total ? Math.round(n/total*100)+'%' : '—'}</td></tr>`;
+
+    // ── Secciones ──
+    const secResumen = `
+      <h2>1. RESUMEN GENERAL</h2>
+      <table><thead><tr><th>Indicador</th><th>Valor</th><th>%</th></tr></thead><tbody>
+        <tr><td>Total empleados evaluados</td><td style="text-align:center;font-weight:bold">${d.total_empleados}</td><td style="text-align:center">—</td></tr>
+        <tr><td>Total exámenes registrados</td><td style="text-align:center;font-weight:bold">${d.total_examenes}</td><td style="text-align:center">—</td></tr>
+        ${filaTabla('Empleados al día (OK)', d.alertas?.ok||0, d.total_empleados)}
+        ${filaTabla('Alertas críticas', d.alertas?.critico||0, d.total_empleados)}
+        ${filaTabla('Advertencias (por vencer)', d.alertas?.advertencia||0, d.total_empleados)}
+        ${filaTabla('En seguimiento', d.alertas?.seguimiento||0, d.total_empleados)}
+      </tbody></table>`;
+
+    const TIPO_LABEL = { 'PRE-INGRESO':'Pre-ingreso', 'PERIODICO':'Periódico', 'RETIRO':'Retiro/Egreso', 'POST-INCAPACIDAD':'Post-incapacidad', 'CAMBIO DE OCUPACION':'Cambio de ocupación' };
+    const tipoTotal = Object.values(d.tipos_examen||{}).reduce((s,n)=>s+n,0);
+    const secTipo = `
+      <h2>2. TIPO DE EXAMEN MÉDICO</h2>
+      <table><thead><tr><th>Tipo</th><th>N.°</th><th>%</th></tr></thead><tbody>
+        ${Object.entries(d.tipos_examen||{}).sort(([,a],[,b])=>b-a).map(([k,n])=>
+          filaTabla(TIPO_LABEL[k]||k, n, tipoTotal)).join('')}
+      </tbody></table>`;
+
+    const genTotal = (d.sexo?.masculino||0) + (d.sexo?.femenino||0) + (d.sexo?.otro||0);
+    const secGenero = `
+      <h2>3. DISTRIBUCIÓN POR GÉNERO</h2>
+      <table><thead><tr><th>Género</th><th>N.°</th><th>%</th></tr></thead><tbody>
+        ${filaTabla('Masculino', d.sexo?.masculino||0, genTotal)}
+        ${filaTabla('Femenino',  d.sexo?.femenino||0,  genTotal)}
+        ${(d.sexo?.otro||0) > 0 ? filaTabla('Otro', d.sexo.otro, genTotal) : ''}
+      </tbody></table>`;
+
+    const edadKeys = ['18-25','26-35','36-45','46-55','56+'];
+    const edadTotal = edadKeys.reduce((s,k)=>s+(d.grupos_edad?.[k]||0),0);
+    const secEdad = `
+      <h2>4. GRUPOS DE EDAD</h2>
+      <table><thead><tr><th>Grupo de edad</th><th>N.°</th><th>%</th></tr></thead><tbody>
+        ${edadKeys.filter(k=>(d.grupos_edad?.[k]||0)>0).map(k=>
+          filaTabla(k+' años', d.grupos_edad[k], edadTotal)).join('')}
+      </tbody></table>`;
+
+    const cargoTotal = Object.values(d.cargos||{}).reduce((s,n)=>s+n,0);
+    const secCargo = `
+      <h2>5. DISTRIBUCIÓN POR CARGO</h2>
+      <table><thead><tr><th>Cargo</th><th>N.°</th><th>%</th></tr></thead><tbody>
+        ${Object.entries(d.cargos||{}).sort(([,a],[,b])=>b-a).slice(0,10).map(([k,n])=>
+          filaTabla(k, n, cargoTotal)).join('')}
+      </tbody></table>`;
+
+    const APT_LABEL = { 'APTO SIN RESTRICCIONES':'Apto sin restricciones', 'APTO CON RESTRICCIONES':'Apto con restricciones', 'NO APTO':'No apto', 'PENDIENTE':'Pendiente' };
+    const aptTotal = Object.values(d.conceptos||{}).reduce((s,n)=>s+n,0);
+    const secAptitud = `
+      <h2>6. CONCEPTO DE APTITUD MÉDICA</h2>
+      <table><thead><tr><th>Concepto</th><th>N.°</th><th>%</th></tr></thead><tbody>
+        ${Object.entries(d.conceptos||{}).sort(([,a],[,b])=>b-a).map(([k,n])=>
+          filaTabla(APT_LABEL[k]||k, n, aptTotal)).join('')}
+      </tbody></table>`;
+
+    let secHabitos = '';
+    if (d.habitos?.n > 0) {
+      const h = d.habitos;
+      const fn = h.fumadores + h.no_fumadores;
+      const fl = h.consume_licor + h.no_licor;
+      const fd = h.practica_deporte + h.no_deporte;
+      secHabitos = `
+        <h2>7. HÁBITOS DE VIDA SALUDABLE</h2>
+        <table><thead><tr><th>Hábito</th><th>Sí</th><th>No</th><th>% Sí</th></tr></thead><tbody>
+          <tr><td>Tabaquismo (fuma)</td><td style="text-align:center;font-weight:bold">${h.fumadores}</td><td style="text-align:center">${h.no_fumadores}</td><td style="text-align:center">${fn?Math.round(h.fumadores/fn*100):'—'}%</td></tr>
+          <tr><td>Consumo de licor</td><td style="text-align:center;font-weight:bold">${h.consume_licor}</td><td style="text-align:center">${h.no_licor}</td><td style="text-align:center">${fl?Math.round(h.consume_licor/fl*100):'—'}%</td></tr>
+          <tr><td>Actividad física / deporte</td><td style="text-align:center;font-weight:bold">${h.practica_deporte}</td><td style="text-align:center">${h.no_deporte}</td><td style="text-align:center">${fd?Math.round(h.practica_deporte/fd*100):'—'}%</td></tr>
+        </tbody></table>`;
+    }
+
+    const comp = d.complementarios || {};
+    const tieneComp = Object.values(comp).some(v => v.n > 0);
+    let secComp = '';
+    if (tieneComp) {
+      const COMP_LABEL = { audiometria:'Audiometría', visiometria:'Visiometría', espirometria:'Espirometría', osteomuscular:'Evaluación Osteomuscular' };
+      secComp = `
+        <h2>${d.habitos?.n > 0 ? '8' : '7'}. EXÁMENES COMPLEMENTARIOS</h2>
+        <table><thead><tr><th>Examen</th><th>Evaluados</th><th>Normal</th><th>Alterado</th><th>% Alterado</th></tr></thead><tbody>
+          ${Object.entries(comp).filter(([,v])=>v.n>0).map(([key,v])=>`
+          <tr><td>${COMP_LABEL[key]||key}</td>
+            <td style="text-align:center">${v.n}</td>
+            <td style="text-align:center;color:green;font-weight:bold">${v.normal}</td>
+            <td style="text-align:center;color:red;font-weight:bold">${v.alterada}</td>
+            <td style="text-align:center">${Math.round(v.alterada/v.n*100)}%</td>
+          </tr>`).join('')}
+        </tbody></table>`;
+    }
+
+    let secRecFrecuentes = '';
+    if (d.top_recomendaciones?.length) {
+      secRecFrecuentes = `
+        <h2>RECOMENDACIONES MÉDICAS MÁS FRECUENTES</h2>
+        <table><thead><tr><th>Recomendación médica</th><th style="width:60px;text-align:center">N.°</th></tr></thead><tbody>
+          ${d.top_recomendaciones.map(r=>`<tr><td>${r.rec}</td><td style="text-align:center;font-weight:bold">${r.n}</td></tr>`).join('')}
+        </tbody></table>`;
+    }
+
+    const recsSST = generarRecSGSST(d);
+    const secSST = `
+      <h2>RECOMENDACIONES PARA EL SG-SST</h2>
+      ${recsSST.map(r=>`
+        <div class="rec-box ${r.tipo}">
+          <strong>${r.icono} ${r.titulo}</strong><br/>
+          <span style="font-size:10pt">${r.descripcion}</span><br/>
+          <span style="font-size:9pt;color:#888;font-style:italic">Normativa: ${r.norma}</span>
+        </div>`).join('')}`;
+
+    const desde = d.periodo?.desde, hasta = d.periodo?.hasta;
+    const periodoStr = (desde && hasta) ? `${fmtFecha(desde)} — ${fmtFecha(hasta)}` : 'Sin período definido';
+    const fechaGenerado = hoy.toLocaleDateString('es-CO', { year:'numeric', month:'long', day:'numeric' });
+
+    const html = `
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+      xmlns:w="urn:schemas-microsoft-com:office:word"
+      xmlns="http://www.w3.org/TR/REC-html40">
+<head><meta charset="UTF-8">
+<style>
+  body { font-family:Calibri,Arial,sans-serif; font-size:11pt; color:#222; margin:2cm; }
+  h1 { font-size:20pt; color:#1A3A5C; margin-bottom:4pt; }
+  h2 { font-size:13pt; color:#2E86AB; border-bottom:2px solid #2E86AB; padding-bottom:4pt; margin-top:24pt; margin-bottom:10pt; }
+  p  { margin:4pt 0; font-size:11pt; }
+  table { border-collapse:collapse; width:100%; margin-bottom:14pt; font-size:10pt; }
+  thead tr { background:#1A3A5C; }
+  th { color:white; font-weight:bold; padding:7pt 10pt; text-align:left; }
+  td { padding:6pt 10pt; border-bottom:1px solid #E0E6EE; }
+  tr:nth-child(even) td { background:#F8FAFD; }
+  .portada { background:#1A3A5C; color:white; padding:24pt; margin:-2cm -2cm 24pt; }
+  .portada h1 { color:white; font-size:22pt; margin-bottom:6pt; }
+  .portada h3 { color:#CBD8E6; font-size:14pt; font-weight:normal; margin:4pt 0; }
+  .portada p  { color:#A0B4C8; font-size:10pt; }
+  .rec-box { border-left:4pt solid #2E86AB; padding:8pt 12pt; margin-bottom:8pt; background:#F8FAFD; }
+  .rec-box.alerta { border-left-color:#E74C3C; background:#FEF8F8; }
+  .rec-box.habito { border-left-color:#27AE60; background:#F0FBF4; }
+  .pie { color:#888; font-size:9pt; margin-top:40pt; border-top:1px solid #ddd; padding-top:8pt; text-align:center; }
+</style></head>
+<body>
+<div class="portada">
+  <h1>DIAGNÓSTICO DE CONDICIONES DE SALUD</h1>
+  <h3>${d.empresa?.nombre || '—'}</h3>
+  <p>Período: ${periodoStr}</p>
+  <p>${d.total_empleados} empleado${d.total_empleados!==1?'s':''} evaluado${d.total_empleados!==1?'s':''} · ${d.total_examenes} examen${d.total_examenes!==1?'es':''} registrado${d.total_examenes!==1?'s':''}</p>
+  <p>Generado el ${fechaGenerado} — Sistema Vigía SST</p>
+</div>
+
+${secResumen}
+${secTipo}
+${secGenero}
+${secEdad}
+${secCargo}
+${secAptitud}
+${secHabitos}
+${secComp}
+${secRecFrecuentes}
+${secSST}
+
+<div class="pie">
+  Informe generado por Vigía SST · Sistema de Gestión en Seguridad y Salud en el Trabajo ·
+  Conforme a Resolución 1843/2025 y Decreto 1072/2015
+</div>
+</body></html>`;
+
+    const nombreEmpresa = (d.empresa?.nombre || 'informe').replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
+    const anio = hoy.getFullYear();
+    const blob = new Blob([html], { type: 'application/msword;charset=utf-8' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url; a.download = `diagnostico-salud-${nombreEmpresa}-${anio}.doc`; a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  init();
+</script>
+<script src="js/vigia-chat.js"></script>
+</body>
+</html>
+

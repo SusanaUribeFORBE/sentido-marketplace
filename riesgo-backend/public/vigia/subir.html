@@ -1,0 +1,605 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vigía 360 — Subir examen</title>
+  <link rel="stylesheet" href="vigia.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="dashboard.html" style="display:flex;align-items:center;gap:10px;text-decoration:none">
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="36" viewBox="0 0 34 38">
+      <path d="M17 1L2 7V21C2 30 9 37 17 39C25 37 32 30 32 21V7Z" fill="rgba(255,255,255,0.15)" stroke="white" stroke-width="1.5"/>
+      <circle cx="12" cy="19" r="4.5" fill="white" opacity="0.9"/>
+      <circle cx="22" cy="19" r="4.5" fill="white" opacity="0.9"/>
+      <circle cx="12" cy="19" r="2" fill="rgba(26,58,92,0.8)"/>
+      <circle cx="22" cy="19" r="2" fill="rgba(26,58,92,0.8)"/>
+      <polygon points="15,25 17,28 19,25" fill="white" opacity="0.7"/>
+    </svg>
+    <span style="color:white;font-weight:800;font-size:17px;letter-spacing:0.5px">VIGÍA <span style="color:#4ADE80;font-weight:900">360</span></span>
+  </a>
+  <div class="nav-links">
+    <a href="dashboard.html" class="nav-link-fixed">Dashboard</a>
+
+    <!-- P — Planear -->
+    <div class="nav-dropdown" id="dd-P">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-P')">
+        <span class="phva-pill phva-P">P</span> Planear <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="perfil-responsable.html">🩺 Responsable SST</a>
+        <a href="responsabilidades.html">👥 Roles y Responsabilidades</a>
+        <a href="copasst.html">🤝 COPASST y Convivencia</a>
+        <a href="documentos-sst.html">📄 Documentos del SG-SST</a>
+        <a href="matriz-peligros.html">⚠️ Matriz de Peligros (GTC-45)</a>
+        <a href="plan-trabajo.html">📅 Plan de Trabajo Anual</a>
+        <a href="presupuesto-sgsst.html">💰 Presupuesto SG-SST</a>
+        <a href="profesiograma.html">💊 Profesiograma</a>
+      </div>
+    </div>
+
+    <!-- H — Hacer -->
+    <div class="nav-dropdown" id="dd-H">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-H')">
+        <span class="phva-pill phva-H">H</span> Hacer <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="epp.html">🦺 EPP</a>
+        <a href="capacitaciones.html">🎓 Capacitaciones</a>
+        <a href="emergencias.html">🚨 Emergencias y Brigada</a>
+        <a href="inspecciones.html">🔍 Inspecciones y Mantenimiento</a>
+        <a href="perfil-salud.html">🏥 Salud Ocupacional</a>
+        <div class="nav-dd-divider"></div>
+        <a href="lista-personal.html">👥 Lista de Personal</a>
+        <a href="subir.html">⬆️ Subir Examen</a>
+        <a href="subir-masivo.html">📦 Carga Masiva</a>
+        <a href="cartas-masivas.html">📄 Cartas Masivas</a>
+        <a href="reporte-examenes.html">📊 Cobertura de Exámenes</a>
+        <a href="informe-condiciones.html">📋 Informe de Condiciones</a>
+      </div>
+    </div>
+
+    <!-- V — Verificar -->
+    <div class="nav-dropdown" id="dd-V">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-V')">
+        <span class="phva-pill phva-V">V</span> Verificar <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="evaluacion-sst.html">📋 Evaluación (Res. 0312)</a>
+        <a href="investigaciones.html">🔍 AT / Incidentes</a>
+        <a href="ausentismo.html">📉 Ausentismo laboral</a>
+        <a href="indicadores-sgsst.html">📊 Indicadores SG-SST</a>
+        <a href="analisis-phva.html">📈 Análisis e Indicadores</a>
+      </div>
+    </div>
+
+    <!-- A — Actuar -->
+    <div class="nav-dropdown" id="dd-A">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-A')">
+        <span class="phva-pill phva-A">A</span> Actuar <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="mejoramiento.html">✅ Acciones de Mejoramiento</a>
+        <a href="evaluacion-sst.html">📝 Plan de Mejoramiento (F002)</a>
+      </div>
+    </div>
+
+    <a href="listado-maestro.html" class="nav-link-fixed">📁 Listado Maestro</a>
+    <span id="nav-empresa" style="color:#CBD8E6;font-size:13px;padding:6px 0"></span>
+    <button onclick="VigiaAPI.logout()"
+      style="background:none;border:1px solid rgba(255,255,255,.2);color:#CBD8E6;
+             border-radius:6px;padding:6px 12px;cursor:pointer;font-size:13px">Salir</button>
+  </div>
+</nav>
+
+<div class="page" style="max-width:800px">
+  <div class="page-header">
+    <h1>Subir examen médico ocupacional</h1>
+    <p>La IA extrae los datos automáticamente del PDF. Revisa y confirma antes de guardar.</p>
+  </div>
+
+  <!-- Steps -->
+  <div class="steps">
+    <div class="step active" id="step-1"><div class="step-num">1</div><div class="step-label">Cargar PDF</div></div>
+    <div class="step-line"></div>
+    <div class="step" id="step-2"><div class="step-num">2</div><div class="step-label">Extraer datos</div></div>
+    <div class="step-line"></div>
+    <div class="step" id="step-3"><div class="step-num">3</div><div class="step-label">Revisar</div></div>
+    <div class="step-line"></div>
+    <div class="step" id="step-4"><div class="step-num">4</div><div class="step-label">Guardar</div></div>
+  </div>
+
+  <!-- PASO 1: Upload -->
+  <div id="vista-upload">
+    <div class="upload-zone" id="drop-zone">
+      <div class="upload-icon">📄</div>
+      <h3>Arrastra el PDF aquí</h3>
+      <p>o haz clic para seleccionar el archivo</p>
+      <p class="text-sm text-muted mt-4">Cendiatra, Colmédica, IPS Colombia y otros</p>
+    </div>
+    <input type="file" id="file-input" accept=".pdf" class="hidden" />
+
+    <!-- Selector de empresa (solo admin) -->
+    <div id="empresa-selector" class="hidden mt-4">
+      <div class="form-group">
+        <label>Empresa a la que pertenece este empleado</label>
+        <select id="sel-empresa" class="w-full">
+          <option value="">Cargando empresas…</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="mt-4 flex justify-between">
+      <a href="dashboard.html" class="btn btn-outline">← Volver</a>
+      <button class="btn btn-primary" id="btn-extraer" disabled>Extraer datos →</button>
+    </div>
+  </div>
+
+  <!-- PASO 2: Extrayendo -->
+  <div id="vista-extrayendo" class="hidden">
+    <div class="card" style="padding:48px;text-align:center">
+      <div class="spinner" style="margin:0 auto 20px;border-color:rgba(46,134,171,.2);border-top-color:var(--blue)"></div>
+      <h3 style="color:var(--navy);margin-bottom:8px">Analizando el examen…</h3>
+      <p class="text-muted">Leyendo el PDF y enviando a la IA</p>
+    </div>
+  </div>
+
+  <!-- PASO 3: Revisar -->
+  <div id="vista-revisar" class="hidden">
+    <form id="form-examen" autocomplete="off">
+
+      <div class="field-group mb-4">
+        <div class="field-group-title">👤 Datos del empleado</div>
+        <div class="form-grid">
+          <div class="form-group full"><label>Nombre completo</label><input type="text" id="f-nombre" required /></div>
+          <div class="form-group" style="display:grid;grid-template-columns:110px 1fr;gap:8px;align-items:end">
+            <div>
+              <label>Tipo doc.</label>
+              <select id="f-tipo-doc" class="input" style="padding:8px 6px">
+                <option value="CC">CC</option>
+                <option value="CE">CE</option>
+                <option value="PEP">PEP</option>
+                <option value="Pasaporte">Pasaporte</option>
+                <option value="NIT">NIT</option>
+              </select>
+            </div>
+            <div>
+              <label>Número de documento</label>
+              <input type="text" id="f-cc" required />
+            </div>
+          </div>
+          <div class="form-group"><label>Fecha de nacimiento</label><input type="date" id="f-fecha-nac" /></div>
+          <div class="form-group">
+            <label>Sexo</label>
+            <select id="f-sexo">
+              <option value="">—</option>
+              <option value="FEMENINO">Femenino</option>
+              <option value="MASCULINO">Masculino</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Celular</label><input type="text" id="f-celular" /></div>
+          <div class="form-group"><label>EPS</label><input type="text" id="f-eps" /></div>
+          <div class="form-group">
+            <label>ARL <span style="color:var(--critico)">*</span></label>
+            <input type="text" id="f-arl" placeholder="Nombre de la ARL o 'NO REFIERE'" />
+          </div>
+          <div class="form-group"><label>Fondo de pensiones</label><input type="text" id="f-pension" /></div>
+        </div>
+      </div>
+
+      <div class="field-group mb-4">
+        <div class="field-group-title">🏢 Empresa y cargo</div>
+        <div class="form-grid">
+          <div class="form-group full"><label>Empresa</label><input type="text" id="f-empresa" required /></div>
+          <div class="form-group"><label>Cargo</label><input type="text" id="f-cargo" /></div>
+          <div class="form-group"><label>Departamento</label><input type="text" id="f-departamento" /></div>
+        </div>
+      </div>
+
+      <div class="field-group mb-4">
+        <div class="field-group-title">🩺 Datos del examen</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Tipo de examen</label>
+            <select id="f-tipo" required>
+              <option value="">—</option>
+              <option value="PRE-INGRESO">Pre-ingreso</option>
+              <option value="PERIODICO">Periódico</option>
+              <option value="POST-INCAPACIDAD">Post-incapacidad (≥30 días)</option>
+              <option value="CAMBIO DE OCUPACION">Cambio de ocupación</option>
+              <option value="RETORNO LABORAL">Retorno laboral (ausencia ≥90 días)</option>
+              <option value="SEGUIMIENTO">Seguimiento / Control</option>
+              <option value="RETIRO">Retiro / Egreso</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Fecha del examen</label><input type="date" id="f-fecha" required /></div>
+          <div class="form-group"><label>IPS <span style="color:#E74C3C">*</span></label><input type="text" id="f-ips" required placeholder="Nombre de la clínica o laboratorio" /></div>
+          <div class="form-group"><label>Médico <span style="color:#E74C3C">*</span></label><input type="text" id="f-medico" required placeholder="Nombre del médico laboral" /></div>
+          <div class="form-group"><label>Licencia SST del médico</label><input type="text" id="f-licencia-sst" /></div>
+          <div class="form-group">
+            <label>Concepto de aptitud</label>
+            <select id="f-concepto" required>
+              <option value="">—</option>
+              <option value="APTO SIN RESTRICCIONES">Apto sin restricciones</option>
+              <option value="APTO CON RESTRICCIONES">Apto con restricciones</option>
+              <option value="NO APTO">No apto</option>
+              <option value="PENDIENTE">Pendiente</option>
+            </select>
+            <div id="no-apto-aviso" style="display:none;margin-top:7px;background:#FFF8E1;border:1px solid #F39C12;border-radius:6px;padding:8px 10px;font-size:11.5px;color:#7D5A00;line-height:1.5">
+              ⚠️ <strong>Res. 1843/2025, Art. 19:</strong> "NO APTO" aplica únicamente para conductores, trabajo en altura, espacios confinados, energía eléctrica, porte de armas o manipulación de alimentos. Para otros cargos, usar "Apto con restricciones".
+            </div>
+          </div>
+          <div class="form-group full"><label>Exámenes realizados</label><input type="text" id="f-examenes" /></div>
+          <div class="form-group full"><label>Restricciones (si aplica)</label><textarea id="f-restricciones"></textarea></div>
+          <div id="temporalidad-wrap" class="form-group full hidden">
+            <label>Temporalidad de las restricciones <span style="font-size:11px;color:var(--muted)">(Res. 1843/2025, Art. 19)</span></label>
+            <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:center;margin-top:4px">
+              <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:normal;font-size:14px">
+                <input type="radio" name="temporalidad" id="temp-permanente" value="PERMANENTE" checked />
+                Permanente
+              </label>
+              <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:normal;font-size:14px">
+                <input type="radio" name="temporalidad" id="temp-temporal" value="TEMPORAL" />
+                Temporal — hasta:
+              </label>
+              <input type="date" id="f-restriccion-hasta"
+                style="padding:6px 10px;border:1.5px solid var(--border);border-radius:7px;
+                       font-size:13px;color:var(--text);background:var(--bg);display:none" />
+            </div>
+          </div>
+          <div class="form-group full"><label>Recomendaciones médicas</label><textarea id="f-recomendaciones" placeholder="Una por línea"></textarea></div>
+        </div>
+      </div>
+
+      <div class="field-group mb-4">
+        <div class="field-group-title">🔔 Alertas que se generarán</div>
+        <div id="alertas-preview" style="display:flex;flex-direction:column;gap:10px"></div>
+      </div>
+
+      <div class="flex justify-between mt-4">
+        <button type="button" class="btn btn-outline" id="btn-volver-upload">← Subir otro PDF</button>
+        <button type="submit" class="btn btn-navy">Guardar →</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- PASO 4: Guardado -->
+  <div id="vista-guardado" class="hidden">
+    <div class="card" style="padding:48px;text-align:center">
+      <div style="font-size:56px;margin-bottom:16px">✅</div>
+      <h3 style="color:var(--navy);font-size:22px;margin-bottom:8px">Examen guardado</h3>
+      <p class="text-muted" id="msg-guardado"></p>
+      <div class="flex gap-3 mt-6" style="justify-content:center">
+        <a id="link-ver-empleado" href="#" class="btn btn-primary">Ver empleado →</a>
+        <a href="subir.html" class="btn btn-outline">Subir otro</a>
+        <a href="dashboard.html" class="btn btn-outline">Dashboard</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="loading-overlay" id="loading"><div class="spinner"></div><p id="loading-msg">Procesando…</p></div>
+<div class="toast" id="toast"></div>
+
+<script src="js/vigia-api.js"></script>
+<script src="js/alertas.js"></script>
+<script>
+  const SST_URL        = 'https://riesgo-backend-production.up.railway.app/api/sst/analizar-examen';
+  const SST_URL_VISION = 'https://riesgo-backend-production.up.railway.app/api/sst/analizar-examen-imagen';
+  pdfjsLib.GlobalWorkerOptions.workerSrc =
+    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+  let pdfTexto = '', pdfNombre = '', pdfImagenes = [], empleadoGuardadoId = null, extractedData = null;
+
+  async function init() {
+    const ok = await VigiaAPI.requireAuth();
+    if (!ok) return;
+
+    if (VigiaAPI.esAdmin()) {
+      document.getElementById('empresa-selector').classList.remove('hidden');
+      const empresas = await VigiaAPI.getEmpresas() || [];
+      const sel = document.getElementById('sel-empresa');
+      sel.innerHTML = '<option value="">— Seleccionar empresa —</option>' +
+        empresas.map(e => `<option value="${e.id}">${e.nombre}</option>`).join('');
+    }
+  }
+
+  // ── Drop zone ─────────────────────────────────────────────
+  const dropZone  = document.getElementById('drop-zone');
+  const fileInput = document.getElementById('file-input');
+  const btnExtraer = document.getElementById('btn-extraer');
+
+  dropZone.addEventListener('click', () => fileInput.click());
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault(); dropZone.classList.remove('drag-over');
+    const f = e.dataTransfer.files[0];
+    if (f?.type === 'application/pdf') procesarArchivo(f);
+  });
+  fileInput.addEventListener('change', () => { if (fileInput.files[0]) procesarArchivo(fileInput.files[0]); });
+
+  async function procesarArchivo(file) {
+    pdfNombre  = file.name;
+    pdfImagenes = [];
+    dropZone.innerHTML = `<div class="upload-icon">📄</div><h3>${file.name}</h3><p class="text-muted">${(file.size/1024).toFixed(0)} KB — procesando…</p>`;
+    btnExtraer.disabled = true;
+
+    const buf = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+
+    // 1) Intentar extracción de texto (PDFs digitales)
+    let texto = '';
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const c = await page.getTextContent();
+      texto += c.items.map(s => s.str).join(' ') + '\n';
+    }
+    pdfTexto = texto;
+
+    // 2) Si el texto es escaso (PDF escaneado), renderizar páginas como imágenes
+    if (texto.replace(/\s/g, '').length < 150) {
+      dropZone.innerHTML = `<div class="upload-icon">🔍</div><h3>${file.name}</h3><p class="text-muted">PDF escaneado detectado — generando imagen…</p>`;
+      for (let i = 1; i <= Math.min(pdf.numPages, 2); i++) {
+        const page = await pdf.getPage(i);
+        const vp = page.getViewport({ scale: 1.4 });
+        const canvas = document.createElement('canvas');
+        canvas.width  = vp.width;
+        canvas.height = vp.height;
+        await page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
+        pdfImagenes.push(canvas.toDataURL('image/jpeg', 0.72).split(',')[1]);
+      }
+      dropZone.innerHTML = `<div class="upload-icon">🔍</div><h3>${file.name}</h3><p class="text-muted">PDF escaneado — se usará visión IA para leerlo</p>`;
+    } else {
+      dropZone.innerHTML = `<div class="upload-icon">📄</div><h3>${file.name}</h3><p class="text-muted">${(file.size/1024).toFixed(0)} KB — listo</p>`;
+    }
+
+    btnExtraer.disabled = false;
+  }
+
+  btnExtraer.addEventListener('click', async () => {
+    const esEscaneado = pdfImagenes.length > 0;
+    if (!esEscaneado && !pdfTexto) { mostrarToast('Primero selecciona un PDF', 'error'); return; }
+    mostrarVista('extrayendo'); setStep(2);
+
+    try {
+      let resp;
+      if (esEscaneado) {
+        resp = await fetch(SST_URL_VISION, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ imagenes: pdfImagenes })
+        });
+      } else {
+        resp = await fetch(SST_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ texto: pdfTexto })
+        });
+      }
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || `HTTP ${resp.status}`);
+      extractedData = data;
+      llenarFormulario(data);
+      actualizarAlertasPreview();
+      mostrarVista('revisar'); setStep(3);
+    } catch (err) {
+      mostrarToast('Error al extraer: ' + err.message, 'error');
+      mostrarVista('upload'); setStep(1);
+    }
+  });
+
+  function llenarFormulario(d) {
+    const emp = d.empleado || {}, ems = d.empresa || {}, exa = d.examen || {};
+    document.getElementById('f-nombre').value        = emp.nombre || '';
+    document.getElementById('f-cc').value            = emp.cc || '';
+    if (emp.tipo_doc) document.getElementById('f-tipo-doc').value = emp.tipo_doc;
+    document.getElementById('f-fecha-nac').value     = emp.fecha_nac || '';
+    document.getElementById('f-sexo').value          = emp.sexo || '';
+    document.getElementById('f-celular').value       = emp.celular || '';
+    document.getElementById('f-eps').value           = emp.eps || '';
+    document.getElementById('f-arl').value           = emp.arl || '';
+    document.getElementById('f-pension').value       = emp.fondo_pension || '';
+    document.getElementById('f-empresa').value       = ems.nombre || '';
+    document.getElementById('f-cargo').value         = ems.cargo || '';
+    document.getElementById('f-departamento').value  = ems.departamento || '';
+    document.getElementById('f-tipo').value          = exa.tipo || '';
+    document.getElementById('f-fecha').value         = exa.fecha || '';
+    document.getElementById('f-ips').value           = exa.ips || '';
+    document.getElementById('f-medico').value        = exa.medico || '';
+    document.getElementById('f-licencia-sst').value  = exa.licencia_sst || '';
+    document.getElementById('f-concepto').value      = exa.concepto_aptitud || '';
+    document.getElementById('f-examenes').value       = (exa.examenes_realizados || []).join(' · ');
+    document.getElementById('f-restricciones').value  = (exa.restricciones || []).join('\n');
+    document.getElementById('f-recomendaciones').value = (exa.recomendaciones || []).join('\n');
+
+    // Temporalidad de restricciones
+    const esConRestricciones = exa.concepto_aptitud === 'APTO CON RESTRICCIONES';
+    document.getElementById('temporalidad-wrap').classList.toggle('hidden', !esConRestricciones);
+    if (esConRestricciones && exa.restriccion_temporalidad) {
+      const isTemp = exa.restriccion_temporalidad === 'TEMPORAL';
+      document.getElementById(isTemp ? 'temp-temporal' : 'temp-permanente').checked = true;
+      const hastaEl = document.getElementById('f-restriccion-hasta');
+      hastaEl.style.display = isTemp ? 'inline-block' : 'none';
+      if (isTemp && exa.restriccion_hasta) hastaEl.value = exa.restriccion_hasta;
+    }
+  }
+
+  function getTemporalidad() {
+    const r = document.querySelector('input[name="temporalidad"]:checked');
+    const c = document.getElementById('f-concepto').value;
+    if (c !== 'APTO CON RESTRICCIONES' || !r) return null;
+    return r.value;
+  }
+
+  function getRestriccionHasta() {
+    if (getTemporalidad() !== 'TEMPORAL') return null;
+    return document.getElementById('f-restriccion-hasta').value || null;
+  }
+
+  function actualizarAlertasPreview() {
+    const alertas = generarAlertas(
+      {
+        tipo:                     document.getElementById('f-tipo').value,
+        fecha:                    document.getElementById('f-fecha').value,
+        concepto_aptitud:         document.getElementById('f-concepto').value,
+        restricciones:            document.getElementById('f-restricciones').value.split('\n').filter(Boolean),
+        recomendaciones:          document.getElementById('f-recomendaciones').value.split('\n').filter(Boolean),
+        examenes_realizados:      document.getElementById('f-examenes').value.split('·').map(s=>s.trim()).filter(Boolean),
+        restriccion_temporalidad: getTemporalidad(),
+        restriccion_hasta:        getRestriccionHasta(),
+      },
+      { arl: document.getElementById('f-arl').value },
+      { vigenciaMeses: VigiaAPI.vigenciaMeses() }
+    );
+    document.getElementById('alertas-preview').innerHTML = alertas.map(renderAlertaCard).join('');
+  }
+
+  ['f-arl','f-tipo','f-fecha','f-examenes'].forEach(id =>
+    document.getElementById(id)?.addEventListener('change', actualizarAlertasPreview)
+  );
+
+  document.getElementById('f-concepto')?.addEventListener('change', function() {
+    const esConRestricciones = this.value === 'APTO CON RESTRICCIONES';
+    document.getElementById('no-apto-aviso').style.display =
+      this.value === 'NO APTO' ? 'block' : 'none';
+    document.getElementById('temporalidad-wrap').classList.toggle('hidden', !esConRestricciones);
+    if (!esConRestricciones) document.getElementById('temp-permanente').checked = true;
+    actualizarAlertasPreview();
+  });
+
+  document.querySelectorAll('input[name="temporalidad"]').forEach(r =>
+    r.addEventListener('change', function() {
+      document.getElementById('f-restriccion-hasta').style.display =
+        this.value === 'TEMPORAL' ? 'inline-block' : 'none';
+      actualizarAlertasPreview();
+    })
+  );
+
+  document.getElementById('f-restriccion-hasta')?.addEventListener('change', actualizarAlertasPreview);
+
+  document.getElementById('form-examen').addEventListener('submit', async e => {
+    e.preventDefault();
+    const cc     = document.getElementById('f-cc').value.trim();
+    const nombre = document.getElementById('f-nombre').value.trim();
+    if (!cc || !nombre) { mostrarToast('CC y nombre son obligatorios', 'error'); return; }
+
+    // Determinar empresa_id
+    let empresaId = VigiaAPI.empresaId();
+    if (VigiaAPI.esAdmin()) {
+      empresaId = document.getElementById('sel-empresa').value;
+      if (!empresaId) { mostrarToast('Selecciona la empresa para este empleado', 'error'); return; }
+    }
+
+    document.getElementById('loading').classList.add('show');
+    document.getElementById('loading-msg').textContent = 'Guardando empleado…';
+
+    try {
+      // 1. Upsert empleado
+      const emp = await VigiaAPI.crearEmpleado({
+        cc, nombre, empresa_id: empresaId,
+        tipo_doc:     document.getElementById('f-tipo-doc').value || 'CC',
+        fecha_nac:    document.getElementById('f-fecha-nac').value || null,
+        sexo:         document.getElementById('f-sexo').value,
+        celular:      document.getElementById('f-celular').value,
+        eps:          document.getElementById('f-eps').value,
+        arl:          document.getElementById('f-arl').value,
+        fondo_pension:document.getElementById('f-pension').value,
+        cargo:        document.getElementById('f-cargo').value,
+        departamento: document.getElementById('f-departamento').value,
+        estado_civil: extractedData?.empleado?.estado_civil || null,
+        escolaridad:  extractedData?.empleado?.escolaridad || null,
+      });
+
+      // 2. Calcular alertas
+      const alertas = generarAlertas(
+        {
+          tipo:                     document.getElementById('f-tipo').value,
+          fecha:                    document.getElementById('f-fecha').value,
+          concepto_aptitud:         document.getElementById('f-concepto').value,
+          restricciones:            document.getElementById('f-restricciones').value.split('\n').filter(Boolean),
+          recomendaciones:          document.getElementById('f-recomendaciones').value.split('\n').filter(Boolean),
+          examenes_realizados:      document.getElementById('f-examenes').value.split('·').map(s=>s.trim()).filter(Boolean),
+          restriccion_temporalidad: getTemporalidad(),
+          restriccion_hasta:        getRestriccionHasta(),
+        },
+        { arl: document.getElementById('f-arl').value },
+        { vigenciaMeses: VigiaAPI.vigenciaMeses() }
+      );
+
+      // 3. Guardar examen
+      document.getElementById('loading-msg').textContent = 'Guardando examen…';
+      await VigiaAPI.agregarExamen({
+        empleado_id:         emp.id,
+        tipo:                document.getElementById('f-tipo').value,
+        fecha:               document.getElementById('f-fecha').value,
+        ips:                 document.getElementById('f-ips').value,
+        medico:              document.getElementById('f-medico').value,
+        licencia_sst:        document.getElementById('f-licencia-sst').value,
+        concepto_aptitud:    document.getElementById('f-concepto').value,
+        examenes_realizados: document.getElementById('f-examenes').value.split('·').map(s=>s.trim()).filter(Boolean),
+        restricciones:            document.getElementById('f-restricciones').value.split('\n').filter(Boolean),
+        recomendaciones:          document.getElementById('f-recomendaciones').value.split('\n').filter(Boolean),
+        restriccion_temporalidad: getTemporalidad(),
+        restriccion_hasta:        getRestriccionHasta(),
+        alertas,
+        pdf_nombre:               pdfNombre,
+        fumador:             extractedData?.examen?.habitos?.fumador ?? null,
+        consume_licor:       extractedData?.examen?.habitos?.consume_licor ?? null,
+        practica_deporte:    extractedData?.examen?.habitos?.practica_deporte ?? null,
+        audiometria:         extractedData?.examen?.examenes_complementarios?.audiometria || null,
+        visiometria:         extractedData?.examen?.examenes_complementarios?.visiometria || null,
+        espirometria:        extractedData?.examen?.examenes_complementarios?.espirometria || null,
+        osteomuscular:       extractedData?.examen?.examenes_complementarios?.osteomuscular || null,
+        diagnostico_clinico: extractedData?.examen?.diagnostico_clinico || null,
+      });
+
+      empleadoGuardadoId = emp.id;
+      document.getElementById('msg-guardado').textContent =
+        `${nombre} registrado con ${alertas.length} alerta${alertas.length !== 1 ? 's' : ''} SST.`;
+      document.getElementById('link-ver-empleado').href = `empleado.html?id=${emp.id}`;
+      mostrarVista('guardado'); setStep(4);
+      mostrarToast('Examen guardado', 'ok');
+    } catch (err) {
+      mostrarToast('Error al guardar: ' + err.message, 'error');
+    } finally {
+      document.getElementById('loading').classList.remove('show');
+    }
+  });
+
+  document.getElementById('btn-volver-upload').addEventListener('click', () => {
+    pdfTexto = ''; pdfNombre = '';
+    mostrarVista('upload'); setStep(1);
+  });
+
+  function mostrarVista(n) {
+    ['upload','extrayendo','revisar','guardado'].forEach(v =>
+      document.getElementById(`vista-${v}`).classList.toggle('hidden', v !== n)
+    );
+  }
+
+  function setStep(n) {
+    for (let i = 1; i <= 4; i++) {
+      const s = document.getElementById(`step-${i}`);
+      s.classList.remove('active','done');
+      if (i < n) s.classList.add('done');
+      if (i === n) s.classList.add('active');
+    }
+  }
+
+  function mostrarToast(msg, tipo = 'ok') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = `toast toast-${tipo} show`;
+    setTimeout(() => t.classList.remove('show'), 3500);
+  }
+
+  init();
+</script>
+<script src="js/vigia-chat.js"></script>
+</body>
+</html>
+

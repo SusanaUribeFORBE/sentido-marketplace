@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SG-SST F005 — Recomendaciones Médicas</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: Arial, sans-serif;
+      font-size: 10.5pt;
+      color: #000;
+      background: #f5f5f5;
+    }
+
+    .no-print {
+      background: #1a3a5c;
+      padding: 12px 24px;
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      align-items: center;
+    }
+    .btn {
+      padding: 8px 18px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .btn-print { background: #fff; color: #1a3a5c; }
+    .btn-back  { background: rgba(255,255,255,.15); color: #fff; border: 1px solid rgba(255,255,255,.3); }
+
+    .documento {
+      max-width: 210mm;
+      margin: 24px auto;
+      background: #fff;
+      padding: 24px 28px;
+      box-shadow: 0 4px 20px rgba(0,0,0,.12);
+    }
+
+    /* ── Header ──────────────────────────── */
+    .header-table { width: 100%; border-collapse: collapse; margin-bottom: 18px; }
+    .header-table td { border: 1.5px solid #000; padding: 6px 10px; vertical-align: middle; }
+    .h-empresa {
+      width: 22%; text-align: center;
+      font-weight: 800; font-size: 13pt; line-height: 1.2;
+    }
+    .h-titulo {
+      width: 52%; text-align: center;
+      font-weight: 700; font-size: 9.5pt; line-height: 1.5;
+    }
+    .h-codigo {
+      width: 26%; font-size: 8.5pt; font-weight: 600; line-height: 1.8;
+    }
+
+    /* ── Body ────────────────────────────── */
+    .fecha   { margin: 16px 0 14px; font-weight: 700; font-size: 10.5pt; }
+    .destinatario { margin-bottom: 14px; line-height: 1.6; }
+    .emp-nombre { font-weight: 700; font-size: 11pt; text-transform: uppercase; }
+
+    p.cuerpo { margin: 10px 0; line-height: 1.6; }
+
+    .seccion { font-weight: 700; font-size: 10.5pt; margin: 14px 0 6px; text-transform: uppercase; }
+
+    .concepto-resaltado { font-weight: 700; text-decoration: underline; font-size: 11pt; }
+
+    /* ── SVE Table ───────────────────────── */
+    .sve-table { width: 100%; border-collapse: collapse; font-size: 8.5pt; margin: 10px 0 14px; }
+    .sve-table th, .sve-table td {
+      border: 1px solid #000; padding: 5px 7px; vertical-align: top;
+    }
+    .th-main {
+      background: #c8c8c8; font-weight: 700; text-align: center;
+      font-size: 9pt; text-transform: uppercase;
+    }
+    .th-sub {
+      background: #e0e0e0; font-weight: 700; text-align: center; font-size: 8pt;
+    }
+    .td-sve  { width: 15%; font-weight: 700; vertical-align: middle; text-transform: uppercase; }
+    .td-rec  { width: 42%; line-height: 1.4; }
+    .td-res  { width: 14%; text-align: center; vertical-align: middle; }
+    .td-int  { width: 29%; font-size: 8pt; line-height: 1.4; }
+
+    /* ── Restricciones ───────────────────── */
+    .restricciones-list { list-style: disc; margin-left: 22px; margin-top: 5px; line-height: 1.7; }
+
+    /* ── Página 2 ────────────────────────── */
+    .page-break { page-break-before: always; padding-top: 8px; margin-top: 32px; }
+
+    /* ── Firmas ──────────────────────────── */
+    .firmas-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 36px;
+      margin-top: 48px;
+    }
+    .firma-linea { border-bottom: 1.5px solid #000; margin-bottom: 6px; height: 28px; }
+    .firma-label { font-size: 8.5pt; font-weight: 700; line-height: 1.4; margin-bottom: 18px; }
+    .pagina-num  { text-align: right; font-size: 8pt; color: #555; margin-top: 28px; }
+
+    /* ── Print ───────────────────────────── */
+    @media print {
+      .no-print,
+      #vigia-chat-btn,
+      #vigia-chat-panel { display: none !important; }
+      body { background: #fff; }
+      .documento { margin: 0; box-shadow: none; padding: 0; max-width: 100%; }
+      @page { size: A4; margin: 1.8cm 2cm; }
+    }
+
+    .loading { text-align: center; padding: 80px 20px; color: #666; font-size: 14pt; }
+  </style>
+</head>
+<body>
+
+<div class="no-print">
+  <button class="btn btn-back" onclick="history.back()">← Volver</button>
+  <button class="btn btn-print" onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>
+</div>
+
+<div class="documento">
+  <div id="doc-content">
+    <div class="loading">Cargando datos del examen…</div>
+  </div>
+</div>
+
+<script>
+const API = 'https://riesgo-backend-production.up.railway.app/api/vigia';
+
+/* Palabras clave por tipo de SVE para asignar recomendaciones */
+const SVE_KW = {
+  'AUDIOMETRÍA':       ['audio'],
+  'ESPIROMETRÍA':      ['espiro','pulmon','respirat'],
+  'VISOMETRÍA':        ['viso','visual','visión','vision','optomet','lente','refract'],
+  'OSTEOMUSCULAR':     ['osteo','musculo','muscul','articular','osteomuscul'],
+  'EXAMEN MÉDICO':     ['médico','medico','físico','fisico','general','clínico'],
+  'LABORATORIO':       ['laborat','hemato','sangre','glucos'],
+  'ELECTROCARDIOGRAMA':['electro','cardio','ecg'],
+  'RADIOGRAFÍA':       ['radio','rayos','torax','tórax'],
+};
+
+function matchRec(sveNombre, recomendaciones) {
+  const kws = Object.entries(SVE_KW).find(([k]) => k === sveNombre.toUpperCase())?.[1] || [];
+  return recomendaciones.filter(r => kws.some(kw => r.toLowerCase().includes(kw)));
+}
+
+function formatFecha(f) {
+  if (!f) return '—';
+  const [y,m,d] = f.split('-');
+  const M = ['enero','febrero','marzo','abril','mayo','junio',
+             'julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  return `${parseInt(d)} de ${M[+m-1]} de ${y}`;
+}
+
+function tipoLabel(tipo) {
+  return { 'PRE-INGRESO':'preocupacional','PERIODICO':'periódico',
+           'RETIRO':'de retiro','POST-INCAPACIDAD':'post-incapacidad' }[tipo]
+         || (tipo||'').toLowerCase();
+}
+
+function renderHeader(empresa) {
+  const prefijo = localStorage.getItem('vigia_prefijo_docs') || 'SG-SST';
+  return `
+    <table class="header-table">
+      <tr>
+        <td class="h-empresa">${empresa.toUpperCase()}</td>
+        <td class="h-titulo">CARTA<br>RECOMENDACIONES<br>MÉDICAS LABORALES Y<br>COMPROMISO DE CUMPLIMIENTO</td>
+        <td class="h-codigo">
+          CÓDIGO: ${prefijo} F005<br>
+          VERSIÓN 1<br>
+          FECHA DE VIGENCIA: 18/10/2025
+        </td>
+      </tr>
+    </table>`;
+}
+
+/* Combina todos los exámenes del mismo día en un solo objeto */
+function mergeExamenesMismaFecha(examenes) {
+  if (!examenes || !examenes.length) return null;
+  if (examenes.length === 1) return examenes[0];
+  const allSVEs = [...new Set(examenes.flatMap(ex => ex.examenes_realizados || []))];
+  const allRecs = [...new Set(examenes.flatMap(ex => ex.recomendaciones     || []))];
+  const allRest = [...new Set(examenes.flatMap(ex => ex.restricciones       || []))];
+  const prio = { 'NO APTO': 3, 'APTO CON RESTRICCIONES': 2, 'APTO SIN RESTRICCIONES': 1 };
+  const principal = examenes.find(ex => ex.medico || ex.ips) || examenes[0];
+  const conceptoFinal = examenes.reduce((best, ex) => {
+    return (prio[ex.concepto_aptitud] ?? 0) > (prio[best] ?? 0) ? ex.concepto_aptitud : best;
+  }, principal.concepto_aptitud);
+  const ipsList = [...new Set(examenes.map(ex => ex.ips).filter(Boolean))];
+  const medList = [...new Set(examenes.map(ex => ex.medico).filter(Boolean))];
+  return {
+    ...principal,
+    examenes_realizados: allSVEs,
+    recomendaciones: allRecs,
+    restricciones: allRest,
+    concepto_aptitud: conceptoFinal,
+    ips: ipsList.join(' / '),
+    medico: medList.join(' / '),
+  };
+}
+
+function renderSVETable(sveLista, recomendaciones) {
+  const used = new Set();
+  const rows = (sveLista.length ? sveLista : ['EXAMEN MÉDICO']).map(sve => {
+    const matched = matchRec(sve, recomendaciones).filter(r => !used.has(r));
+    matched.forEach(r => used.add(r));
+    const recTxt = matched.length
+      ? matched.map(r => `• ${r}`).join('<br>')
+      : 'Control periódico teniendo en cuenta hallazgos del examen.';
+    return `<tr>
+      <td class="td-sve">${sve.toUpperCase()}</td>
+      <td class="td-rec">${recTxt}</td>
+      <td class="td-res">Ninguna</td>
+      <td class="td-int">Resultado normal y adecuado para el cargo.</td>
+    </tr>`;
+  });
+
+  return `
+    <table class="sve-table">
+      <thead>
+        <tr><th colspan="4" class="th-main">Concepto médico de aptitud laboral</th></tr>
+        <tr>
+          <th class="th-sub">S.V.E</th>
+          <th class="th-sub">Recomendaciones</th>
+          <th class="th-sub">Restricciones</th>
+          <th class="th-sub">Interpretación del resultado para el cargo</th>
+        </tr>
+      </thead>
+      <tbody>${rows.join('')}</tbody>
+    </table>`;
+}
+
+async function init() {
+  const p      = new URLSearchParams(location.search);
+  const empId  = p.get('empleado');
+  const exId   = p.get('examen');
+  const token  = localStorage.getItem('vigia_token');
+
+  if (!token) { location.href = 'login.html'; return; }
+
+  try {
+    const r   = await fetch(`${API}/empleados/${empId}`, { headers: { Authorization: `Bearer ${token}` } });
+    if (!r.ok) throw new Error('No se pudo cargar el empleado');
+    const emp = await r.json();
+
+    const examenRef = exId
+      ? (emp.examenes || []).find(e => e.id === exId)
+      : (emp.examenes || [])[0];
+
+    if (!examenRef) throw new Error('Examen no encontrado');
+
+    // Combinar todos los exámenes de la misma fecha en una sola carta
+    const examenesDelDia = (emp.examenes || []).filter(e => e.fecha === examenRef.fecha);
+    const examen = mergeExamenesMismaFecha(examenesDelDia) || examenRef;
+
+    const empresa         = emp.vigia_empresas?.nombre || 'Empresa';
+    const recomendaciones = examen.recomendaciones   || [];
+    const restricciones   = examen.restricciones     || [];
+    const sveLista        = examen.examenes_realizados || [];
+
+    /* Recomendaciones no asociadas a un SVE → van a REMISIONES */
+    const usadas = new Set();
+    sveLista.forEach(sve => matchRec(sve, recomendaciones).forEach(r => usadas.add(r)));
+    const remisiones = recomendaciones.filter(r => !usadas.has(r));
+
+    document.getElementById('doc-content').innerHTML = `
+
+      ${renderHeader(empresa)}
+
+      <p class="fecha">Medellín, ${formatFecha(examen.fecha)}</p>
+
+      <div class="destinatario">
+        <p>Señor</p>
+        <p class="emp-nombre">${emp.nombre}</p>
+        <p>ASUNTO: Concepto Médico Examen médico ${tipoLabel(examen.tipo)}</p>
+      </div>
+
+      <p class="cuerpo">Cordial Saludo,</p>
+
+      <p class="cuerpo">Teniendo como referencia el concepto médico emitido el
+      <strong>${formatFecha(examen.fecha)}</strong> por la IPS
+      <strong>${examen.ips || '______________________________'}</strong>${
+        examen.medico ? `, médico <strong>${examen.medico}</strong>` : ''
+      }, se debe tener en cuenta lo siguiente:</p>
+
+      <p class="seccion">Concepto de aptitud:</p>
+
+      <p class="cuerpo">De acuerdo al examen médico ocupacional realizado a
+      <strong>${emp.nombre.toUpperCase()}</strong> con documento de identificación
+      <strong>${emp.tipo_doc || 'CC'} ${emp.cc}</strong> se considera que es
+      <span class="concepto-resaltado">${(examen.concepto_aptitud || 'APTO').toUpperCase()}</span>
+      para el Cargo de <strong><u>${(emp.cargo || '__________').toUpperCase()}</u></strong>.
+      A continuación, se presentan las recomendaciones:</p>
+
+      ${renderSVETable(sveLista, recomendaciones)}
+
+      <p class="seccion">Restricciones:</p>
+      <ul class="restricciones-list">
+        ${restricciones.length
+          ? restricciones.map(r => `<li>${r}</li>`).join('')
+          : '<li>N/A</li>'}
+      </ul>
+
+      <p class="pagina-num">Página 1 de 2</p>
+
+      <!-- ════════════════════ PÁGINA 2 ════════════════════ -->
+      <div class="page-break">
+
+        ${renderHeader(empresa)}
+
+        <p class="seccion">Remisiones:</p>
+        ${remisiones.length
+          ? remisiones.map(r => `<p class="cuerpo">${r}</p>`).join('')
+          : '<p class="cuerpo" style="color:#555;font-style:italic">Sin remisiones adicionales.</p>'}
+
+        <p class="cuerpo" style="margin-top:18px">
+          <strong>${empresa.toUpperCase()}</strong>, le informa que, como parte del cumplimiento
+          del Sistema de Gestión de Seguridad y Salud en el Trabajo, el responsable de Seguridad
+          y Salud en el trabajo, hará un seguimiento periódico al cumplimiento de las anteriores
+          recomendaciones y en caso de manifestación de remisiones médicas, se le solicitarán las
+          debidas constancias médicas de la remisión a la cual es enviado.
+        </p>
+
+        <p class="cuerpo"><strong>Nota:</strong> debe realizarse los debidos procesos médicos en
+        los 30 días siguientes a partir de la fecha de entrega de este documento y en caso de ser
+        diagnosticada alguna patología la cual requiera un trato especial, por favor notificar al
+        jefe inmediato.</p>
+
+        <div class="firmas-grid">
+          <div>
+            <div class="firma-linea"></div>
+            <p class="firma-label">FIRMA:</p>
+            <div class="firma-linea"></div>
+            <p class="firma-label">NOMBRE COMPLETO DEL EMPLEADO<br>QUE ENTREGA LAS RECOMENDACIONES:</p>
+            <div class="firma-linea"></div>
+            <p class="firma-label">CARGO:</p>
+          </div>
+          <div>
+            <div class="firma-linea"></div>
+            <p class="firma-label">FIRMA DEL EMPLEADO</p>
+            <div class="firma-linea"></div>
+            <p class="firma-label">NOMBRE COMPLETO DEL EMPLEADO:</p>
+            <div class="firma-linea"></div>
+            <p class="firma-label">CÉDULA DE CIUDADANÍA:</p>
+          </div>
+        </div>
+
+        <p class="pagina-num">Página 2 de 2</p>
+      </div>`;
+
+    document.title = `SG-SST F005 — ${emp.nombre}`;
+
+  } catch(e) {
+    document.getElementById('doc-content').innerHTML = `
+      <div class="loading">
+        <p style="color:#c0392b">Error: ${e.message}</p>
+        <p style="margin-top:14px;font-size:12pt">
+          <a href="javascript:history.back()" style="color:#1a3a5c">← Volver</a>
+        </p>
+      </div>`;
+  }
+}
+
+init();
+</script>
+<script src="js/vigia-chat.js"></script>
+</body>
+</html>

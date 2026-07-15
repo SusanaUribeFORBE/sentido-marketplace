@@ -1,0 +1,1249 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vigía 360 — Evaluación Inicial SG-SST</title>
+  <link rel="stylesheet" href="vigia.css" />
+  <style>
+    /* ── Gauge de porcentaje ─── */
+    .gauge-wrap { position:relative;width:140px;height:140px;margin:0 auto }
+    .gauge-svg { transform:rotate(-90deg) }
+    .gauge-text { position:absolute;inset:0;display:flex;flex-direction:column;
+      align-items:center;justify-content:center;font-family:inherit }
+    .gauge-pct { font-size:28px;font-weight:800;color:var(--navy) }
+    .gauge-sub { font-size:11px;color:var(--muted);margin-top:1px }
+
+    /* ── Estándares ─────────── */
+    .estandar-row { display:flex;align-items:flex-start;gap:12px;padding:10px 0;
+      border-bottom:1px solid var(--border) }
+    .estandar-row:last-child { border-bottom:none }
+    .estandar-code { font-size:11px;font-weight:700;color:var(--muted);
+      white-space:nowrap;min-width:36px;margin-top:2px }
+    .estandar-body { flex:1 }
+    .estandar-name { font-size:13px;color:var(--text);line-height:1.4 }
+    .estandar-peso { font-size:11px;color:var(--muted);margin-top:2px }
+    .estandar-desc { font-size:11px;color:var(--muted);line-height:1.5;margin-top:3px;
+                     font-style:italic }
+    .estandar-obs  { width:100%;margin-top:6px;padding:5px 8px;font-size:12px;
+      border:1px solid var(--border);border-radius:5px;background:var(--bg);
+      color:var(--text);font-family:inherit;resize:none;display:none }
+    .estandar-obs.visible { display:block }
+    .estandar-ctrl { display:flex;flex-direction:column;gap:4px;align-items:flex-end;
+      flex-shrink:0;min-width:100px }
+    .btn-estado { font-size:11px;font-weight:600;padding:4px 10px;border-radius:5px;
+      border:1.5px solid var(--border);background:none;cursor:pointer;
+      color:var(--muted);transition:all .15s;white-space:nowrap }
+    .btn-estado:hover { border-color:var(--blue);color:var(--blue) }
+    .btn-estado.cumple   { background:#ECFDF5;border-color:#6EE7B7;color:#065F46 }
+    .btn-estado.no_cumple{ background:#FDECEA;border-color:#FABEC2;color:#C0392B }
+    .btn-estado.no_aplica{ background:#F1F5F9;border-color:#CBD5E1;color:var(--muted) }
+
+    /* ── Ciclos PHVA ─────────── */
+    .ciclo-header { background:var(--navy);color:white;padding:12px 20px;
+      border-radius:8px;margin-bottom:4px;cursor:pointer;
+      display:flex;justify-content:space-between;align-items:center }
+    .ciclo-header .ciclo-pct { font-size:18px;font-weight:800 }
+    .ciclo-header .ciclo-label { font-size:12px;opacity:.7;margin-top:2px }
+    .ciclo-body { overflow:hidden;transition:max-height .3s }
+
+    .item-header { padding:10px 16px;background:var(--bg);border-radius:6px;
+      margin:6px 0 0;cursor:pointer;
+      display:flex;justify-content:space-between;align-items:center }
+    .item-header .item-label { font-size:13px;font-weight:700;color:var(--navy) }
+    .item-header .item-pct   { font-size:12px;font-weight:600;color:var(--blue) }
+    .item-body { padding:0 12px;background:white;border:1px solid var(--border);
+      border-radius:0 0 8px 8px }
+
+    /* ── Badge categoría ─────── */
+    .cat-CRITICO    { background:#FDECEA;color:#C0392B;border:1.5px solid #FABEC2 }
+    .cat-MODERADO   { background:#FEF3C7;color:#D97706;border:1.5px solid #FCD34D }
+    .cat-ACEPTABLE  { background:#ECFDF5;color:#065F46;border:1.5px solid #6EE7B7 }
+    .cat-badge { padding:6px 16px;border-radius:8px;font-weight:700;font-size:14px;
+      display:inline-block;margin-top:8px }
+
+    /* ── Historia de evaluaciones ─ */
+    .eval-card { border:1.5px solid var(--border);border-radius:10px;padding:16px 20px;
+      display:flex;justify-content:space-between;align-items:center;cursor:pointer;
+      transition:border-color .15s }
+    .eval-card:hover { border-color:var(--blue) }
+    .eval-score-big { font-size:32px;font-weight:800 }
+
+    /* ── Progress bar por item ── */
+    .item-bar-bg { background:#E2E8F0;border-radius:4px;height:5px;margin-top:4px }
+    .item-bar-fg { height:100%;border-radius:4px;transition:width .3s }
+
+    /* ── Evidencias ─────────── */
+    .ev-wrapper { border-bottom:1px solid var(--border) }
+    .ev-wrapper:last-child { border-bottom:none }
+    .ev-wrapper .estandar-row { border-bottom:none }
+    .btn-evidencia { font-size:11px;padding:3px 8px;border-radius:5px;border:1.5px solid var(--border);
+      background:none;cursor:pointer;color:var(--muted);transition:all .15s;white-space:nowrap;
+      display:flex;align-items:center;gap:3px;margin-top:2px }
+    .btn-evidencia:hover { border-color:var(--blue);color:var(--blue) }
+    .btn-evidencia.tiene-ev { border-color:#2E86AB;color:#2E86AB;background:#EFF6FF;font-weight:700 }
+    .ev-panel { background:#F8FAFC;border-top:1px solid var(--border);padding:10px 12px 12px }
+    .ev-file { display:flex;align-items:center;gap:8px;padding:4px 0;font-size:12px }
+    .ev-file-name { flex:1;color:var(--blue);text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap }
+    .ev-file-name:hover { text-decoration:underline }
+    .ev-file-size { color:var(--muted);font-size:11px;white-space:nowrap }
+    .ev-file-del  { background:none;border:none;cursor:pointer;color:var(--muted);font-size:14px;padding:2px;line-height:1 }
+    .ev-file-del:hover { color:#C0392B }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="dashboard.html" style="display:flex;align-items:center;gap:10px;text-decoration:none">
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="36" viewBox="0 0 34 38">
+      <path d="M17 1L2 7V21C2 30 9 37 17 39C25 37 32 30 32 21V7Z" fill="rgba(255,255,255,0.15)" stroke="white" stroke-width="1.5"/>
+      <circle cx="12" cy="19" r="4.5" fill="white" opacity="0.9"/>
+      <circle cx="22" cy="19" r="4.5" fill="white" opacity="0.9"/>
+      <circle cx="12" cy="19" r="2" fill="rgba(26,58,92,0.8)"/>
+      <circle cx="22" cy="19" r="2" fill="rgba(26,58,92,0.8)"/>
+      <polygon points="15,25 17,28 19,25" fill="white" opacity="0.7"/>
+    </svg>
+    <span style="color:white;font-weight:800;font-size:17px;letter-spacing:0.5px">VIGÍA <span style="color:#4ADE80;font-weight:900">360</span></span>
+  </a>
+  <div class="nav-links">
+    <a href="dashboard.html" class="nav-link-fixed">Dashboard</a>
+
+    <!-- P — Planear -->
+    <div class="nav-dropdown" id="dd-P">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-P')">
+        <span class="phva-pill phva-P">P</span> Planear <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="perfil-responsable.html">🩺 Responsable SST</a>
+        <a href="responsabilidades.html">👥 Roles y Responsabilidades</a>
+        <a href="copasst.html">🤝 COPASST y Convivencia</a>
+        <a href="documentos-sst.html">📄 Documentos del SG-SST</a>
+        <a href="matriz-peligros.html">⚠️ Matriz de Peligros (GTC-45)</a>
+        <a href="plan-trabajo.html">📅 Plan de Trabajo Anual</a>
+        <a href="presupuesto-sgsst.html">💰 Presupuesto SG-SST</a>
+        <a href="profesiograma.html">💊 Profesiograma</a>
+      </div>
+    </div>
+
+    <!-- H — Hacer -->
+    <div class="nav-dropdown" id="dd-H">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-H')">
+        <span class="phva-pill phva-H">H</span> Hacer <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="epp.html">🦺 EPP</a>
+        <a href="capacitaciones.html">🎓 Capacitaciones</a>
+        <a href="emergencias.html">🚨 Emergencias y Brigada</a>
+        <a href="inspecciones.html">🔍 Inspecciones y Mantenimiento</a>
+        <a href="perfil-salud.html">🏥 Salud Ocupacional</a>
+        <div class="nav-dd-divider"></div>
+        <a href="lista-personal.html">👥 Lista de Personal</a>
+        <a href="subir.html">⬆️ Subir Examen</a>
+        <a href="subir-masivo.html">📦 Carga Masiva</a>
+        <a href="cartas-masivas.html">📄 Cartas Masivas</a>
+        <a href="reporte-examenes.html">📊 Cobertura de Exámenes</a>
+        <a href="informe-condiciones.html">📋 Informe de Condiciones</a>
+      </div>
+    </div>
+
+    <!-- V — Verificar -->
+    <div class="nav-dropdown" id="dd-V">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-V')">
+        <span class="phva-pill phva-V">V</span> Verificar <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="evaluacion-sst.html">📋 Evaluación (Res. 0312)</a>
+        <a href="investigaciones.html">🔍 AT / Incidentes</a>
+        <a href="ausentismo.html">📉 Ausentismo laboral</a>
+        <a href="indicadores-sgsst.html">📊 Indicadores SG-SST</a>
+        <a href="analisis-phva.html">📈 Análisis e Indicadores</a>
+      </div>
+    </div>
+
+    <!-- A — Actuar -->
+    <div class="nav-dropdown" id="dd-A">
+      <button class="nav-dd-trigger" onclick="toggleDD(event,'dd-A')">
+        <span class="phva-pill phva-A">A</span> Actuar <span class="nav-dd-arrow">&#9660;</span>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="mejoramiento.html">✅ Acciones de Mejoramiento</a>
+        <a href="evaluacion-sst.html">📝 Plan de Mejoramiento (F002)</a>
+      </div>
+    </div>
+
+    <a href="listado-maestro.html" class="nav-link-fixed">📁 Listado Maestro</a>
+    <span id="nav-empresa" style="color:#CBD8E6;font-size:13px;padding:6px 0"></span>
+    <button onclick="VigiaAPI.logout()"
+      style="background:none;border:1px solid rgba(255,255,255,.2);color:#CBD8E6;
+             border-radius:6px;padding:6px 12px;cursor:pointer;font-size:13px">Salir</button>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="doc-header">
+    <div class="doc-header-logo-col">
+      <img class="doc-logo-img" id="doc-logo-ev" src="" alt="" onerror="this.style.display='none'" />
+    </div>
+    <div class="doc-header-title-col">Evaluación Inicial del SG-SST<br>Res. 0312/2019</div>
+    <div class="doc-header-code-col">
+      <span class="doc-header-code-line"><strong>CÓDIGO:</strong> <span class="doc-codigo" data-sufijo="R001">SG-SST R001</span></span>
+      <span class="doc-header-code-line"><strong>VERSIÓN</strong> 1</span>
+      <span class="doc-header-code-line"><strong>FECHA DE VIGENCIA:</strong><br><span id="doc-fecha-ev"></span></span>
+    </div>
+  </div>
+  <div id="cargando" class="empty-state mt-8">
+    <div class="spinner" style="margin:0 auto 16px;border-color:rgba(46,134,171,.2);border-top-color:var(--blue)"></div>
+    <p class="text-muted">Cargando evaluaciones…</p>
+  </div>
+
+  <!-- LISTA DE EVALUACIONES -->
+  <div id="vista-lista" style="display:none">
+    <div class="flex justify-between items-center mb-4">
+      <div>
+        <h2 style="font-size:20px;font-weight:800;color:var(--navy)">Evaluación Inicial SG-SST</h2>
+        <p class="text-muted text-sm" id="subtitulo-evaluacion">Res. 0312 de 2019 — 100 puntos</p>
+      </div>
+      <button class="btn btn-navy" onclick="nuevaEvaluacion()">+ Nueva evaluación</button>
+    </div>
+
+    <!-- Banner configuración empresa -->
+    <div id="banner-config" class="card mb-4" style="padding:20px;border:1.5px solid var(--blue)"></div>
+    <!-- Panel configuración (inline) -->
+    <div id="panel-config" class="card mb-4" style="display:none;padding:24px"></div>
+
+    <div id="lista-evaluaciones" style="display:flex;flex-direction:column;gap:12px"></div>
+
+    <div id="lista-empty" style="display:none">
+      <div class="card" style="padding:48px;text-align:center">
+        <div style="font-size:48px;margin-bottom:12px">📋</div>
+        <h3 style="color:var(--navy);margin-bottom:8px">Sin evaluaciones registradas</h3>
+        <p class="text-muted text-sm">Realiza la evaluación inicial para conocer el nivel de cumplimiento del SG-SST.</p>
+        <button class="btn btn-navy mt-4" onclick="nuevaEvaluacion()">Iniciar evaluación</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FORMULARIO DE EVALUACIÓN -->
+  <div id="vista-formulario" style="display:none">
+
+    <!-- Cabecera con score en tiempo real -->
+    <div class="flex justify-between items-center mb-4">
+      <button class="btn btn-outline btn-sm" onclick="volverLista()">← Evaluaciones</button>
+      <div class="flex gap-3">
+        <button class="btn btn-outline" onclick="guardarEvaluacion(false)">💾 Guardar borrador</button>
+        <button class="btn btn-navy" onclick="guardarEvaluacion(true)">✅ Finalizar</button>
+      </div>
+    </div>
+
+    <!-- Score card -->
+    <div class="card mb-4" style="padding:24px">
+      <div style="display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:center">
+        <div class="gauge-wrap">
+          <svg class="gauge-svg" width="140" height="140">
+            <circle cx="70" cy="70" r="58" fill="none" stroke="#E2E8F0" stroke-width="14"/>
+            <circle id="gauge-circle" cx="70" cy="70" r="58" fill="none"
+              stroke="#27AE60" stroke-width="14"
+              stroke-dasharray="364.4" stroke-dashoffset="364.4"
+              stroke-linecap="round"/>
+          </svg>
+          <div class="gauge-text">
+            <span class="gauge-pct" id="gauge-pct">0%</span>
+            <span class="gauge-sub">cumplimiento</span>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:18px;font-weight:800;color:var(--navy)" id="score-cat-label">—</div>
+          <div id="score-cat-badge" class="cat-badge cat-CRITICO" style="display:none"></div>
+          <div class="text-muted text-sm mt-4" id="score-desc"></div>
+          <div style="margin-top:16px;display:grid;grid-template-columns:repeat(4,1fr);gap:12px" id="score-ciclos"></div>
+        </div>
+      </div>
+      <div style="margin-top:20px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+        <div>
+          <label class="label">Período evaluado</label>
+          <input type="number" id="eval-periodo" class="input" placeholder="2026" min="2020" max="2040">
+        </div>
+        <div>
+          <label class="label">Responsable de la evaluación</label>
+          <input type="text" id="eval-evaluador" class="input" placeholder="Nombre y cargo">
+        </div>
+        <div style="display:flex;align-items:flex-end">
+          <p class="text-muted text-sm">
+            Criterio Res. 0312/2019:<br>
+            🔴 &lt; 60% — Crítico<br>
+            🟡 60–85% — Moderadamente aceptable<br>
+            🟢 &gt; 85% — Aceptable
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Estándares por ciclo PHVA -->
+    <div id="ciclos-container"></div>
+
+    <div class="flex gap-3 justify-between mt-4 mb-8">
+      <button class="btn btn-outline" onclick="volverLista()">Cancelar</button>
+      <div class="flex gap-3">
+        <button class="btn btn-outline" onclick="guardarEvaluacion(false)">💾 Guardar borrador</button>
+        <button class="btn btn-navy" onclick="guardarEvaluacion(true)">✅ Finalizar evaluación</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="js/vigia-api.js"></script>
+<script>
+
+// ══════════════════════════════════════════════════════════
+// TABLA 1 — 7 estándares (Art. 3 Res. 0312/2019)
+// Empresas ≤10 trabajadores · Riesgo I, II o III
+// ══════════════════════════════════════════════════════════
+const CICLOS_7 = [
+  {
+    ciclo: 'PLANEAR', peso_total: 25, color: '#2E86AB',
+    items: [
+      {
+        item: 'I. RECURSOS (10%)',
+        estandares: [
+          { c:'1.1.1', n:'Responsable del SG-SST designado y afiliación al Sistema General de Riesgos Laborales de todos los trabajadores', p:10 },
+        ]
+      },
+      {
+        item: 'II. GESTIÓN INTEGRAL DEL SISTEMA DE GESTIÓN DE SEGURIDAD Y SALUD EN EL TRABAJO (15%)',
+        estandares: [
+          { c:'2.1.1', n:'Política del SG-SST firmada y comunicada, evaluación inicial del sistema y plan de trabajo anual elaborado', p:15 },
+        ]
+      },
+    ]
+  },
+  {
+    ciclo: 'HACER', peso_total: 60, color: '#1A3A5C',
+    items: [
+      {
+        item: 'III. GESTIÓN DE LA SALUD (20%)',
+        estandares: [
+          { c:'3.2.1', n:'Realización de evaluaciones médicas ocupacionales (pre-ingreso, periódicas y de egreso) de acuerdo con los factores de riesgo', p:20 },
+        ]
+      },
+      {
+        item: 'IV. GESTIÓN DE PELIGROS Y RIESGOS (30%)',
+        estandares: [
+          { c:'4.1.1', n:'Identificación de peligros, evaluación y valoración de riesgos, e implementación de medidas de prevención y control', p:30 },
+        ]
+      },
+      {
+        item: 'V. GESTIÓN DE AMENAZAS (10%)',
+        estandares: [
+          { c:'5.1.1', n:'Plan de prevención, preparación y respuesta ante emergencias', p:10 },
+        ]
+      },
+    ]
+  },
+  {
+    ciclo: 'VERIFICAR', peso_total: 5, color: '#8E44AD',
+    items: [
+      {
+        item: 'VI. VERIFICACIÓN DEL SG-SST (5%)',
+        estandares: [
+          { c:'6.1.1', n:'Revisión por la alta dirección, seguimiento al plan de trabajo y al plan de mejora', p:5 },
+        ]
+      },
+    ]
+  },
+  {
+    ciclo: 'ACTUAR', peso_total: 10, color: '#27AE60',
+    items: [
+      {
+        item: 'VII. MEJORAMIENTO (10%)',
+        estandares: [
+          { c:'7.1.1', n:'Definición e implementación de acciones preventivas y correctivas con base en resultados del SG-SST', p:10 },
+        ]
+      },
+    ]
+  },
+];
+
+// ══════════════════════════════════════════════════════════
+// TABLA 2 — 21 estándares (Art. 4 Res. 0312/2019)
+// Empresas 11–50 trabajadores · Riesgo I, II o III
+// ══════════════════════════════════════════════════════════
+const CICLOS_21 = [
+  {
+    ciclo: 'PLANEAR', peso_total: 25, color: '#2E86AB',
+    items: [
+      {
+        item: 'I. RECURSOS (5%)',
+        estandares: [
+          { c:'1.1.1', n:'Responsable del SG-SST con licencia vigente y afiliación al SGRL',                          p:2 },
+          { c:'1.1.4', n:'Conformación y capacitación del COPASST',                                                   p:1 },
+          { c:'1.2.1', n:'Programa de capacitación en promoción y prevención PYP',                                    p:2 },
+        ]
+      },
+      {
+        item: 'II. GESTIÓN INTEGRAL DEL SISTEMA (20%)',
+        estandares: [
+          { c:'2.1.1', n:'Política del SG-SST firmada, fechada y comunicada al COPASST',                              p:2 },
+          { c:'2.4.1', n:'Plan de trabajo anual con objetivos, metas, responsables y cronograma',                     p:8 },
+          { c:'2.5.1', n:'Archivo o retención documental del SG-SST',                                                 p:5 },
+          { c:'2.7.1', n:'Matriz legal actualizada con las normas del SG-SST aplicables',                             p:5 },
+        ]
+      },
+    ]
+  },
+  {
+    ciclo: 'HACER', peso_total: 60, color: '#1A3A5C',
+    items: [
+      {
+        item: 'III. GESTIÓN DE LA SALUD (20%)',
+        estandares: [
+          { c:'3.1.4', n:'Realización de evaluaciones médicas ocupacionales: pre-ingreso, periódicas y de egreso',    p:5 },
+          { c:'3.2.1', n:'Reporte de accidentes de trabajo y enfermedades laborales a ARL, EPS y Dirección Territorial', p:5 },
+          { c:'3.2.2', n:'Investigación de incidentes, accidentes de trabajo y enfermedades laborales',                p:5 },
+          { c:'3.3.1', n:'Medición y análisis estadístico de la accidentalidad',                                      p:5 },
+        ]
+      },
+      {
+        item: 'IV. GESTIÓN DE PELIGROS Y RIESGOS (30%)',
+        estandares: [
+          { c:'4.1.1', n:'Metodología para la identificación de peligros, evaluación y valoración de los riesgos',    p:8 },
+          { c:'4.1.2', n:'Identificación de peligros con participación de todos los niveles de la empresa',            p:7 },
+          { c:'4.2.1', n:'Implementación de medidas de prevención y control frente a peligros/riesgos identificados', p:8 },
+          { c:'4.2.4', n:'Realización de inspecciones sistemáticas con participación del COPASST',                    p:5 },
+          { c:'4.2.6', n:'Entrega de Elementos de Protección Personal EPP y verificación de su uso',                  p:5 },
+        ]
+      },
+      {
+        item: 'V. GESTIÓN DE AMENAZAS (10%)',
+        estandares: [
+          { c:'5.1.1', n:'Plan de prevención, preparación y respuesta ante emergencias',                               p:6 },
+          { c:'5.1.2', n:'Brigada de prevención conformada, capacitada y dotada',                                      p:6 },
+        ]
+      },
+    ]
+  },
+  {
+    ciclo: 'VERIFICAR', peso_total: 5, color: '#8E44AD',
+    items: [
+      {
+        item: 'VI. VERIFICACIÓN DEL SG-SST (5%)',
+        estandares: [
+          { c:'6.1.1', n:'Indicadores del SG-SST definidos, actualizados y con seguimiento',                          p:2.5 },
+          { c:'6.1.2', n:'La empresa adelanta auditoría por lo menos una vez al año',                                  p:2.5 },
+        ]
+      },
+    ]
+  },
+  {
+    ciclo: 'ACTUAR', peso_total: 10, color: '#27AE60',
+    items: [
+      {
+        item: 'VII. MEJORAMIENTO (10%)',
+        estandares: [
+          { c:'7.1.1', n:'Acciones preventivas y correctivas con base en resultados del SG-SST',                      p:5 },
+          { c:'7.1.2', n:'Plan de mejoramiento conforme a revisión de la alta dirección',                              p:5 },
+        ]
+      },
+    ]
+  },
+];
+
+// ══════════════════════════════════════════════════════════
+// TABLA 3 — 60 estándares (Art. 5 Res. 0312/2019)
+// Empresas >50 trabajadores o cualquier Riesgo IV o V
+// ══════════════════════════════════════════════════════════
+const CICLOS_60 = [
+  {
+    ciclo: 'PLANEAR', peso_total: 25, color: '#2E86AB',
+    items: [
+      {
+        item: 'I. RECURSOS (10%)',
+        estandares: [
+          { c:'1.1.1', n:'Responsable del SG-SST', p:0.5,
+            d:'Asignar una persona que diseñe e implemente el SG-SST: profesional en SST o con posgrado en SST, con licencia vigente en Seguridad y Salud en el Trabajo y curso virtual de 50 horas.' },
+          { c:'1.1.2', n:'Responsabilidades en el SG-SST', p:0.5,
+            d:'Asignar y documentar las responsabilidades específicas en el SG-SST a todos los niveles de la organización, para el desarrollo y mejora continua del sistema.' },
+          { c:'1.1.3', n:'Asignación de recursos para el SG-SST', p:0.5,
+            d:'Definir y asignar el talento humano, los recursos financieros, técnicos y tecnológicos requeridos para la implementación, mantenimiento y continuidad del SG-SST.' },
+          { c:'1.1.4', n:'Afiliación al Sistema General de Riesgos Laborales', p:0.5,
+            d:'Verificar la afiliación de todos los trabajadores (dependientes, independientes, estudiantes en práctica, etc.) al Sistema General de Riesgos Laborales.' },
+          { c:'1.1.5', n:'Trabajadores de alto riesgo — cotización pensión especial', p:0.5,
+            d:'Identificar los trabajadores que se dediquen en forma permanente a actividades de alto riesgo (Decreto 2090 de 2003) y cotizar el porcentaje adicional al fondo de pensiones.' },
+          { c:'1.1.6', n:'Conformación COPASST', p:0.5,
+            d:'Conformar el Comité Paritario de Seguridad y Salud en el Trabajo (COPASST) de acuerdo con la normatividad vigente y registrarlo ante el Ministerio de Trabajo.' },
+          { c:'1.1.7', n:'Capacitación COPASST', p:0.5,
+            d:'Capacitar a los integrantes del COPASST para el cumplimiento efectivo de las responsabilidades que les asigna la ley.' },
+          { c:'1.1.8', n:'Conformación Comité de Convivencia Laboral', p:0.5,
+            d:'Conformar el Comité de Convivencia Laboral de acuerdo con la normatividad vigente (Res. 652 y 1356 de 2012).' },
+          { c:'1.2.1', n:'Programa de capacitación en Promoción y Prevención (PYP)', p:2,
+            d:'Elaborar, ejecutar y evaluar el programa de capacitación en promoción y prevención que incluya lo relativo a los peligros/riesgos prioritarios y las medidas de prevención y control.' },
+          { c:'1.2.2', n:'Inducción y Reinducción en SG-SST y PYP', p:2,
+            d:'Realizar inducción y reinducción en SG-SST a todo el personal de la empresa, incluyendo directivos, trabajadores, contratistas y proveedores.' },
+          { c:'1.2.3', n:'Responsables del SG-SST con curso virtual de 50 horas', p:2,
+            d:'Los responsables del SG-SST deben aprobar el curso de capacitación virtual de cincuenta (50) horas en SST definido por el Ministerio de Trabajo.' },
+        ]
+      },
+      {
+        item: 'II. GESTIÓN INTEGRAL DEL SG-SST (15%)',
+        estandares: [
+          { c:'2.1.1',  n:'Política del SG-SST', p:1,
+            d:'Elaborar la Política de SST firmada, fechada, con alcance sobre todos los centros de trabajo y trabajadores, comunicada al COPASST y publicada de forma visible.' },
+          { c:'2.2.1',  n:'Objetivos del SG-SST', p:1,
+            d:'Definir los objetivos del SG-SST: claros, medibles, cuantificables, con metas, documentados, revisados y comunicados al COPASST.' },
+          { c:'2.3.1',  n:'Evaluación inicial e identificación de prioridades', p:1,
+            d:'Realizar la evaluación inicial del SG-SST para identificar las prioridades de seguridad y salud en el trabajo, como punto de partida para el plan de trabajo anual.' },
+          { c:'2.4.1',  n:'Plan de trabajo anual', p:2,
+            d:'Diseñar y desarrollar un plan de trabajo anual que identifique objetivos, metas, responsabilidades, recursos con cronograma, firmado por el empleador y el responsable del SG-SST.' },
+          { c:'2.5.1',  n:'Archivo o retención documental del SG-SST', p:2,
+            d:'Conservar los documentos que soportan el SG-SST durante un período mínimo de veinte (20) años, contados desde la expedición del documento.' },
+          { c:'2.6.1',  n:'Rendición de cuentas sobre el desempeño', p:1,
+            d:'Realizar la rendición de cuentas al interior de la empresa sobre el desempeño en SST a todos los niveles de la organización, al menos una vez al año.' },
+          { c:'2.7.1',  n:'Matriz legal', p:2,
+            d:'Identificar la normatividad vigente en materia de riesgos laborales, incluidos los estándares mínimos del SGSSS, y mantener la matriz legal actualizada.' },
+          { c:'2.8.1',  n:'Mecanismos de comunicación y auto-reporte en SST', p:1,
+            d:'Establecer mecanismos eficaces para recibir y responder comunicaciones internas y externas relativas a la SST, incluido el reporte de peligros y condiciones inseguras.' },
+          { c:'2.9.1',  n:'Identificación y evaluación en adquisición de productos y servicios', p:1,
+            d:'Establecer y aplicar un procedimiento para evaluar el impacto en SST de las compras o adquisición de productos y servicios antes de su utilización.' },
+          { c:'2.10.1', n:'Evaluación y selección de proveedores y contratistas', p:2,
+            d:'Adoptar disposiciones que garanticen el cumplimiento de las normas de SST por parte de proveedores, contratistas y subcontratistas.' },
+          { c:'2.11.1', n:'Evaluación del impacto de cambios internos y externos', p:1,
+            d:'Establecer un procedimiento para evaluar el impacto sobre la SST que puedan generar cambios internos (nuevos procesos, tecnologías, organización del trabajo) o externos (cambios normativos).' },
+        ]
+      },
+    ]
+  },
+  {
+    ciclo: 'HACER', peso_total: 60, color: '#1A3A5C',
+    items: [
+      {
+        item: 'III. GESTIÓN DE LA SALUD (20%)',
+        estandares: [
+          { c:'3.1.1', n:'Perfil sociodemográfico y diagnóstico de condiciones de salud', p:1,
+            d:'Medir, evaluar y analizar las condiciones de salud de todos los trabajadores a partir de un perfil sociodemográfico y diagnóstico de condiciones de salud actualizado mínimo una vez al año.' },
+          { c:'3.1.2', n:'Actividades de Promoción y Prevención en Salud', p:1,
+            d:'Desarrollar actividades de medicina del trabajo, prevención y promoción de la salud y programas de vigilancia epidemiológica, conforme a las prioridades identificadas.' },
+          { c:'3.1.3', n:'Información al médico de los perfiles de cargo', p:1,
+            d:'Informar al médico que realiza las evaluaciones médicas ocupacionales el puesto de trabajo, con descripción sociodemográfica y los perfiles de cargo (tipo de riesgo, tareas).' },
+          { c:'3.1.4', n:'Evaluaciones médicas ocupacionales', p:1,
+            d:'Realizar las evaluaciones médicas de pre-ingreso, periódicas y de egreso de acuerdo con los peligros a que se expone cada trabajador y comunicar al trabajador las restricciones.' },
+          { c:'3.1.5', n:'Custodia de historias clínicas', p:1,
+            d:'Las historias clínicas ocupacionales deben ser custodiadas por el médico o institución que practica los exámenes, cumpliendo las disposiciones del Ministerio de Salud y Protección Social.' },
+          { c:'3.1.6', n:'Restricciones y recomendaciones médico-laborales', p:1,
+            d:'Realizar seguimiento al cumplimiento de las restricciones y recomendaciones médico-laborales de los trabajadores diagnosticados con enfermedad laboral o con restricciones.' },
+          { c:'3.1.7', n:'Estilos de vida y entornos saludables', p:1,
+            d:'Elaborar y ejecutar un programa para el fomento de estilos de vida y entornos saludables (tabaquismo, alcoholismo, farmacodependencia, actividad física, nutrición), de acuerdo con las características de los trabajadores.' },
+          { c:'3.1.8', n:'Agua potable, servicios sanitarios y disposición de basuras', p:1,
+            d:'Garantizar el suministro permanente de agua potable, servicios sanitarios (baños, lavamanos) y disposición de basuras, conforme a las normas vigentes.' },
+          { c:'3.1.9', n:'Eliminación adecuada de residuos sólidos, líquidos o gaseosos', p:1,
+            d:'Eliminar adecuadamente los residuos sólidos, líquidos o gaseosos producidos en la empresa, conforme a la normatividad ambiental vigente (Plan de Manejo Integral de Residuos).' },
+          { c:'3.2.1', n:'Reporte de AT y enfermedad laboral a ARL, EPS y Ministerio', p:2,
+            d:'Reportar a la ARL y EPS todos los accidentes y enfermedades laborales diagnosticadas dentro de los dos (2) días hábiles siguientes, y notificar a la Dirección Territorial cuando sea grave o mortal.' },
+          { c:'3.2.2', n:'Investigación de incidentes, AT y enfermedades laborales', p:2,
+            d:'Investigar todos los incidentes y accidentes de trabajo y las enfermedades laborales diagnosticadas, determinando las causas básicas e inmediatas, e implementando las acciones de mejora.' },
+          { c:'3.2.3', n:'Registro y análisis estadístico de AT y EL', p:1,
+            d:'Llevar el registro estadístico de los accidentes de trabajo que ocurran en la empresa y de las enfermedades laborales diagnosticadas, con análisis de causas.' },
+          { c:'3.3.1', n:'Medición de la frecuencia de la accidentalidad', p:1,
+            d:'Calcular la frecuencia de los AT: (N.° AT en el año × K) / N.° horas hombre trabajadas en el año. K = 240.000 (para empresas con menos de 2.400 trabajadores).' },
+          { c:'3.3.2', n:'Medición de la severidad de la accidentalidad', p:1,
+            d:'Calcular la severidad de los AT: (N.° días perdidos y cargados por AT en el año × K) / N.° horas hombre trabajadas en el año.' },
+          { c:'3.3.3', n:'Medición de la mortalidad por accidentes de trabajo', p:1,
+            d:'Calcular la mortalidad por AT: (N.° AT mortales en el año × K) / N.° AT ocurridos en el año.' },
+          { c:'3.3.4', n:'Medición de la prevalencia de Enfermedad Laboral', p:1,
+            d:'Calcular la prevalencia de EL: (N.° casos nuevos y anteriores de EL en el período × K) / Promedio de trabajadores en el período.' },
+          { c:'3.3.5', n:'Medición de la incidencia de Enfermedad Laboral', p:1,
+            d:'Calcular la incidencia de EL: (N.° casos nuevos de EL en el período × K) / Promedio de trabajadores en el período.' },
+          { c:'3.3.6', n:'Medición del ausentismo por causa médica', p:1,
+            d:'Calcular el ausentismo: (N.° días de ausencia por causa médica × K) / N.° días de trabajo programados en el período.' },
+        ]
+      },
+      {
+        item: 'IV. GESTIÓN DE PELIGROS Y RIESGOS (30%)',
+        estandares: [
+          { c:'4.1.1', n:'Metodología para la identificación de peligros y valoración de riesgos', p:4,
+            d:'Aplicar una metodología para identificar peligros, evaluar y valorar los riesgos, con alcance sobre todos los procesos, actividades rutinarias y no rutinarias, infraestructura, equipos y todos los trabajadores.' },
+          { c:'4.1.2', n:'Identificación de peligros con participación de todos los niveles', p:4,
+            d:'Identificar los peligros con participación de todos los niveles de la empresa (directivos, trabajadores, contratistas) y actualizarla mínimo una vez al año o cuando ocurran cambios.' },
+          { c:'4.1.3', n:'Identificación de sustancias carcinógenas o con toxicidad aguda', p:3,
+            d:'Identificar las sustancias catalogadas como carcinógenas o con toxicidad aguda según la OIT, e implementar las medidas de prevención y control.' },
+          { c:'4.1.4', n:'Mediciones ambientales (físicos, químicos y biológicos)', p:4,
+            d:'Realizar mediciones ambientales de agentes físicos (ruido, iluminación, temperatura), químicos y biológicos, de acuerdo con los peligros identificados y la normatividad vigente.' },
+          { c:'4.2.1', n:'Implementación de medidas de prevención y control', p:2.5,
+            d:'Implementar las medidas de prevención y control de acuerdo con la jerarquía: eliminación, sustitución, controles de ingeniería, controles administrativos y EPP.' },
+          { c:'4.2.2', n:'Verificación de aplicación de medidas de prevención y control', p:2.5,
+            d:'Verificar periódicamente que los trabajadores aplican las medidas de prevención y control de peligros y riesgos establecidas por la empresa.' },
+          { c:'4.2.3', n:'Elaboración de procedimientos, instructivos y protocolos de SST', p:2.5,
+            d:'Elaborar los procedimientos, instructivos, fichas, protocolos e instrucciones internas de SST necesarios para el desarrollo de las actividades con riesgo.' },
+          { c:'4.2.4', n:'Inspecciones a instalaciones, maquinaria y equipos con COPASST', p:2.5,
+            d:'Realizar inspecciones sistemáticas a instalaciones, maquinaria o equipos con la participación del COPASST, e implementar las medidas de mejora derivadas.' },
+          { c:'4.2.5', n:'Mantenimiento periódico de instalaciones, equipos y herramientas', p:2.5,
+            d:'Realizar y registrar el mantenimiento periódico de instalaciones, equipos, máquinas, herramientas y demás elementos del lugar de trabajo.' },
+          { c:'4.2.6', n:'Entrega de EPP y verificación de su uso (incl. contratistas)', p:2.5,
+            d:'Suministrar los EPP según el riesgo, verificar que los trabajadores los usen correctamente y extender esta verificación a contratistas y subcontratistas.' },
+        ]
+      },
+      {
+        item: 'V. GESTIÓN DE AMENAZAS (10%)',
+        estandares: [
+          { c:'5.1.1', n:'Plan de prevención, preparación y respuesta ante emergencias', p:5,
+            d:'Implementar y mantener las disposiciones necesarias en materia de prevención, preparación y respuesta ante emergencias, con cobertura a todos los centros y turnos de trabajo.' },
+          { c:'5.1.2', n:'Brigada de emergencias conformada, capacitada y dotada', p:5,
+            d:'Conformar, capacitar, dotar y verificar el desempeño de la brigada de emergencias de acuerdo con el tamaño, naturaleza y complejidad de la empresa.' },
+        ]
+      },
+    ]
+  },
+  {
+    ciclo: 'VERIFICAR', peso_total: 5, color: '#8E44AD',
+    items: [
+      {
+        item: 'VI. VERIFICACIÓN DEL SG-SST (5%)',
+        estandares: [
+          { c:'6.1.1', n:'Definición de indicadores del SG-SST', p:1.25,
+            d:'Definir los indicadores de estructura, proceso y resultado del SG-SST de acuerdo con las condiciones de la empresa, y hacerles seguimiento periódico comunicando los resultados al COPASST.' },
+          { c:'6.1.2', n:'Auditoría interna al SG-SST (mínimo una vez al año)', p:1.25,
+            d:'La empresa debe adelantar auditoría al SG-SST por lo menos una vez al año, realizada por personal interno o externo, garantizando la confidencialidad de los resultados.' },
+          { c:'6.1.3', n:'Revisión anual de la alta dirección y resultados de la auditoría', p:1.25,
+            d:'Llevar a cabo la revisión por la alta dirección de los resultados de la auditoría, del desempeño del SG-SST y de los indicadores, para definir acciones de mejora.' },
+          { c:'6.1.4', n:'Planificación de auditorías con el COPASST', p:1.25,
+            d:'Planificar las auditorías con el COPASST estableciendo el programa que incluya criterios, alcance, periodicidad y metodología, y socializar los resultados.' },
+        ]
+      },
+    ]
+  },
+  {
+    ciclo: 'ACTUAR', peso_total: 10, color: '#27AE60',
+    items: [
+      {
+        item: 'VII. MEJORAMIENTO (10%)',
+        estandares: [
+          { c:'7.1.1', n:'Acciones preventivas y correctivas con base en resultados del SG-SST', p:2.5,
+            d:'Definir e implementar las acciones preventivas y/o correctivas necesarias con base en los resultados de la supervisión, medición y análisis de la eficacia del SG-SST.' },
+          { c:'7.1.2', n:'Acciones de mejora conforme a revisión de la alta dirección', p:2.5,
+            d:'Tomar medidas correctivas, preventivas y de mejora con base en los resultados de la revisión por la alta dirección y en las investigaciones de AT y EL.' },
+          { c:'7.1.3', n:'Acciones de mejora con base en investigación de AT y EL', p:2.5,
+            d:'Implementar las acciones correctivas y preventivas que se deriven de las investigaciones de accidentes de trabajo, incidentes y enfermedades laborales.' },
+          { c:'7.1.4', n:'Plan de mejoramiento según autoridades administrativas y ARL', p:2.5,
+            d:'Elaborar el plan de mejoramiento requerido por las autoridades administrativas del trabajo (Ministerio, inspectores) e implementar las medidas y acciones correctivas solicitadas por la ARL.' },
+        ]
+      },
+    ]
+  },
+];
+
+// ── Tabla activa (se selecciona en actualizarCICLOS()) ─────
+let CICLOS = CICLOS_60;
+
+function calcularTabla(numTrab, clase) {
+  if (!numTrab || !clase) return null;
+  if (clase === 'IV' || clase === 'V') return 60;
+  if (numTrab > 50) return 60;
+  if (numTrab <= 10) return 7;
+  return 21;
+}
+
+function actualizarCICLOS() {
+  const numTrab = parseInt(localStorage.getItem('vigia_num_trabajadores') || '') || null;
+  const clase   = localStorage.getItem('vigia_clase_riesgo') || null;
+  const tabla   = calcularTabla(numTrab, clase);
+  CICLOS = tabla === 7 ? CICLOS_7 : tabla === 21 ? CICLOS_21 : CICLOS_60;
+  return { tabla, numTrab, clase };
+}
+
+// ── Estado ─────────────────────────────────────────────────
+let evaluaciones  = [];
+let evaluacionId  = null;       // null = nueva
+let resultados    = {};         // { codigo: 'cumple'|'no_cumple'|'no_aplica' }
+let observaciones = {};         // { codigo: texto }
+let evidencias    = {};         // { codigo: [{ id, nombre_archivo, tamano_bytes, url_descarga }] }
+
+// ── Inicialización ──────────────────────────────────────────
+async function init() {
+  const ok = await VigiaAPI.requireAuth();
+  if (!ok) return;
+  VigiaAPI.initDocHeader();
+  actualizarCICLOS();
+  await cargarLista();
+  renderBannerConfig();
+  document.getElementById('cargando').style.display = 'none';
+  document.getElementById('vista-lista').style.display = '';
+}
+
+async function cargarLista() {
+  const empresaId = VigiaAPI.esAdmin() ? VigiaAPI.empresaId() : null;
+  evaluaciones = await VigiaAPI.getEvaluaciones(empresaId) || [];
+  renderLista();
+}
+
+function renderLista() {
+  const cont  = document.getElementById('lista-evaluaciones');
+  const empty = document.getElementById('lista-empty');
+
+  if (!evaluaciones.length) {
+    cont.innerHTML = ''; empty.style.display = ''; return;
+  }
+  empty.style.display = 'none';
+
+  cont.innerHTML = evaluaciones.map(e => {
+    const pct = e.puntaje ? Math.round(e.puntaje) : null;
+    const color = pct === null ? 'var(--muted)' : pct >= 85 ? '#27AE60' : pct >= 60 ? '#D97706' : '#C0392B';
+    const catLabel = e.categoria === 'ACEPTABLE' ? '🟢 Aceptable'
+                   : e.categoria === 'MODERADO'  ? '🟡 Moderadamente aceptable'
+                   : e.categoria === 'CRITICO'   ? '🔴 Crítico'
+                   : '⬜ Borrador';
+    return `
+      <div class="eval-card" onclick="abrirEvaluacion('${e.id}')">
+        <div>
+          <div style="font-weight:700;font-size:15px;color:var(--navy)">
+            Evaluación ${e.periodo || ''} ${e.evaluador ? '· ' + e.evaluador : ''}
+          </div>
+          <div class="text-muted text-sm">${_formatTs(e.creado_en)}</div>
+          <div style="margin-top:6px;font-size:13px">${catLabel}</div>
+        </div>
+        <div style="text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+          <div class="eval-score-big" style="color:${color}">
+            ${pct !== null ? pct + '%' : '—'}
+          </div>
+          <button onclick="event.stopPropagation();eliminarEval('${e.id}')"
+            style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--muted)"
+            title="Eliminar">🗑</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function _formatTs(ts) {
+  if (!ts) return '';
+  const d = new Date(ts);
+  const ms = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  return `${d.getDate()} ${ms[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+// ── Nueva evaluación ────────────────────────────────────────
+function nuevaEvaluacion() {
+  evaluacionId  = null;
+  resultados    = {};
+  observaciones = {};
+  evidencias    = {};
+  document.getElementById('eval-periodo').value   = new Date().getFullYear();
+  document.getElementById('eval-evaluador').value = '';
+  construirFormulario();
+  document.getElementById('vista-lista').style.display     = 'none';
+  document.getElementById('vista-formulario').style.display = '';
+  actualizarScore();
+  window.scrollTo(0,0);
+}
+
+async function abrirEvaluacion(id) {
+  const ev = await VigiaAPI.getEvaluacion(id);
+  evaluacionId  = id;
+  resultados    = {};
+  observaciones = {};
+  evidencias    = {};
+  for (const [k, v] of Object.entries(ev.resultados || {})) {
+    if (v && typeof v === 'object') {
+      resultados[k]    = (v as any).estado || null;
+      observaciones[k] = (v as any).obs    || '';
+    } else {
+      resultados[k] = v as any;
+    }
+  }
+  // Cargar evidencias en paralelo
+  try {
+    const evList = await VigiaAPI.getEvidencias(id) || [];
+    for (const item of evList) {
+      if (!evidencias[item.criterio]) evidencias[item.criterio] = [];
+      evidencias[item.criterio].push(item);
+    }
+  } catch (_) { /* sin evidencias o storage no configurado */ }
+
+  document.getElementById('eval-periodo').value   = ev.periodo   || '';
+  document.getElementById('eval-evaluador').value = ev.evaluador || '';
+  construirFormulario();
+  document.getElementById('vista-lista').style.display     = 'none';
+  document.getElementById('vista-formulario').style.display = '';
+  actualizarScore();
+  window.scrollTo(0,0);
+}
+
+function volverLista() {
+  document.getElementById('vista-lista').style.display     = '';
+  document.getElementById('vista-formulario').style.display = 'none';
+}
+
+// ── Construir el formulario ─────────────────────────────────
+function construirFormulario() {
+  const cont = document.getElementById('ciclos-container');
+  cont.innerHTML = CICLOS.map((ciclo, ci) => `
+    <div style="margin-bottom:16px">
+      <div class="ciclo-header" style="background:${ciclo.color}" onclick="toggleCiclo('ciclo-${ci}')">
+        <div>
+          <div style="font-size:14px;font-weight:800">${ciclo.ciclo} — ${ciclo.peso_total} puntos</div>
+          <div class="ciclo-label">Haz clic para expandir/colapsar</div>
+        </div>
+        <div id="ciclo-${ci}-pct" class="ciclo-pct">0 / ${ciclo.peso_total}</div>
+      </div>
+      <div id="ciclo-${ci}" class="ciclo-body">
+        ${ciclo.items.map((item, ii) => `
+          <div style="margin:4px 0">
+            <div class="item-header" onclick="toggleItem('item-${ci}-${ii}')">
+              <div class="item-label">${item.item}</div>
+              <div>
+                <div id="item-${ci}-${ii}-pct" class="item-pct">0 / ${item.estandares.reduce((s,e)=>s+e.p,0).toFixed(1)} pts</div>
+                <div class="item-bar-bg" style="width:120px">
+                  <div id="item-${ci}-${ii}-bar" class="item-bar-fg" style="background:${ciclo.color};width:0%"></div>
+                </div>
+              </div>
+            </div>
+            <div id="item-${ci}-${ii}">
+              <div class="item-body">
+                ${item.estandares.map((est) => {
+                  const evArr   = evidencias[est.c] || [];
+                  const tieneEv = evArr.length > 0;
+                  const evItems = evArr.map(f => `
+                    <div class="ev-file">
+                      <a class="ev-file-name" href="${f.url_descarga || '#'}" target="_blank" rel="noopener" title="${f.nombre_archivo}">${f.nombre_archivo}</a>
+                      <span class="ev-file-size">${f.tamano_bytes ? (f.tamano_bytes/1024).toFixed(0)+' KB' : ''}</span>
+                      <button class="ev-file-del" title="Eliminar" onclick="eliminarEvidencia('${f.id}','${est.c}')">🗑</button>
+                    </div>`).join('');
+                  const addBtn = evaluacionId
+                    ? `<input type="file" id="ev-input-${est.c}" accept=".pdf,.jpg,.jpeg,.png,.webp" style="display:none"
+                         onchange="subirEvidenciaDesdeInput('${est.c}',this)">
+                       <button class="btn btn-outline btn-sm" style="margin-top:6px;font-size:11px"
+                         onclick="document.getElementById('ev-input-${est.c}').click()">+ Añadir archivo</button>`
+                    : `<p class="text-muted" style="font-size:11px;margin:4px 0">Guarda la evaluación primero para adjuntar evidencias.</p>`;
+                  return `
+                  <div class="ev-wrapper">
+                    <div class="estandar-row" id="row-${est.c}">
+                      <div class="estandar-code">${est.c}</div>
+                      <div class="estandar-body">
+                        <div class="estandar-name">${est.n}</div>
+                        ${est.d ? `<div class="estandar-desc">${est.d}</div>` : ''}
+                        <div class="estandar-peso">${est.p} pt${est.p !== 1 ? 's' : ''}</div>
+                        <textarea class="estandar-obs ${observaciones[est.c] ? 'visible' : ''}"
+                          id="obs-${est.c}" rows="1" placeholder="Observación (opcional)"
+                          oninput="onObsChange('${est.c}', this.value)">${observaciones[est.c] || ''}</textarea>
+                      </div>
+                      <div class="estandar-ctrl">
+                        <button class="btn-estado ${resultados[est.c] === 'cumple' ? 'cumple' : ''}"
+                          onclick="setEstado('${est.c}','cumple')">✅ Cumple</button>
+                        <button class="btn-estado ${resultados[est.c] === 'no_cumple' ? 'no_cumple' : ''}"
+                          onclick="setEstado('${est.c}','no_cumple')">❌ No cumple</button>
+                        <button class="btn-estado ${resultados[est.c] === 'no_aplica' ? 'no_aplica' : ''}"
+                          onclick="setEstado('${est.c}','no_aplica')">➖ No aplica</button>
+                        <button class="btn-evidencia ${tieneEv ? 'tiene-ev' : ''}" id="ev-btn-${est.c}"
+                          onclick="toggleEvidencias('${est.c}')">
+                          📎${tieneEv ? ` <span id="ev-count-${est.c}">${evArr.length}</span>` : ` <span id="ev-count-${est.c}"></span>`}
+                        </button>
+                      </div>
+                    </div>
+                    <div id="ev-panel-${est.c}" class="ev-panel" style="display:none">
+                      <div id="ev-list-${est.c}">${evItems}</div>
+                      ${addBtn}
+                    </div>
+                  </div>`;
+                }).join('')}
+              </div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleCiclo(id) {
+  const el = document.getElementById(id);
+  el.style.display = el.style.display === 'none' ? '' : 'none';
+}
+
+function toggleItem(id) {
+  const el = document.getElementById(id);
+  el.style.display = el.style.display === 'none' ? '' : 'none';
+}
+
+// ── Cambiar estado de un estándar ───────────────────────────
+function setEstado(codigo, estado) {
+  resultados[codigo] = estado;
+
+  // Actualizar botones
+  const row = document.getElementById(`row-${codigo}`);
+  row.querySelectorAll('.btn-estado').forEach(b => {
+    b.classList.remove('cumple','no_cumple','no_aplica');
+  });
+  const btns = row.querySelectorAll('.btn-estado');
+  if (estado === 'cumple')    btns[0].classList.add('cumple');
+  if (estado === 'no_cumple') btns[1].classList.add('no_cumple');
+  if (estado === 'no_aplica') btns[2].classList.add('no_aplica');
+
+  // Mostrar/ocultar observación
+  const obs = document.getElementById(`obs-${codigo}`);
+  if (estado === 'no_cumple') obs.classList.add('visible');
+
+  actualizarScore();
+}
+
+function onObsChange(codigo, valor) {
+  observaciones[codigo] = valor;
+}
+
+// ── Cálculo del score ───────────────────────────────────────
+function actualizarScore() {
+  let puntosTotal    = 0;  // máx posibles (excluye no_aplica)
+  let puntosObtenidos = 0;
+  const puntoCiclo  = {};
+
+  CICLOS.forEach((ciclo, ci) => {
+    let cicloTotal = 0, cicloObtenido = 0;
+
+    ciclo.items.forEach((item, ii) => {
+      let itemTotal = 0, itemObtenido = 0;
+
+      item.estandares.forEach(est => {
+        const estado = resultados[est.c];
+        if (estado !== 'no_aplica') {
+          itemTotal    += est.p;
+          puntosTotal  += est.p;
+          if (estado === 'cumple') {
+            itemObtenido    += est.p;
+            puntosObtenidos += est.p;
+          }
+        }
+        cicloTotal    += (estado !== 'no_aplica') ? est.p : 0;
+        cicloObtenido += (estado === 'cumple')    ? est.p : 0;
+      });
+
+      // Actualizar barra del item
+      const pctItem = itemTotal > 0 ? (itemObtenido / itemTotal * 100) : 0;
+      const itemPctEl = document.getElementById(`item-${ci}-${ii}-pct`);
+      const itemBarEl = document.getElementById(`item-${ci}-${ii}-bar`);
+      if (itemPctEl) itemPctEl.textContent = `${itemObtenido.toFixed(1)} / ${itemTotal.toFixed(1)} pts`;
+      if (itemBarEl) itemBarEl.style.width = pctItem + '%';
+    });
+
+    puntoCiclo[ci] = { obtenido: cicloObtenido, total: cicloTotal };
+
+    // Actualizar puntaje del ciclo
+    const cicloEl = document.getElementById(`ciclo-${ci}-pct`);
+    if (cicloEl) cicloEl.textContent = `${cicloObtenido.toFixed(1)} / ${ciclo.peso_total}`;
+  });
+
+  // Porcentaje global
+  const pct = puntosTotal > 0 ? (puntosObtenidos / puntosTotal * 100) : 0;
+  const pctRedondeado = Math.round(pct * 10) / 10;
+
+  // Actualizar gauge
+  const circunferencia = 2 * Math.PI * 58; // 364.4
+  const offset = circunferencia * (1 - pct / 100);
+  const circle = document.getElementById('gauge-circle');
+  if (circle) {
+    circle.style.strokeDashoffset = offset;
+    circle.style.stroke = pct >= 85 ? '#27AE60' : pct >= 60 ? '#D97706' : '#C0392B';
+  }
+  const gaugePct = document.getElementById('gauge-pct');
+  if (gaugePct) gaugePct.textContent = pctRedondeado + '%';
+
+  // Categoría
+  const categoria = pct >= 85 ? 'ACEPTABLE' : pct >= 60 ? 'MODERADO' : 'CRITICO';
+  const catLabel  = { ACEPTABLE:'Aceptable', MODERADO:'Moderadamente aceptable', CRITICO:'Crítico' };
+  const catDesc   = {
+    ACEPTABLE: 'El SG-SST cumple los estándares mínimos. Mantener y mejorar el sistema.',
+    MODERADO:  'Deben implementarse acciones de mejora en un plazo máximo de 6 meses.',
+    CRITICO:   'Requiere implementación inmediata de un plan de mejora (máximo 1 mes).',
+  };
+
+  const labelEl = document.getElementById('score-cat-label');
+  const badgeEl = document.getElementById('score-cat-badge');
+  const descEl  = document.getElementById('score-desc');
+  if (labelEl) labelEl.textContent = catLabel[categoria];
+  if (badgeEl) {
+    badgeEl.textContent = `${pctRedondeado}% — ${catLabel[categoria]}`;
+    badgeEl.className   = `cat-badge cat-${categoria}`;
+    badgeEl.style.display = '';
+  }
+  if (descEl) descEl.textContent = catDesc[categoria];
+
+  // Resumen por ciclo
+  const cicloCont = document.getElementById('score-ciclos');
+  if (cicloCont) {
+    cicloCont.innerHTML = CICLOS.map((ciclo, ci) => {
+      const { obtenido, total } = puntoCiclo[ci] || { obtenido:0, total:ciclo.peso_total };
+      const p = total > 0 ? Math.round(obtenido / total * 100) : 0;
+      return `<div style="text-align:center">
+        <div style="font-size:18px;font-weight:800;color:${ciclo.color}">${p}%</div>
+        <div style="font-size:11px;color:var(--muted)">${ciclo.ciclo}</div>
+        <div style="font-size:11px;color:var(--muted)">(${ciclo.peso_total} pts)</div>
+      </div>`;
+    }).join('');
+  }
+
+  return { pct: pctRedondeado, categoria };
+}
+
+// ── Guardar evaluación ──────────────────────────────────────
+async function guardarEvaluacion(finalizar) {
+  const { pct, categoria } = actualizarScore();
+
+  // Empaquetar resultados + observaciones juntos
+  const resultadosFinal = {};
+  for (const est of CICLOS.flatMap(c => c.items.flatMap(i => i.estandares))) {
+    if (resultados[est.c]) {
+      resultadosFinal[est.c] = {
+        estado: resultados[est.c],
+        obs:    observaciones[est.c] || '',
+      };
+    }
+  }
+
+  const datos = {
+    periodo:    parseInt(document.getElementById('eval-periodo').value) || null,
+    evaluador:  document.getElementById('eval-evaluador').value.trim(),
+    resultados: resultadosFinal,
+    puntaje:    pct,
+    categoria:  finalizar ? categoria : null,
+  };
+
+  try {
+    if (evaluacionId) {
+      await VigiaAPI.editarEvaluacion(evaluacionId, datos);
+    } else {
+      const nueva = await VigiaAPI.crearEvaluacion(datos);
+      evaluacionId = nueva.id;
+    }
+    mostrarToast(finalizar ? 'Evaluación finalizada' : 'Borrador guardado', 'ok');
+    if (finalizar) {
+      await cargarLista();
+      volverLista();
+    }
+  } catch (err) {
+    mostrarToast('Error: ' + err.message, 'error');
+  }
+}
+
+async function eliminarEval(id) {
+  if (!confirm('¿Eliminar esta evaluación? La acción no se puede deshacer.')) return;
+  try {
+    await VigiaAPI.eliminarEvaluacion(id);
+    await cargarLista();
+    mostrarToast('Evaluación eliminada', 'ok');
+  } catch (err) {
+    mostrarToast('Error: ' + err.message, 'error');
+  }
+}
+
+function mostrarToast(msg, tipo = 'ok') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast toast-${tipo} show`;
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── Evidencias ─────────────────────────────────────────────
+
+function toggleEvidencias(criterio) {
+  const panel = document.getElementById(`ev-panel-${criterio}`);
+  if (!panel) return;
+  panel.style.display = panel.style.display === 'none' ? '' : 'none';
+}
+
+function _formatBytes(b) {
+  if (!b) return '';
+  return b < 1024 * 1024 ? `${(b/1024).toFixed(0)} KB` : `${(b/1024/1024).toFixed(1)} MB`;
+}
+
+function _actualizarBtnEv(criterio) {
+  const arr  = evidencias[criterio] || [];
+  const btn  = document.getElementById(`ev-btn-${criterio}`);
+  const cnt  = document.getElementById(`ev-count-${criterio}`);
+  if (!btn) return;
+  if (arr.length > 0) {
+    btn.classList.add('tiene-ev');
+    if (cnt) cnt.textContent = String(arr.length);
+  } else {
+    btn.classList.remove('tiene-ev');
+    if (cnt) cnt.textContent = '';
+  }
+}
+
+function _renderListaEv(criterio) {
+  const arr  = evidencias[criterio] || [];
+  const list = document.getElementById(`ev-list-${criterio}`);
+  if (!list) return;
+  list.innerHTML = arr.map(f => `
+    <div class="ev-file">
+      <a class="ev-file-name" href="${f.url_descarga || '#'}" target="_blank" rel="noopener" title="${f.nombre_archivo}">${f.nombre_archivo}</a>
+      <span class="ev-file-size">${_formatBytes(f.tamano_bytes)}</span>
+      <button class="ev-file-del" title="Eliminar" onclick="eliminarEvidencia('${f.id}','${criterio}')">🗑</button>
+    </div>`).join('');
+}
+
+async function subirEvidenciaDesdeInput(criterio, input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 10 * 1024 * 1024) { mostrarToast('El archivo supera 10 MB', 'error'); return; }
+  if (!evaluacionId) { mostrarToast('Guarda la evaluación primero', 'error'); return; }
+
+  const btn = document.getElementById(`ev-btn-${criterio}`);
+  if (btn) { btn.disabled = true; btn.textContent = '⏳'; }
+
+  try {
+    const base64 = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload  = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+    const record = await VigiaAPI.subirEvidencia(evaluacionId, {
+      criterio,
+      nombre_archivo: file.name,
+      tipo_mime:      file.type || 'application/octet-stream',
+      datos_base64:   base64,
+    });
+    if (!evidencias[criterio]) evidencias[criterio] = [];
+    evidencias[criterio].push(record);
+    _renderListaEv(criterio);
+    _actualizarBtnEv(criterio);
+    // Asegurarse de que el panel esté visible
+    const panel = document.getElementById(`ev-panel-${criterio}`);
+    if (panel) panel.style.display = '';
+    mostrarToast('Evidencia adjuntada', 'ok');
+  } catch (err) {
+    mostrarToast('Error: ' + err.message, 'error');
+  } finally {
+    input.value = '';
+    if (btn) { btn.disabled = false; btn.innerHTML = `📎 <span id="ev-count-${criterio}">${(evidencias[criterio]||[]).length || ''}</span>`; _actualizarBtnEv(criterio); }
+  }
+}
+
+async function eliminarEvidencia(id, criterio) {
+  if (!confirm('¿Eliminar esta evidencia?')) return;
+  try {
+    await VigiaAPI.eliminarEvidencia(id);
+    evidencias[criterio] = (evidencias[criterio] || []).filter(f => f.id !== id);
+    _renderListaEv(criterio);
+    _actualizarBtnEv(criterio);
+    mostrarToast('Evidencia eliminada', 'ok');
+  } catch (err) {
+    mostrarToast('Error: ' + err.message, 'error');
+  }
+}
+
+// ── Configurador dinámico de empresa (Res. 0312/2019) ──────
+
+function renderBannerConfig() {
+  const { tabla, numTrab, clase } = actualizarCICLOS();
+  const sub = document.getElementById('subtitulo-evaluacion');
+  const banner = document.getElementById('banner-config');
+
+  if (!numTrab || !clase) {
+    if (sub) sub.textContent = 'Res. 0312 de 2019 — configure su empresa para ver los estándares correctos';
+    banner.innerHTML = `
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+        <div style="font-size:36px">⚙️</div>
+        <div style="flex:1;min-width:200px">
+          <div style="font-weight:700;color:var(--navy);font-size:15px">Configure el perfil de su empresa</div>
+          <div class="text-muted text-sm">Indique el número de trabajadores y clase de riesgo para mostrar los estándares correctos según Res. 0312/2019 (7, 21 o 60 estándares).</div>
+        </div>
+        <button class="btn btn-navy" onclick="mostrarPanelConfig()">⚙️ Configurar ahora</button>
+      </div>`;
+  } else {
+    const nombre_tabla = tabla === 7
+      ? `7 estándares — Art. 3 (≤10 trab. · Riesgo I/II/III)`
+      : tabla === 21
+      ? `21 estándares — Art. 4 (11-50 trab. · Riesgo I/II/III)`
+      : `60 estándares — Art. 5 (>50 trab. o Riesgo IV/V)`;
+    const color = tabla === 7 ? '#27AE60' : tabla === 21 ? '#2E86AB' : '#1A3A5C';
+    if (sub) sub.textContent = `Res. 0312 de 2019 — ${tabla} estándares mínimos · 100 puntos`;
+    banner.innerHTML = `
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+        <div style="font-size:28px;font-weight:900;color:${color};min-width:36px">${tabla}</div>
+        <div style="flex:1;min-width:200px">
+          <div style="font-weight:700;color:var(--navy);font-size:15px">${nombre_tabla}</div>
+          <div class="text-muted text-sm">${numTrab} trabajadores · Clase de Riesgo ${clase}</div>
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="mostrarPanelConfig()">Editar</button>
+      </div>`;
+  }
+}
+
+function mostrarPanelConfig() {
+  const numTrab = localStorage.getItem('vigia_num_trabajadores') || '';
+  const clase   = localStorage.getItem('vigia_clase_riesgo') || '';
+  const panel = document.getElementById('panel-config');
+  panel.innerHTML = `
+    <h3 style="font-size:16px;font-weight:800;color:var(--navy);margin-bottom:8px">⚙️ Configuración de empresa — Res. 0312/2019</h3>
+    <p class="text-muted text-sm" style="margin-bottom:16px">Estos dos datos determinan cuántos estándares mínimos le aplican a su empresa por ley.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+      <div>
+        <label class="label">Número de trabajadores</label>
+        <input type="number" id="cfg-num-trab" class="input" min="1" max="9999"
+          placeholder="Ej: 25" value="${numTrab}" oninput="previsualizarTabla()">
+      </div>
+      <div>
+        <label class="label">Clase de Riesgo Principal (ARL)</label>
+        <select id="cfg-clase-riesgo" class="input" onchange="previsualizarTabla()">
+          <option value="">Seleccionar...</option>
+          <option value="I"   ${clase==='I'  ?'selected':''}>Clase I — Riesgo Mínimo</option>
+          <option value="II"  ${clase==='II' ?'selected':''}>Clase II — Riesgo Bajo</option>
+          <option value="III" ${clase==='III'?'selected':''}>Clase III — Riesgo Medio</option>
+          <option value="IV"  ${clase==='IV' ?'selected':''}>Clase IV — Riesgo Alto</option>
+          <option value="V"   ${clase==='V'  ?'selected':''}>Clase V — Riesgo Máximo</option>
+        </select>
+      </div>
+    </div>
+    <div id="cfg-preview" style="margin-bottom:16px"></div>
+    <div class="flex gap-3">
+      <button class="btn btn-outline" onclick="cerrarPanelConfig()">Cancelar</button>
+      <button class="btn btn-navy" onclick="guardarConfiguracion()">💾 Guardar configuración</button>
+    </div>`;
+  panel.style.display = '';
+  previsualizarTabla();
+}
+
+function previsualizarTabla() {
+  const numTrab = parseInt(document.getElementById('cfg-num-trab')?.value || '') || null;
+  const clase   = document.getElementById('cfg-clase-riesgo')?.value || null;
+  const tabla   = calcularTabla(numTrab, clase);
+  const preview = document.getElementById('cfg-preview');
+  if (!preview) return;
+  if (!tabla) { preview.innerHTML = ''; return; }
+  const color = tabla === 7 ? '#27AE60' : tabla === 21 ? '#2E86AB' : '#1A3A5C';
+  const desc = tabla === 7
+    ? 'Su empresa aplica los <strong>7 estándares mínimos</strong> (Art. 3). Empresas con hasta 10 trabajadores y riesgo I, II o III.'
+    : tabla === 21
+    ? 'Su empresa aplica los <strong>21 estándares mínimos</strong> (Art. 4). Empresas de 11 a 50 trabajadores con riesgo I, II o III.'
+    : 'Su empresa aplica los <strong>60 estándares mínimos</strong> (Art. 5). Empresas con más de 50 trabajadores o con riesgo IV o V.';
+  preview.innerHTML = `
+    <div style="padding:14px 18px;border-radius:8px;background:#F0F9FF;border:2px solid ${color};display:flex;align-items:center;gap:16px">
+      <div style="font-size:36px;font-weight:900;color:${color}">${tabla}</div>
+      <div class="text-sm" style="color:var(--text)">${desc}</div>
+    </div>`;
+}
+
+function cerrarPanelConfig() {
+  document.getElementById('panel-config').style.display = 'none';
+}
+
+async function guardarConfiguracion() {
+  const numTrab = parseInt(document.getElementById('cfg-num-trab').value || '') || null;
+  const clase   = document.getElementById('cfg-clase-riesgo').value || null;
+  if (!numTrab || !clase) { mostrarToast('Complete los dos campos', 'error'); return; }
+  try {
+    const empresaId = VigiaAPI.empresaId();
+    await VigiaAPI.actualizarConfiguracion(empresaId, { num_trabajadores: numTrab, clase_riesgo: clase });
+    localStorage.setItem('vigia_num_trabajadores', String(numTrab));
+    localStorage.setItem('vigia_clase_riesgo', clase);
+    actualizarCICLOS();
+    renderBannerConfig();
+    cerrarPanelConfig();
+    mostrarToast('Configuración guardada correctamente', 'ok');
+  } catch (err) {
+    mostrarToast('Error: ' + err.message, 'error');
+  }
+}
+
+init();
+</script>
+<script src="js/vigia-chat.js"></script>
+</body>
+</html>
+
