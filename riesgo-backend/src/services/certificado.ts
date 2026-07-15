@@ -17,7 +17,7 @@ const LOGO_ANDINA           = path.join(ASSETS_DIR, 'logo andina.png');
 const LOGO_SUPERTRANSPORTE  = path.join(ASSETS_DIR, 'logo supertransporte.png');
 const LOGO_SEC_EDUCACION    = path.join(ASSETS_DIR, 'logo secretaria de educacion.png');
 const LOGO_AUTECO = path.join(ASSETS_DIR, 'logo-auteco.jpg');
-const LOGO_CESV = path.join(ASSETS_DIR, 'logo_CESV_png.jpg');
+const LOGO_ANSV = path.join(ASSETS_DIR, 'logo-ansv.png');
 const LOGO_FIRMA_SUSANA  = path.join(ASSETS_DIR, 'firma-susana.jpg');
 const LOGO_PROAVES       = path.join(ASSETS_DIR, 'logo-proaves.png');
 const LOGO_FIRMA_CRISTINA = path.join(ASSETS_DIR, 'firma-cristina.png');
@@ -47,7 +47,7 @@ const MODULOS_SIN_AVAL_AXA = new Set([
 
 // Módulos RiesGO! Vial con respaldo de contenido técnico de la Escuela Andina de Automovilismo.
 // Son los módulos que alimentan el Pasaporte de Movilidad Segura (ver pasaporteMotero.ts),
-// avalado por el Comité Empresarial de Seguridad Vial (CESV) — no exclusivo de Auteco.
+// avalado por la Agencia Nacional de Seguridad Vial (ANSV) — no exclusivo de Auteco.
 export const MODULOS_VIAL = new Set([
   'Seguridad Vial',
   'Riesgos Críticos Viales',
@@ -202,8 +202,8 @@ function buildPdf(
     const esProAves     = MODULOS_PROAVES.has(data.modulo);
     const avaladoPorAxa = !esPasaporte && !esAndinaForbe && !esProAves && !MODULOS_SIN_AVAL_AXA.has(data.modulo);
 
-    const logoDerecha      = esProAves ? LOGO_PROAVES  : esPasaporte ? LOGO_CESV : esAndinaForbe ? LOGO_FORBE : avaladoPorAxa ? LOGO_AXA : LOGO_FORBE;
-    const textoLogoDerecha = esProAves ? 'ProAves' : esPasaporte ? 'CESV' : esAndinaForbe ? 'FORBE SAS' : avaladoPorAxa ? 'AXA COLPATRIA' : 'FORBE SAS';
+    const logoDerecha      = esProAves ? LOGO_PROAVES  : esPasaporte ? LOGO_ANSV : esAndinaForbe ? LOGO_FORBE : avaladoPorAxa ? LOGO_AXA : LOGO_FORBE;
+    const textoLogoDerecha = esProAves ? 'ProAves' : esPasaporte ? 'ANSV' : esAndinaForbe ? 'FORBE SAS' : avaladoPorAxa ? 'AXA COLPATRIA' : 'FORBE SAS';
 
     if (fs.existsSync(logoDerecha)) {
       const logoDerechaOpts = esProAves ? { fit: [90, 75] as [number,number] } : { fit: [120, 50] as [number,number] };
@@ -232,7 +232,7 @@ function buildPdf(
         esAuteco
           ? 'Reto de movilidad segura para motociclistas'
           : esPasaporte
-            ? 'Pasaporte de movilidad segura · Aval CESV y Escuela Andina de Automovilismo'
+            ? 'Pasaporte de movilidad segura · Aval Agencia Nacional de Seguridad Vial (ANSV)'
             : esAndinaForbe
               ? 'Curso técnico de Controladores Viales · Aval Escuela Andina de Automovilismo y FORBE SAS'
               : esProAves
@@ -396,8 +396,8 @@ function buildPdf(
          .text('Gerente', sigX, lineY + 18, { width: 200, align: 'center' });
       doc.fillColor(GRAY).font('Helvetica').fontSize(8.5)
          .text(
-           esAuteco    ? 'Aval CESV · Aliado: Auteco'
-           : esPasaporte ? 'Aprobado por el Comité Empresarial de Seguridad Vial (CESV)'
+           esAuteco    ? 'Aval ANSV · Aliado: Auteco'
+           : esPasaporte ? 'Aprobado por la Agencia Nacional de Seguridad Vial (ANSV)'
            : avaladoPorAxa ? 'Coordinador SST - Programa AXA Colpatria'
            : 'FORBE SAS',
            sigX, lineY + 29, { width: 200, align: 'center' }

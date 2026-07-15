@@ -102,7 +102,7 @@ async function cargarResumen() {
 function renderLinksAcceso() {
   const base = `${location.protocol}//${location.host}`;
   const links = [
-    { label: '🛣️ riesGO! Vial',          desc: 'Ingreso exclusivo para módulos de seguridad vial (CESV + Andina)', path: '/vial.html' },
+    { label: '🛣️ riesGO! Vial',          desc: 'Ingreso exclusivo para módulos de seguridad vial (ANSV + Andina)', path: '/vial.html' },
     { label: '🎮 Plataforma SST General', desc: 'Ingreso para todos los módulos SST de RiesGO!',                  path: '/' },
     { label: '🪪 Pasaporte de Movilidad', desc: 'Consulta pública del pasaporte por cédula',                      path: '/pasaporte.html' },
   ];
