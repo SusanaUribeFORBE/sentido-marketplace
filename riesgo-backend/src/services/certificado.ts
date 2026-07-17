@@ -56,6 +56,10 @@ export const MODULOS_VIAL = new Set([
   'PAS Vial – Emergencias en Ruta',
   'Liderazgo Vial',
   'Reto del Motero Auteco',
+  'Casco que Salva',
+  'Velocidad y Supervivencia',
+  'Moto en Buen Estado',
+  'Moto y Trabajo',
 ]);
 
 // Módulo independiente del Pasaporte: curso técnico de Controladores Viales avalado por
@@ -104,6 +108,10 @@ const INTENSIDAD_HORARIA: Record<string, number> = {
   'PAS Vial – Emergencias en Ruta': 4,
   'Liderazgo Vial': 4,
   'Controladores Viales': 4,
+  'Casco que Salva': 2,
+  'Velocidad y Supervivencia': 2,
+  'Moto en Buen Estado': 2,
+  'Moto y Trabajo': 2,
 };
 const INTENSIDAD_HORARIA_DEFAULT = 2;
 

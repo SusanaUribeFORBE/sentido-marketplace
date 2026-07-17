@@ -30,6 +30,10 @@ const LOGOS_MODULO = {
   pasvialemergenciasenruta: '/assets/logo-riesgovial.png',
   liderazgovial: '/assets/logo-riesgovial.png',
   controladoresviales: '/assets/logo-riesgovial.png',
+  cascoquesalva: '/assets/logo-riesgovial.png',
+  velocidadysupervivencia: '/assets/logo-riesgovial.png',
+  motoenbuenestado: '/assets/logo-riesgovial.png',
+  motoytrabajo: '/assets/logo-riesgovial.png',
 };
 
 if (LOGOS_MODULO[moduloKey]) {
