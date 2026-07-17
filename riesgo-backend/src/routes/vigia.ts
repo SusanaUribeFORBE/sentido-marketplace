@@ -863,19 +863,34 @@ vigiaRouter.post('/examenes/bulk', vigiaAuth, async (req: Request, res: Response
     try {
       if (!row.cedula) throw new Error('Cédula vacía');
 
-      // Buscar empleado por CC en esta empresa
+      // Normalizar CC: solo dígitos (elimina puntos, espacios, guiones)
+      const ccNorm = String(row.cedula).trim().replace(/\D/g, '');
+      const ccRaw  = String(row.cedula).trim();
+      if (!ccNorm) throw new Error(`Cédula inválida: "${row.cedula}"`);
+
+      // Buscar por CC normalizado primero; si no hay, probar el raw (registros legacy con puntos)
       let { data: emp } = await db
         .from('vigia_empleados')
         .select('id, nombre, cc')
-        .eq('cc', String(row.cedula).trim())
+        .eq('cc', ccNorm)
         .eq('empresa_id', empresaId)
         .maybeSingle();
+
+      if (!emp && ccRaw !== ccNorm) {
+        const { data: empRaw } = await db
+          .from('vigia_empleados')
+          .select('id, nombre, cc')
+          .eq('cc', ccRaw)
+          .eq('empresa_id', empresaId)
+          .maybeSingle();
+        emp = empRaw;
+      }
 
       if (!emp) {
         if (!row.nombre) throw new Error(`Empleado CC ${row.cedula} no encontrado y columna "nombre" vacía`);
         const { data: newEmp, error: empErr } = await db
           .from('vigia_empleados')
-          .insert({ cc: String(row.cedula).trim(), nombre: row.nombre.trim(),
+          .insert({ cc: ccNorm, nombre: row.nombre.trim(),
                     empresa_id: empresaId, cargo: row.cargo || null, activo: true })
           .select('id, nombre, cc').single();
         if (empErr) throw new Error(empErr.message);

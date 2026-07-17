@@ -246,10 +246,11 @@
 
   // ── Determinar estado ──────────────────────────────────────
   function estadoEmpleado(empVigia) {
-    if (!empVigia) return { estado: 'sin_examen', label: 'Sin examen registrado', icono: '❌', clase: 'badge-critico' };
+    if (!empVigia || !empVigia.ultimo_examen) return { estado: 'sin_examen', label: 'Sin examen registrado', icono: '❌', clase: 'badge-critico' };
     const n = empVigia.alerta_nivel || 'OK';
-    if (n === 'ADVERTENCIA') return { estado: 'advertencia', label: 'Examen próximo a vencer', icono: '⚠️', clase: 'badge-advertencia' };
-    return                          { estado: 'vigente',     label: 'Tiene examen registrado', icono: '✅', clase: 'badge-ok' };
+    if (n === 'CRITICO')     return { estado: 'advertencia', label: 'Examen vencido o crítico',  icono: '🔴', clase: 'badge-critico' };
+    if (n === 'ADVERTENCIA') return { estado: 'advertencia', label: 'Examen próximo a vencer',   icono: '⚠️', clase: 'badge-advertencia' };
+    return                          { estado: 'vigente',     label: 'Tiene examen registrado',   icono: '✅', clase: 'badge-ok' };
   }
 
   // ── Comparar ───────────────────────────────────────────────
@@ -260,8 +261,8 @@
     const lista = parsearEntrada(texto);
     if (!lista.length) { mostrarToast('No se encontraron cédulas válidas', 'error'); return; }
 
-    // Mapa de empleados en Vigía por CC
-    const mapaVigia = new Map(empleadosVigia.map(e => [e.cc?.trim(), e]));
+    // Mapa de empleados en Vigía por CC — normalizado igual que parsearEntrada
+    const mapaVigia = new Map(empleadosVigia.map(e => [e.cc?.trim().replace(/\D/g, ''), e]));
 
     resultados = lista.map(({ cc, nombre }) => {
       const empVigia = mapaVigia.get(cc);
