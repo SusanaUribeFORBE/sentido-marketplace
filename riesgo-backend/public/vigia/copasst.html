@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
@@ -6,25 +6,98 @@
   <title>Vigía 360 — COPASST y Comité de Convivencia</title>
   <link rel="stylesheet" href="vigia.css" />
   <style>
+    /* ── Tabs ─────────────────────────────────────────────── */
     .tabs { display:flex;gap:4px;margin-bottom:20px;flex-wrap:wrap }
     .tab  { padding:8px 18px;border-radius:8px;border:1.5px solid var(--border);
-            background:var(--card);cursor:pointer;font-size:13px;font-weight:600;color:var(--muted) }
+            background:var(--card);cursor:pointer;font-size:13px;font-weight:600;color:var(--muted);
+            transition:.15s }
+    .tab:hover { border-color:var(--navy) }
     .tab.active { background:var(--blue);color:#fff;border-color:var(--blue) }
 
-    .rol-EMPLEADOR  { background:#EFF6FF;color:#1D4ED8 }
-    .rol-TRABAJADOR { background:#F3E8FF;color:#7C3AED }
-    .cargo-PRESIDENTE { background:#FFF7ED;color:#C2410C }
-    .cargo-SECRETARIO { background:#ECFDF5;color:#059669 }
-    .miembro-chip { padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700 }
+    /* ── Chips ────────────────────────────────────────────── */
+    .chip { display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700 }
+    .chip-empleador  { background:#EFF6FF;color:#1D4ED8 }
+    .chip-trabajador { background:#F3E8FF;color:#7C3AED }
+    .chip-presidente { background:#FFF7ED;color:#C2410C }
+    .chip-secretario { background:#ECFDF5;color:#059669 }
+    .chip-suplente   { background:#F3F4F6;color:#6B7280 }
+    .chip-vocal      { background:#F9FAFB;color:#374151 }
+    .chip-estado-CONVOCATORIA  { background:#EFF6FF;color:#1E40AF }
+    .chip-estado-CANDIDATOS    { background:#FFF7ED;color:#92400E }
+    .chip-estado-VOTACION      { background:#F5F3FF;color:#6D28D9 }
+    .chip-estado-CONSTITUIDO   { background:#ECFDF5;color:#065F46 }
 
+    /* ── Stats ────────────────────────────────────────────── */
+    .stats-row { display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px }
+    @media(max-width:600px){ .stats-row { grid-template-columns:repeat(2,1fr) } }
     .stat-box { background:var(--card);border:1.5px solid var(--border);border-radius:10px;padding:16px;text-align:center }
     .stat-num { font-size:28px;font-weight:800;color:var(--blue) }
     .stat-lbl { font-size:12px;color:var(--muted);margin-top:2px }
-    .stats-row { display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px }
-    @media(max-width:600px){ .stats-row { grid-template-columns:repeat(2,1fr) } }
 
+    /* ── Alerta ───────────────────────────────────────────── */
     .alerta-venc { background:#FEF3C7;border:1.5px solid #FCD34D;border-radius:8px;
                    padding:10px 14px;margin-bottom:16px;font-size:13px;color:#92400E }
+
+    /* ── Wizard ───────────────────────────────────────────── */
+    .wizard-steps { display:flex;gap:0;margin-bottom:28px;overflow:hidden;border-radius:10px;
+                    border:1.5px solid var(--border) }
+    .wstep { flex:1;padding:12px 10px;text-align:center;font-size:12px;font-weight:700;
+             color:var(--muted);background:var(--card);border-right:1.5px solid var(--border);
+             cursor:pointer;transition:.15s;position:relative }
+    .wstep:last-child { border-right:none }
+    .wstep.active { background:var(--navy);color:#fff }
+    .wstep.done   { background:var(--green, #059669);color:#fff }
+    .wstep .wnum  { display:block;font-size:18px;font-weight:900;line-height:1 }
+    .wstep .wlbl  { display:block;font-size:10px;margin-top:2px;text-transform:uppercase;letter-spacing:.5px }
+
+    .wiz-panel { display:none }
+    .wiz-panel.active { display:block }
+
+    /* ── Proceso card ─────────────────────────────────────── */
+    .proceso-card { border:1.5px solid var(--border);border-radius:10px;background:var(--card);
+                    padding:16px 20px;margin-bottom:12px }
+    .proceso-card:hover { border-color:var(--navy) }
+    .proceso-header { display:flex;align-items:center;gap:10px;margin-bottom:8px }
+    .proceso-tipo { font-size:15px;font-weight:800;color:var(--navy) }
+    .proceso-actions { margin-left:auto;display:flex;gap:6px }
+    .proceso-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:8px;font-size:12px }
+    @media(max-width:600px){ .proceso-grid { grid-template-columns:1fr 1fr } }
+    .proceso-dato { color:var(--muted) }
+    .proceso-dato strong { color:var(--text);display:block }
+
+    /* ── Candidatos ───────────────────────────────────────── */
+    .candidato-row { display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;
+                     align-items:center;margin-bottom:8px }
+    @media(max-width:600px){ .candidato-row { grid-template-columns:1fr auto } }
+    .votos-input { width:70px;text-align:center }
+
+    /* ── Resultado votos ──────────────────────────────────── */
+    .resultado-PRINCIPAL { color:#059669;font-weight:700 }
+    .resultado-SUPLENTE  { color:#D97706;font-weight:700 }
+    .resultado-NO_ELECTO { color:var(--muted) }
+
+    /* ── Documentos imprimibles ───────────────────────────── */
+    .print-frame { display:none }
+    @media print {
+      body > *:not(.print-frame) { display:none !important }
+      .print-frame { display:block !important }
+      @page { size:A4 portrait;margin:20mm }
+    }
+    .doc-imprimible { font-family:'Times New Roman',serif;font-size:12pt;line-height:1.6;color:#000 }
+    .doc-imprimible h1 { font-size:14pt;text-align:center;text-transform:uppercase;
+                          font-weight:700;margin-bottom:4px }
+    .doc-imprimible h2 { font-size:12pt;text-align:center;margin-bottom:16px }
+    .doc-imprimible .firma-row { display:flex;justify-content:space-around;margin-top:40px }
+    .doc-imprimible .firma-bloque { text-align:center;width:200px }
+    .doc-imprimible .firma-linea { border-top:1px solid #000;margin-top:40px;padding-top:4px;font-size:10pt }
+    .doc-imprimible table { width:100%;border-collapse:collapse;margin:12px 0 }
+    .doc-imprimible table th { background:#ddd;padding:6px 8px;border:1px solid #999;font-size:10pt }
+    .doc-imprimible table td { padding:5px 8px;border:1px solid #ccc;font-size:10pt }
+    .doc-imprimible .numerales { list-style:decimal;padding-left:20px }
+    .doc-imprimible .numerales li { margin-bottom:6px }
+    .info-box { background:#E0F2FE;border:1.5px solid #7DD3FC;border-radius:8px;
+                padding:10px 14px;font-size:12px;color:#0369A1;margin-bottom:16px }
+    .info-box strong { color:#0C4A6E }
   </style>
 </head>
 <body>
@@ -104,7 +177,7 @@
     <img class="doc-logo-img" alt="Logo" style="max-height:48px;max-width:120px;object-fit:contain">
     <div style="flex:1">
       <div style="font-size:16px;font-weight:800;color:var(--navy)">COPASST y Comité de Convivencia Laboral</div>
-      <div style="font-size:12px;color:var(--muted)">Res. 0312/2019 · Est. 1.1.6 · 1.1.7 · 1.1.8 · Decreto 1072/2015</div>
+      <div style="font-size:12px;color:var(--muted)">Res. 0312/2019 · Est. 1.1.6 · 1.1.7 · 1.1.8 · Decreto 1072/2015 Art. 2.2.4.6.8 · Res. 652/2012</div>
     </div>
     <div style="text-align:right;font-size:12px;color:var(--muted)">
       <div class="doc-codigo" data-sufijo="F005"></div>
@@ -122,38 +195,53 @@
   <div id="alerta-vigencia" class="alerta-venc" style="display:none"></div>
 
   <div class="export-bar" style="display:flex;gap:8px;justify-content:flex-end;margin-bottom:12px;flex-wrap:wrap">
-    <button class="btn-outline btn" style="font-size:12px;padding:6px 12px" onclick="VigiaAPI.imprimirModulo()">🖨️ PDF</button>
+    <button class="btn-outline btn" style="font-size:12px;padding:6px 12px" onclick="window.print()">🖨️ Imprimir</button>
     <button class="btn-outline btn" style="font-size:12px;padding:6px 12px" onclick="exportCSV_miembros()">📊 CSV Miembros</button>
     <button class="btn-outline btn" style="font-size:12px;padding:6px 12px" onclick="exportCSV_actas()">📊 CSV Actas</button>
   </div>
 
   <div class="tabs">
-    <button class="tab active" onclick="mostrarTab('cop-miembros',this)">👷 Miembros COPASST</button>
+    <button class="tab active" onclick="mostrarTab('elecciones',this)">📣 Proceso Electoral</button>
+    <button class="tab" onclick="mostrarTab('cop-miembros',this)">👷 Miembros COPASST</button>
     <button class="tab" onclick="mostrarTab('ccl-miembros',this)">🤝 Miembros CCL</button>
     <button class="tab" onclick="mostrarTab('actas',this)">📋 Actas de Reunión</button>
   </div>
 
-  <!-- Miembros COPASST -->
-  <div id="tab-cop-miembros">
+  <!-- ══ TAB PROCESO ELECTORAL ══════════════════════════════ -->
+  <div id="tab-elecciones">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+      <div>
+        <h3 style="margin:0;font-size:15px;color:var(--navy)">Procesos Electorales</h3>
+        <p style="margin:4px 0 0;font-size:12px;color:var(--muted)">
+          Gestiona la convocatoria, elección y conformación del COPASST y el Comité de Convivencia Laboral.
+        </p>
+      </div>
+      <button class="btn" onclick="abrirWizard(null)">+ Nuevo proceso electoral</button>
+    </div>
+    <div id="lista-elecciones"><p class="text-muted" style="text-align:center;padding:32px">Cargando…</p></div>
+  </div>
+
+  <!-- ══ TAB MIEMBROS COPASST ════════════════════════════════ -->
+  <div id="tab-cop-miembros" style="display:none">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
       <div>
         <h3 style="margin:0;font-size:15px;color:var(--navy)">Comité Paritario de SST (COPASST)</h3>
-        <p style="margin:4px 0 0;font-size:12px;color:var(--muted)">Igual número de representantes del empleador y los trabajadores. Vigencia: 2 años.</p>
+        <p style="margin:4px 0 0;font-size:12px;color:var(--muted)">Igual número de representantes del empleador y los trabajadores · Vigencia: 2 años</p>
       </div>
       <button class="btn" onclick="abrirModalMiembro('COPASST')">+ Agregar miembro</button>
     </div>
     <table class="data-table" style="width:100%">
-      <thead><tr><th>Nombre</th><th>Cargo empresa</th><th>Representación</th><th>Rol en COPASST</th><th>Vigencia hasta</th><th></th></tr></thead>
+      <thead><tr><th>Nombre</th><th>Cargo empresa</th><th>Representación</th><th>Rol en comité</th><th>Vigencia hasta</th><th></th></tr></thead>
       <tbody id="tbody-cop"></tbody>
     </table>
   </div>
 
-  <!-- Miembros CCL -->
+  <!-- ══ TAB MIEMBROS CCL ═════════════════════════════════════ -->
   <div id="tab-ccl-miembros" style="display:none">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
       <div>
         <h3 style="margin:0;font-size:15px;color:var(--navy)">Comité de Convivencia Laboral (CCL)</h3>
-        <p style="margin:4px 0 0;font-size:12px;color:var(--muted)">Reúne mínimo cada 3 meses. Resuelve conflictos en el trabajo.</p>
+        <p style="margin:4px 0 0;font-size:12px;color:var(--muted)">Reúne mínimo cada 3 meses · Res. 652/2012</p>
       </div>
       <button class="btn" onclick="abrirModalMiembro('CCL')">+ Agregar miembro</button>
     </div>
@@ -163,7 +251,7 @@
     </table>
   </div>
 
-  <!-- Actas -->
+  <!-- ══ TAB ACTAS ════════════════════════════════════════════ -->
   <div id="tab-actas" style="display:none">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
       <h3 style="margin:0;font-size:15px;color:var(--navy)">Actas de reunión</h3>
@@ -174,9 +262,172 @@
       <tbody id="tbody-actas"></tbody>
     </table>
   </div>
+</div><!-- /page -->
+
+<!-- ═══════════════════════════════════════════════════════════
+     WIZARD PROCESO ELECTORAL
+══════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-wizard" style="display:none;align-items:flex-start;padding-top:32px">
+  <div class="modal" style="max-width:700px;width:95%;max-height:90vh;overflow-y:auto">
+    <div class="modal-header">
+      <span class="modal-title" id="wiz-titulo">Nuevo proceso electoral</span>
+      <button class="modal-close" onclick="cerrarModal('modal-wizard')">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Pasos -->
+      <div class="wizard-steps">
+        <div class="wstep active" id="ws-1" onclick="irPaso(1)">
+          <span class="wnum">1</span><span class="wlbl">Convocatoria</span>
+        </div>
+        <div class="wstep" id="ws-2" onclick="irPaso(2)">
+          <span class="wnum">2</span><span class="wlbl">Candidatos</span>
+        </div>
+        <div class="wstep" id="ws-3" onclick="irPaso(3)">
+          <span class="wnum">3</span><span class="wlbl">Votación</span>
+        </div>
+        <div class="wstep" id="ws-4" onclick="irPaso(4)">
+          <span class="wnum">4</span><span class="wlbl">Constitución</span>
+        </div>
+      </div>
+
+      <!-- PASO 1: Convocatoria -->
+      <div class="wiz-panel active" id="wiz-p1">
+        <div class="info-box" style="margin-bottom:16px">
+          <strong>Marco normativo:</strong> Decreto 1072/2015 Art. 2.2.4.6.8 (COPASST) · Res. 652/2012 (CCL) · Res. 734/2006 (procedimiento electoral)
+        </div>
+        <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+          <div class="form-group">
+            <label>Comité a conformar *</label>
+            <select id="w-tipo" class="form-control" onchange="actualizarInfoNorma()">
+              <option value="COPASST">COPASST</option>
+              <option value="CCL">Comité de Convivencia Laboral (CCL)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>N° de trabajadores de la empresa *</label>
+            <input type="number" id="w-ntrab" class="form-control" min="1" placeholder="Ej: 35"
+                   oninput="actualizarInfoNorma()">
+          </div>
+        </div>
+        <div id="info-norma" class="info-box" style="display:none;background:#F0FDF4;border-color:#86EFAC;color:#14532D"></div>
+
+        <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+          <div class="form-group">
+            <label>Fecha de convocatoria *</label>
+            <input type="date" id="w-fconv" class="form-control">
+          </div>
+          <div class="form-group">
+            <label>Cierre de postulaciones</label>
+            <input type="date" id="w-fcierre" class="form-control">
+          </div>
+        </div>
+        <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">
+          <div class="form-group">
+            <label>Fecha de votación *</label>
+            <input type="date" id="w-fvot" class="form-control">
+          </div>
+          <div class="form-group">
+            <label>Hora</label>
+            <input type="time" id="w-hora" class="form-control" placeholder="08:00">
+          </div>
+          <div class="form-group">
+            <label>Lugar</label>
+            <input type="text" id="w-lugar" class="form-control" placeholder="Sala de reuniones">
+          </div>
+        </div>
+        <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="form-group">
+            <label>Inicio del período</label>
+            <input type="date" id="w-finicio" class="form-control">
+          </div>
+          <div class="form-group">
+            <label>Fin del período</label>
+            <input type="date" id="w-ffin" class="form-control">
+          </div>
+        </div>
+
+        <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px">
+          <button class="btn btn-outline" onclick="imprimirConvocatoria()">🖨️ Imprimir convocatoria</button>
+          <button class="btn" onclick="guardarYcontinuar(2)">Siguiente → Candidatos</button>
+        </div>
+      </div>
+
+      <!-- PASO 2: Candidatos -->
+      <div class="wiz-panel" id="wiz-p2">
+        <div id="info-puestos" class="info-box" style="margin-bottom:16px"></div>
+
+        <!-- Representantes del Empleador -->
+        <div style="margin-bottom:20px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <h4 style="margin:0;font-size:14px;color:var(--navy)">
+              🏢 Representantes del Empleador <span style="font-size:11px;color:var(--muted);font-weight:400">(designados, no elegidos por votación)</span>
+            </h4>
+            <button class="btn btn-sm" style="font-size:12px" onclick="agregarRepEmpleador()">+ Agregar</button>
+          </div>
+          <div id="lista-empleador"></div>
+        </div>
+
+        <!-- Candidatos de Trabajadores -->
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <h4 style="margin:0;font-size:14px;color:var(--navy)">
+              👷 Candidatos de Trabajadores <span style="font-size:11px;color:var(--muted);font-weight:400">(votación secreta)</span>
+            </h4>
+            <button class="btn btn-sm" style="font-size:12px" onclick="agregarCandidato()">+ Agregar</button>
+          </div>
+          <div id="lista-candidatos"></div>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;gap:8px;margin-top:16px">
+          <button class="btn btn-outline" onclick="irPaso(1)">← Anterior</button>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-outline" onclick="imprimirTarjeton()">🗳️ Tarjetón electoral</button>
+            <button class="btn" onclick="guardarYcontinuar(3)">Siguiente → Votación</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PASO 3: Votación -->
+      <div class="wiz-panel" id="wiz-p3">
+        <div class="info-box" style="margin-bottom:16px">
+          La votación es <strong>secreta</strong>. Cada trabajador puede votar por <strong>1 candidato</strong>.
+          Ingresa los votos obtenidos por cada candidato al finalizar el escrutinio.
+        </div>
+        <div id="lista-votos"></div>
+
+        <div style="display:flex;justify-content:space-between;gap:8px;margin-top:16px">
+          <button class="btn btn-outline" onclick="irPaso(2)">← Anterior</button>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-outline" onclick="calcularResultados()">🔢 Calcular resultados</button>
+            <button class="btn" onclick="guardarYcontinuar(4)">Siguiente → Constitución</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PASO 4: Constitución -->
+      <div class="wiz-panel" id="wiz-p4">
+        <div id="preview-comite"></div>
+
+        <div style="display:flex;justify-content:space-between;gap:8px;margin-top:16px">
+          <button class="btn btn-outline" onclick="irPaso(3)">← Anterior</button>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-outline" onclick="imprimirActaConstitucion()">🖨️ Acta de constitución</button>
+            <button class="btn" id="btn-constituir" onclick="constituirComite()"
+                    style="background:#059669;border-color:#059669">
+              ✅ Constituir comité
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /modal-body -->
+  </div>
 </div>
 
-<!-- MODAL miembro -->
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL MIEMBRO (manual)
+══════════════════════════════════════════════════════════════ -->
 <div class="modal-overlay" id="modal-miembro" style="display:none">
   <div class="modal" style="max-width:500px">
     <div class="modal-header">
@@ -186,19 +437,10 @@
     <div class="modal-body">
       <input type="hidden" id="mi-id">
       <input type="hidden" id="mi-tipo">
-      <div class="form-group">
-        <label>Nombre completo *</label>
-        <input id="mi-nombre" class="form-control">
-      </div>
+      <div class="form-group"><label>Nombre completo *</label><input id="mi-nombre" class="form-control"></div>
       <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <div class="form-group">
-          <label>Cédula</label>
-          <input id="mi-cedula" class="form-control">
-        </div>
-        <div class="form-group">
-          <label>Cargo en la empresa</label>
-          <input id="mi-cargo" class="form-control">
-        </div>
+        <div class="form-group"><label>Cédula</label><input id="mi-cedula" class="form-control"></div>
+        <div class="form-group"><label>Cargo en la empresa</label><input id="mi-cargo" class="form-control"></div>
       </div>
       <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
         <div class="form-group">
@@ -219,14 +461,8 @@
         </div>
       </div>
       <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <div class="form-group">
-          <label>Fecha inicio período</label>
-          <input type="date" id="mi-inicio" class="form-control">
-        </div>
-        <div class="form-group">
-          <label>Fecha fin período</label>
-          <input type="date" id="mi-fin" class="form-control">
-        </div>
+        <div class="form-group"><label>Fecha inicio</label><input type="date" id="mi-inicio" class="form-control"></div>
+        <div class="form-group"><label>Fecha fin</label><input type="date" id="mi-fin" class="form-control"></div>
       </div>
     </div>
     <div class="modal-footer">
@@ -236,7 +472,7 @@
   </div>
 </div>
 
-<!-- MODAL acta -->
+<!-- MODAL ACTA -->
 <div class="modal-overlay" id="modal-acta" style="display:none">
   <div class="modal" style="max-width:540px">
     <div class="modal-header">
@@ -253,31 +489,13 @@
             <option value="CCL">CCL (Convivencia)</option>
           </select>
         </div>
-        <div class="form-group">
-          <label>N° acta</label>
-          <input type="number" id="ac-numero" class="form-control" min="1">
-        </div>
-        <div class="form-group">
-          <label>Fecha *</label>
-          <input type="date" id="ac-fecha" class="form-control">
-        </div>
+        <div class="form-group"><label>N° acta</label><input type="number" id="ac-numero" class="form-control" min="1"></div>
+        <div class="form-group"><label>Fecha *</label><input type="date" id="ac-fecha" class="form-control"></div>
       </div>
-      <div class="form-group">
-        <label>Temas tratados</label>
-        <textarea id="ac-temas" class="form-control" rows="3"></textarea>
-      </div>
-      <div class="form-group">
-        <label>Compromisos / Decisiones</label>
-        <textarea id="ac-compromisos" class="form-control" rows="3"></textarea>
-      </div>
-      <div class="form-group">
-        <label>Asistentes</label>
-        <input id="ac-asistentes" class="form-control" placeholder="Nombres separados por coma">
-      </div>
-      <div class="form-group">
-        <label>Enlace al acta (PDF/Drive)</label>
-        <input id="ac-url" class="form-control" placeholder="https://…">
-      </div>
+      <div class="form-group"><label>Temas tratados</label><textarea id="ac-temas" class="form-control" rows="3"></textarea></div>
+      <div class="form-group"><label>Compromisos / Decisiones</label><textarea id="ac-compromisos" class="form-control" rows="3"></textarea></div>
+      <div class="form-group"><label>Asistentes</label><input id="ac-asistentes" class="form-control" placeholder="Nombres separados por coma"></div>
+      <div class="form-group"><label>Enlace al acta (PDF/Drive)</label><input id="ac-url" class="form-control" placeholder="https://…"></div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="cerrarModal('modal-acta')">Cancelar</button>
@@ -286,24 +504,64 @@
   </div>
 </div>
 
+<!-- Contenedor para impresión de documentos -->
+<div class="print-frame" id="print-frame"></div>
+
+<div class="toast" id="toast"></div>
 <script src="js/vigia-api.js"></script>
 <script>
-let _datos = { miembros: [], actas: [] };
+// ═══════════════════════════════════════════════════════
+// ESTADO
+// ═══════════════════════════════════════════════════════
+let _datos     = { miembros: [], actas: [] };
+let _elecciones = [];
+let _wiz = {
+  id: null, paso: 1,
+  tipo: 'COPASST', ntrab: 0,
+  fconv: '', fcierre: '', fvot: '', hora: '', lugar: '',
+  finicio: '', ffin: '',
+  empleador: [],  // [{id, nombre, cedula, cargo, rol_comite}]
+  candidatos: [], // [{id, nombre, cedula, cargo, votos, resultado}]
+};
 
+const EMPRESA_NOMBRE = () => localStorage.getItem('vigia_nombre_empresa') || '';
+const EMPRESA_NIT    = () => localStorage.getItem('vigia_nit') || '';
+
+// ═══════════════════════════════════════════════════════
+// UTILIDADES
+// ═══════════════════════════════════════════════════════
+function uid() { return Math.random().toString(36).slice(2,9); }
+function fmtD(d) {
+  if (!d) return '—';
+  const [y,m,dia] = d.split('-');
+  return `${dia}/${m}/${y}`;
+}
 function mostrarTab(tab, btn) {
   document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
-  ['cop-miembros','ccl-miembros','actas'].forEach(t =>
+  ['elecciones','cop-miembros','ccl-miembros','actas'].forEach(t =>
     document.getElementById(`tab-${t}`).style.display = t === tab ? '' : 'none');
 }
 function cerrarModal(id) { document.getElementById(id).style.display = 'none'; }
 function abrirModal(id)  { document.getElementById(id).style.display = 'flex'; }
+function toast(msg, tipo='ok') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = `toast toast-${tipo} show`;
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
 
+// ═══════════════════════════════════════════════════════
+// CARGA PRINCIPAL
+// ═══════════════════════════════════════════════════════
 async function cargar() {
-  _datos = await VigiaAPI.getCopasst() || { miembros: [], actas: [] };
+  [_datos, _elecciones] = await Promise.all([
+    VigiaAPI.getCopasst() .catch(() => ({ miembros:[], actas:[] })),
+    VigiaAPI.getElecciones().catch(() => []),
+  ]);
   renderStats();
   renderMiembros();
   renderActas();
+  renderElecciones();
   verificarVigencia();
 }
 
@@ -315,63 +573,554 @@ function renderStats() {
   document.getElementById('st-cop-actas').textContent = _datos.actas.filter(a => a.tipo === 'COPASST').length;
   document.getElementById('st-ccl-actas').textContent = _datos.actas.filter(a => a.tipo === 'CCL').length;
 }
+function verificarVigencia() {
+  const hoy  = new Date();
+  const prox = _datos.miembros.filter(m => m.fecha_fin &&
+    new Date(m.fecha_fin) < new Date(hoy.getTime() + 60*24*3600000));
+  const av = document.getElementById('alerta-vigencia');
+  if (prox.length) {
+    av.style.display = '';
+    av.textContent = `⚠️ ${prox.length} miembro(s) con período vencido o próximo a vencer (≤60 días). Inicia un nuevo proceso electoral.`;
+  } else av.style.display = 'none';
+}
 
+// ═══════════════════════════════════════════════════════
+// MIEMBROS (tabla)
+// ═══════════════════════════════════════════════════════
+function rolChip(m) {
+  const rc = m.rol === 'EMPLEADOR' ? 'chip-empleador' : 'chip-trabajador';
+  const lbl = m.rol === 'EMPLEADOR' ? 'Empleador' : 'Trabajador';
+  const cc = { PRESIDENTE:'chip-presidente', SECRETARIO:'chip-secretario',
+               SUPLENTE:'chip-suplente' }[m.cargo_copasst] || 'chip-vocal';
+  return `<span class="chip ${rc}">${lbl}</span> <span class="chip ${cc}">${m.cargo_copasst}</span>`;
+}
 function filasMiembro(lista) {
   if (!lista.length) return '<tr><td colspan="6" class="empty-msg">Sin miembros registrados.</td></tr>';
   return lista.map(m => `
     <tr>
       <td style="font-weight:700">${m.nombre}</td>
       <td>${m.cargo_empresa || '–'}</td>
-      <td><span class="miembro-chip rol-${m.rol}">${m.rol === 'EMPLEADOR' ? 'Empleador' : 'Trabajador'}</span></td>
-      <td><span class="miembro-chip ${m.cargo_copasst === 'PRESIDENTE' ? 'cargo-PRESIDENTE' : m.cargo_copasst === 'SECRETARIO' ? 'cargo-SECRETARIO' : ''}" style="background:var(--bg)">${m.cargo_copasst}</span></td>
-      <td>${m.fecha_fin ? new Date(m.fecha_fin+'T12:00:00').toLocaleDateString('es-CO') : '–'}</td>
+      <td>${rolChip(m)}</td>
+      <td></td>
+      <td>${m.fecha_fin ? fmtD(m.fecha_fin) : '–'}</td>
       <td>
         <button class="btn-xs" onclick="editarMiembro('${m.id}')">Editar</button>
         <button class="btn-xs del" onclick="eliminarMiembro('${m.id}')">Retirar</button>
       </td>
     </tr>`).join('');
 }
-
 function renderMiembros() {
   document.getElementById('tbody-cop').innerHTML = filasMiembro(_datos.miembros.filter(m => m.tipo === 'COPASST'));
   document.getElementById('tbody-ccl').innerHTML = filasMiembro(_datos.miembros.filter(m => m.tipo === 'CCL'));
 }
 
+// ═══════════════════════════════════════════════════════
+// ACTAS
+// ═══════════════════════════════════════════════════════
 function renderActas() {
   const tbody = document.getElementById('tbody-actas');
-  if (!_datos.actas.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty-msg">Sin actas registradas.</td></tr>'; return; }
+  if (!_datos.actas.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty-msg">Sin actas.</td></tr>'; return; }
   tbody.innerHTML = _datos.actas.map(a => `
     <tr>
-      <td>${a.numero || '–'}</td>
-      <td><span style="font-weight:700">${a.tipo}</span></td>
-      <td>${new Date(a.fecha+'T12:00:00').toLocaleDateString('es-CO')}</td>
-      <td style="max-width:220px;font-size:12px">${a.temas || '–'}</td>
-      <td style="max-width:180px;font-size:12px">${a.compromisos || '–'}</td>
+      <td>${a.numero||'–'}</td>
+      <td><strong>${a.tipo}</strong></td>
+      <td>${fmtD(a.fecha)}</td>
+      <td style="max-width:220px;font-size:12px">${a.temas||'–'}</td>
+      <td style="max-width:180px;font-size:12px">${a.compromisos||'–'}</td>
       <td>
-        ${a.url_acta ? `<a href="${a.url_acta}" target="_blank" class="btn-xs">Ver</a>` : ''}
+        ${a.url_acta?`<a href="${a.url_acta}" target="_blank" class="btn-xs">Ver</a>`:''}
         <button class="btn-xs" onclick="editarActa('${a.id}')">Editar</button>
         <button class="btn-xs del" onclick="eliminarActa('${a.id}')">Eliminar</button>
       </td>
     </tr>`).join('');
 }
 
-function verificarVigencia() {
-  const hoy = new Date();
-  const prox = _datos.miembros.filter(m => m.fecha_fin && new Date(m.fecha_fin) < new Date(hoy.getTime() + 60*24*3600*1000));
-  const av = document.getElementById('alerta-vigencia');
-  if (prox.length) {
-    av.style.display = '';
-    av.textContent = `⚠️ ${prox.length} miembro(s) con período vencido o próximo a vencer (en los próximos 60 días). Realice nueva convocatoria.`;
-  } else av.style.display = 'none';
+// ═══════════════════════════════════════════════════════
+// ELECCIONES — lista de procesos
+// ═══════════════════════════════════════════════════════
+const ESTADO_LABEL = {
+  CONVOCATORIA: '📣 Convocatoria',
+  CANDIDATOS:   '✍️ Candidatos',
+  VOTACION:     '🗳️ Votación',
+  CONSTITUIDO:  '✅ Constituido',
+};
+function renderElecciones() {
+  const el = document.getElementById('lista-elecciones');
+  if (!_elecciones.length) {
+    el.innerHTML = `<div style="text-align:center;padding:48px;color:var(--muted)">
+      <p style="font-size:32px">📋</p>
+      <p style="font-weight:600">Sin procesos electorales registrados</p>
+      <p style="font-size:13px">Haz clic en <strong>+ Nuevo proceso electoral</strong> para iniciar la convocatoria.</p>
+    </div>`;
+    return;
+  }
+  el.innerHTML = _elecciones.map(e => {
+    const cls = `chip-estado-${e.estado}`;
+    const cands = (e.candidatos_trabajadores||[]).length;
+    const emps  = (e.representantes_empleador||[]).length;
+    return `
+    <div class="proceso-card">
+      <div class="proceso-header">
+        <span class="proceso-tipo">${e.tipo === 'CCL' ? '🤝 Comité de Convivencia Laboral' : '👷 COPASST'}</span>
+        <span class="chip ${cls}">${ESTADO_LABEL[e.estado]||e.estado}</span>
+        <div class="proceso-actions">
+          ${e.estado !== 'CONSTITUIDO'
+            ? `<button class="btn-xs" onclick="abrirWizard('${e.id}')">Continuar →</button>`
+            : `<button class="btn-xs" onclick="abrirWizard('${e.id}')">Ver</button>`}
+          <button class="btn-xs del" onclick="eliminarEleccion('${e.id}')">Eliminar</button>
+        </div>
+      </div>
+      <div class="proceso-grid">
+        <div class="proceso-dato"><strong>${fmtD(e.fecha_convocatoria)}</strong>Convocatoria</div>
+        <div class="proceso-dato"><strong>${fmtD(e.fecha_votacion)}</strong>Votación</div>
+        <div class="proceso-dato"><strong>${fmtD(e.fecha_inicio_periodo)} – ${fmtD(e.fecha_fin_periodo)}</strong>Período</div>
+        <div class="proceso-dato"><strong>${e.num_trabajadores||'—'}</strong>Trabajadores</div>
+        <div class="proceso-dato"><strong>${emps} empleador · ${cands} trab.</strong>Candidatos/Repr.</div>
+        <div class="proceso-dato"><strong>${e.lugar_votacion||'—'}</strong>Lugar</div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
-// Miembro
+// ═══════════════════════════════════════════════════════
+// WIZARD — abrir / guardar / navegar
+// ═══════════════════════════════════════════════════════
+function abrirWizard(id) {
+  if (id) {
+    const e = _elecciones.find(x => x.id === id);
+    if (!e) return;
+    _wiz = {
+      id: e.id,
+      paso: e.estado === 'CONSTITUIDO' ? 4 : ['CONVOCATORIA','CANDIDATOS','VOTACION','CONSTITUIDO'].indexOf(e.estado) + 1,
+      tipo: e.tipo,
+      ntrab: e.num_trabajadores || 0,
+      fconv: e.fecha_convocatoria || '',
+      fcierre: e.fecha_cierre_postulaciones || '',
+      fvot: e.fecha_votacion || '',
+      hora: e.hora_votacion || '',
+      lugar: e.lugar_votacion || '',
+      finicio: e.fecha_inicio_periodo || '',
+      ffin: e.fecha_fin_periodo || '',
+      empleador:  JSON.parse(JSON.stringify(e.representantes_empleador || [])),
+      candidatos: JSON.parse(JSON.stringify(e.candidatos_trabajadores  || [])),
+    };
+    document.getElementById('wiz-titulo').textContent = `Proceso Electoral — ${e.tipo === 'CCL' ? 'CCL' : 'COPASST'}`;
+  } else {
+    _wiz = {
+      id: null, paso: 1, tipo: 'COPASST', ntrab: 0,
+      fconv:'',fcierre:'',fvot:'',hora:'',lugar:'',finicio:'',ffin:'',
+      empleador:[], candidatos:[],
+    };
+    document.getElementById('wiz-titulo').textContent = 'Nuevo proceso electoral';
+  }
+  rellenarFormularioPaso1();
+  irPaso(_wiz.paso <= 4 ? _wiz.paso : 1);
+  abrirModal('modal-wizard');
+}
+
+function rellenarFormularioPaso1() {
+  document.getElementById('w-tipo').value    = _wiz.tipo;
+  document.getElementById('w-ntrab').value   = _wiz.ntrab || '';
+  document.getElementById('w-fconv').value   = _wiz.fconv;
+  document.getElementById('w-fcierre').value = _wiz.fcierre;
+  document.getElementById('w-fvot').value    = _wiz.fvot;
+  document.getElementById('w-hora').value    = _wiz.hora;
+  document.getElementById('w-lugar').value   = _wiz.lugar;
+  document.getElementById('w-finicio').value = _wiz.finicio;
+  document.getElementById('w-ffin').value    = _wiz.ffin;
+  actualizarInfoNorma();
+}
+
+function leerFormularioPaso1() {
+  _wiz.tipo    = document.getElementById('w-tipo').value;
+  _wiz.ntrab   = parseInt(document.getElementById('w-ntrab').value) || 0;
+  _wiz.fconv   = document.getElementById('w-fconv').value;
+  _wiz.fcierre = document.getElementById('w-fcierre').value;
+  _wiz.fvot    = document.getElementById('w-fvot').value;
+  _wiz.hora    = document.getElementById('w-hora').value;
+  _wiz.lugar   = document.getElementById('w-lugar').value;
+  _wiz.finicio = document.getElementById('w-finicio').value;
+  _wiz.ffin    = document.getElementById('w-ffin').value;
+}
+
+function puestosRequeridos() {
+  const n = _wiz.ntrab;
+  const t = _wiz.tipo;
+  if (t === 'COPASST') {
+    if (n >= 500) return { principales:3, suplentes:3, label:'≥500 trab: 3 principales + 3 suplentes por parte' };
+    if (n >= 50)  return { principales:2, suplentes:2, label:'50–499 trab: 2 principales + 2 suplentes por parte' };
+    return             { principales:1, suplentes:1, label:'10–49 trab: 1 principal + 1 suplente por parte' };
+  } else { // CCL
+    if (n >= 20) return { principales:2, suplentes:0, label:'≥20 trab: 2 representantes por parte (Res. 652/2012)' };
+    return             { principales:1, suplentes:0, label:'<20 trab: 1 representante por parte (Res. 652/2012)' };
+  }
+}
+
+function actualizarInfoNorma() {
+  leerFormularioPaso1();
+  const box = document.getElementById('info-norma');
+  if (!_wiz.ntrab) { box.style.display='none'; return; }
+  const p = puestosRequeridos();
+  const t = _wiz.tipo;
+  box.style.display = '';
+  box.innerHTML = `<strong>${t === 'CCL' ? 'Comité de Convivencia Laboral' : 'COPASST'} — Composición requerida</strong><br>
+    ${p.label}.<br>
+    <strong>Empleador:</strong> designa ${p.principales} principal${p.principales>1?'es':''}
+    ${p.suplentes ? `+ ${p.suplentes} suplente${p.suplentes>1?'s':''}` : ''} ·
+    <strong>Trabajadores:</strong> eligen ${p.principales} principal${p.principales>1?'es':''}
+    ${p.suplentes ? `+ ${p.suplentes} suplente${p.suplentes>1?'s':''}` : ''} por votación secreta.`;
+}
+
+function irPaso(n) {
+  _wiz.paso = n;
+  [1,2,3,4].forEach(i => {
+    document.getElementById(`wiz-p${i}`).classList.toggle('active', i === n);
+    const ws = document.getElementById(`ws-${i}`);
+    ws.classList.remove('active','done');
+    if (i === n) ws.classList.add('active');
+    else if (i < n) ws.classList.add('done');
+  });
+  if (n === 2) renderPaso2();
+  if (n === 3) renderPaso3();
+  if (n === 4) renderPaso4();
+}
+
+async function guardarYcontinuar(siguientePaso) {
+  if (siguientePaso > 1) leerFormularioPaso1();
+  if (siguientePaso > 2 || siguientePaso === 3) { /* candidatos ya en _wiz */ }
+
+  // Determinar estado
+  const estadoMap = {2:'CANDIDATOS',3:'VOTACION',4:'CONSTITUIDO'};
+  const nuevoEstado = estadoMap[siguientePaso] || 'CONVOCATORIA';
+
+  const payload = {
+    tipo: _wiz.tipo,
+    estado: nuevoEstado,
+    num_trabajadores: _wiz.ntrab || null,
+    fecha_convocatoria: _wiz.fconv || null,
+    fecha_cierre_postulaciones: _wiz.fcierre || null,
+    fecha_votacion: _wiz.fvot || null,
+    hora_votacion: _wiz.hora || null,
+    lugar_votacion: _wiz.lugar || null,
+    fecha_inicio_periodo: _wiz.finicio || null,
+    fecha_fin_periodo: _wiz.ffin || null,
+    candidatos_trabajadores: _wiz.candidatos,
+    representantes_empleador: _wiz.empleador,
+  };
+
+  try {
+    if (_wiz.id) {
+      await VigiaAPI.editarEleccion(_wiz.id, payload);
+    } else {
+      const nuevo = await VigiaAPI.crearEleccion(payload);
+      _wiz.id = nuevo.id;
+    }
+    // Actualizar lista local
+    _elecciones = await VigiaAPI.getElecciones().catch(() => _elecciones);
+    irPaso(siguientePaso);
+  } catch(e) { toast('Error al guardar: ' + e.message, 'error'); }
+}
+
+// ─── PASO 2: candidatos ──────────────────────────────────
+function renderPaso2() {
+  leerFormularioPaso1();
+  const p = puestosRequeridos();
+  document.getElementById('info-puestos').innerHTML =
+    `<strong>Puestos a cubrir (${_wiz.tipo}):</strong> ${p.label}.<br>
+     Empleador designa <strong>${p.principales}${p.suplentes?`+${p.suplentes}`:''}</strong> representante(s) ·
+     Trabajadores deben tener <strong>mínimo ${p.principales + p.suplentes} candidatos</strong>.`;
+  renderEmpleador();
+  renderCandidatos();
+}
+
+function renderEmpleador() {
+  const el = document.getElementById('lista-empleador');
+  if (!_wiz.empleador.length) {
+    el.innerHTML = '<p style="font-size:12px;color:var(--muted)">Sin representantes del empleador agregados.</p>';
+    return;
+  }
+  el.innerHTML = _wiz.empleador.map(r => `
+    <div class="candidato-row">
+      <input class="form-control" style="font-size:13px" value="${r.nombre}" placeholder="Nombre"
+        oninput="_wiz.empleador.find(x=>x.id==='${r.id}').nombre=this.value">
+      <input class="form-control" style="font-size:13px" value="${r.cargo||''}" placeholder="Cargo empresa"
+        oninput="_wiz.empleador.find(x=>x.id==='${r.id}').cargo=this.value">
+      <select class="form-control" style="font-size:13px"
+        onchange="_wiz.empleador.find(x=>x.id==='${r.id}').rol_comite=this.value">
+        ${['PRESIDENTE','SECRETARIO','VOCAL','SUPLENTE'].map(v =>
+          `<option value="${v}" ${r.rol_comite===v?'selected':''}>${v}</option>`).join('')}
+      </select>
+      <button class="btn-xs del" onclick="eliminarEmpleador('${r.id}')">✕</button>
+    </div>`).join('');
+}
+
+function agregarRepEmpleador() {
+  _wiz.empleador.push({ id: uid(), nombre:'', cargo:'', rol_comite:'VOCAL' });
+  renderEmpleador();
+}
+function eliminarEmpleador(id) {
+  _wiz.empleador = _wiz.empleador.filter(r => r.id !== id);
+  renderEmpleador();
+}
+
+function renderCandidatos() {
+  const el = document.getElementById('lista-candidatos');
+  if (!_wiz.candidatos.length) {
+    el.innerHTML = '<p style="font-size:12px;color:var(--muted)">Sin candidatos de trabajadores registrados.</p>';
+    return;
+  }
+  el.innerHTML = _wiz.candidatos.map(c => `
+    <div class="candidato-row">
+      <input class="form-control" style="font-size:13px" value="${c.nombre}" placeholder="Nombre completo"
+        oninput="_wiz.candidatos.find(x=>x.id==='${c.id}').nombre=this.value">
+      <input class="form-control" style="font-size:13px" value="${c.cargo||''}" placeholder="Cargo empresa"
+        oninput="_wiz.candidatos.find(x=>x.id==='${c.id}').cargo=this.value">
+      <input class="form-control" style="font-size:13px" value="${c.cedula||''}" placeholder="Cédula"
+        oninput="_wiz.candidatos.find(x=>x.id==='${c.id}').cedula=this.value">
+      <button class="btn-xs del" onclick="eliminarCandidato('${c.id}')">✕</button>
+    </div>`).join('');
+}
+function agregarCandidato() {
+  _wiz.candidatos.push({ id: uid(), nombre:'', cedula:'', cargo:'', votos:0, resultado:'' });
+  renderCandidatos();
+}
+function eliminarCandidato(id) {
+  _wiz.candidatos = _wiz.candidatos.filter(c => c.id !== id);
+  renderCandidatos();
+}
+
+// ─── PASO 3: votos ───────────────────────────────────────
+function renderPaso3() {
+  const el = document.getElementById('lista-votos');
+  if (!_wiz.candidatos.length) {
+    el.innerHTML = '<p class="text-muted">No hay candidatos de trabajadores en el paso anterior.</p>';
+    return;
+  }
+  el.innerHTML = `
+    <table class="data-table" style="width:100%">
+      <thead><tr><th>Candidato</th><th>Cargo</th><th>Cédula</th><th style="width:100px">Votos</th></tr></thead>
+      <tbody>
+        ${_wiz.candidatos.map(c => `
+          <tr>
+            <td style="font-weight:700">${c.nombre||'(sin nombre)'}</td>
+            <td>${c.cargo||'—'}</td>
+            <td>${c.cedula||'—'}</td>
+            <td><input type="number" min="0" class="form-control votos-input"
+                 value="${c.votos||0}"
+                 onchange="_wiz.candidatos.find(x=>x.id==='${c.id}').votos=parseInt(this.value)||0">
+            </td>
+          </tr>`).join('')}
+      </tbody>
+    </table>`;
+}
+
+function calcularResultados() {
+  const p = puestosRequeridos();
+  const ordenados = [..._wiz.candidatos].sort((a,b) => (b.votos||0) - (a.votos||0));
+  ordenados.forEach((c, i) => {
+    if (i < p.principales) c.resultado = 'PRINCIPAL';
+    else if (i < p.principales + p.suplentes) c.resultado = 'SUPLENTE';
+    else c.resultado = 'NO_ELECTO';
+    // Actualizar en _wiz.candidatos
+    const orig = _wiz.candidatos.find(x => x.id === c.id);
+    if (orig) orig.resultado = c.resultado;
+  });
+  renderPaso3();
+  // Mostrar resumen
+  const resumen = ordenados.map(c =>
+    `<span class="resultado-${c.resultado}">${c.nombre}: ${c.votos||0} votos → ${c.resultado}</span>`
+  ).join('<br>');
+  document.getElementById('lista-votos').innerHTML += `
+    <div style="margin-top:16px;padding:12px;background:var(--bg);border-radius:8px;font-size:13px">
+      <strong>Resultados calculados:</strong><br>${resumen}
+    </div>`;
+  toast('Resultados calculados correctamente', 'ok');
+}
+
+// ─── PASO 4: constitución ────────────────────────────────
+function renderPaso4() {
+  const p = puestosRequeridos();
+  const empRows = _wiz.empleador.map(r =>
+    `<tr><td>${r.nombre||'—'}</td><td>${r.cargo||'—'}</td><td><span class="chip chip-empleador">Empleador</span></td><td>${r.rol_comite||'VOCAL'}</td></tr>`
+  ).join('');
+  const candRows = [..._wiz.candidatos]
+    .sort((a,b) => (b.votos||0) - (a.votos||0))
+    .filter(c => c.resultado === 'PRINCIPAL' || c.resultado === 'SUPLENTE')
+    .map(c => `<tr>
+      <td>${c.nombre||'—'}</td><td>${c.cargo||'—'}</td>
+      <td><span class="chip chip-trabajador">Trabajador</span></td>
+      <td class="resultado-${c.resultado}">${c.resultado} (${c.votos||0} votos)</td>
+    </tr>`).join('');
+
+  const ya = _wiz.id && (_elecciones.find(e=>e.id===_wiz.id)||{}).estado === 'CONSTITUIDO';
+  if (ya) document.getElementById('btn-constituir').disabled = true;
+
+  document.getElementById('preview-comite').innerHTML = `
+    <div class="info-box" style="margin-bottom:16px">
+      Revisa la composición final del comité antes de constituirlo.
+      Al hacer clic en <strong>Constituir</strong>, los miembros actuales serán reemplazados por estos.
+      ${ya ? '<br><strong>⚠️ Este proceso ya fue constituido.</strong>' : ''}
+    </div>
+    <h4 style="font-size:14px;color:var(--navy);margin-bottom:8px">Comité ${_wiz.tipo} · ${fmtD(_wiz.finicio)} – ${fmtD(_wiz.ffin)}</h4>
+    <table class="data-table" style="width:100%;margin-bottom:0">
+      <thead><tr><th>Nombre</th><th>Cargo empresa</th><th>Representación</th><th>Resultado</th></tr></thead>
+      <tbody>
+        ${empRows || '<tr><td colspan="4" class="empty-msg">Sin representantes del empleador</td></tr>'}
+        ${candRows || '<tr><td colspan="4" class="empty-msg">Sin trabajadores electos</td></tr>'}
+      </tbody>
+    </table>`;
+}
+
+async function constituirComite() {
+  if (!_wiz.id) {
+    toast('Guarda el proceso primero', 'error'); return;
+  }
+  if (!confirm(`¿Confirmas la constitución del ${_wiz.tipo}?\nEsta acción desactivará los miembros actuales y registrará los nuevos.`)) return;
+  try {
+    // Guardar datos finales antes de constituir
+    await VigiaAPI.editarEleccion(_wiz.id, {
+      estado: 'CONSTITUIDO',
+      candidatos_trabajadores: _wiz.candidatos,
+      representantes_empleador: _wiz.empleador,
+    });
+    const res = await VigiaAPI.constituirEleccion(_wiz.id);
+    toast(`✅ Comité constituido: ${res.miembros_creados} miembros registrados`, 'ok');
+    cerrarModal('modal-wizard');
+    await cargar();
+    mostrarTab('cop-miembros', document.querySelector('.tab'));
+  } catch(e) { toast('Error: ' + e.message, 'error'); }
+}
+
+async function eliminarEleccion(id) {
+  if (!confirm('¿Eliminar este proceso electoral?')) return;
+  try {
+    await VigiaAPI.eliminarEleccion(id);
+    _elecciones = _elecciones.filter(e => e.id !== id);
+    renderElecciones();
+    toast('Proceso eliminado', 'ok');
+  } catch(e) { toast('Error: ' + e.message, 'error'); }
+}
+
+// ═══════════════════════════════════════════════════════
+// DOCUMENTOS IMPRIMIBLES
+// ═══════════════════════════════════════════════════════
+function imprimirDoc(html) {
+  const pf = document.getElementById('print-frame');
+  pf.innerHTML = `<div class="doc-imprimible">${html}</div>`;
+  window.print();
+}
+
+function imprimirConvocatoria() {
+  leerFormularioPaso1();
+  const { tipo, ntrab, fconv, fvot, hora, lugar, finicio, ffin, fcierre } = _wiz;
+  const emp = EMPRESA_NOMBRE();
+  const p = puestosRequeridos();
+  const norma = tipo === 'CCL'
+    ? 'Resolución 652 de 2012 y Resolución 1356 de 2012'
+    : 'Decreto 1072 de 2015 (Art. 2.2.4.6.8) y Resolución 734 de 2006';
+  imprimirDoc(`
+    <h1>Convocatoria a Proceso Electoral</h1>
+    <h2>${tipo === 'CCL' ? 'Comité de Convivencia Laboral (CCL)' : 'Comité Paritario de Seguridad y Salud en el Trabajo (COPASST)'}</h2>
+    <p>${emp || '[EMPRESA]'} ${EMPRESA_NIT() ? '· NIT ' + EMPRESA_NIT() : ''}</p>
+    <p>La empresa convoca a todos sus trabajadores a participar en el proceso de elección de los representantes de los trabajadores ante el <strong>${tipo === 'CCL' ? 'Comité de Convivencia Laboral' : 'COPASST'}</strong>, de conformidad con lo establecido en ${norma}.</p>
+    <h2 style="font-size:12pt;margin-top:20px">FECHAS DEL PROCESO</h2>
+    <table>
+      <tr><th>Evento</th><th>Fecha</th></tr>
+      <tr><td>Publicación de la convocatoria</td><td>${fmtD(fconv)}</td></tr>
+      <tr><td>Cierre de inscripciones de candidatos</td><td>${fmtD(fcierre)}</td></tr>
+      <tr><td>Jornada de votación</td><td>${fmtD(fvot)} ${hora ? '· ' + hora : ''}</td></tr>
+      <tr><td>Lugar de votación</td><td>${lugar || '—'}</td></tr>
+      <tr><td>Inicio del período</td><td>${fmtD(finicio)}</td></tr>
+      <tr><td>Fin del período</td><td>${fmtD(ffin)}</td></tr>
+    </table>
+    <h2 style="font-size:12pt;margin-top:20px">PUESTOS A ELEGIR</h2>
+    <p>${p.label}.</p>
+    <p>La empresa cuenta con <strong>${ntrab || '___'}</strong> trabajadores.</p>
+    <h2 style="font-size:12pt;margin-top:20px">REQUISITOS PARA CANDIDATOS</h2>
+    <ol class="numerales">
+      <li>Ser trabajador activo de la empresa al momento de la inscripción.</li>
+      <li>No haber sido sancionado disciplinariamente en los últimos 6 meses.</li>
+      <li>Presentar su inscripción por escrito antes del cierre de postulaciones.</li>
+    </ol>
+    <h2 style="font-size:12pt;margin-top:20px">MECANISMO DE VOTACIÓN</h2>
+    <p>La votación es <strong>secreta, individual y directa</strong>. Cada trabajador puede emitir un (1) voto a favor de su candidato preferido. Los resultados serán publicados mediante acta de escrutinio.</p>
+    <div class="firma-row">
+      <div class="firma-bloque">
+        <div class="firma-linea">Representante Legal<br>${emp}</div>
+      </div>
+      <div class="firma-bloque">
+        <div class="firma-linea">Responsable SST<br>${emp}</div>
+      </div>
+    </div>
+    <p style="font-size:9pt;margin-top:20px;color:#666">Generado por Vigía 360 · ${new Date().toLocaleDateString('es-CO')}</p>`);
+}
+
+function imprimirTarjeton() {
+  const emp = EMPRESA_NOMBRE();
+  const cands = _wiz.candidatos.filter(c => c.nombre);
+  if (!cands.length) { toast('Agrega candidatos antes de imprimir el tarjetón', 'error'); return; }
+  const filas = cands.map((c,i) => `
+    <tr>
+      <td style="text-align:center;font-weight:700;font-size:16pt">${i+1}</td>
+      <td style="font-size:13pt">${c.nombre}</td>
+      <td>${c.cargo||'—'}</td>
+      <td style="text-align:center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+    </tr>`).join('');
+  imprimirDoc(`
+    <h1>Tarjetón Electoral</h1>
+    <h2>${_wiz.tipo === 'CCL' ? 'Comité de Convivencia Laboral' : 'COPASST'} · ${emp}</h2>
+    <p>Fecha de votación: <strong>${fmtD(_wiz.fvot)}</strong> ${_wiz.hora ? '· ' + _wiz.hora : ''} · Lugar: ${_wiz.lugar||'—'}</p>
+    <p>Marque con una <strong>X</strong> el candidato de su preferencia. Solo puede marcar <strong>UN (1)</strong> candidato.</p>
+    <table>
+      <thead><tr><th>N°</th><th>Nombre del candidato</th><th>Cargo</th><th style="width:80px">Su voto</th></tr></thead>
+      <tbody>${filas}</tbody>
+    </table>
+    <div style="margin-top:24px;border-top:1px solid #ccc;padding-top:8px;font-size:10pt;color:#666">
+      Esta tarjeta debe permanecer en secreto. No la muestre a nadie. Dóblela y deposítela en la urna.
+    </div>`);
+}
+
+function imprimirActaConstitucion() {
+  const emp = EMPRESA_NOMBRE();
+  const empRows = _wiz.empleador.map(r =>
+    `<tr><td>${r.nombre||'—'}</td><td>${r.cargo||'—'}</td><td>Empleador (designado)</td><td>${r.rol_comite||'Vocal'}</td></tr>`
+  ).join('');
+  const candRows = [..._wiz.candidatos]
+    .sort((a,b)=>(b.votos||0)-(a.votos||0))
+    .filter(c=>c.resultado==='PRINCIPAL'||c.resultado==='SUPLENTE')
+    .map(c=>`<tr><td>${c.nombre}</td><td>${c.cargo||'—'}</td><td>Trabajador (electo: ${c.votos||0} votos)</td><td>${c.resultado==='PRINCIPAL'?'Vocal':'Suplente'}</td></tr>`)
+    .join('');
+  const norma = _wiz.tipo==='CCL'?'Resolución 652 de 2012':'Decreto 1072 de 2015';
+  imprimirDoc(`
+    <h1>Acta de Constitución</h1>
+    <h2>${_wiz.tipo==='CCL'?'Comité de Convivencia Laboral (CCL)':'Comité Paritario de SST (COPASST)'}</h2>
+    <p>Empresa: <strong>${emp}</strong> · Fecha: <strong>${fmtD(_wiz.fvot)}</strong></p>
+    <p>En las instalaciones de <strong>${emp}</strong>, reunidos los representantes del empleador y de los trabajadores, de conformidad con lo establecido en <strong>${norma}</strong>, se procede a constituir el ${_wiz.tipo} para el período comprendido entre <strong>${fmtD(_wiz.finicio)}</strong> y <strong>${fmtD(_wiz.ffin)}</strong>.</p>
+    <h2 style="font-size:12pt;margin-top:16px">INTEGRANTES DEL COMITÉ</h2>
+    <table>
+      <thead><tr><th>Nombre</th><th>Cargo empresa</th><th>Forma de designación</th><th>Rol en el comité</th></tr></thead>
+      <tbody>${empRows}${candRows}</tbody>
+    </table>
+    <p style="margin-top:16px">Los integrantes del comité se comprometen a cumplir con las funciones establecidas en la normativa vigente, reunirse con la periodicidad requerida y registrar las actas de cada sesión.</p>
+    <p>Se notificará al Ministerio de Trabajo dentro de los <strong>8 días hábiles</strong> siguientes a la constitución del comité (Res. 734/2006).</p>
+    <div class="firma-row">
+      ${_wiz.empleador.slice(0,2).map(r=>`<div class="firma-bloque"><div class="firma-linea">${r.nombre}<br>${r.cargo||''}</div></div>`).join('')}
+    </div>
+    <div class="firma-row" style="margin-top:20px">
+      ${_wiz.candidatos.filter(c=>c.resultado==='PRINCIPAL').map(c=>`<div class="firma-bloque"><div class="firma-linea">${c.nombre}<br>${c.cargo||''}</div></div>`).join('')}
+    </div>
+    <p style="font-size:9pt;margin-top:20px;color:#666">Generado por Vigía 360 · ${new Date().toLocaleDateString('es-CO')}</p>`);
+}
+
+// ═══════════════════════════════════════════════════════
+// MODAL MIEMBRO (manual)
+// ═══════════════════════════════════════════════════════
 function abrirModalMiembro(tipo) {
   ['mi-id','mi-nombre','mi-cedula','mi-cargo','mi-inicio','mi-fin'].forEach(id => document.getElementById(id).value='');
   document.getElementById('mi-tipo').value = tipo;
   document.getElementById('mi-rol').value = 'TRABAJADOR';
   document.getElementById('mi-cargo-cop').value = 'VOCAL';
-  document.getElementById('modal-miem-titulo').textContent = `Agregar miembro ${tipo === 'CCL' ? 'CCL' : 'COPASST'}`;
+  document.getElementById('modal-miem-titulo').textContent = `Agregar miembro ${tipo==='CCL'?'CCL':'COPASST'}`;
   abrirModal('modal-miembro');
 }
 function editarMiembro(id) {
@@ -392,7 +1141,7 @@ async function guardarMiembro() {
   const nombre = document.getElementById('mi-nombre').value.trim();
   if (!nombre) { alert('Nombre requerido'); return; }
   const datos = {
-    tipo: document.getElementById('mi-tipo').value,
+    tipo:          document.getElementById('mi-tipo').value,
     nombre,
     cedula:        document.getElementById('mi-cedula').value.trim()||null,
     cargo_empresa: document.getElementById('mi-cargo').value.trim()||null,
@@ -406,14 +1155,17 @@ async function guardarMiembro() {
     if (id) await VigiaAPI.editarMiembroCopasst(id, datos);
     else    await VigiaAPI.crearMiembroCopasst(datos);
     cerrarModal('modal-miembro'); await cargar();
-  } catch(e) { alert('Error: '+e.message); }
+    toast('Miembro guardado', 'ok');
+  } catch(e) { toast('Error: '+e.message,'error'); }
 }
 async function eliminarMiembro(id) {
   if (!confirm('¿Retirar este miembro?')) return;
   await VigiaAPI.eliminarMiembroCopasst(id); await cargar();
 }
 
-// Acta
+// ═══════════════════════════════════════════════════════
+// MODAL ACTA
+// ═══════════════════════════════════════════════════════
 function abrirModalActa() {
   ['ac-id','ac-temas','ac-compromisos','ac-asistentes','ac-url','ac-numero'].forEach(i => document.getElementById(i).value='');
   document.getElementById('ac-fecha').value = new Date().toISOString().slice(0,10);
@@ -451,13 +1203,17 @@ async function guardarActa() {
     if (id) await VigiaAPI.editarActaCopasst(id, datos);
     else    await VigiaAPI.crearActaCopasst(datos);
     cerrarModal('modal-acta'); await cargar();
-  } catch(e) { alert('Error: '+e.message); }
+    toast('Acta guardada', 'ok');
+  } catch(e) { toast('Error: '+e.message,'error'); }
 }
 async function eliminarActa(id) {
   if (!confirm('¿Eliminar esta acta?')) return;
   await VigiaAPI.eliminarActaCopasst(id); await cargar();
 }
 
+// ═══════════════════════════════════════════════════════
+// EXPORTS
+// ═══════════════════════════════════════════════════════
 function exportCSV_miembros() {
   VigiaAPI.exportarCSV(_datos.miembros, [
     ['Comite','tipo'],['Nombre','nombre'],['Cedula','cedula'],
@@ -472,9 +1228,12 @@ function exportCSV_actas() {
   ], `COPASST_Actas_${new Date().toISOString().slice(0,10)}`);
 }
 
+// ═══════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════
 async function init() {
   const ok = await VigiaAPI.requireAuth(); if (!ok) return;
-  document.getElementById('nav-empresa').textContent = localStorage.getItem('vigia_nombre_empresa')||'';
+  document.getElementById('nav-empresa').textContent = EMPRESA_NOMBRE();
   VigiaAPI.initDocHeader();
   await cargar();
 }
@@ -483,4 +1242,3 @@ init();
 <script src="js/vigia-chat.js"></script>
 </body>
 </html>
-

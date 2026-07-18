@@ -280,6 +280,12 @@ const VigiaAPI = {
   crearActaCopasst(datos)                { return this._post('/copasst/actas', datos); },
   editarActaCopasst(id, datos)           { return this._put(`/copasst/actas/${id}`, datos); },
   eliminarActaCopasst(id)                { return this._delete(`/copasst/actas/${id}`); },
+  // Elecciones
+  getElecciones(empresaId)               { const q = empresaId ? `?empresa_id=${empresaId}` : ''; return this._get(`/copasst/elecciones${q}`); },
+  crearEleccion(datos)                   { return this._post('/copasst/elecciones', datos); },
+  editarEleccion(id, datos)              { return this._put(`/copasst/elecciones/${id}`, datos); },
+  eliminarEleccion(id)                   { return this._delete(`/copasst/elecciones/${id}`); },
+  constituirEleccion(id)                 { return this._post(`/copasst/elecciones/${id}/constituir`, {}); },
 
   // ── Mejoramiento ────────────────────────────────────────────────────────
   getMejoramiento(empresaId)             { const q = empresaId ? `?empresa_id=${empresaId}` : ''; return this._get(`/mejoramiento${q}`); },

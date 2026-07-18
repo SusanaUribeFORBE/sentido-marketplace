@@ -3015,6 +3015,169 @@ vigiaRouter.delete('/copasst/actas/:id', vigiaAuth, async (req: Request, res: Re
   return res.json({ ok: true });
 });
 
+// ── Procesos Electorales ──────────────────────────────────────────────
+
+// GET /api/vigia/copasst/elecciones
+vigiaRouter.get('/copasst/elecciones', vigiaAuth, async (req: Request, res: Response) => {
+  const db   = getDB();
+  const sess = req.vigiaSession!;
+  const eid  = sess.es_admin ? (req.query.empresa_id as string || null) : sess.empresa_id!;
+  if (!eid) return res.json([]);
+  const { data, error } = await db
+    .from('vigia_copasst_eleccion')
+    .select('*')
+    .eq('empresa_id', eid)
+    .order('created_at', { ascending: false });
+  if (error) return res.status(500).json({ error: error.message });
+  return res.json(data || []);
+});
+
+// POST /api/vigia/copasst/elecciones
+vigiaRouter.post('/copasst/elecciones', vigiaAuth, async (req: Request, res: Response) => {
+  const db  = getDB();
+  const eid = empresaIdFrom(req.vigiaSession!, req.body);
+  if (!eid) return res.status(400).json({ error: 'empresa_id requerido' });
+  const body = req.body as Record<string, any>;
+  const { error, data } = await db
+    .from('vigia_copasst_eleccion')
+    .insert({
+      empresa_id:                 eid,
+      tipo:                       body.tipo || 'COPASST',
+      estado:                     body.estado || 'CONVOCATORIA',
+      num_trabajadores:           body.num_trabajadores || null,
+      fecha_convocatoria:         body.fecha_convocatoria || null,
+      fecha_cierre_postulaciones: body.fecha_cierre_postulaciones || null,
+      fecha_votacion:             body.fecha_votacion || null,
+      hora_votacion:              body.hora_votacion || null,
+      lugar_votacion:             body.lugar_votacion || null,
+      fecha_inicio_periodo:       body.fecha_inicio_periodo || null,
+      fecha_fin_periodo:          body.fecha_fin_periodo || null,
+      candidatos_trabajadores:    body.candidatos_trabajadores || [],
+      representantes_empleador:   body.representantes_empleador || [],
+      observaciones:              body.observaciones || null,
+    })
+    .select()
+    .single();
+  if (error) return res.status(500).json({ error: error.message });
+  return res.status(201).json(data);
+});
+
+// PUT /api/vigia/copasst/elecciones/:id
+vigiaRouter.put('/copasst/elecciones/:id', vigiaAuth, async (req: Request, res: Response) => {
+  const db   = getDB();
+  const sess = req.vigiaSession!;
+  const eid  = sess.es_admin ? (req.query.empresa_id as string || sess.empresa_id) : sess.empresa_id!;
+  const body = req.body as Record<string, any>;
+  const campos: Record<string, any> = { updated_at: new Date().toISOString() };
+  const permitidos = [
+    'tipo','estado','num_trabajadores','fecha_convocatoria','fecha_cierre_postulaciones',
+    'fecha_votacion','hora_votacion','lugar_votacion','fecha_inicio_periodo','fecha_fin_periodo',
+    'candidatos_trabajadores','representantes_empleador','observaciones',
+  ];
+  for (const k of permitidos) if (k in body) campos[k] = body[k];
+  const { error } = await db
+    .from('vigia_copasst_eleccion')
+    .update(campos)
+    .eq('id', req.params.id)
+    .eq('empresa_id', eid!);
+  if (error) return res.status(500).json({ error: error.message });
+  return res.json({ ok: true });
+});
+
+// DELETE /api/vigia/copasst/elecciones/:id
+vigiaRouter.delete('/copasst/elecciones/:id', vigiaAuth, async (req: Request, res: Response) => {
+  const db   = getDB();
+  const sess = req.vigiaSession!;
+  const eid  = sess.es_admin ? (req.query.empresa_id as string || sess.empresa_id) : sess.empresa_id!;
+  const { error } = await db
+    .from('vigia_copasst_eleccion')
+    .delete()
+    .eq('id', req.params.id)
+    .eq('empresa_id', eid!);
+  if (error) return res.status(500).json({ error: error.message });
+  return res.json({ ok: true });
+});
+
+// POST /api/vigia/copasst/elecciones/:id/constituir
+// Convierte los resultados de la elección en miembros activos del comité
+vigiaRouter.post('/copasst/elecciones/:id/constituir', vigiaAuth, async (req: Request, res: Response) => {
+  const db   = getDB();
+  const sess = req.vigiaSession!;
+  const eid  = sess.es_admin ? (req.query.empresa_id as string || sess.empresa_id) : sess.empresa_id!;
+
+  const { data: eleccion, error: eErr } = await db
+    .from('vigia_copasst_eleccion')
+    .select('*')
+    .eq('id', req.params.id)
+    .eq('empresa_id', eid!)
+    .single();
+
+  if (eErr || !eleccion) return res.status(404).json({ error: 'Proceso electoral no encontrado' });
+  if (eleccion.estado === 'CONSTITUIDO') return res.status(400).json({ error: 'Ya fue constituido' });
+
+  const tipo        = eleccion.tipo as string;
+  const inicio      = eleccion.fecha_inicio_periodo as string | null;
+  const fin         = eleccion.fecha_fin_periodo as string | null;
+  const candidatos  = (eleccion.candidatos_trabajadores as any[]) || [];
+  const empleador   = (eleccion.representantes_empleador as any[]) || [];
+
+  // Desactivar miembros actuales del mismo tipo
+  await db.from('vigia_copasst_miembro')
+    .update({ activo: false })
+    .eq('empresa_id', eid!)
+    .eq('tipo', tipo);
+
+  const nuevos: object[] = [];
+
+  // Representantes del empleador
+  for (const r of empleador) {
+    nuevos.push({
+      empresa_id:    eid,
+      tipo,
+      rol:           'EMPLEADOR',
+      cargo_copasst: r.rol_comite || 'VOCAL',
+      nombre:        r.nombre,
+      cedula:        r.cedula || null,
+      cargo_empresa: r.cargo  || null,
+      fecha_inicio:  inicio,
+      fecha_fin:     fin,
+      activo:        true,
+    });
+  }
+
+  // Representantes de trabajadores electos (ordenados por votos desc)
+  const electos = candidatos
+    .filter((c: any) => c.resultado === 'PRINCIPAL' || c.resultado === 'SUPLENTE')
+    .sort((a: any, b: any) => (b.votos ?? 0) - (a.votos ?? 0));
+
+  for (const c of electos) {
+    nuevos.push({
+      empresa_id:    eid,
+      tipo,
+      rol:           'TRABAJADOR',
+      cargo_copasst: c.resultado === 'PRINCIPAL' ? 'VOCAL' : 'SUPLENTE',
+      nombre:        c.nombre,
+      cedula:        c.cedula  || null,
+      cargo_empresa: c.cargo   || null,
+      fecha_inicio:  inicio,
+      fecha_fin:     fin,
+      activo:        true,
+    });
+  }
+
+  if (nuevos.length) {
+    const { error: insErr } = await db.from('vigia_copasst_miembro').insert(nuevos);
+    if (insErr) return res.status(500).json({ error: insErr.message });
+  }
+
+  // Marcar como CONSTITUIDO
+  await db.from('vigia_copasst_eleccion')
+    .update({ estado: 'CONSTITUIDO', updated_at: new Date().toISOString() })
+    .eq('id', req.params.id);
+
+  return res.json({ ok: true, miembros_creados: nuevos.length });
+});
+
 // ══════════════════════════════════════════════════════════════════════
 // MEJORAMIENTO — ACCIONES CORRECTIVAS / PREVENTIVAS (7.1.1–7.1.4)
 // ══════════════════════════════════════════════════════════════════════
