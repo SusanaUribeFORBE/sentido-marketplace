@@ -189,6 +189,18 @@
   }
   .trial-note strong { color: rgba(255,255,255,.6); font-weight: 600; }
 
+  /* ── Trial hero CTA ── */
+  .btn-trial-hero {
+    display: inline-block; margin-top: 28px;
+    padding: 16px 32px;
+    background: linear-gradient(135deg, #FF6B35, #FF8C42);
+    color: #fff; font-size: 16px; font-weight: 800;
+    border-radius: 14px; text-decoration: none;
+    box-shadow: 0 6px 28px rgba(255,107,53,.45);
+    transition: transform .15s, box-shadow .15s;
+  }
+  .btn-trial-hero:hover { transform: translateY(-2px); box-shadow: 0 10px 36px rgba(255,107,53,.6); }
+
   /* ── Responsive ── */
   @media (max-width: 860px) {
     .plans-grid { grid-template-columns: 1fr; max-width: 400px; }
@@ -213,20 +225,24 @@
   </header>
 
   <!-- Trial banner -->
-  <div class="trial-banner">
+  <a href="/contenido/registro.html" class="trial-banner" style="text-decoration:none;cursor:pointer;">
     <div class="trial-banner-inner">
       <span class="trial-rocket">🚀</span>
       <div>
         <div class="trial-text-main">PRUEBA GRATUITA DE 7 DÍAS</div>
-        <div class="trial-text-sub">Acceso Pro incluido · Sin tarjeta de crédito</div>
+        <div class="trial-text-sub">Acceso Pro incluido · Sin tarjeta de crédito · Clic para empezar</div>
       </div>
     </div>
-  </div>
+  </a>
 
   <!-- Hero -->
   <div class="hero">
     <h1>Elige tu <em>plan de crecimiento</em></h1>
     <p>Potencia tu contenido, optimiza tu tiempo y haz crecer tu negocio con IA.</p>
+    <a href="/contenido/registro.html" class="btn-trial-hero">
+      Empezar prueba gratis de 7 días <span style="margin-left:4px;">→</span>
+    </a>
+    <div style="font-size:11.5px;color:rgba(255,255,255,.35);margin-top:10px;">Sin tarjeta · Cancela cuando quieras · Acceso inmediato</div>
   </div>
 
   <!-- Plans grid -->
@@ -304,6 +320,7 @@
   <p class="trial-note">
     ✨ La prueba gratuita de 7 días incluye todas las funcionalidades del <strong>Plan Crecimiento</strong>.
     <strong>No necesitas tarjeta de crédito.</strong>
+    <a href="/contenido/registro.html" style="display:block;margin-top:8px;color:rgba(167,139,250,.7);text-decoration:none;font-weight:600;">Crear cuenta gratis →</a>
   </p>
 
   <!-- Botón de prueba temporal — borrar después de verificar el flujo de pago -->
