@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CREA — Generación masiva</title>
+<style>
+  :root {
+    --violet: #7C3AED; --violet2: #6D28D9; --lilac: #A78BFA;
+    --bg: #F5F3FF; --card: #FFFFFF; --border: #DDD6FE;
+    --text: #1E1B2E; --muted: #6B7280; --green: #059669;
+    --orange: #D97706; --radius: 10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui,-apple-system,sans-serif; background: var(--bg); color: var(--text); font-size: 14px; min-height: 100vh; }
+
+  /* ── Header ── */
+  .header { background: linear-gradient(135deg,#4C1D95 0%,#7C3AED 60%,#A855F7 100%); padding: 20px 32px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .logo { display: flex; align-items: center; }
+  .logo img { height: 38px; width: auto; mix-blend-mode: screen; filter: drop-shadow(0 0 8px rgba(196,181,253,.5)); }
+  .tagline { font-size: 12px; color: rgba(255,255,255,.65); margin-top: 2px; }
+  .header-badge { background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.25); color: #fff; font-size: 11px; padding: 4px 10px; border-radius: 20px; }
+
+  /* ── Subnav ── */
+  .subnav { background: #fff; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 4px; padding: 0 32px; overflow-x: auto; }
+  .subnav-link { text-decoration: none; font-size: 13px; font-weight: 600; padding: 12px 16px; color: var(--muted); border-bottom: 3px solid transparent; transition: all .15s; white-space: nowrap; }
+  .subnav-link:hover { color: var(--violet); }
+  .subnav-link.active { color: var(--violet); border-bottom-color: var(--violet); }
+
+  /* ── Layout ── */
+  .layout { display: grid; grid-template-columns: 360px 1fr; gap: 24px; padding: 24px 32px 40px; max-width: 1340px; margin: 0 auto; }
+  @media (max-width: 960px) { .layout { grid-template-columns: 1fr; padding: 16px; } .subnav { padding: 0 12px; } }
+
+  /* ── Panel izquierdo ── */
+  .panel { display: flex; flex-direction: column; gap: 14px; }
+
+  /* ── Mode toggle ── */
+  .mode-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 0; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .mode-btn { border: none; background: none; font-family: inherit; font-size: 13px; font-weight: 700; padding: 11px 8px; cursor: pointer; color: var(--muted); transition: all .15s; display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .mode-btn.active { background: var(--violet); color: #fff; }
+  .mode-btn:not(.active):hover { background: var(--bg); }
+
+  /* ── Sección ── */
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .section-header { background: var(--bg); border-bottom: 1px solid var(--border); padding: 11px 16px; display: flex; align-items: center; justify-content: space-between; }
+  .section-title { font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--violet); }
+  .section-body { padding: 14px 16px; display: flex; flex-direction: column; gap: 11px; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: 12px; font-weight: 600; color: var(--text); }
+  .field input, .field select, .field textarea {
+    border: 1px solid var(--border); border-radius: 7px; padding: 8px 11px;
+    font-size: 13px; font-family: inherit; color: var(--text); background: #fff;
+    transition: border-color .15s; width: 100%;
+  }
+  .field textarea { resize: vertical; min-height: 60px; }
+  .field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: var(--violet); box-shadow: 0 0 0 3px rgba(124,58,237,.1); }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .save-link { font-size: 11px; color: var(--muted); background: none; border: none; cursor: pointer; text-decoration: underline; padding: 0; }
+  .save-link:hover { color: var(--violet); }
+
+  /* ── CEO mode ── */
+  .ceo-hint { font-size: 11px; color: var(--muted); line-height: 1.4; background: #EDE9FE; border-radius: 6px; padding: 8px 10px; }
+
+  /* ── Objetivos ── */
+  .obj-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+  .obj-tile { border: 1.5px solid var(--border); background: #fff; border-radius: 9px; padding: 9px 10px; text-align: left; cursor: pointer; transition: all .15s; display: flex; align-items: center; gap: 8px; font-family: inherit; }
+  .obj-tile:hover { border-color: var(--lilac); background: #FAF5FF; }
+  .obj-tile.active { border-color: var(--violet); background: #EDE9FE; }
+  .obj-icon { font-size: 18px; flex-shrink: 0; }
+  .obj-label { font-size: 11px; font-weight: 700; color: var(--text); }
+  .obj-tile.active .obj-label { color: var(--violet); }
+
+  /* ── Volumen ── */
+  .vol-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 7px; }
+  .vol-tile { border: 1.5px solid var(--border); background: #fff; border-radius: 9px; padding: 10px 6px; text-align: center; cursor: pointer; transition: all .15s; font-family: inherit; }
+  .vol-tile:hover { border-color: var(--lilac); }
+  .vol-tile.active { border-color: var(--violet); background: #EDE9FE; }
+  .vol-num { font-size: 20px; font-weight: 900; color: var(--violet); }
+  .vol-lbl { font-size: 10px; color: var(--muted); margin-top: 2px; }
+  .vol-sub { font-size: 10px; font-weight: 700; color: var(--violet); }
+
+  /* ── Botón generar ── */
+  .btn-generar { background: linear-gradient(135deg,#5B21B6,#7C3AED,#8B5CF6); color: #fff; border: none; border-radius: var(--radius); padding: 14px 20px; font-size: 15px; font-weight: 800; cursor: pointer; width: 100%; transition: opacity .15s,transform .1s; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; box-shadow: 0 4px 18px rgba(124,58,237,.35); }
+  .btn-generar:hover:not(:disabled) { opacity: .9; transform: translateY(-1px); }
+  .btn-generar:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+  .btn-sub { font-size: 11px; opacity: .75; font-weight: 400; }
+
+  /* ── Panel derecho — placeholder preview ── */
+  .results { display: flex; flex-direction: column; gap: 16px; }
+
+  .preview-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .preview-head { background: linear-gradient(135deg,#4C1D95,#7C3AED); padding: 20px 24px; }
+  .preview-head-title { font-size: 17px; font-weight: 900; color: #fff; margin-bottom: 4px; }
+  .preview-head-sub { font-size: 12px; color: rgba(255,255,255,.7); }
+  .preview-body { padding: 20px 24px; display: flex; flex-direction: column; gap: 14px; }
+  .preview-items { display: flex; flex-direction: column; gap: 8px; }
+  .preview-row { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); }
+  .preview-check { width: 20px; height: 20px; border-radius: 50%; background: var(--violet); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 900; flex-shrink: 0; }
+  .preview-row-info { flex: 1; }
+  .preview-row-tipo { font-size: 13px; font-weight: 700; color: var(--text); }
+  .preview-row-desc { font-size: 11px; color: var(--muted); margin-top: 1px; }
+  .preview-row-n { font-size: 18px; font-weight: 900; color: var(--violet); }
+  .preview-time { display: flex; align-items: center; gap: 10px; background: #EDE9FE; border-radius: 8px; padding: 12px 16px; }
+  .preview-time-icon { font-size: 22px; }
+  .preview-time-text { font-size: 13px; color: var(--violet2); }
+  .preview-time-val { font-size: 16px; font-weight: 800; color: var(--violet); }
+  .preview-scores-hint { font-size: 12px; color: var(--muted); line-height: 1.5; text-align: center; padding: 0 8px; }
+
+  /* ── Balance meter ── */
+  .balance-wrap { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px; }
+  .balance-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 10px; }
+  .balance-bar { display: flex; border-radius: 6px; overflow: hidden; height: 12px; margin-bottom: 10px; }
+  .b-valor { background: var(--violet); }
+  .b-venta { background: var(--green); }
+  .b-viral { background: var(--orange); }
+  .b-otro  { background: #9CA3AF; }
+  .balance-labels { display: flex; gap: 14px; flex-wrap: wrap; }
+  .b-label { font-size: 11px; font-weight: 600; display: flex; align-items: center; gap: 5px; }
+  .b-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+
+  /* ── Library header ── */
+  .lib-header { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .lib-titulo { font-size: 15px; font-weight: 800; color: var(--text); }
+  .lib-resumen { font-size: 12px; color: var(--muted); margin-top: 3px; }
+  .lib-total { background: var(--violet); color: #fff; border-radius: 20px; padding: 4px 14px; font-size: 13px; font-weight: 800; white-space: nowrap; }
+
+  /* ── Tabs ── */
+  .tabs-wrap { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .tabs { display: flex; border-bottom: 1px solid var(--border); overflow-x: auto; }
+  .tab { border: none; background: none; font-family: inherit; font-size: 12px; font-weight: 700; padding: 10px 14px; cursor: pointer; color: var(--muted); border-bottom: 3px solid transparent; transition: all .15s; white-space: nowrap; display: flex; align-items: center; gap: 5px; }
+  .tab:hover { color: var(--violet); }
+  .tab.active { color: var(--violet); border-bottom-color: var(--violet); }
+  .tab-count { background: var(--bg); border: 1px solid var(--border); border-radius: 20px; padding: 1px 6px; font-size: 10px; }
+  .tab.active .tab-count { background: #EDE9FE; border-color: var(--lilac); color: var(--violet); }
+
+  /* ── Item cards ── */
+  .items-grid { display: flex; flex-direction: column; }
+  .item-card { border-bottom: 1px solid var(--border); padding: 13px 18px; display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: start; transition: background .1s; }
+  .item-card:last-child { border-bottom: none; }
+  .item-card:hover { background: #FAFAFF; }
+  .item-left { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+  .item-badges { display: flex; gap: 5px; align-items: center; flex-wrap: wrap; }
+  .tipo-badge { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 20px; white-space: nowrap; }
+  .tipo-Post     { background: #EDE9FE; color: var(--violet); }
+  .tipo-Reel     { background: #1E1B2E; color: #A78BFA; }
+  .tipo-Carrusel { background: #DBEAFE; color: #1E40AF; }
+  .tipo-Historia { background: #FCE7F3; color: #9D174D; }
+  .tipo-Campaña  { background: #FEF3C7; color: #92400E; }
+  .cat-badge { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; padding: 2px 6px; border-radius: 20px; }
+  .cat-valor { background: #EDE9FE; color: var(--violet); }
+  .cat-venta { background: #D1FAE5; color: #065F46; }
+  .sub-badge { font-size: 9px; color: var(--muted); background: var(--bg); border: 1px solid var(--border); padding: 2px 6px; border-radius: 20px; }
+  .item-titulo { font-size: 13px; font-weight: 700; color: var(--text); line-height: 1.3; }
+  .item-concepto { font-size: 12px; color: var(--muted); line-height: 1.4; }
+  .item-gancho { font-size: 12px; color: var(--violet2); font-style: italic; background: #EDE9FE; border-radius: 5px; padding: 4px 8px; line-height: 1.4; }
+  .item-objetivo { font-size: 11px; color: var(--muted); }
+
+  /* ── Scores ── */
+  .item-scores { display: flex; gap: 6px; flex-wrap: wrap; }
+  .score-pill { font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 20px; display: flex; align-items: center; gap: 3px; }
+  .score-pill.high { background: #D1FAE5; color: #065F46; }
+  .score-pill.mid  { background: #FEF3C7; color: #92400E; }
+  .score-pill.low  { background: #FEE2E2; color: #991B1B; }
+
+  /* ── Item derecha ── */
+  .item-right { display: flex; flex-direction: column; gap: 5px; align-items: flex-end; flex-shrink: 0; }
+  .btn-gen-item { background: var(--violet); color: #fff; border: none; border-radius: 6px; padding: 6px 12px; font-size: 11px; font-weight: 700; cursor: pointer; transition: background .15s; white-space: nowrap; text-decoration: none; display: inline-block; }
+  .btn-gen-item:hover { background: var(--violet2); }
+  .plat-small { font-size: 10px; color: var(--muted); }
+
+  /* ── Campaña card ── */
+  .campaña-card { border-bottom: 1px solid var(--border); padding: 14px 18px; background: linear-gradient(135deg,#FFFBEB,#FEF9C3); display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: start; }
+  .campaña-card:last-child { border-bottom: none; }
+  .campaña-titulo { font-size: 13px; font-weight: 800; color: #78350F; margin-top: 5px; }
+  .campaña-concepto { font-size: 12px; color: #92400E; margin-top: 3px; line-height: 1.4; }
+  .campaña-objetivo { font-size: 11px; color: #B45309; margin-top: 4px; }
+
+  /* ── Acciones footer ── */
+  .lib-actions { display: flex; gap: 8px; padding: 11px 18px; border-top: 1px solid var(--border); background: var(--bg); }
+  .btn-action { background: none; border: 1.5px solid var(--border); border-radius: 7px; padding: 7px 14px; font-size: 12px; font-weight: 600; color: var(--muted); cursor: pointer; transition: all .15s; font-family: inherit; }
+  .btn-action:hover { border-color: var(--violet); color: var(--violet); }
+
+  /* ── Skeleton / Toast ── */
+  .skeleton { animation: pulse 1.4s ease-in-out infinite; background: var(--border); border-radius: 8px; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+  .toast { position: fixed; bottom: 24px; right: 24px; background: #1E1B2E; color: #fff; padding: 10px 18px; border-radius: 8px; font-size: 13px; font-weight: 500; opacity: 0; transform: translateY(8px); transition: all .25s; pointer-events: none; z-index: 99; }
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  @media print {
+    .header,.subnav,.panel,.toast { display: none !important; }
+    .layout { display: block; padding: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="logo"><img src="/contenido/logo-crea.png" alt="CREA IA"></div>
+    <div class="tagline">De 0 a 30 piezas de contenido en 30 segundos</div>
+  </div>
+  <div class="header-badge">🚀 Generación masiva</div>
+</div>
+
+<nav class="subnav">
+  <a href="/contenido/estrategia.html" class="subnav-link">🧭 Estrategia</a>
+  <a href="/contenido/plan-mensual.html" class="subnav-link">📅 Plan del mes</a>
+  <a href="/contenido/generar.html" class="subnav-link">✨ Generar contenido</a>
+  <a href="/contenido/masiva.html" class="subnav-link active">🚀 Masiva</a>
+  <a href="/contenido/manual-marca.html" class="subnav-link">🎨 Manual de Marca</a>
+</nav>
+
+<div class="layout">
+
+  <!-- ══ Panel izquierdo ══ -->
+  <div class="panel">
+
+    <!-- Mode toggle -->
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="btn-ceo" onclick="setMode('ceo')">⚡ Modo rápido</button>
+      <button class="mode-btn" id="btn-full" onclick="setMode('full')">⚙️ Configurar todo</button>
+    </div>
+
+    <!-- CEO mode -->
+    <div class="section" id="sec-ceo">
+      <div class="section-header"><span class="section-title">⚡ Cuéntame de tu negocio</span></div>
+      <div class="section-body">
+        <div class="ceo-hint">Describe tu negocio en 1-2 líneas. La IA infiere sector, tono y público automáticamente.</div>
+        <div class="field">
+          <textarea id="ceo-desc" rows="3" placeholder="Ej: Soy consultora de Seguridad y Salud en el Trabajo en Bogotá. Ayudo a empresas del sector industrial a cumplir la Resolución 0312 y el Decreto 1072."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Full mode -->
+    <div class="section" id="sec-full" style="display:none;">
+      <div class="section-header">
+        <span class="section-title">🏷️ Perfil de marca</span>
+        <button class="save-link" onclick="guardarMarca()">Guardar</button>
+      </div>
+      <div class="section-body">
+        <div class="field">
+          <label>Nombre de la marca *</label>
+          <input id="nombre" type="text" placeholder="Ej: Kattaleya Accesorios" />
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label>Sector</label>
+            <select id="sector">
+              <option value="">Selecciona...</option>
+              <option>Moda y accesorios</option>
+              <option>Alimentos y bebidas</option>
+              <option>Belleza y cuidado personal</option>
+              <option>Hogar y decoración</option>
+              <option>Servicios profesionales</option>
+              <option>Educación y formación</option>
+              <option>Salud y bienestar</option>
+              <option>Tecnología</option>
+              <option>Arte y artesanías</option>
+              <option>Sostenibilidad</option>
+              <option>Seguridad y Salud en el Trabajo</option>
+              <option>Retail / comercio</option>
+              <option>Otro</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Tono</label>
+            <select id="tono">
+              <option value="Cercano y cálido">Cercano y cálido</option>
+              <option value="Profesional y serio">Profesional y serio</option>
+              <option value="Inspirador y motivador">Inspirador</option>
+              <option value="Divertido y desenfadado">Divertido</option>
+              <option value="Educativo y experto">Educativo</option>
+              <option value="Emocional y humano">Emocional</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label>Público objetivo</label>
+          <input id="publico" type="text" placeholder="Ej: Empresas pymes del sector industrial en Colombia" />
+        </div>
+        <div class="field">
+          <label>Enfoque o campaña (opcional)</label>
+          <input id="enfoque" type="text" placeholder="Ej: Lanzamiento del curso SST, Campaña del Día de la Madre" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Objetivos -->
+    <div class="section">
+      <div class="section-header"><span class="section-title">🎯 ¿Qué quieres lograr?</span></div>
+      <div class="section-body">
+        <div class="obj-grid" id="obj-grid">
+          <button class="obj-tile active" data-obj="Conseguir clientes nuevos" onclick="selObj(this)">
+            <span class="obj-icon">🎯</span><span class="obj-label">Conseguir clientes</span>
+          </button>
+          <button class="obj-tile" data-obj="Vender más a quienes ya me conocen" onclick="selObj(this)">
+            <span class="obj-icon">💰</span><span class="obj-label">Vender más</span>
+          </button>
+          <button class="obj-tile" data-obj="Ganar más seguidores y visibilidad" onclick="selObj(this)">
+            <span class="obj-icon">📈</span><span class="obj-label">Más seguidores</span>
+          </button>
+          <button class="obj-tile" data-obj="Generar confianza y autoridad" onclick="selObj(this)">
+            <span class="obj-icon">🤝</span><span class="obj-label">Generar confianza</span>
+          </button>
+          <button class="obj-tile" data-obj="Posicionarme como referente del sector" onclick="selObj(this)">
+            <span class="obj-icon">🏆</span><span class="obj-label">Posicionarme</span>
+          </button>
+          <button class="obj-tile" data-obj="Lanzar un producto o servicio nuevo" onclick="selObj(this)">
+            <span class="obj-icon">🚀</span><span class="obj-label">Lanzar algo nuevo</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Volumen -->
+    <div class="section">
+      <div class="section-header"><span class="section-title">📦 Cantidad de piezas</span></div>
+      <div class="section-body">
+        <div class="vol-grid" id="vol-grid">
+          <button class="vol-tile" data-vol="mini" onclick="selVol(this)">
+            <div class="vol-num">15</div>
+            <div class="vol-lbl">piezas</div>
+            <div class="vol-sub">Mini</div>
+          </button>
+          <button class="vol-tile active" data-vol="normal" onclick="selVol(this)">
+            <div class="vol-num">30</div>
+            <div class="vol-lbl">piezas</div>
+            <div class="vol-sub">Estándar</div>
+          </button>
+          <button class="vol-tile" data-vol="mega" onclick="selVol(this)">
+            <div class="vol-num">50</div>
+            <div class="vol-lbl">piezas</div>
+            <div class="vol-sub">Mega</div>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-generar" id="btn-generar" onclick="generarMasiva()">
+      <div id="btn-texto">🚀 Generar biblioteca completa</div>
+      <div class="btn-sub" id="btn-sub">Posts · Reels · Carruseles · Historias · Campañas</div>
+    </button>
+
+  </div>
+
+  <!-- ══ Panel derecho ══ -->
+  <div class="results" id="results">
+
+    <!-- Preview de lo que va a recibir -->
+    <div class="preview-card">
+      <div class="preview-head">
+        <div class="preview-head-title">📚 Vas a recibir</div>
+        <div class="preview-head-sub">30 piezas listas para producir, con puntuación de rendimiento</div>
+      </div>
+      <div class="preview-body">
+        <div class="preview-items">
+          <div class="preview-row">
+            <div class="preview-check">✓</div>
+            <div class="preview-row-info"><div class="preview-row-tipo">📝 Posts educativos y de venta</div><div class="preview-row-desc">Consejos, datos, resultados, testimonios</div></div>
+            <div class="preview-row-n">13</div>
+          </div>
+          <div class="preview-row">
+            <div class="preview-check">✓</div>
+            <div class="preview-row-info"><div class="preview-row-tipo">🎬 Reels / TikToks</div><div class="preview-row-desc">Videos cortos con guión y hook viral</div></div>
+            <div class="preview-row-n">7</div>
+          </div>
+          <div class="preview-row">
+            <div class="preview-check">✓</div>
+            <div class="preview-row-info"><div class="preview-row-tipo">🖼️ Carruseles</div><div class="preview-row-desc">Multi-slide optimizados para guardados</div></div>
+            <div class="preview-row-n">5</div>
+          </div>
+          <div class="preview-row">
+            <div class="preview-check">✓</div>
+            <div class="preview-row-info"><div class="preview-row-tipo">📖 Historias interactivas</div><div class="preview-row-desc">Encuestas, preguntas, countdowns</div></div>
+            <div class="preview-row-n">3</div>
+          </div>
+          <div class="preview-row">
+            <div class="preview-check">✓</div>
+            <div class="preview-row-info"><div class="preview-row-tipo">🎯 Campañas completas</div><div class="preview-row-desc">Concepto de campaña de 5-7 días</div></div>
+            <div class="preview-row-n">2</div>
+          </div>
+        </div>
+        <div class="preview-time">
+          <div class="preview-time-icon">⏱️</div>
+          <div>
+            <div class="preview-time-text">Tiempo estimado de generación</div>
+            <div class="preview-time-val">20 – 35 segundos</div>
+          </div>
+        </div>
+        <div class="preview-scores-hint">
+          Cada pieza incluye <strong>🔥 viralidad · 💰 conversión · ❤️ engagement (likes, comentarios y guardados) · 🟢 facilidad</strong> para que sepas qué producir primero.
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  let modo = 'ceo';
+  let metaObj = 'Conseguir clientes nuevos';
+  let volumen = 'normal';
+  let _bibliotecaItems = [];
+  let _bibliotecaTono  = '';
+
+  // ── Mode toggle ──
+  function setMode(m) {
+    modo = m;
+    document.getElementById('btn-ceo').classList.toggle('active', m === 'ceo');
+    document.getElementById('btn-full').classList.toggle('active', m === 'full');
+    document.getElementById('sec-ceo').style.display  = m === 'ceo'  ? '' : 'none';
+    document.getElementById('sec-full').style.display = m === 'full' ? '' : 'none';
+  }
+
+  function selObj(btn) {
+    document.getElementById('obj-grid').querySelectorAll('.obj-tile').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    metaObj = btn.dataset.obj;
+  }
+
+  function selVol(btn) {
+    document.getElementById('vol-grid').querySelectorAll('.vol-tile').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    volumen = btn.dataset.vol;
+  }
+
+  // ── Marca guardada ──
+  (function cargarMarca() {
+    try {
+      const m = JSON.parse(localStorage.getItem('crea_marca') || '{}');
+      if (m.nombre)  { const el = document.getElementById('nombre');  if (el) el.value  = m.nombre; }
+      if (m.sector)  { const el = document.getElementById('sector');  if (el) el.value  = m.sector; }
+      if (m.tono)    { const el = document.getElementById('tono');    if (el) el.value  = m.tono; }
+      if (m.publico) { const el = document.getElementById('publico'); if (el) el.value  = m.publico; }
+    } catch {}
+  })();
+
+  function guardarMarca() {
+    localStorage.setItem('crea_marca', JSON.stringify({
+      nombre:  (document.getElementById('nombre')?.value || '').trim(),
+      sector:  document.getElementById('sector')?.value || '',
+      tono:    document.getElementById('tono')?.value || '',
+      publico: (document.getElementById('publico')?.value || '').trim(),
+    }));
+    toast('Marca guardada ✓');
+  }
+
+  function esc(s) {
+    return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ── Generar ──
+  async function generarMasiva() {
+    let body = {};
+    if (modo === 'ceo') {
+      const desc = (document.getElementById('ceo-desc')?.value || '').trim();
+      if (!desc) { toast('Describe tu negocio para continuar'); return; }
+      body = { descripcion_negocio: desc, meta: metaObj, volumen, ceo_mode: true };
+    } else {
+      const nombre = (document.getElementById('nombre')?.value || '').trim();
+      if (!nombre) { toast('Escribe el nombre de tu marca'); return; }
+      const tono = document.getElementById('tono')?.value || 'Cercano y cálido';
+      localStorage.setItem('crea_marca', JSON.stringify({
+        nombre, sector: document.getElementById('sector')?.value || '',
+        tono, publico: (document.getElementById('publico')?.value || '').trim(),
+      }));
+      body = {
+        nombre,
+        sector:   document.getElementById('sector')?.value || '',
+        tono,
+        publico:  (document.getElementById('publico')?.value || '').trim(),
+        enfoque:  (document.getElementById('enfoque')?.value || '').trim(),
+        meta:     metaObj,
+        volumen,
+      };
+      _bibliotecaTono = tono;
+    }
+
+    const btn = document.getElementById('btn-generar');
+    btn.disabled = true;
+    document.getElementById('btn-texto').textContent = '⏳ Generando tu biblioteca...';
+    document.getElementById('btn-sub').textContent   = 'Esto toma 20–35 segundos — ya casi';
+    mostrarEsqueleto();
+
+    try {
+      const resp = await fetch('/api/contenido/masiva', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || `HTTP ${resp.status}`);
+      mostrarBiblioteca(data);
+      localStorage.setItem('crea_masiva', JSON.stringify({ ts: Date.now(), data }));
+    } catch (err) {
+      toast('Error: ' + (err instanceof Error ? err.message : String(err)));
+      mostrarError();
+    } finally {
+      btn.disabled = false;
+      document.getElementById('btn-texto').textContent = '🚀 Generar biblioteca completa';
+      document.getElementById('btn-sub').textContent   = 'Posts · Reels · Carruseles · Historias · Campañas';
+    }
+  }
+
+  function mostrarEsqueleto() {
+    document.getElementById('results').innerHTML =
+      [1,2,3,4,5,6].map(() => `<div class="skeleton" style="height:76px;"></div>`).join('');
+  }
+  function mostrarError() {
+    document.getElementById('results').innerHTML = `<div class="preview-card" style="padding:40px;text-align:center;color:var(--muted);">⚠️ Hubo un error. Intenta de nuevo.</div>`;
+  }
+
+  // ── Scores ──
+  function scoreLevel(n) {
+    if (!n) return 'mid';
+    if (n >= 8) return 'high';
+    if (n >= 5) return 'mid';
+    return 'low';
+  }
+  function scoreLabel(n) { return n || '–'; }
+
+  function renderScores(item) {
+    const scores = [
+      { emoji: '🔥', label: 'Viral',  val: item.viralidad  },
+      { emoji: '💰', label: 'Venta',  val: item.conversion },
+      { emoji: '❤️', label: 'Eng. (interacción)', val: item.engagement },
+      { emoji: '🟢', label: 'Fácil',  val: item.facilidad  },
+    ];
+    return `<div class="item-scores">${scores.map(s =>
+      `<span class="score-pill ${scoreLevel(s.val)}">${s.emoji} ${scoreLabel(s.val)}</span>`
+    ).join('')}</div>`;
+  }
+
+  // ── Tipo CSS class ──
+  function tipoClass(tipo) {
+    const t = (tipo || '').split('/')[0].trim();
+    return 'tipo-' + (['Post','Reel','Carrusel','Historia','Campaña'].includes(t) ? t : 'Post');
+  }
+
+  function urlGenerar(tipo, tema) {
+    const tipoMap = { 'Reel': 'Reel / TikTok' };
+    return '/contenido/generar.html?' + new URLSearchParams({
+      tipo: tipoMap[tipo] || tipo,
+      tema: tema || '',
+      ...((_bibliotecaTono) ? { tono: _bibliotecaTono } : {}),
+    }).toString();
+  }
+
+  // ── Render item ──
+  function renderItem(item) {
+    if (item.tipo === 'Campaña') {
+      return `<div class="campaña-card">
+        <div>
+          <div class="item-badges">
+            <span class="tipo-badge tipo-Campaña">🎯 Campaña</span>
+            <span class="cat-badge ${item.categoria === 'venta' ? 'cat-venta' : 'cat-valor'}">${item.categoria || 'valor'}</span>
+          </div>
+          <div class="campaña-titulo">${esc(item.titulo)}</div>
+          <div class="campaña-concepto">${esc(item.concepto || '')}</div>
+          ${item.gancho ? `<div class="item-gancho" style="margin-top:6px;">"${esc(item.gancho)}"</div>` : ''}
+          <div class="campaña-objetivo" style="margin-top:5px;">🎯 ${esc(item.objetivo || '')}</div>
+          <div style="margin-top:6px;">${renderScores(item)}</div>
+        </div>
+        <a href="${esc(urlGenerar('Post', item.titulo))}" class="btn-gen-item">Ver →</a>
+      </div>`;
+    }
+    return `<div class="item-card">
+      <div class="item-left">
+        <div class="item-badges">
+          <span class="tipo-badge ${tipoClass(item.tipo)}">${esc(item.tipo)}</span>
+          <span class="cat-badge ${item.categoria === 'venta' ? 'cat-venta' : 'cat-valor'}">${item.categoria === 'venta' ? 'Venta' : 'Valor'}</span>
+          ${item.subcategoria ? `<span class="sub-badge">${esc(item.subcategoria)}</span>` : ''}
+        </div>
+        <div class="item-titulo">${esc(item.titulo)}</div>
+        ${item.concepto ? `<div class="item-concepto">${esc(item.concepto)}</div>` : ''}
+        ${item.gancho ? `<div class="item-gancho">"${esc(item.gancho)}"</div>` : ''}
+        ${item.objetivo ? `<div class="item-objetivo">🎯 ${esc(item.objetivo)}</div>` : ''}
+        ${renderScores(item)}
+      </div>
+      <div class="item-right">
+        <a href="${esc(urlGenerar(item.tipo, item.titulo))}" class="btn-gen-item">Generar →</a>
+        ${item.plataforma ? `<div class="plat-small">${esc(item.plataforma)}</div>` : ''}
+      </div>
+    </div>`;
+  }
+
+  // ── Balance meter ──
+  function renderBalance(items) {
+    const total = items.length;
+    if (!total) return '';
+    const valor  = items.filter(i => i.categoria !== 'venta').length;
+    const venta  = items.filter(i => i.categoria === 'venta').length;
+    const viral  = items.filter(i => (i.subcategoria||'').toLowerCase().includes('viral') || (i.subcategoria||'').toLowerCase().includes('entret')).length;
+    const pValor = Math.round((valor / total) * 100);
+    const pVenta = Math.round((venta / total) * 100);
+    const pViral = Math.min(Math.round((viral / total) * 100), 100 - pValor - pVenta);
+
+    return `<div class="balance-wrap">
+      <div class="balance-title">Balance de tu biblioteca</div>
+      <div class="balance-bar">
+        <div class="b-valor" style="width:${pValor}%"></div>
+        <div class="b-venta" style="width:${pVenta}%"></div>
+        <div class="b-viral" style="width:${pViral}%"></div>
+        <div class="b-otro"  style="width:${Math.max(0,100-pValor-pVenta-pViral)}%"></div>
+      </div>
+      <div class="balance-labels">
+        <span class="b-label"><span class="b-dot" style="background:var(--violet)"></span>Valor ${pValor}%</span>
+        <span class="b-label"><span class="b-dot" style="background:var(--green)"></span>Venta ${pVenta}%</span>
+        ${pViral > 0 ? `<span class="b-label"><span class="b-dot" style="background:var(--orange)"></span>Viral ${pViral}%</span>` : ''}
+      </div>
+    </div>`;
+  }
+
+  // ── Tabs ──
+  let tabActivo = 'todos';
+
+  function contarTipo(items, filtro) {
+    if (filtro === 'todos') return items.length;
+    return items.filter(i => (i.tipo || '').toLowerCase().includes(filtro.toLowerCase())).length;
+  }
+
+  function renderTabContent(items, activeKey) {
+    const tabs = [
+      { key: 'todos',    label: '📚 Todos'  },
+      { key: 'Post',     label: '📝 Posts'  },
+      { key: 'Reel',     label: '🎬 Reels'  },
+      { key: 'Carrusel', label: '🖼️ Carrús.' },
+      { key: 'Historia', label: '📖 Hist.'  },
+      { key: 'Campaña',  label: '🎯 Camp.'  },
+    ];
+    const tabsHTML = tabs.map(t => {
+      const n = contarTipo(items, t.filtro || t.key);
+      return `<button class="tab ${activeKey === t.key ? 'active' : ''}" onclick="cambiarTab('${t.key}')">
+        ${t.label} <span class="tab-count">${n}</span>
+      </button>`;
+    }).join('');
+    const filtered = activeKey === 'todos'
+      ? items
+      : items.filter(i => (i.tipo || '').toLowerCase().includes(activeKey.toLowerCase()));
+    const gridHTML = filtered.length
+      ? filtered.map(renderItem).join('')
+      : `<div style="padding:28px;text-align:center;color:var(--muted);font-size:13px;">Sin piezas en esta categoría.</div>`;
+    return `<div class="tabs">${tabsHTML}</div><div class="items-grid">${gridHTML}</div>`;
+  }
+
+  function mostrarBiblioteca(data) {
+    const { resumen = '', total = 0, items = [] } = data;
+    _bibliotecaItems = items;
+
+    document.getElementById('results').innerHTML = `
+      ${renderBalance(items)}
+      <div class="lib-header">
+        <div>
+          <div class="lib-titulo">Tu biblioteca de contenido</div>
+          <div class="lib-resumen">${esc(resumen)}</div>
+        </div>
+        <span class="lib-total">${total || items.length} piezas</span>
+      </div>
+      <div class="tabs-wrap">
+        <div id="tab-content">${renderTabContent(items, 'todos')}</div>
+        <div class="lib-actions">
+          <button class="btn-action" onclick="copiarIdeas()">📋 Copiar todas las ideas</button>
+          <button class="btn-action" onclick="window.print()">⬇️ PDF</button>
+        </div>
+      </div>`;
+
+    tabActivo = 'todos';
+  }
+
+  function cambiarTab(key) {
+    tabActivo = key;
+    document.getElementById('tab-content').innerHTML = renderTabContent(_bibliotecaItems, key);
+  }
+
+  function copiarIdeas() {
+    const texto = _bibliotecaItems.map((i, idx) =>
+      `${idx + 1}. [${i.tipo}] ${i.titulo}\n   ${i.concepto || ''}`
+    ).join('\n\n');
+    navigator.clipboard.writeText(texto).then(() => toast('¡Ideas copiadas! ✓')).catch(() => toast('Error al copiar'));
+  }
+
+  let _t;
+  function toast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg; el.classList.add('show');
+    clearTimeout(_t); _t = setTimeout(() => el.classList.remove('show'), 2800);
+  }
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/contenido/auth.js"></script>
+<script src="/contenido/chat-widget.js"></script>
+</body>
+</html>

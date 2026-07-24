@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CREA — Manual de Marca IA</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --violet:  #7C3AED;
+    --violet2: #6D28D9;
+    --lilac:   #A78BFA;
+    --bg:      #F5F3FF;
+    --card:    #FFFFFF;
+    --border:  #DDD6FE;
+    --text:    #1E1B2E;
+    --muted:   #6B7280;
+    --green:   #059669;
+    --radius:  10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui,-apple-system,sans-serif; background: var(--bg); color: var(--text); font-size: 14px; min-height: 100vh; }
+
+  /* Header */
+  .header { background: linear-gradient(135deg,#4C1D95 0%,#7C3AED 60%,#A855F7 100%); padding: 20px 32px; display: flex; align-items: center; justify-content: space-between; }
+  .logo { display: flex; align-items: center; }
+  .logo img { height: 38px; width: auto; mix-blend-mode: screen; filter: drop-shadow(0 0 8px rgba(196,181,253,.5)); }
+  .tagline { font-size: 12px; color: rgba(255,255,255,.65); margin-top: 2px; }
+  .header-badge { background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.25); color: #fff; font-size: 11px; padding: 4px 10px; border-radius: 20px; }
+
+  /* Subnav */
+  .subnav { background: #fff; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 4px; padding: 0 32px; overflow-x: auto; }
+  .subnav-link { text-decoration: none; font-size: 13px; font-weight: 600; padding: 12px 14px; color: var(--muted); border-bottom: 3px solid transparent; transition: all .15s; display: flex; align-items: center; gap: 5px; white-space: nowrap; }
+  .subnav-link:hover { color: var(--violet); }
+  .subnav-link.active { color: var(--violet); border-bottom-color: var(--violet); }
+
+  /* Layout */
+  .layout { display: grid; grid-template-columns: 340px 1fr; gap: 24px; padding: 24px 32px 40px; max-width: 1240px; margin: 0 auto; }
+  @media (max-width: 860px) { .layout { grid-template-columns: 1fr; padding: 16px; } }
+
+  /* Panel izquierdo */
+  .panel { display: flex; flex-direction: column; gap: 16px; }
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .section-header { background: var(--bg); border-bottom: 1px solid var(--border); padding: 10px 16px; }
+  .section-title { font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--violet); }
+  .section-body { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field label { font-size: 12px; font-weight: 600; color: var(--text); }
+  .field input, .field select, .field textarea {
+    border: 1px solid var(--border); border-radius: 7px; padding: 8px 11px;
+    font-size: 13px; font-family: inherit; color: var(--text); background: #fff;
+    transition: border-color .15s; width: 100%;
+  }
+  .field input:focus,.field select:focus,.field textarea:focus { outline: none; border-color: var(--violet); box-shadow: 0 0 0 3px rgba(124,58,237,.1); }
+  .field textarea { resize: vertical; min-height: 72px; }
+
+  .btn-generar { background: var(--violet); color: #fff; border: none; border-radius: var(--radius); padding: 13px 20px; font-size: 15px; font-weight: 700; cursor: pointer; width: 100%; transition: background .15s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .btn-generar:hover:not(:disabled) { background: var(--violet2); }
+  .btn-generar:disabled { opacity: .6; cursor: not-allowed; }
+  .spinner { width: 18px; height: 18px; border: 2.5px solid rgba(255,255,255,.3); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; display: none; }
+  .btn-generar.loading .spinner { display: block; }
+  .btn-generar.loading .btn-text { display: none; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Empty state */
+  .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 420px; text-align: center; color: var(--muted); gap: 12px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); }
+  .empty-icon { font-size: 52px; opacity: .35; }
+  .empty-title { font-size: 16px; font-weight: 600; color: var(--text); opacity: .5; }
+  .empty-sub { font-size: 13px; max-width: 260px; line-height: 1.5; }
+
+  /* Manual output */
+  #manual-output { display: none; }
+  .output-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .output-badge { font-size: 11px; color: var(--muted); }
+  .btn-download { background: #fff; border: 1.5px solid var(--violet); color: var(--violet); border-radius: 8px; padding: 9px 18px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; transition: all .15s; display: flex; align-items: center; gap: 6px; }
+  .btn-download:hover { background: var(--violet); color: #fff; }
+
+  /* Secciones del manual */
+  .manual-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 14px; }
+  .manual-card-head { padding: 11px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; background: var(--bg); }
+  .mc-icon { font-size: 16px; }
+  .mc-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--violet); }
+  .manual-card-body { padding: 18px; }
+
+  /* Identidad hero */
+  .pos-card { background: linear-gradient(135deg,#4C1D95,#7C3AED,#A855F7); border-radius: var(--radius); padding: 26px; color: #fff; margin-bottom: 14px; }
+  .pos-brand { font-size: 26px; font-weight: 900; margin-bottom: 6px; letter-spacing: -.5px; }
+  .pos-pos { font-size: 14px; opacity: .85; line-height: 1.65; margin-bottom: 18px; }
+  .pos-promesa-box { background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.22); border-radius: 8px; padding: 13px 16px; }
+  .pos-promesa-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; opacity: .55; margin-bottom: 5px; }
+  .pos-promesa-text { font-size: 14px; font-style: italic; line-height: 1.5; }
+
+  /* Personalidad */
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; }
+  .pill { background: #EDE9FE; color: var(--violet); border: 1px solid #DDD6FE; border-radius: 20px; padding: 6px 14px; font-size: 13px; font-weight: 600; }
+  .pill-arc { background: linear-gradient(135deg,#7C3AED,#A855F7); color: #fff; border: none; font-size: 13px; padding: 7px 18px; }
+
+  /* Colores */
+  .colores-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  @media (max-width: 700px) { .colores-grid { grid-template-columns: 1fr; } }
+  .color-card { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; cursor: pointer; transition: transform .15s, box-shadow .15s; }
+  .color-card:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(0,0,0,.1); }
+  .color-swatch { height: 76px; }
+  .color-info { padding: 10px 12px; }
+  .color-name { font-size: 13px; font-weight: 700; margin-bottom: 3px; }
+  .color-hex { font-size: 13px; font-weight: 700; color: var(--violet); font-family: monospace; }
+  .color-rgb { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .color-uso { font-size: 11px; color: var(--text); margin-top: 6px; line-height: 1.4; }
+  .color-emocion { font-size: 10px; color: var(--muted); font-style: italic; margin-top: 3px; }
+  .colores-hint { font-size: 11px; color: var(--muted); margin-top: 10px; }
+
+  /* Tipografía */
+  .tipo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 600px) { .tipo-grid { grid-template-columns: 1fr; } }
+  .font-card { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+  .font-role { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); margin-bottom: 8px; }
+  .font-name { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+  .font-weight-label { font-size: 11px; color: var(--muted); margin-bottom: 10px; }
+  .font-preview-big { font-size: 30px; font-weight: 800; color: var(--violet); line-height: 1; margin-bottom: 8px; }
+  .font-preview-sm { font-size: 18px; font-weight: 400; color: var(--violet); line-height: 1; margin-bottom: 8px; }
+  .font-razon { font-size: 12px; color: var(--muted); line-height: 1.5; }
+  .font-alt { font-size: 12px; color: var(--muted); background: rgba(124,58,237,.05); border: 1px solid rgba(124,58,237,.12); border-radius: 6px; padding: 9px 12px; margin-top: 12px; line-height: 1.5; }
+
+  /* Voz */
+  .voz-tono { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; font-size: 14px; color: var(--text); font-style: italic; line-height: 1.55; margin-bottom: 14px; }
+  .voz-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+  @media (max-width: 600px) { .voz-cols { grid-template-columns: 1fr; } }
+  .voz-si { background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 8px; padding: 14px; }
+  .voz-no { background: #FEF2F2; border: 1px solid #FECACA; border-radius: 8px; padding: 14px; }
+  .voz-col-title { font-size: 12px; font-weight: 700; margin-bottom: 10px; }
+  .voz-si .voz-col-title { color: #059669; }
+  .voz-no .voz-col-title { color: #DC2626; }
+  .voz-item { font-size: 13px; padding: 5px 0; border-bottom: 1px solid rgba(0,0,0,.06); line-height: 1.45; }
+  .voz-item:last-child { border-bottom: none; }
+  .voz-ex-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 600px) { .voz-ex-grid { grid-template-columns: 1fr; } }
+  .voz-ex { border-radius: 8px; padding: 14px; font-size: 13px; line-height: 1.6; }
+  .voz-ex-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; margin-bottom: 8px; }
+  .voz-ex.si { background: #F0FDF4; border: 1.5px solid #22C55E; }
+  .voz-ex.si .voz-ex-label { color: #059669; }
+  .voz-ex.no { background: #FEF2F2; border: 1.5px solid #EF4444; }
+  .voz-ex.no .voz-ex-label { color: #DC2626; }
+
+  /* Pilares */
+  .pilares-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  @media (max-width: 700px) { .pilares-grid { grid-template-columns: 1fr; } }
+  .pilar-card { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+  .pilar-num { font-size: 10px; font-weight: 700; color: var(--lilac); text-transform: uppercase; letter-spacing: .6px; margin-bottom: 5px; }
+  .pilar-nombre { font-size: 15px; font-weight: 800; color: var(--violet); margin-bottom: 6px; }
+  .pilar-desc { font-size: 12px; color: var(--muted); line-height: 1.5; margin-bottom: 10px; }
+  .pilar-temas { display: flex; flex-wrap: wrap; gap: 5px; }
+  .pilar-tema { background: #EDE9FE; color: var(--violet); border-radius: 12px; padding: 3px 9px; font-size: 11px; }
+
+  /* Taglines */
+  .tagline-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px; background: #fff; margin-bottom: 8px; }
+  .tagline-item:last-child { margin-bottom: 0; }
+  .tagline-num { font-size: 11px; font-weight: 700; color: var(--lilac); min-width: 22px; }
+  .tagline-text { flex: 1; font-size: 15px; font-weight: 600; }
+  .btn-copy { background: none; border: 1px solid var(--border); border-radius: 6px; padding: 5px 12px; font-size: 12px; color: var(--muted); cursor: pointer; font-family: inherit; transition: all .15s; white-space: nowrap; }
+  .btn-copy:hover { border-color: var(--violet); color: var(--violet); }
+  .btn-copy.copied { background: var(--green); border-color: var(--green); color: #fff; }
+
+  /* Bios */
+  .bio-tabs { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
+  .bio-tab { border: 1px solid var(--border); background: #fff; border-radius: 7px; padding: 7px 14px; font-size: 12px; font-weight: 600; cursor: pointer; color: var(--muted); font-family: inherit; transition: all .15s; }
+  .bio-tab.active { background: var(--violet); border-color: var(--violet); color: #fff; }
+  .bio-panel { display: none; }
+  .bio-panel.active { display: block; }
+  .bio-text-box { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; font-size: 14px; line-height: 1.65; margin-bottom: 8px; white-space: pre-wrap; }
+  .bio-row { display: flex; align-items: center; justify-content: space-between; }
+  .bio-chars { font-size: 11px; color: var(--muted); }
+
+  /* Restricciones */
+  .restriccion-item { display: flex; align-items: flex-start; gap: 10px; padding: 11px 13px; background: #FEF2F2; border: 1px solid #FECACA; border-radius: 8px; margin-bottom: 8px; font-size: 13px; line-height: 1.5; }
+  .restriccion-item:last-child { margin-bottom: 0; }
+  .ri-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+
+  /* Copy flash */
+  .copy-flash { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #1E1B2E; color: #fff; padding: 9px 20px; border-radius: 8px; font-size: 13px; font-weight: 600; pointer-events: none; opacity: 0; transition: opacity .2s; z-index: 9999; }
+  .copy-flash.show { opacity: 1; }
+
+  .manual-footer { text-align: center; padding: 20px 0 0; font-size: 11px; color: var(--muted); }
+
+  /* ── Print ── */
+  @media print {
+    .header,.subnav,.panel,.output-top,.btn-download,.copy-flash,#chat-widget-root { display: none !important; }
+    .layout { display: block; padding: 0; }
+    #manual-output { display: block !important; }
+    body { background: #fff; font-size: 12px; }
+    .manual-card { break-inside: avoid; box-shadow: none; }
+    .pos-card, .color-swatch { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .colores-grid { grid-template-columns: repeat(3,1fr) !important; }
+    .pilares-grid { grid-template-columns: repeat(3,1fr) !important; }
+    .tipo-grid { grid-template-columns: 1fr 1fr !important; }
+  }
+</style>
+</head>
+<body>
+<script src="/contenido/auth.js"></script>
+
+<div class="header">
+  <div>
+    <div class="logo"><img src="/contenido/logo-crea.png" alt="CREA IA"></div>
+    <div class="tagline">Manual de Marca con IA</div>
+  </div>
+  <div class="header-badge">🎨 Brand Identity</div>
+</div>
+
+<nav class="subnav">
+  <a href="/contenido/estrategia.html" class="subnav-link">🧭 Estrategia</a>
+  <a href="/contenido/plan-mensual.html" class="subnav-link">📅 Plan del mes</a>
+  <a href="/contenido/generar.html" class="subnav-link">✨ Generar contenido</a>
+  <a href="/contenido/masiva.html" class="subnav-link">🚀 Masiva</a>
+  <a href="/contenido/manual-marca.html" class="subnav-link active">🎨 Manual de Marca</a>
+</nav>
+
+<div class="layout">
+
+  <!-- ── Panel izquierdo ── -->
+  <div class="panel">
+    <div class="section">
+      <div class="section-header"><div class="section-title">Tu marca</div></div>
+      <div class="section-body">
+        <div class="field">
+          <label>Nombre de la marca</label>
+          <input type="text" id="nombre" placeholder="Ej: Bakery La Nube">
+        </div>
+        <div class="field">
+          <label>Sector</label>
+          <select id="sector">
+            <option value="">— Selecciona —</option>
+            <option>Moda y accesorios</option>
+            <option>Alimentos y bebidas</option>
+            <option>Belleza y cuidado personal</option>
+            <option>Salud y bienestar</option>
+            <option>Educación y formación</option>
+            <option>Tecnología</option>
+            <option>Decoración y hogar</option>
+            <option>Servicios profesionales</option>
+            <option>Arte y diseño</option>
+            <option>Retail y comercio</option>
+            <option>Turismo y hospitalidad</option>
+            <option>Construcción y remodelación</option>
+            <option>Otro</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Tono de comunicación</label>
+          <select id="tono">
+            <option>Cercano y cálido</option>
+            <option>Profesional y serio</option>
+            <option>Inspirador y motivador</option>
+            <option>Educativo y experto</option>
+            <option>Emocional y humano</option>
+            <option>Divertido y desenfadado</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Público objetivo</label>
+          <input type="text" id="publico" placeholder="Ej: Mujeres 25-40, Bogotá, buscan estilo asequible">
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><div class="section-title">Detalles del negocio</div></div>
+      <div class="section-body">
+        <div class="field">
+          <label>¿Qué productos o servicios ofreces?</label>
+          <textarea id="productos" placeholder="Ej: Ropa femenina hecha a mano, diseños únicos con telas colombianas..."></textarea>
+        </div>
+        <div class="field">
+          <label>3 palabras que definen tu marca</label>
+          <input type="text" id="palabras" placeholder="Ej: auténtica, cálida, artesanal">
+        </div>
+        <div class="field">
+          <label>¿Qué te diferencia de la competencia?</label>
+          <textarea id="diferenciador" style="min-height:60px;" placeholder="Ej: Cada prenda es única y personalizada para cada clienta..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-generar" id="btn-generar" onclick="generarManual()">
+      <div class="spinner"></div>
+      <span class="btn-text">🎨 Crear Manual de Marca</span>
+    </button>
+  </div>
+
+  <!-- ── Panel derecho ── -->
+  <div>
+    <div class="empty-state" id="empty-state">
+      <div class="empty-icon">🎨</div>
+      <div class="empty-title">Tu manual de marca aparecerá aquí</div>
+      <div class="empty-sub">Completa el formulario y genera tu identidad de marca con IA en segundos</div>
+    </div>
+
+    <div id="manual-output">
+      <div class="output-top">
+        <div class="output-badge">Generado por CREA IA • creaia.co</div>
+        <button class="btn-download" onclick="descargar()">⬇ Descargar PDF</button>
+      </div>
+
+      <!-- Identidad -->
+      <div class="pos-card">
+        <div class="pos-brand" id="out-nombre"></div>
+        <div class="pos-pos" id="out-pos"></div>
+        <div class="pos-promesa-box">
+          <div class="pos-promesa-label">Promesa de marca</div>
+          <div class="pos-promesa-text" id="out-promesa"></div>
+        </div>
+      </div>
+
+      <!-- Personalidad -->
+      <div class="manual-card">
+        <div class="manual-card-head"><div class="mc-icon">✨</div><div class="mc-title">Personalidad & Arquetipo</div></div>
+        <div class="manual-card-body">
+          <div class="pills" id="out-personalidad"></div>
+          <div style="margin-top:14px;">
+            <div style="font-size:11px;color:var(--muted);margin-bottom:7px;">Arquetipo de marca</div>
+            <span class="pill pill-arc" id="out-arquetipo"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Colores -->
+      <div class="manual-card">
+        <div class="manual-card-head"><div class="mc-icon">🎨</div><div class="mc-title">Paleta de Colores</div></div>
+        <div class="manual-card-body">
+          <div class="colores-grid" id="out-colores"></div>
+          <div class="colores-hint">Haz clic en un color para copiar el código HEX</div>
+        </div>
+      </div>
+
+      <!-- Tipografía -->
+      <div class="manual-card">
+        <div class="manual-card-head"><div class="mc-icon" style="font-weight:800;font-size:14px;">Aa</div><div class="mc-title">Tipografía</div></div>
+        <div class="manual-card-body">
+          <div class="tipo-grid" id="out-tipografia"></div>
+          <div class="font-alt" id="out-font-alt"></div>
+        </div>
+      </div>
+
+      <!-- Voz de marca -->
+      <div class="manual-card">
+        <div class="manual-card-head"><div class="mc-icon">🗣</div><div class="mc-title">Voz de Marca</div></div>
+        <div class="manual-card-body">
+          <div class="voz-tono" id="out-voz-tono"></div>
+          <div class="voz-cols">
+            <div class="voz-si">
+              <div class="voz-col-title">✅ Haz esto</div>
+              <div id="out-voz-hacer"></div>
+            </div>
+            <div class="voz-no">
+              <div class="voz-col-title">❌ Evita esto</div>
+              <div id="out-voz-evitar"></div>
+            </div>
+          </div>
+          <div class="voz-ex-grid">
+            <div class="voz-ex si">
+              <div class="voz-ex-label">✅ Ejemplo correcto</div>
+              <div id="out-voz-ex-si"></div>
+            </div>
+            <div class="voz-ex no">
+              <div class="voz-ex-label">❌ Ejemplo incorrecto</div>
+              <div id="out-voz-ex-no"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pilares -->
+      <div class="manual-card">
+        <div class="manual-card-head"><div class="mc-icon">🏛</div><div class="mc-title">Pilares de Comunicación</div></div>
+        <div class="manual-card-body">
+          <div class="pilares-grid" id="out-pilares"></div>
+        </div>
+      </div>
+
+      <!-- Taglines -->
+      <div class="manual-card">
+        <div class="manual-card-head"><div class="mc-icon">💬</div><div class="mc-title">Taglines</div></div>
+        <div class="manual-card-body" id="out-taglines"></div>
+      </div>
+
+      <!-- Bios -->
+      <div class="manual-card">
+        <div class="manual-card-head"><div class="mc-icon">📱</div><div class="mc-title">Bios para Redes Sociales</div></div>
+        <div class="manual-card-body">
+          <div class="bio-tabs">
+            <button class="bio-tab active" onclick="cambiarBio('ig',this)">📸 Instagram</button>
+            <button class="bio-tab" onclick="cambiarBio('li',this)">💼 LinkedIn</button>
+            <button class="bio-tab" onclick="cambiarBio('tk',this)">🎵 TikTok</button>
+          </div>
+          <div class="bio-panel active" id="bio-ig">
+            <div class="bio-text-box" id="bio-ig-txt"></div>
+            <div class="bio-row"><div class="bio-chars" id="bio-ig-c"></div><button class="btn-copy" onclick="copiarBio('ig')">Copiar</button></div>
+          </div>
+          <div class="bio-panel" id="bio-li">
+            <div class="bio-text-box" id="bio-li-txt"></div>
+            <div class="bio-row"><div class="bio-chars" id="bio-li-c"></div><button class="btn-copy" onclick="copiarBio('li')">Copiar</button></div>
+          </div>
+          <div class="bio-panel" id="bio-tk">
+            <div class="bio-text-box" id="bio-tk-txt"></div>
+            <div class="bio-row"><div class="bio-chars" id="bio-tk-c"></div><button class="btn-copy" onclick="copiarBio('tk')">Copiar</button></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Restricciones -->
+      <div class="manual-card">
+        <div class="manual-card-head"><div class="mc-icon">🚫</div><div class="mc-title">Lo que la marca NUNCA debe hacer</div></div>
+        <div class="manual-card-body" id="out-restricciones"></div>
+      </div>
+
+      <div class="manual-footer">Manual de Marca generado por CREA IA — creaia.co</div>
+    </div>
+  </div>
+</div>
+
+<div class="copy-flash" id="copy-flash"></div>
+<script src="/contenido/chat-widget.js"></script>
+
+<script>
+  const SUPABASE_URL = 'https://uerrimfgljuszxugnzxg.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_g-QWziUfBuvcamoDFwdbng__cFVNj4G';
+
+  (async () => {
+    if (typeof window.creaCheckAuth === 'function') {
+      await window.creaCheckAuth();
+    } else {
+      const crea = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      const { data: { session } } = await crea.auth.getSession();
+      if (!session) window.location.replace('/contenido/login.html');
+    }
+  })();
+
+  // Cargar perfil guardado
+  const guardado = JSON.parse(localStorage.getItem('crea_marca') || '{}');
+  if (guardado.nombre)  document.getElementById('nombre').value  = guardado.nombre;
+  if (guardado.sector)  document.getElementById('sector').value  = guardado.sector;
+  if (guardado.tono)    document.getElementById('tono').value    = guardado.tono;
+  if (guardado.publico) document.getElementById('publico').value = guardado.publico;
+
+  function flash(msg) {
+    const el = document.getElementById('copy-flash');
+    el.textContent = msg; el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 1800);
+  }
+
+  function copiarTexto(text, btn) {
+    navigator.clipboard.writeText(text).then(() => {
+      if (btn) {
+        const orig = btn.textContent;
+        btn.textContent = '✓ Copiado'; btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 2200);
+      } else { flash('¡Copiado!'); }
+    });
+  }
+
+  function cambiarBio(red, btn) {
+    document.querySelectorAll('.bio-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.bio-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('bio-' + red).classList.add('active');
+  }
+
+  function copiarBio(red) {
+    const text = document.getElementById('bio-' + red + '-txt')?.textContent || '';
+    const btn  = document.querySelector('#bio-' + red + ' .btn-copy');
+    copiarTexto(text, btn);
+  }
+
+  function descargar() {
+    const nombre = document.getElementById('nombre').value || 'Manual de Marca';
+    const orig = document.title;
+    document.title = 'Manual de Marca — ' + nombre;
+    window.print();
+    document.title = orig;
+  }
+
+  function renderManual(d) {
+    const nombre = document.getElementById('nombre').value;
+    document.getElementById('out-nombre').textContent     = nombre;
+    document.getElementById('out-pos').textContent        = d.posicionamiento || '';
+    document.getElementById('out-promesa').textContent    = d.promesa || '';
+
+    // Personalidad
+    document.getElementById('out-personalidad').innerHTML =
+      (d.personalidad || []).map(p => `<span class="pill">${p}</span>`).join('');
+    document.getElementById('out-arquetipo').textContent = d.arquetipo || '';
+
+    // Colores
+    document.getElementById('out-colores').innerHTML =
+      (d.colores || []).map(c => `
+        <div class="color-card" onclick="navigator.clipboard.writeText('${c.hex}').then(()=>flash('¡Copiado: ${c.hex}!'))">
+          <div class="color-swatch" style="background:${c.hex}"></div>
+          <div class="color-info">
+            <div class="color-name">${c.nombre}</div>
+            <div class="color-hex">${c.hex}</div>
+            <div class="color-rgb">RGB: ${c.rgb || ''}</div>
+            <div class="color-uso">${c.uso}</div>
+            <div class="color-emocion">${c.emocion}</div>
+          </div>
+        </div>`).join('');
+
+    // Tipografía
+    const t = d.tipografia || {};
+    document.getElementById('out-tipografia').innerHTML = `
+      <div class="font-card">
+        <div class="font-role">Titular / Display</div>
+        <div class="font-name">${t.titular?.nombre || ''}</div>
+        <div class="font-weight-label">${t.titular?.peso || ''}</div>
+        <div class="font-preview-big">Aa Bb</div>
+        <div class="font-razon">${t.titular?.razon || ''}</div>
+      </div>
+      <div class="font-card">
+        <div class="font-role">Cuerpo / Body</div>
+        <div class="font-name">${t.cuerpo?.nombre || ''}</div>
+        <div class="font-weight-label">${t.cuerpo?.peso || ''}</div>
+        <div class="font-preview-sm">Aa Bb Cc Dd</div>
+        <div class="font-razon">${t.cuerpo?.razon || ''}</div>
+      </div>`;
+    document.getElementById('out-font-alt').textContent =
+      '💡 Alternativa gratuita en Google Fonts: ' + (t.alternativa_gratuita || '');
+
+    // Voz
+    const v = d.voz || {};
+    document.getElementById('out-voz-tono').textContent = '"' + (v.tono_descripcion || '') + '"';
+    document.getElementById('out-voz-hacer').innerHTML =
+      (v.hacer || []).map(h => `<div class="voz-item">✅ ${h}</div>`).join('');
+    document.getElementById('out-voz-evitar').innerHTML =
+      (v.evitar || []).map(e => `<div class="voz-item">❌ ${e}</div>`).join('');
+    document.getElementById('out-voz-ex-si').textContent = v.ejemplo_post_si || '';
+    document.getElementById('out-voz-ex-no').textContent = v.ejemplo_post_no || '';
+
+    // Pilares
+    document.getElementById('out-pilares').innerHTML =
+      (d.pilares || []).map((p, i) => `
+        <div class="pilar-card">
+          <div class="pilar-num">Pilar ${i + 1}</div>
+          <div class="pilar-nombre">${p.nombre}</div>
+          <div class="pilar-desc">${p.descripcion}</div>
+          <div class="pilar-temas">${(p.temas || []).map(t => `<span class="pilar-tema">${t}</span>`).join('')}</div>
+        </div>`).join('');
+
+    // Taglines
+    document.getElementById('out-taglines').innerHTML =
+      (d.taglines || []).map((tag, i) => {
+        const safe = tag.replace(/'/g, '&#39;').replace(/"/g, '&quot;');
+        return `<div class="tagline-item">
+          <div class="tagline-num">0${i + 1}</div>
+          <div class="tagline-text">${tag}</div>
+          <button class="btn-copy" onclick="copiarTexto('${safe}', this)">Copiar</button>
+        </div>`;
+      }).join('');
+
+    // Bios
+    const bios = d.bios || {};
+    const setbio = (key, txtId, charsId, limit) => {
+      const txt = bios[key] || '';
+      document.getElementById(txtId).textContent  = txt;
+      document.getElementById(charsId).textContent = txt.length + ' / ' + limit + ' caracteres';
+    };
+    setbio('instagram', 'bio-ig-txt', 'bio-ig-c', 150);
+    setbio('linkedin',  'bio-li-txt', 'bio-li-c', 220);
+    setbio('tiktok',    'bio-tk-txt', 'bio-tk-c', 80);
+
+    // Restricciones
+    document.getElementById('out-restricciones').innerHTML =
+      (d.restricciones || []).map(r => `
+        <div class="restriccion-item">
+          <div class="ri-icon">🚫</div>
+          <div>${r}</div>
+        </div>`).join('');
+  }
+
+  async function generarManual() {
+    const nombre = document.getElementById('nombre').value.trim();
+    if (!nombre) { alert('Ingresa el nombre de tu marca para continuar.'); return; }
+
+    const btn = document.getElementById('btn-generar');
+    btn.disabled = true; btn.classList.add('loading');
+    document.getElementById('empty-state').style.display  = 'none';
+    document.getElementById('manual-output').style.display = 'none';
+
+    try {
+      const resp = await fetch('/api/contenido/manual-marca', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nombre,
+          sector:         document.getElementById('sector').value,
+          tono:           document.getElementById('tono').value,
+          publico:        document.getElementById('publico').value,
+          productos:      document.getElementById('productos').value,
+          palabras_clave: document.getElementById('palabras').value,
+          diferenciador:  document.getElementById('diferenciador').value,
+        }),
+      });
+
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}));
+        throw new Error(err.error || 'Error generando el manual');
+      }
+
+      const data = await resp.json();
+      renderManual(data);
+      document.getElementById('manual-output').style.display = 'block';
+      document.getElementById('manual-output').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      localStorage.setItem('crea_marca', JSON.stringify({
+        nombre,
+        sector:  document.getElementById('sector').value,
+        tono:    document.getElementById('tono').value,
+        publico: document.getElementById('publico').value,
+      }));
+
+    } catch (err) {
+      alert(err.message || 'Error generando el manual. Intenta de nuevo.');
+      document.getElementById('empty-state').style.display = 'flex';
+    } finally {
+      btn.disabled = false; btn.classList.remove('loading');
+    }
+  }
+
+  ['nombre','publico','palabras'].forEach(id => {
+    document.getElementById(id)?.addEventListener('keydown', e => {
+      if (e.key === 'Enter') generarManual();
+    });
+  });
+</script>
+</body>
+</html>

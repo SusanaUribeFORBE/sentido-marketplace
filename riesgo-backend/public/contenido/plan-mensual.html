@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CREA — Plan de 30 días</title>
+<style>
+  :root {
+    --violet:  #7C3AED; --violet2: #6D28D9; --lilac: #A78BFA;
+    --bg:      #F5F3FF; --card: #FFFFFF; --border: #DDD6FE;
+    --text:    #1E1B2E; --muted: #6B7280; --green: #059669; --radius: 10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui,-apple-system,sans-serif; background: var(--bg); color: var(--text); font-size: 14px; min-height: 100vh; }
+
+  .header { background: linear-gradient(135deg,#4C1D95 0%,#7C3AED 60%,#A855F7 100%); padding: 20px 32px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .logo { display: flex; align-items: center; }
+  .logo img { height: 38px; width: auto; mix-blend-mode: screen; filter: drop-shadow(0 0 8px rgba(196,181,253,.5)); }
+  .tagline { font-size: 12px; color: rgba(255,255,255,.65); margin-top: 2px; }
+  .header-badge { background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.25); color: #fff; font-size: 11px; padding: 4px 10px; border-radius: 20px; }
+
+  .subnav { background: #fff; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 4px; padding: 0 32px; }
+  .subnav-link { text-decoration: none; font-size: 13px; font-weight: 600; padding: 12px 16px; color: var(--muted); border-bottom: 3px solid transparent; transition: all .15s; display: flex; align-items: center; gap: 6px; }
+  .subnav-link:hover { color: var(--violet); }
+  .subnav-link.active { color: var(--violet); border-bottom-color: var(--violet); }
+
+  .layout { display: grid; grid-template-columns: 380px 1fr; gap: 24px; padding: 24px 32px 40px; max-width: 1300px; margin: 0 auto; }
+  @media (max-width: 900px) { .layout { grid-template-columns: 1fr; padding: 16px; } .subnav { padding: 0 16px; } .subnav-link { padding: 10px 11px; font-size: 11px; } }
+
+  .panel { display: flex; flex-direction: column; gap: 16px; }
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .section-header { background: var(--bg); border-bottom: 1px solid var(--border); padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; }
+  .section-title { font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--violet); }
+  .section-body { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field label { font-size: 12px; font-weight: 600; color: var(--text); }
+  .field input, .field select { border: 1px solid var(--border); border-radius: 7px; padding: 8px 11px; font-size: 13px; font-family: inherit; color: var(--text); background: #fff; transition: border-color .15s; width: 100%; }
+  .field input:focus, .field select:focus { outline: none; border-color: var(--violet); box-shadow: 0 0 0 3px rgba(124,58,237,.1); }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .save-marca { font-size: 11px; color: var(--muted); background: none; border: none; cursor: pointer; text-decoration: underline; padding: 0; }
+  .save-marca:hover { color: var(--violet); }
+  .tono-hint { font-size: 10px; color: var(--green); font-weight: 600; margin-top: 3px; display: none; }
+  .tono-hint.visible { display: block; }
+
+  .tiles { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .tile { border: 1.5px solid var(--border); background: #fff; border-radius: 10px; padding: 10px 8px; text-align: center; cursor: pointer; transition: all .15s; display: flex; flex-direction: column; align-items: center; gap: 4px; font-family: inherit; position: relative; }
+  .tile:hover { border-color: var(--lilac); background: #FAF5FF; }
+  .tile.active { border-color: var(--violet); background: #EDE9FE; }
+  .tile-icon { font-size: 20px; }
+  .tile-label { font-size: 11px; font-weight: 700; color: var(--text); }
+  .tile-sub { font-size: 9px; color: var(--muted); }
+  .tile.active .tile-label { color: var(--violet); }
+
+  .btn-generar { background: var(--violet); color: #fff; border: none; border-radius: var(--radius); padding: 13px 20px; font-size: 15px; font-weight: 700; cursor: pointer; width: 100%; transition: background .15s,transform .1s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .btn-generar:hover:not(:disabled) { background: var(--violet2); }
+  .btn-generar:disabled { opacity: .6; cursor: not-allowed; }
+
+  /* ── Panel derecho ── */
+  .results { display: flex; flex-direction: column; gap: 16px; }
+  .results-placeholder { background: var(--card); border: 2px dashed var(--border); border-radius: var(--radius); padding: 60px 32px; text-align: center; color: var(--muted); }
+  .results-placeholder .icon { font-size: 40px; margin-bottom: 12px; }
+  .results-placeholder p { font-size: 14px; line-height: 1.5; }
+
+  .skeleton { animation: pulse 1.4s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+  /* ── Barra 80/20 ── */
+  .plan-header { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px; }
+  .plan-titulo { font-size: 16px; font-weight: 800; color: var(--text); margin-bottom: 4px; }
+  .plan-resumen { font-size: 12px; color: var(--muted); margin-bottom: 14px; }
+  .barra-8020 { display: flex; border-radius: 6px; overflow: hidden; height: 10px; margin-bottom: 8px; }
+  .barra-valor { background: var(--violet); }
+  .barra-venta { background: #059669; }
+  .barra-labels { display: flex; gap: 16px; font-size: 11px; font-weight: 600; }
+  .lbl-valor { color: var(--violet); display: flex; align-items: center; gap: 5px; }
+  .lbl-venta { color: #059669; display: flex; align-items: center; gap: 5px; }
+  .lbl-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+
+  /* ── Semanas ── */
+  .semana-block { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .semana-header { background: linear-gradient(90deg,#EDE9FE,#F5F3FF); border-bottom: 1px solid var(--border); padding: 10px 18px; font-size: 13px; font-weight: 800; color: var(--violet); display: flex; align-items: center; justify-content: space-between; }
+  .semana-count { font-size: 11px; font-weight: 400; color: var(--muted); }
+
+  .post-row { display: grid; grid-template-columns: 90px 120px 1fr auto; gap: 12px; align-items: center; padding: 11px 18px; border-bottom: 1px solid var(--border); transition: background .1s; }
+  .post-row:last-child { border-bottom: none; }
+  .post-row:hover { background: #FAFAFF; }
+  .post-dia { font-size: 12px; font-weight: 700; color: var(--text); }
+  .post-meta { display: flex; flex-direction: column; gap: 3px; }
+  .post-red { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; display: inline-block; white-space: nowrap; width: fit-content; }
+  .red-instagram { background: #FEE2E2; color: #991B1B; }
+  .red-tiktok    { background: #1E1B2E; color: #A78BFA; }
+  .red-linkedin  { background: #DBEAFE; color: #1E40AF; }
+  .red-facebook  { background: #EFF6FF; color: #1D4ED8; }
+  .red-whatsapp  { background: #D1FAE5; color: #065F46; }
+  .red-default   { background: #EDE9FE; color: var(--violet); }
+  .post-tipo { font-size: 10px; color: var(--muted); margin-top: 2px; }
+  .cat-badge { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; padding: 2px 7px; border-radius: 20px; white-space: nowrap; }
+  .cat-valor { background: #EDE9FE; color: var(--violet); }
+  .cat-venta { background: #D1FAE5; color: #065F46; }
+  .post-content { min-width: 0; }
+  .post-tema { font-size: 13px; color: var(--text); line-height: 1.3; }
+  .post-objetivo { font-size: 10px; color: var(--muted); margin-top: 3px; font-style: italic; }
+  .btn-usar { background: var(--violet); color: #fff; border: none; border-radius: 6px; padding: 5px 12px; font-size: 11px; font-weight: 700; cursor: pointer; transition: background .15s; white-space: nowrap; text-decoration: none; display: inline-block; }
+  .btn-usar:hover { background: var(--violet2); }
+
+  /* ── Botones pie ── */
+  .plan-footer { display: flex; gap: 8px; }
+  .btn-imprimir { background: none; border: 1.5px solid var(--border); color: var(--muted); border-radius: var(--radius); padding: 10px 16px; font-size: 13px; font-weight: 700; cursor: pointer; transition: all .15s; }
+  .btn-imprimir:hover { border-color: var(--violet); color: var(--violet); background: #EDE9FE; }
+  .btn-guardar { background: none; border: 1.5px solid var(--violet); color: var(--violet); border-radius: var(--radius); padding: 10px 16px; font-size: 13px; font-weight: 700; cursor: pointer; transition: all .15s; flex: 1; }
+  .btn-guardar:hover:not(:disabled) { background: #EDE9FE; }
+  .btn-guardar:disabled { opacity: .6; cursor: not-allowed; }
+
+  .toast { position: fixed; bottom: 24px; right: 24px; background: #1E1B2E; color: #fff; padding: 10px 18px; border-radius: 8px; font-size: 13px; font-weight: 500; opacity: 0; transform: translateY(8px); transition: all .25s; pointer-events: none; z-index: 99; }
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  /* ── Sección Pauta ── */
+  .pauta-section { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .pauta-head { background: linear-gradient(90deg,#FFFBEB,#FEF3C7); border-bottom: 1px solid #FCD34D; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .pauta-head h3 { font-size: 15px; font-weight: 800; color: #78350F; }
+  .pauta-head p { font-size: 12px; color: #92400E; margin-top: 2px; }
+  .pauta-body { padding: 18px 20px; display: flex; flex-direction: column; gap: 16px; }
+  .pauta-contexto { font-size: 13px; color: var(--text); line-height: 1.55; background: #FFFBEB; border: 1px solid #FCD34D; border-radius: 8px; padding: 12px 14px; }
+  .pauta-antes { background: #EDE9FE; border-radius: 8px; padding: 10px 14px; font-size: 12px; color: var(--violet2); display: flex; gap: 8px; align-items: flex-start; }
+  .pauta-niveles { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
+  .nivel-card { border: 1.5px solid var(--border); border-radius: 8px; padding: 12px; text-align: center; }
+  .nivel-card.recomendado { border-color: var(--violet); background: #EDE9FE; }
+  .nivel-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 6px; }
+  .nivel-card.recomendado .nivel-label { color: var(--violet); }
+  .nivel-monto { font-size: 16px; font-weight: 800; color: var(--text); }
+  .nivel-card.recomendado .nivel-monto { color: var(--violet); }
+  .nivel-sub { font-size: 10px; color: var(--muted); margin-top: 3px; }
+  .pauta-plataformas { display: flex; flex-direction: column; gap: 10px; }
+  .plat-card { border: 1px solid var(--border); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+  .plat-card-head { display: flex; align-items: center; gap: 10px; }
+  .plat-name { font-size: 13px; font-weight: 700; color: var(--text); }
+  .plat-obj { font-size: 11px; color: var(--muted); }
+  .plat-formato { font-size: 10px; font-weight: 600; background: #EDE9FE; color: var(--violet); padding: 2px 8px; border-radius: 20px; }
+  .plat-precios { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 4px; }
+  .plat-precio { border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; }
+  .plat-precio-label { font-size: 10px; color: var(--muted); font-weight: 600; }
+  .plat-precio-val { font-size: 14px; font-weight: 800; color: var(--text); margin-top: 2px; }
+  .plat-precio.ideal { border-color: var(--violet); background: #EDE9FE; }
+  .plat-precio.ideal .plat-precio-val { color: var(--violet); }
+  .plat-resultado { font-size: 12px; color: var(--text); background: #F0FFF4; border: 1px solid #D1FAE5; border-radius: 6px; padding: 8px 10px; line-height: 1.4; }
+  .plat-consejo { font-size: 12px; color: var(--muted); font-style: italic; }
+  .pauta-regla { background: linear-gradient(135deg,#1E1B2E,#2D1B69); border-radius: 8px; padding: 14px 16px; color: #C4B5FD; font-size: 13px; line-height: 1.55; display: flex; gap: 10px; align-items: flex-start; }
+  .pauta-regla-icon { font-size: 20px; flex-shrink: 0; }
+  .btn-pauta-load { background: none; border: 1.5px dashed var(--border); border-radius: var(--radius); padding: 14px; width: 100%; font-size: 13px; font-weight: 600; color: var(--muted); cursor: pointer; transition: all .15s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .btn-pauta-load:hover { border-color: #FCD34D; color: #92400E; background: #FFFBEB; }
+
+  /* ── Modal de publicación ── */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(30,27,46,.55); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 20px; opacity: 0; pointer-events: none; transition: opacity .2s; }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal-box { background: var(--card); border-radius: 14px; width: 100%; max-width: 480px; overflow: hidden; transform: translateY(16px); transition: transform .2s; box-shadow: 0 20px 60px rgba(0,0,0,.25); }
+  .modal-overlay.open .modal-box { transform: translateY(0); }
+  .modal-head { background: linear-gradient(90deg,#EDE9FE,#F5F3FF); border-bottom: 1px solid var(--border); padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; }
+  .modal-title { font-size: 15px; font-weight: 800; color: var(--violet); }
+  .modal-close { background: none; border: none; font-size: 22px; color: var(--muted); cursor: pointer; padding: 0; line-height: 1; }
+  .modal-body { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+  .pub-red-badge { font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 20px; display: inline-block; margin-bottom: 4px; }
+  .pub-tema { font-size: 14px; font-weight: 700; color: var(--text); line-height: 1.3; }
+  .pub-tipo { font-size: 11px; color: var(--muted); margin-top: 3px; }
+  .pub-horario { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; }
+  .pub-horario-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--violet); margin-bottom: 8px; }
+  .pub-horario-row { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 6px; font-size: 12px; color: var(--text); }
+  .pub-horario-row:last-child { margin-bottom: 0; color: var(--muted); font-style: italic; }
+  .pub-horario-icon { flex-shrink: 0; }
+  .pub-herramientas { display: flex; flex-direction: column; gap: 8px; }
+  .pub-herramientas-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+  .herramienta-btn { display: flex; align-items: center; gap: 10px; border: 1.5px solid var(--border); border-radius: 8px; padding: 10px 14px; cursor: pointer; transition: all .15s; text-decoration: none; background: #fff; font-family: inherit; width: 100%; text-align: left; }
+  .herramienta-btn:hover { border-color: var(--violet); background: #EDE9FE; }
+  .herramienta-btn.primary { background: var(--violet); border-color: var(--violet); color: #fff; }
+  .herramienta-btn.primary:hover { background: var(--violet2); }
+  .herr-icon { font-size: 20px; flex-shrink: 0; }
+  .herr-info { flex: 1; }
+  .herr-nombre { font-size: 13px; font-weight: 700; color: inherit; }
+  .herr-desc { font-size: 11px; color: var(--muted); margin-top: 1px; }
+  .herramienta-btn.primary .herr-desc { color: rgba(255,255,255,.7); }
+  .herr-arrow { font-size: 16px; color: var(--muted); }
+  .herramienta-btn.primary .herr-arrow { color: rgba(255,255,255,.8); }
+  .pub-steps { background: #F0FFF4; border: 1px solid #D1FAE5; border-radius: 8px; padding: 12px 14px; }
+  .pub-steps-title { font-size: 11px; font-weight: 700; color: #065F46; margin-bottom: 6px; }
+  .pub-step { font-size: 12px; color: #065F46; display: flex; gap: 8px; margin-bottom: 4px; }
+  .pub-step:last-child { margin-bottom: 0; }
+  .step-num { font-weight: 800; flex-shrink: 0; }
+  .btn-copiar-tema { background: #25D366; color: #fff; border: none; border-radius: 6px; padding: 8px 16px; font-size: 12px; font-weight: 700; cursor: pointer; transition: background .15s; width: 100%; }
+  .btn-copiar-tema:hover { background: #128C7E; }
+  .btn-copiar-tema.copied { background: var(--green); }
+
+  @media print {
+    .header,.subnav,.panel,.toast,.plan-footer,.btn-usar,.modal-overlay,.pauta-section { display: none !important; }
+    .layout { display: block; padding: 0; }
+    body { background: #fff; }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="logo"><img src="/contenido/logo-crea.png" alt="CREA IA"></div>
+    <div class="tagline">Piloto automático de contenido — 30 días</div>
+  </div>
+  <div class="header-badge">📅 Plan mensual</div>
+</div>
+
+<nav class="subnav">
+  <a href="/contenido/estrategia.html" class="subnav-link">🧭 Estrategia</a>
+  <a href="/contenido/plan-mensual.html" class="subnav-link active">📅 Plan del mes</a>
+  <a href="/contenido/generar.html" class="subnav-link">✨ Generar contenido</a>
+  <a href="/contenido/masiva.html" class="subnav-link">🚀 Masiva</a>
+  <a href="/contenido/manual-marca.html" class="subnav-link">🎨 Manual de Marca</a>
+</nav>
+
+<div class="layout">
+
+  <!-- Panel izquierdo -->
+  <div class="panel">
+
+    <div class="section">
+      <div class="section-header">
+        <span class="section-title">🏷️ Tu marca</span>
+        <button class="save-marca" onclick="guardarMarca()">Guardar</button>
+      </div>
+      <div class="section-body">
+        <div class="field">
+          <label>Nombre de la marca *</label>
+          <input id="nombre" type="text" placeholder="Ej: Kattaleya Accesorios" />
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label>Sector</label>
+            <select id="sector">
+              <option value="">Selecciona...</option>
+              <option>Moda y accesorios</option>
+              <option>Alimentos y bebidas</option>
+              <option>Belleza y cuidado personal</option>
+              <option>Hogar y decoración</option>
+              <option>Servicios profesionales</option>
+              <option>Educación y formación</option>
+              <option>Salud y bienestar</option>
+              <option>Tecnología</option>
+              <option>Arte y artesanías</option>
+              <option>Sostenibilidad</option>
+              <option>Retail / comercio</option>
+              <option>Otro</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Tono</label>
+            <select id="tono">
+              <option value="Cercano y cálido">Cercano y cálido — como un amigo</option>
+              <option value="Profesional y serio">Profesional y serio — B2B / técnico</option>
+              <option value="Inspirador y motivador">Inspirador — genera propósito</option>
+              <option value="Divertido y desenfadado">Divertido — audiencias jóvenes</option>
+              <option value="Educativo y experto">Educativo — explica y enseña</option>
+              <option value="Emocional y humano">Emocional — conecta con valores</option>
+            </select>
+            <div class="tono-hint" id="tono-hint">✓ Recomendado para tu sector</div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Público objetivo</label>
+          <input id="publico" type="text" placeholder="Ej: Mujeres 25-45 amantes de la moda sostenible" />
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-title">🕐 ¿Cuánto tiempo tienes?</span></div>
+      <div class="section-body">
+        <div class="tiles" id="tiles-tiempo">
+          <button class="tile" data-val="15-30 minutos por semana" onclick="selTile(this,'tiempo')">
+            <span class="tile-icon">⚡</span>
+            <span class="tile-label">Poco</span>
+            <span class="tile-sub">8 posts/mes</span>
+          </button>
+          <button class="tile active" data-val="1 hora por semana" onclick="selTile(this,'tiempo')">
+            <span class="tile-icon">🕐</span>
+            <span class="tile-label">Moderado</span>
+            <span class="tile-sub">16 posts/mes</span>
+          </button>
+          <button class="tile" data-val="30+ minutos por día" onclick="selTile(this,'tiempo')">
+            <span class="tile-icon">💪</span>
+            <span class="tile-label">Constante</span>
+            <span class="tile-sub">20 posts/mes</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-title">🎯 Meta principal</span></div>
+      <div class="section-body">
+        <div class="tiles" id="tiles-meta">
+          <button class="tile active" data-val="Conseguir clientes nuevos" onclick="selTile(this,'meta')">
+            <span class="tile-icon">🎯</span>
+            <span class="tile-label">Nuevos clientes</span>
+          </button>
+          <button class="tile" data-val="Vender más a quienes ya me conocen" onclick="selTile(this,'meta')">
+            <span class="tile-icon">💰</span>
+            <span class="tile-label">Vender más</span>
+          </button>
+          <button class="tile" data-val="Posicionarme como referente" onclick="selTile(this,'meta')">
+            <span class="tile-icon">🌱</span>
+            <span class="tile-label">Posicionarme</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-title">📍 Plataformas</span></div>
+      <div class="section-body">
+        <div class="tiles" id="tiles-red">
+          <button class="tile active" data-val="Instagram" onclick="toggleRed(this)">
+            <span class="tile-icon">📸</span>
+            <span class="tile-label">Instagram</span>
+          </button>
+          <button class="tile" data-val="TikTok" onclick="toggleRed(this)">
+            <span class="tile-icon">🎵</span>
+            <span class="tile-label">TikTok</span>
+          </button>
+          <button class="tile" data-val="WhatsApp Business" onclick="toggleRed(this)">
+            <span class="tile-icon">💬</span>
+            <span class="tile-label">WhatsApp</span>
+          </button>
+          <button class="tile" data-val="LinkedIn" onclick="toggleRed(this)">
+            <span class="tile-icon">💼</span>
+            <span class="tile-label">LinkedIn</span>
+          </button>
+          <button class="tile" data-val="Facebook" onclick="toggleRed(this)">
+            <span class="tile-icon">👥</span>
+            <span class="tile-label">Facebook</span>
+          </button>
+          <button class="tile" data-val="__auto__" onclick="toggleRed(this)">
+            <span class="tile-icon">🤔</span>
+            <span class="tile-label">No sé</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-generar" id="btn-generar" onclick="generarPlan()">
+      <span id="btn-icon">📅</span>
+      <span id="btn-texto">Generar mi plan de 30 días</span>
+    </button>
+
+  </div>
+
+  <!-- Panel derecho -->
+  <div class="results" id="results">
+    <div class="results-placeholder">
+      <div class="icon">📅</div>
+      <p><strong>Tu plan de 30 días aparecerá aquí.</strong><br>CREA aplica la regla 80/20 automáticamente:<br>80% contenido de valor · 20% venta directa.<br><br><span style="font-size:12px;">Cada publicación tiene un botón para generarla de inmediato.</span></p>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Modal publicación -->
+<div class="modal-overlay" id="modal-publicar">
+  <div class="modal-box">
+    <div class="modal-head">
+      <span class="modal-title">⏰ Asistente de publicación</span>
+      <button class="modal-close" onclick="cerrarModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body-content"></div>
+  </div>
+</div>
+
+<script>
+  const sel = { tiempo: '1 hora por semana', meta: 'Conseguir clientes nuevos' };
+  let redes = ['Instagram'];
+
+  function selTile(btn, grupo) {
+    document.getElementById('tiles-' + grupo).querySelectorAll('.tile').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    sel[grupo] = btn.dataset.val;
+  }
+
+  function toggleRed(btn) {
+    const val = btn.dataset.val;
+    if (val === '__auto__') {
+      document.getElementById('tiles-red').querySelectorAll('.tile').forEach(t => t.classList.remove('active'));
+      btn.classList.add('active');
+      redes = ['__auto__'];
+      return;
+    }
+    // quitar __auto__ si estaba
+    const autoBtn = document.querySelector('#tiles-red [data-val="__auto__"]');
+    if (autoBtn) autoBtn.classList.remove('active');
+    redes = redes.filter(r => r !== '__auto__');
+
+    if (btn.classList.contains('active')) {
+      if (redes.length <= 1) return;
+      btn.classList.remove('active');
+      redes = redes.filter(r => r !== val);
+    } else {
+      if (redes.length >= 2) {
+        const primero = document.querySelector('#tiles-red .tile.active');
+        if (primero) { primero.classList.remove('active'); redes.shift(); }
+      }
+      btn.classList.add('active');
+      redes.push(val);
+    }
+  }
+
+  // ── Marca guardada ──
+  (function cargarMarca() {
+    try {
+      const m = JSON.parse(localStorage.getItem('crea_marca') || '{}');
+      if (m.nombre)  document.getElementById('nombre').value  = m.nombre;
+      if (m.sector)  document.getElementById('sector').value  = m.sector;
+      if (m.tono)    document.getElementById('tono').value    = m.tono;
+      if (m.publico) document.getElementById('publico').value = m.publico;
+    } catch {}
+  })();
+
+  function guardarMarca() {
+    localStorage.setItem('crea_marca', JSON.stringify({
+      nombre:  document.getElementById('nombre').value.trim(),
+      sector:  document.getElementById('sector').value,
+      tono:    document.getElementById('tono').value,
+      publico: document.getElementById('publico').value.trim(),
+    }));
+    toast('Marca guardada ✓');
+  }
+
+  const TONO_POR_SECTOR = {
+    'Moda y accesorios':'Cercano y cálido','Alimentos y bebidas':'Cercano y cálido',
+    'Belleza y cuidado personal':'Emocional y humano','Hogar y decoración':'Cercano y cálido',
+    'Servicios profesionales':'Profesional y serio','Educación y formación':'Educativo y experto',
+    'Salud y bienestar':'Emocional y humano','Tecnología':'Profesional y serio',
+    'Arte y artesanías':'Emocional y humano','Sostenibilidad':'Inspirador y motivador',
+    'Retail / comercio':'Cercano y cálido','Otro':'Cercano y cálido',
+  };
+  document.getElementById('sector').addEventListener('change', function() {
+    const r = TONO_POR_SECTOR[this.value];
+    if (r) { document.getElementById('tono').value = r; document.getElementById('tono-hint').classList.add('visible'); }
+  });
+
+  // ── Generar plan ──
+  async function generarPlan() {
+    const nombre = document.getElementById('nombre').value.trim();
+    if (!nombre) { toast('Escribe el nombre de tu marca'); return; }
+
+    const btn = document.getElementById('btn-generar');
+    btn.disabled = true;
+    document.getElementById('btn-icon').textContent  = '⏳';
+    document.getElementById('btn-texto').textContent = 'Creando tu plan del mes...';
+    mostrarEsqueleto();
+
+    try {
+      localStorage.setItem('crea_marca', JSON.stringify({
+        nombre, sector: document.getElementById('sector').value,
+        tono: document.getElementById('tono').value, publico: document.getElementById('publico').value.trim(),
+      }));
+      const resp = await fetch('/api/contenido/plan-mensual', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nombre,
+          sector:  document.getElementById('sector').value,
+          tono:    document.getElementById('tono').value,
+          publico: document.getElementById('publico').value.trim(),
+          tiempo:  sel.tiempo,
+          meta:    sel.meta,
+          donde_cliente: redes.includes('__auto__')
+            ? 'Recomienda las plataformas más adecuadas para este sector y público'
+            : redes.join(', '),
+        }),
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || `HTTP ${resp.status}`);
+      mostrarPlan(data, nombre);
+    } catch (err) {
+      toast('Error: ' + err.message);
+      mostrarError();
+    } finally {
+      btn.disabled = false;
+      document.getElementById('btn-icon').textContent  = '📅';
+      document.getElementById('btn-texto').textContent = 'Generar mi plan de 30 días';
+    }
+  }
+
+  function mostrarEsqueleto() {
+    document.getElementById('results').innerHTML =
+      [1,2,3,4].map(() => `<div class="semana-block skeleton" style="height:160px;"></div>`).join('');
+  }
+  function mostrarError() {
+    document.getElementById('results').innerHTML = `<div class="results-placeholder"><div class="icon">⚠️</div><p>Hubo un error. Intenta de nuevo.</p></div>`;
+  }
+
+  function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  function redClass(red) {
+    const r = (red||'').toLowerCase();
+    if (r.includes('instagram')) return 'red-instagram';
+    if (r.includes('tiktok'))    return 'red-tiktok';
+    if (r.includes('linkedin'))  return 'red-linkedin';
+    if (r.includes('facebook'))  return 'red-facebook';
+    if (r.includes('whatsapp'))  return 'red-whatsapp';
+    return 'red-default';
+  }
+
+  function urlGenerar(red, tipo, tema) {
+    return '/contenido/generar.html?' + new URLSearchParams({ plataforma: red, tipo, tema }).toString();
+  }
+
+  function mostrarPlan(data, nombre) {
+    const { resumen='', total_valor=0, total_venta=0, plan=[] } = data;
+    const total = total_valor + total_venta;
+    const pctValor = total ? Math.round((total_valor/total)*100) : 80;
+    const pctVenta = 100 - pctValor;
+
+    // Agrupar por semana
+    const semanas = {};
+    plan.forEach(p => { if (!semanas[p.semana]) semanas[p.semana] = []; semanas[p.semana].push(p); });
+
+    const semanasHTML = Object.entries(semanas).map(([sem, posts]) => {
+      const rows = (posts as any[]).map(p => `
+        <div class="post-row">
+          <div class="post-dia">${esc(p.dia)}</div>
+          <div class="post-meta">
+            <span class="post-red ${redClass(p.red)}">${esc(p.red)}</span>
+            <span class="post-tipo">${esc(p.tipo)}</span>
+          </div>
+          <div class="post-content">
+            <span class="cat-badge ${p.categoria==='venta'?'cat-venta':'cat-valor'}">${p.categoria==='venta'?'Venta':'Valor'} · ${esc(p.subcategoria||'')}</span>
+            <div class="post-tema" style="margin-top:4px;">${esc(p.tema)}</div>
+            <div class="post-objetivo">${esc(p.objetivo)}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:4px;">
+            <a href="${esc(urlGenerar(p.red, p.tipo, p.tema))}" class="btn-usar">Generar →</a>
+            <button class="btn-usar" style="background:#4F46E5;font-size:10px;padding:4px 8px;" onclick="abrirModalPublicacion('${esc(p.red)}','${esc(p.tipo)}','${esc(p.tema).replace(/'/g,"&#39;")}')">⏰ Publicar</button>
+          </div>
+        </div>`).join('');
+
+      return `<div class="semana-block">
+        <div class="semana-header">
+          Semana ${esc(sem)}
+          <span class="semana-count">${(posts as any[]).length} publicaciones</span>
+        </div>
+        ${rows}
+      </div>`;
+    }).join('');
+
+    document.getElementById('results').innerHTML = `
+      <div class="plan-header">
+        <div class="plan-titulo">Plan de 30 días — ${esc(nombre)}</div>
+        <div class="plan-resumen">${esc(resumen)}</div>
+        <div class="barra-8020">
+          <div class="barra-valor" style="width:${pctValor}%"></div>
+          <div class="barra-venta" style="width:${pctVenta}%"></div>
+        </div>
+        <div class="barra-labels">
+          <span class="lbl-valor"><span class="lbl-dot" style="background:var(--violet)"></span>${total_valor} posts de valor (${pctValor}%)</span>
+          <span class="lbl-venta"><span class="lbl-dot" style="background:#059669"></span>${total_venta} posts de venta (${pctVenta}%)</span>
+        </div>
+      </div>
+
+      ${semanasHTML}
+
+      <div class="plan-footer">
+        <button class="btn-guardar" id="btn-guardar">💾 Guardar plan</button>
+        <button class="btn-imprimir" onclick="window.print()">⬇️ PDF</button>
+      </div>
+
+      <div id="pauta-container"></div>`;
+
+    // auto-trigger pauta load
+    const redsFiltradas = redes.filter(r => r !== '__auto__');
+    const redesParaPauta = redsFiltradas.length ? redsFiltradas : ['Instagram'];
+    _pautaCargada = false;
+    cargarPauta(nombre, document.getElementById('sector').value, sel.meta, redesParaPauta);
+
+    document.getElementById('btn-guardar').addEventListener('click', function() {
+      try {
+        localStorage.setItem('crea_plan_mensual', JSON.stringify({ ts: Date.now(), nombre, data }));
+        this.textContent = '✓ Guardado'; this.disabled = true;
+      } catch {}
+      toast('Plan mensual guardado ✓');
+    });
+  }
+
+  let _t;
+  function toast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg; el.classList.add('show');
+    clearTimeout(_t); _t = setTimeout(() => el.classList.remove('show'), 2800);
+  }
+
+  // ── Modal de publicación ──
+  const HORARIOS_PLAT = {
+    'Instagram': ['⏰ Mejor día: miércoles y viernes','🕐 Mejor horario: 11 am – 1 pm y 6 – 8 pm','💡 Historias: cualquier hora, son más casuales'],
+    'TikTok': ['⏰ Mejor día: martes, jueves y viernes','🕐 Mejor horario: 6 – 10 am y 7 – 11 pm','💡 Usa TikTok Analytics para ver cuándo está activa tu audiencia'],
+    'LinkedIn': ['⏰ Mejor día: martes, miércoles y jueves','🕐 Mejor horario: 8 – 10 am y 12 – 2 pm','💡 Evita publicar los fines de semana'],
+    'Facebook': ['⏰ Mejor día: miércoles y jueves','🕐 Mejor horario: 1 – 4 pm y 6 – 9 pm','💡 El alcance orgánico es mejor entre semana'],
+    'WhatsApp Business': ['⏰ Mejor día: lunes y miércoles','🕐 Mejor horario: 9 – 11 am y 7 – 9 pm','💡 Estados de mañana = máxima visibilidad en el día'],
+  };
+  const HERRAMIENTAS_PLAT = {
+    'Instagram': [{p:true,i:'📘',n:'Meta Business Suite',d:'Programa posts e historias — gratis',u:'https://business.facebook.com/creatorstudio'},{p:false,i:'🗓️',n:'Buffer',d:'Gratis hasta 3 cuentas',u:'https://buffer.com'}],
+    'TikTok': [{p:true,i:'🎵',n:'TikTok Business Center',d:'Programa videos directamente en TikTok',u:'https://ads.tiktok.com'},{p:false,i:'🗓️',n:'Later',d:'Programa TikToks con vista previa',u:'https://later.com'}],
+    'LinkedIn': [{p:true,i:'💼',n:'LinkedIn — Programar publicación',d:'Nativo, sin salir de LinkedIn',u:'https://www.linkedin.com/feed/'},{p:false,i:'🗓️',n:'Buffer',d:'Gratis hasta 3 cuentas',u:'https://buffer.com'}],
+    'Facebook': [{p:true,i:'📘',n:'Meta Business Suite',d:'Programa posts y stories — gratis',u:'https://business.facebook.com/creatorstudio'},{p:false,i:'🗓️',n:'Buffer',d:'Gratis hasta 3 cuentas',u:'https://buffer.com'}],
+    'WhatsApp Business': [{p:true,i:'💬',n:'WhatsApp Business App',d:'Programa mensajes y estados',u:'https://business.whatsapp.com'},{p:false,i:'📲',n:'WATI / Respond.io',d:'Automatización avanzada de WhatsApp',u:'https://www.wati.io'}],
+  };
+
+  let _modalTema = '';
+  function abrirModalPublicacion(red, tipo, tema) {
+    _modalTema = tema;
+    const redCls = redClass(red);
+    const horarios = HORARIOS_PLAT[red] || ['💡 Consulta los analytics de tu plataforma para ver cuándo está activa tu audiencia'];
+    const herrs = HERRAMIENTAS_PLAT[red] || [{p:true,i:'🗓️',n:'Buffer',d:'Compatible con la mayoría de redes',u:'https://buffer.com'}];
+
+    document.getElementById('modal-body-content').innerHTML = `
+      <div>
+        <span class="pub-red-badge ${redCls}">${esc(red)}</span>
+        <div class="pub-tema">${esc(tema)}</div>
+        <div class="pub-tipo">${esc(tipo)}</div>
+      </div>
+      <div class="pub-horario">
+        <div class="pub-horario-title">Mejores horarios para publicar</div>
+        ${horarios.map(h => `<div class="pub-horario-row"><span class="pub-horario-icon">${h.slice(0,2)}</span><span>${h.slice(2).trim()}</span></div>`).join('')}
+      </div>
+      <div class="pub-herramientas">
+        <div class="pub-herramientas-title">Herramientas para programar</div>
+        ${herrs.map(h => `<a href="${h.u}" target="_blank" rel="noopener" class="herramienta-btn${h.p?' primary':''}">
+          <span class="herr-icon">${h.i}</span>
+          <span class="herr-info"><div class="herr-nombre">${h.n}</div><div class="herr-desc">${h.d}</div></span>
+          <span class="herr-arrow">→</span>
+        </a>`).join('')}
+      </div>
+      <div class="pub-steps">
+        <div class="pub-steps-title">Pasos para publicar este post</div>
+        <div class="pub-step"><span class="step-num">1.</span><span>Copia la idea y genérala en CREA</span></div>
+        <div class="pub-step"><span class="step-num">2.</span><span>Copia el texto generado</span></div>
+        <div class="pub-step"><span class="step-num">3.</span><span>Abre la herramienta de arriba y programa</span></div>
+        <div class="pub-step"><span class="step-num">4.</span><span>Agrega tu imagen o video y confirma</span></div>
+      </div>
+      <button class="btn-copiar-tema" id="btn-copiar-tema-modal" onclick="copiarTemaPub()">📋 Copiar idea del post</button>`;
+
+    document.getElementById('modal-publicar').classList.add('open');
+  }
+
+  function cerrarModal() { document.getElementById('modal-publicar').classList.remove('open'); }
+
+  document.getElementById('modal-publicar').addEventListener('click', function(e) {
+    if (e.target === this) cerrarModal();
+  });
+
+  function copiarTemaPub() {
+    navigator.clipboard.writeText(_modalTema).catch(() => {});
+    const btn = document.getElementById('btn-copiar-tema-modal');
+    if (!btn) return;
+    btn.textContent = '✓ Copiado'; btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '📋 Copiar idea del post'; btn.classList.remove('copied'); }, 2000);
+  }
+
+  // ── Presupuesto de pauta ──
+  let _pautaCargada = false;
+
+  async function cargarPauta(nombre, sector, meta, redesArr) {
+    if (_pautaCargada) return;
+    _pautaCargada = true;
+    const container = document.getElementById('pauta-container');
+    if (!container) return;
+
+    container.innerHTML = `<div class="pauta-section"><div class="pauta-head"><div><h3>💰 Presupuesto de pauta</h3><p>Calculando recomendación...</p></div></div><div class="pauta-body"><div class="pauta-niveles">${[1,2,3].map(()=>'<div class="nivel-card skeleton" style="height:70px;"></div>').join('')}</div></div></div>`;
+
+    try {
+      const resp = await fetch('/api/contenido/pauta', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nombre, sector, meta, redes: redesArr, publico: document.getElementById('publico').value.trim() }),
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || 'Error');
+      mostrarPauta(data);
+    } catch {
+      document.getElementById('pauta-container').innerHTML = `<button class="btn-pauta-load" onclick="reintentarPauta()">💰 Calcular presupuesto de pauta — clic para reintentar</button>`;
+    }
+  }
+
+  function reintentarPauta() {
+    _pautaCargada = false;
+    const nombre = document.getElementById('nombre').value.trim();
+    const sector = document.getElementById('sector').value;
+    const redsFiltradas = redes.filter(r => r !== '__auto__');
+    cargarPauta(nombre, sector, sel.meta, redsFiltradas.length ? redsFiltradas : ['Instagram']);
+  }
+
+  function mostrarPauta(data) {
+    const { contexto='', antes_de_pautar='', total_mensual={}, plataformas=[], regla_de_oro='' } = data;
+    const { minimo='', recomendado='', agresivo='' } = total_mensual;
+
+    const nivelesHTML = `<div class="pauta-niveles">
+      <div class="nivel-card"><div class="nivel-label">Mínimo</div><div class="nivel-monto">${esc(minimo)}</div><div class="nivel-sub">para empezar</div></div>
+      <div class="nivel-card recomendado"><div class="nivel-label">★ Recomendado</div><div class="nivel-monto">${esc(recomendado)}</div><div class="nivel-sub">mejor ROI</div></div>
+      <div class="nivel-card"><div class="nivel-label">Agresivo</div><div class="nivel-monto">${esc(agresivo)}</div><div class="nivel-sub">máximo crecimiento</div></div>
+    </div>`;
+
+    const platsHTML = (plataformas||[]).map(p => `
+      <div class="plat-card">
+        <div class="plat-card-head">
+          <div style="flex:1;"><div class="plat-name">${esc(p.red||'')}</div><div class="plat-obj">${esc(p.objetivo_campana||'')}</div></div>
+          ${p.formato ? `<span class="plat-formato">${esc(p.formato)}</span>` : ''}
+        </div>
+        <div class="plat-precios">
+          <div class="plat-precio"><div class="plat-precio-label">Mínimo/mes</div><div class="plat-precio-val">${esc(p.minimo||'')}</div></div>
+          <div class="plat-precio ideal"><div class="plat-precio-label">Recomendado</div><div class="plat-precio-val">${esc(p.recomendado||'')}</div></div>
+        </div>
+        ${p.resultado_esperado ? `<div class="plat-resultado">📈 ${esc(p.resultado_esperado)}</div>` : ''}
+        ${p.consejo ? `<div class="plat-consejo">${esc(p.consejo)}</div>` : ''}
+      </div>`).join('');
+
+    document.getElementById('pauta-container').innerHTML = `
+      <div class="pauta-section">
+        <div class="pauta-head">
+          <div>
+            <h3>💰 Presupuesto de pauta recomendado</h3>
+            <p>Estimado en pesos colombianos (COP) · basado en CPM real de cada plataforma</p>
+          </div>
+        </div>
+        <div class="pauta-body">
+          ${contexto ? `<div class="pauta-contexto">${esc(contexto)}</div>` : ''}
+          ${antes_de_pautar ? `<div class="pauta-antes"><span>💡</span><span>${esc(antes_de_pautar)}</span></div>` : ''}
+          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;">Total mensual estimado</div>
+          ${nivelesHTML}
+          ${platsHTML ? `<div class="pauta-plataformas"><div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;">Por plataforma</div>${platsHTML}</div>` : ''}
+          ${regla_de_oro ? `<div class="pauta-regla"><span class="pauta-regla-icon">🏆</span><span>${esc(regla_de_oro)}</span></div>` : ''}
+        </div>
+      </div>`;
+  }
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/contenido/auth.js"></script>
+<script src="/contenido/chat-widget.js"></script>
+</body>
+</html>
