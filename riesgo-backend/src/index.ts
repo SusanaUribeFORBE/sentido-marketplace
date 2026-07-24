@@ -11,9 +11,12 @@ import { analyticsRouter } from './routes/analytics';
 import { sentidoAgenteRouter } from './routes/sentidoAgente';
 import { sstExamenRouter } from './routes/sstExamen';
 import { vigiaRouter } from './routes/vigia';
+import { contenidoRouter } from './routes/contenido';
 import { adminAuth } from './middleware/adminAuth';
 import { clientAuth } from './middleware/clientAuth';
 import { arlAuth } from './middleware/arlAuth';
+import { creaAuth } from './middleware/creaAuth';
+import { creaPlanesRouter } from './routes/creaPlanes';
 
 const app = express();
 app.set('trust proxy', 1);
@@ -53,6 +56,19 @@ const examLimiter = rateLimit({
   message: { error: 'Demasiados intentos. Espera 15 minutos.' }
 });
 
+// ── creaia.co → CREA IA (debe ir ANTES del static para interceptar la raíz) ──
+app.use((req, res, next) => {
+  const host = req.hostname || '';
+  if (host === 'creaia.co' || host === 'www.creaia.co') {
+    const p = req.path;
+    if (p.startsWith('/contenido') || p.startsWith('/api') || p.startsWith('/assets')) {
+      return next();
+    }
+    return res.redirect(302, '/contenido/planes.html');
+  }
+  next();
+});
+
 app.use(express.static(path.join(__dirname, '..', 'public')));
 app.use('/assets', express.static(path.join(__dirname, '..', 'assets')));
 
@@ -60,7 +76,18 @@ app.get('/api', (_req, res) => {
   res.json({ status: 'RiesGO! backend corriendo ✅' });
 });
 
+// ── Rutas cortas CREA IA ──
+app.get('/crea',             (_req, res) => res.redirect(301, '/contenido/planes.html'));
+app.get('/crea/emprendedor', (_req, res) => res.redirect(301, '/contenido/planes.html'));
+app.get('/crea/pro',         (_req, res) => res.redirect(301, '/contenido/planes.html'));
+app.get('/crea/agencia',     (_req, res) => res.redirect(301, '/contenido/planes.html'));
+app.get('/crea/login',       (_req, res) => res.redirect(301, '/contenido/login.html'));
+app.get('/crea/registro',    (_req, res) => res.redirect(301, '/contenido/registro.html'));
+app.get('/crea/app',         (_req, res) => res.redirect(301, '/contenido/estrategia.html'));
+
 app.use('/api/vigia', vigiaRouter);
+app.use('/api/crea', creaPlanesRouter);
+app.use('/api/contenido', creaAuth, contenidoRouter);
 app.use('/api/sst', examLimiter, sstExamenRouter);
 app.use('/api/sentido', sentidoLimiter, sentidoAgenteRouter);
 app.use('/api', pinLimiter, authRouter);

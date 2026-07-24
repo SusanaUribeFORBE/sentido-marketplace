@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CREA — Iniciar sesión</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background: #0D0A1E;
+    display: flex; align-items: center; justify-content: center;
+    min-height: 100vh; padding: 20px;
+    position: relative; overflow: hidden;
+  }
+
+  /* Orbs de fondo */
+  .bg-orb { position: fixed; border-radius: 50%; filter: blur(80px); pointer-events: none; }
+  .bg-orb-1 { width: 500px; height: 500px; background: rgba(109,40,217,.35); top: -120px; left: -80px; }
+  .bg-orb-2 { width: 400px; height: 400px; background: rgba(167,139,250,.2); bottom: -100px; right: -60px; }
+  .bg-orb-3 { width: 280px; height: 280px; background: rgba(79,70,229,.25); top: 50%; left: 50%; transform: translate(-50%,-50%); }
+
+  /* Card */
+  .card {
+    position: relative; z-index: 1;
+    background: rgba(255,255,255,.06);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 24px;
+    padding: 44px 40px 36px;
+    width: 100%; max-width: 420px;
+    box-shadow: 0 32px 80px rgba(0,0,0,.4), 0 0 0 1px rgba(167,139,250,.1) inset;
+  }
+
+  /* Logo */
+  .logo-wrap { text-align: center; margin-bottom: 28px; }
+  .logo-img {
+    height: 140px; width: auto;
+    mix-blend-mode: screen;
+    filter: drop-shadow(0 0 24px rgba(167,139,250,.6));
+    animation: logoGlow 3s ease-in-out infinite;
+  }
+  @keyframes logoGlow {
+    0%,100% { filter: drop-shadow(0 0 24px rgba(167,139,250,.5)); }
+    50%      { filter: drop-shadow(0 0 40px rgba(167,139,250,.85)); }
+  }
+  .logo-sub { font-size: 12.5px; color: rgba(255,255,255,.42); margin-top: 6px; letter-spacing: .4px; }
+
+  /* Divider */
+  .divider { width: 48px; height: 2px; background: linear-gradient(to right,#7C3AED,#A78BFA); border-radius: 1px; margin: 0 auto 28px; }
+
+  /* Form */
+  .field { margin-bottom: 16px; }
+  label { display: block; font-size: 11.5px; font-weight: 600; color: rgba(255,255,255,.6); margin-bottom: 6px; letter-spacing: .5px; text-transform: uppercase; }
+  input {
+    width: 100%;
+    background: rgba(255,255,255,.07);
+    border: 1.5px solid rgba(255,255,255,.12);
+    border-radius: 12px;
+    padding: 13px 16px;
+    font-size: 14px; font-family: inherit;
+    color: #fff; outline: none;
+    transition: border-color .2s, background .2s, box-shadow .2s;
+  }
+  input::placeholder { color: rgba(255,255,255,.3); }
+  input:focus {
+    border-color: #7C3AED;
+    background: rgba(124,58,237,.12);
+    box-shadow: 0 0 0 4px rgba(124,58,237,.2);
+  }
+  input:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0 100px #1a103d inset;
+    -webkit-text-fill-color: #fff;
+  }
+
+  /* Error */
+  #error-msg {
+    display: none; background: rgba(239,68,68,.15); border: 1px solid rgba(239,68,68,.3);
+    border-radius: 10px; padding: 10px 14px; font-size: 13px; color: #FCA5A5;
+    margin-bottom: 16px; text-align: center;
+  }
+  #error-msg.visible { display: block; }
+
+  /* Success */
+  #success-msg {
+    display: none; background: rgba(16,185,129,.12); border: 1px solid rgba(16,185,129,.25);
+    border-radius: 10px; padding: 10px 14px; font-size: 13px; color: #6EE7B7;
+    margin-bottom: 16px; text-align: center;
+  }
+  #success-msg.visible { display: block; }
+
+  /* Button */
+  .btn-submit {
+    width: 100%; padding: 14px;
+    background: linear-gradient(135deg,#6D28D9,#7C3AED,#8B5CF6);
+    border: none; border-radius: 12px;
+    color: #fff; font-size: 15px; font-weight: 700; font-family: inherit;
+    cursor: pointer; margin-top: 8px;
+    box-shadow: 0 4px 20px rgba(109,40,217,.4);
+    transition: transform .15s, box-shadow .15s, opacity .15s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .btn-submit:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 28px rgba(109,40,217,.55); }
+  .btn-submit:active:not(:disabled) { transform: translateY(0); }
+  .btn-submit:disabled { opacity: .6; cursor: not-allowed; }
+
+  /* Spinner */
+  .spinner { width: 18px; height: 18px; border: 2.5px solid rgba(255,255,255,.35); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; display: none; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .btn-submit.loading .spinner { display: block; }
+  .btn-submit.loading .btn-text { display: none; }
+
+  /* Footer links */
+  .footer { text-align: center; margin-top: 20px; }
+  .footer a { font-size: 12.5px; color: rgba(167,139,250,.8); text-decoration: none; cursor: pointer; transition: color .15s; }
+  .footer a:hover { color: #C4B5FD; }
+  .invite-note { margin-top: 28px; text-align: center; font-size: 11px; color: rgba(255,255,255,.22); letter-spacing: .3px; }
+</style>
+</head>
+<body>
+  <div class="bg-orb bg-orb-1"></div>
+  <div class="bg-orb bg-orb-2"></div>
+  <div class="bg-orb bg-orb-3"></div>
+
+  <div class="card">
+    <div class="logo-wrap">
+      <img src="/contenido/logo-crea.png" alt="CREA IA" class="logo-img">
+      <div class="logo-sub">Tu estratega de marketing con IA</div>
+    </div>
+    <div class="divider"></div>
+
+    <div id="form-login">
+      <div id="error-msg"></div>
+      <div class="field">
+        <label for="email">Correo electrónico</label>
+        <input type="email" id="email" placeholder="tu@correo.com" autocomplete="email">
+      </div>
+      <div class="field">
+        <label for="password">Contraseña</label>
+        <input type="password" id="password" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <button class="btn-submit" id="btn-login">
+        <span class="spinner"></span>
+        <span class="btn-text">Ingresar a CREA</span>
+      </button>
+      <div class="footer">
+        <a onclick="mostrarRecuperar()">¿Olvidaste tu contraseña?</a>
+      </div>
+    </div>
+
+    <div id="form-recuperar" style="display:none">
+      <div id="success-msg"></div>
+      <div id="error-msg-rec"></div>
+      <p style="font-size:13px;color:rgba(255,255,255,.55);margin-bottom:18px;text-align:center">
+        Te enviaremos un enlace para restablecer tu contraseña.
+      </p>
+      <div class="field">
+        <label for="email-rec">Correo electrónico</label>
+        <input type="email" id="email-rec" placeholder="tu@correo.com">
+      </div>
+      <button class="btn-submit" id="btn-recuperar">
+        <span class="spinner"></span>
+        <span class="btn-text">Enviar enlace</span>
+      </button>
+      <div class="footer">
+        <a onclick="mostrarLogin()">← Volver al inicio de sesión</a>
+      </div>
+    </div>
+
+    <p class="invite-note">¿No tienes cuenta? <a href="/contenido/registro.html" style="color:rgba(167,139,250,.7);text-decoration:none;">Regístrate gratis →</a></p>
+  </div>
+
+<script>
+  const SUPABASE_URL = 'https://uerrimfgljuszxugnzxg.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_g-QWziUfBuvcamoDFwdbng__cFVNj4G';
+  const crea = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  // Si ya tiene sesión, redirigir directo
+  crea.auth.getSession().then(({ data: { session } }) => {
+    if (session) window.location.replace('/contenido/estrategia.html');
+  });
+
+  function mostrarError(msg) {
+    const el = document.getElementById('error-msg');
+    el.textContent = msg; el.classList.add('visible');
+  }
+  function ocultarError() { document.getElementById('error-msg').classList.remove('visible'); }
+
+  function mostrarRecuperar() {
+    document.getElementById('form-login').style.display = 'none';
+    document.getElementById('form-recuperar').style.display = 'block';
+  }
+  function mostrarLogin() {
+    document.getElementById('form-recuperar').style.display = 'none';
+    document.getElementById('form-login').style.display = 'block';
+    ocultarError();
+  }
+
+  // Enter para enviar
+  ['email','password'].forEach(id => {
+    document.getElementById(id).addEventListener('keydown', e => {
+      if (e.key === 'Enter') login();
+    });
+  });
+
+  async function login() {
+    ocultarError();
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    if (!email || !password) { mostrarError('Ingresa tu correo y contraseña.'); return; }
+
+    const btn = document.getElementById('btn-login');
+    btn.disabled = true; btn.classList.add('loading');
+
+    const { error } = await crea.auth.signInWithPassword({ email, password });
+
+    if (error) {
+      btn.disabled = false; btn.classList.remove('loading');
+      const msg = error.message.includes('Invalid login') || error.message.includes('invalid_credentials')
+        ? 'Correo o contraseña incorrectos.'
+        : error.message.includes('Email not confirmed')
+        ? 'Confirma tu correo antes de ingresar.'
+        : error.message;
+      mostrarError(msg);
+    } else {
+      window.location.replace('/contenido/estrategia.html');
+    }
+  }
+
+  document.getElementById('btn-login').addEventListener('click', login);
+
+  document.getElementById('btn-recuperar').addEventListener('click', async () => {
+    const email = document.getElementById('email-rec').value.trim();
+    if (!email) return;
+    const btn = document.getElementById('btn-recuperar');
+    btn.disabled = true; btn.classList.add('loading');
+    const { error } = await crea.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin + '/contenido/login.html'
+    });
+    btn.disabled = false; btn.classList.remove('loading');
+    if (error) {
+      document.getElementById('error-msg-rec').textContent = error.message;
+      document.getElementById('error-msg-rec').style.display = 'block';
+    } else {
+      const s = document.getElementById('success-msg');
+      s.textContent = 'Revisa tu correo — te enviamos el enlace.';
+      s.classList.add('visible');
+    }
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CREA IA — Crear cuenta</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background: #0D0A1E;
+    display: flex; align-items: center; justify-content: center;
+    min-height: 100vh; padding: 20px;
+    position: relative; overflow: hidden;
+  }
+  .bg-orb { position: fixed; border-radius: 50%; filter: blur(80px); pointer-events: none; }
+  .bg-orb-1 { width: 500px; height: 500px; background: rgba(109,40,217,.35); top: -120px; left: -80px; }
+  .bg-orb-2 { width: 400px; height: 400px; background: rgba(167,139,250,.2); bottom: -100px; right: -60px; }
+  .bg-orb-3 { width: 280px; height: 280px; background: rgba(79,70,229,.25); top: 50%; left: 50%; transform: translate(-50%,-50%); }
+
+  .card {
+    position: relative; z-index: 1;
+    background: rgba(255,255,255,.06);
+    backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255,255,255,.12); border-radius: 24px;
+    padding: 44px 40px 36px; width: 100%; max-width: 420px;
+    box-shadow: 0 32px 80px rgba(0,0,0,.4), 0 0 0 1px rgba(167,139,250,.1) inset;
+  }
+  .logo-wrap { text-align: center; margin-bottom: 24px; }
+  .logo-img {
+    height: 120px; width: auto; mix-blend-mode: screen;
+    filter: drop-shadow(0 0 24px rgba(167,139,250,.6));
+    animation: logoGlow 3s ease-in-out infinite;
+  }
+  @keyframes logoGlow {
+    0%,100% { filter: drop-shadow(0 0 24px rgba(167,139,250,.5)); }
+    50%      { filter: drop-shadow(0 0 40px rgba(167,139,250,.85)); }
+  }
+  .logo-sub { font-size: 12.5px; color: rgba(255,255,255,.42); margin-top: 6px; letter-spacing: .4px; }
+  .divider { width: 48px; height: 2px; background: linear-gradient(to right,#7C3AED,#A78BFA); border-radius: 1px; margin: 0 auto 24px; }
+
+  .field { margin-bottom: 14px; }
+  label { display: block; font-size: 11.5px; font-weight: 600; color: rgba(255,255,255,.6); margin-bottom: 6px; letter-spacing: .5px; text-transform: uppercase; }
+  input {
+    width: 100%; background: rgba(255,255,255,.07); border: 1.5px solid rgba(255,255,255,.12);
+    border-radius: 12px; padding: 13px 16px; font-size: 14px; font-family: inherit;
+    color: #fff; outline: none; transition: border-color .2s, background .2s, box-shadow .2s;
+  }
+  input::placeholder { color: rgba(255,255,255,.3); }
+  input:focus { border-color: #7C3AED; background: rgba(124,58,237,.12); box-shadow: 0 0 0 4px rgba(124,58,237,.2); }
+  input:-webkit-autofill { -webkit-box-shadow: 0 0 0 100px #1a103d inset; -webkit-text-fill-color: #fff; }
+
+  .password-wrap { position: relative; }
+  .toggle-pass { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: rgba(255,255,255,.4); font-size: 16px; padding: 0; line-height: 1; }
+  .toggle-pass:hover { color: rgba(255,255,255,.7); }
+
+  .strength-bar { height: 3px; border-radius: 2px; margin-top: 6px; background: rgba(255,255,255,.08); overflow: hidden; }
+  .strength-fill { height: 100%; border-radius: 2px; width: 0; transition: width .3s, background .3s; }
+  .strength-label { font-size: 10px; color: rgba(255,255,255,.35); margin-top: 3px; }
+
+  #error-msg {
+    display: none; background: rgba(239,68,68,.15); border: 1px solid rgba(239,68,68,.3);
+    border-radius: 10px; padding: 10px 14px; font-size: 13px; color: #FCA5A5;
+    margin-bottom: 14px; text-align: center;
+  }
+  #error-msg.visible { display: block; }
+
+  .btn-submit {
+    width: 100%; padding: 14px;
+    background: linear-gradient(135deg,#6D28D9,#7C3AED,#8B5CF6);
+    border: none; border-radius: 12px; color: #fff;
+    font-size: 15px; font-weight: 700; font-family: inherit;
+    cursor: pointer; margin-top: 8px;
+    box-shadow: 0 4px 20px rgba(109,40,217,.4);
+    transition: transform .15s, box-shadow .15s, opacity .15s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .btn-submit:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 28px rgba(109,40,217,.55); }
+  .btn-submit:disabled { opacity: .6; cursor: not-allowed; }
+  .spinner { width: 18px; height: 18px; border: 2.5px solid rgba(255,255,255,.35); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; display: none; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .btn-submit.loading .spinner { display: block; }
+  .btn-submit.loading .btn-text { display: none; }
+
+  .footer { text-align: center; margin-top: 20px; }
+  .footer a { font-size: 12.5px; color: rgba(167,139,250,.8); text-decoration: none; cursor: pointer; transition: color .15s; }
+  .footer a:hover { color: #C4B5FD; }
+
+  /* Verificación de correo */
+  .verify-card { text-align: center; }
+  .verify-icon { font-size: 52px; margin-bottom: 16px; }
+  .verify-title { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 8px; }
+  .verify-desc { font-size: 13.5px; color: rgba(255,255,255,.55); line-height: 1.6; }
+  .verify-email { color: #A78BFA; font-weight: 600; }
+  .btn-reenviar { background: none; border: 1px solid rgba(167,139,250,.3); color: rgba(167,139,250,.7); border-radius: 10px; padding: 10px 20px; font-size: 13px; font-family: inherit; cursor: pointer; margin-top: 20px; transition: all .15s; width: 100%; }
+  .btn-reenviar:hover { background: rgba(124,58,237,.15); border-color: #A78BFA; color: #A78BFA; }
+</style>
+</head>
+<body>
+  <div class="bg-orb bg-orb-1"></div>
+  <div class="bg-orb bg-orb-2"></div>
+  <div class="bg-orb bg-orb-3"></div>
+
+  <div class="card" id="card-registro">
+    <div class="logo-wrap">
+      <img src="/contenido/logo-crea.png" alt="CREA IA" class="logo-img">
+      <div class="logo-sub">Crea tu cuenta gratis — 7 días sin tarjeta</div>
+    </div>
+    <div class="divider"></div>
+
+    <div id="error-msg"></div>
+
+    <div class="field">
+      <label for="email">Correo electrónico</label>
+      <input type="email" id="email" placeholder="tu@correo.com" autocomplete="email">
+    </div>
+    <div class="field">
+      <label for="password">Contraseña</label>
+      <div class="password-wrap">
+        <input type="password" id="password" placeholder="Mínimo 8 caracteres" autocomplete="new-password" oninput="medirFuerza(this.value)">
+        <button class="toggle-pass" type="button" onclick="togglePass()" id="toggle-pass">👁</button>
+      </div>
+      <div class="strength-bar"><div class="strength-fill" id="strength-fill"></div></div>
+      <div class="strength-label" id="strength-label"></div>
+    </div>
+    <div class="field">
+      <label for="confirm">Confirmar contraseña</label>
+      <input type="password" id="confirm" placeholder="Repite tu contraseña" autocomplete="new-password">
+    </div>
+
+    <button class="btn-submit" id="btn-registro">
+      <div class="spinner"></div>
+      <span class="btn-text">Crear cuenta gratis</span>
+    </button>
+
+    <div class="footer">
+      <a href="/contenido/login.html">¿Ya tienes cuenta? Inicia sesión →</a>
+    </div>
+  </div>
+
+  <!-- Pantalla de verificación de correo -->
+  <div class="card verify-card" id="card-verify" style="display:none">
+    <div class="verify-icon">📬</div>
+    <div class="verify-title">Revisa tu correo</div>
+    <p class="verify-desc">
+      Enviamos un enlace de confirmación a<br>
+      <span class="verify-email" id="verify-email-shown"></span><br><br>
+      Haz clic en el enlace para activar tu cuenta y luego elige tu plan.
+    </p>
+    <button class="btn-reenviar" onclick="reenviarCorreo()">Reenviar correo</button>
+    <div class="footer" style="margin-top:16px;">
+      <a href="/contenido/planes.html">Ver planes →</a>
+    </div>
+  </div>
+
+<script>
+  const SUPABASE_URL = 'https://uerrimfgljuszxugnzxg.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_g-QWziUfBuvcamoDFwdbng__cFVNj4G';
+  const crea = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  // Si ya tiene sesión activa, ir directo a la app
+  crea.auth.getSession().then(({ data: { session } }) => {
+    if (session) window.location.replace('/contenido/estrategia.html');
+  });
+
+  let emailRegistrado = '';
+
+  function mostrarError(msg) {
+    const el = document.getElementById('error-msg');
+    el.textContent = msg; el.classList.add('visible');
+  }
+  function ocultarError() { document.getElementById('error-msg').classList.remove('visible'); }
+
+  function togglePass() {
+    const inp = document.getElementById('password');
+    const btn = document.getElementById('toggle-pass');
+    inp.type = inp.type === 'password' ? 'text' : 'password';
+    btn.textContent = inp.type === 'password' ? '👁' : '🙈';
+  }
+
+  function medirFuerza(val) {
+    const fill  = document.getElementById('strength-fill');
+    const label = document.getElementById('strength-label');
+    if (!val) { fill.style.width = '0'; label.textContent = ''; return; }
+    let score = 0;
+    if (val.length >= 8)  score++;
+    if (val.length >= 12) score++;
+    if (/[A-Z]/.test(val)) score++;
+    if (/[0-9]/.test(val)) score++;
+    if (/[^A-Za-z0-9]/.test(val)) score++;
+    const niveles = [
+      { w: '20%', c: '#EF4444', t: 'Muy débil' },
+      { w: '40%', c: '#F97316', t: 'Débil' },
+      { w: '60%', c: '#EAB308', t: 'Regular' },
+      { w: '80%', c: '#22C55E', t: 'Fuerte' },
+      { w: '100%',c: '#10B981', t: 'Muy fuerte' },
+    ];
+    const n = niveles[Math.min(score - 1, 4)] || niveles[0];
+    fill.style.width = n.w; fill.style.background = n.c;
+    label.textContent = n.t; label.style.color = n.c;
+  }
+
+  ['email','password','confirm'].forEach(id => {
+    document.getElementById(id).addEventListener('keydown', e => {
+      if (e.key === 'Enter') registrar();
+    });
+  });
+
+  async function registrar() {
+    ocultarError();
+    const email    = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const confirm  = document.getElementById('confirm').value;
+
+    if (!email)    { mostrarError('Ingresa tu correo electrónico.'); return; }
+    if (!password) { mostrarError('Crea una contraseña.'); return; }
+    if (password.length < 8) { mostrarError('La contraseña debe tener al menos 8 caracteres.'); return; }
+    if (password !== confirm) { mostrarError('Las contraseñas no coinciden.'); return; }
+
+    const btn = document.getElementById('btn-registro');
+    btn.disabled = true; btn.classList.add('loading');
+
+    const { error } = await crea.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { crea_plan: 'trial', crea_trial_hasta: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() },
+        emailRedirectTo: 'https://creaia.co/contenido/planes.html',
+      },
+    });
+
+    btn.disabled = false; btn.classList.remove('loading');
+
+    if (error) {
+      const msg = error.message.includes('already registered') || error.message.includes('User already registered')
+        ? 'Este correo ya tiene una cuenta. ¿Quieres iniciar sesión?'
+        : error.message.includes('invalid') ? 'Correo inválido.'
+        : error.message;
+      mostrarError(msg);
+      return;
+    }
+
+    emailRegistrado = email;
+    document.getElementById('verify-email-shown').textContent = email;
+    document.getElementById('card-registro').style.display = 'none';
+    document.getElementById('card-verify').style.display   = 'block';
+  }
+
+  async function reenviarCorreo() {
+    if (!emailRegistrado) return;
+    await crea.auth.resend({ type: 'signup', email: emailRegistrado, options: { emailRedirectTo: 'https://creaia.co/contenido/planes.html' } });
+    const btn = document.querySelector('.btn-reenviar');
+    btn.textContent = '✓ Correo reenviado'; btn.disabled = true;
+    setTimeout(() => { btn.textContent = 'Reenviar correo'; btn.disabled = false; }, 5000);
+  }
+
+  document.getElementById('btn-registro').addEventListener('click', registrar);
+</script>
+</body>
+</html>
