@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CREA IA — Elige tu plan de crecimiento</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --violet-deep: #0A0620;
+    --violet-mid:  #1A0A4E;
+    --violet:      #7C3AED;
+    --violet-lt:   #9333EA;
+    --lilac:       #A78BFA;
+    --cyan:        #06B6D4;
+    --coral:       #FF6B35;
+    --white:       #FFFFFF;
+    --card-bg:     #FFFFFF;
+    --card-border: #E8E0FF;
+    --text:        #1E1B2E;
+    --muted:       #6B7280;
+    --green:       #10B981;
+  }
+
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: linear-gradient(160deg, var(--violet-deep) 0%, #150840 40%, #1E0A5E 70%, #0D0A2E 100%);
+    min-height: 100vh;
+    color: var(--white);
+    padding: 0 16px 60px;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* ── Orbs de ambiente ── */
+  .orb { position: fixed; border-radius: 50%; pointer-events: none; filter: blur(100px); }
+  .orb-1 { width: 600px; height: 600px; background: rgba(109,40,217,.2); top: -200px; left: -150px; }
+  .orb-2 { width: 400px; height: 400px; background: rgba(6,182,212,.1); bottom: -100px; right: -100px; }
+  .orb-3 { width: 300px; height: 300px; background: rgba(147,51,234,.15); top: 40%; left: 50%; transform: translateX(-50%); }
+
+  /* ── Header ── */
+  .site-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 0 0;
+    max-width: 1100px; margin: 0 auto;
+  }
+  .logo-img { height: 44px; mix-blend-mode: screen; filter: drop-shadow(0 0 10px rgba(167,139,250,.6)); }
+  .header-link { font-size: 13px; color: rgba(255,255,255,.55); text-decoration: none; transition: color .15s; }
+  .header-link:hover { color: var(--lilac); }
+
+  /* ── Trial badge ── */
+  .trial-banner {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: linear-gradient(135deg, var(--coral), #FF8C42);
+    border-radius: 14px; padding: 10px 18px 10px 14px;
+    margin: 32px auto 0; display: block; width: fit-content; margin-left: auto; margin-right: auto;
+    box-shadow: 0 4px 24px rgba(255,107,53,.35);
+  }
+  .trial-banner-inner { display: flex; align-items: center; gap: 10px; }
+  .trial-rocket { font-size: 22px; }
+  .trial-text-main { font-size: 18px; font-weight: 900; color: #fff; line-height: 1.1; }
+  .trial-text-sub  { font-size: 11px; font-weight: 700; color: rgba(255,255,255,.85); letter-spacing: .5px; text-transform: uppercase; }
+
+  /* ── Hero ── */
+  .hero { text-align: center; padding: 36px 16px 48px; max-width: 680px; margin: 0 auto; }
+  .hero h1 {
+    font-size: clamp(28px, 5vw, 46px); font-weight: 900;
+    line-height: 1.1; letter-spacing: -1px;
+    text-wrap: balance;
+  }
+  .hero h1 em { font-style: normal; background: linear-gradient(90deg,#C4B5FD,#7C3AED); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .hero p { margin-top: 14px; font-size: 16px; color: rgba(255,255,255,.6); line-height: 1.6; text-wrap: balance; }
+
+  /* ── Cards grid ── */
+  .plans-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    max-width: 1060px; margin: 0 auto;
+    align-items: start;
+  }
+
+  /* ── Plan card base ── */
+  .plan-card {
+    background: var(--card-bg);
+    border: 1.5px solid var(--card-border);
+    border-radius: 22px;
+    padding: 32px 28px 28px;
+    position: relative;
+    transition: transform .2s, box-shadow .2s;
+  }
+  .plan-card:hover { transform: translateY(-4px); box-shadow: 0 20px 48px rgba(109,40,217,.2); }
+
+  /* Featured card */
+  .plan-card.featured {
+    background: linear-gradient(160deg,#5B21B6 0%,#6D28D9 50%,#7E22CE 100%);
+    border-color: rgba(196,181,253,.3);
+    transform: scale(1.04);
+    box-shadow: 0 0 0 1px rgba(196,181,253,.2), 0 24px 60px rgba(109,40,217,.45);
+  }
+  .plan-card.featured:hover { transform: scale(1.04) translateY(-4px); }
+
+  /* Halo animado bajo la featured card */
+  .plan-card.featured::after {
+    content: ''; position: absolute; bottom: -18px; left: 10%; right: 10%;
+    height: 40px; border-radius: 50%;
+    background: var(--cyan);
+    filter: blur(22px);
+    opacity: .35;
+    animation: halo 3s ease-in-out infinite;
+  }
+  @keyframes halo { 0%,100%{opacity:.3;transform:scaleX(.9)} 50%{opacity:.5;transform:scaleX(1.05)} }
+
+  /* Badge popular */
+  .badge-popular {
+    position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
+    background: linear-gradient(135deg,var(--cyan),#38BDF8);
+    color: #0A0620; font-size: 11px; font-weight: 800;
+    padding: 4px 14px; border-radius: 20px;
+    letter-spacing: .5px; white-space: nowrap;
+    box-shadow: 0 3px 12px rgba(6,182,212,.4);
+  }
+
+  /* Plan header */
+  .plan-icon { font-size: 26px; margin-bottom: 8px; }
+  .plan-name { font-size: 16px; font-weight: 800; color: var(--text); }
+  .plan-card.featured .plan-name { color: rgba(255,255,255,.85); }
+  .plan-price { margin: 16px 0 4px; }
+  .plan-price .amount {
+    font-size: 42px; font-weight: 900; letter-spacing: -2px;
+    color: var(--violet);
+    line-height: 1;
+  }
+  .plan-card.featured .plan-price .amount { color: #fff; }
+  .plan-price .currency { font-size: 20px; font-weight: 700; color: var(--violet); vertical-align: top; margin-top: 6px; display: inline-block; }
+  .plan-card.featured .plan-price .currency { color: rgba(255,255,255,.7); }
+  .plan-price .period { font-size: 13px; color: var(--muted); margin-left: 3px; }
+  .plan-card.featured .plan-price .period { color: rgba(255,255,255,.55); }
+
+  /* Features list */
+  .plan-features { list-style: none; margin: 20px 0 24px; display: flex; flex-direction: column; gap: 11px; }
+  .plan-features li { display: flex; align-items: flex-start; gap: 9px; font-size: 13.5px; color: var(--text); line-height: 1.4; }
+  .plan-card.featured .plan-features li { color: rgba(255,255,255,.88); }
+  .check { flex-shrink: 0; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; margin-top: 1px; }
+  .check-green { background: rgba(16,185,129,.15); color: var(--green); }
+  .check-white { background: rgba(255,255,255,.15); color: #A7F3D0; }
+
+  /* Divider */
+  .plan-divider { border: none; border-top: 1px solid var(--card-border); margin: 20px 0; }
+  .plan-card.featured .plan-divider { border-color: rgba(255,255,255,.12); }
+
+  /* CTA Button */
+  .btn-plan {
+    display: block; width: 100%; padding: 14px;
+    border: none; border-radius: 13px; cursor: pointer;
+    font-size: 14px; font-weight: 700; font-family: inherit;
+    text-decoration: none; text-align: center;
+    transition: all .18s;
+  }
+  .btn-secondary {
+    background: rgba(124,58,237,.08);
+    border: 1.5px solid rgba(124,58,237,.3);
+    color: var(--violet);
+  }
+  .btn-secondary:hover { background: rgba(124,58,237,.15); border-color: var(--violet); }
+  .btn-primary {
+    background: linear-gradient(135deg,#fff,#EDE9FE);
+    color: var(--violet-deep);
+    box-shadow: 0 4px 16px rgba(255,255,255,.2);
+  }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(255,255,255,.3); }
+  .btn-plan .arrow { margin-left: 4px; transition: transform .15s; }
+  .btn-plan:hover .arrow { transform: translateX(3px); }
+
+  /* ── Trust badges ── */
+  .trust-row {
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 24px;
+    max-width: 800px; margin: 52px auto 0;
+  }
+  .trust-item { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: rgba(255,255,255,.55); }
+  .trust-icon { font-size: 18px; }
+
+  /* ── Trial note ── */
+  .trial-note {
+    text-align: center; margin-top: 24px;
+    font-size: 12px; color: rgba(255,255,255,.38);
+  }
+  .trial-note strong { color: rgba(255,255,255,.6); font-weight: 600; }
+
+  /* ── Responsive ── */
+  @media (max-width: 860px) {
+    .plans-grid { grid-template-columns: 1fr; max-width: 400px; }
+    .plan-card.featured { transform: scale(1); order: -1; }
+    .plan-card.featured:hover { transform: translateY(-4px); }
+  }
+  @media (max-width: 480px) {
+    .hero h1 { font-size: 26px; }
+    .plan-price .amount { font-size: 36px; }
+  }
+</style>
+</head>
+<body>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+
+  <!-- Header -->
+  <header class="site-header">
+    <img src="/contenido/logo-crea.png" alt="CREA IA" class="logo-img">
+    <a href="/contenido/login.html" class="header-link">Iniciar sesión →</a>
+  </header>
+
+  <!-- Trial banner -->
+  <div class="trial-banner">
+    <div class="trial-banner-inner">
+      <span class="trial-rocket">🚀</span>
+      <div>
+        <div class="trial-text-main">PRUEBA GRATUITA DE 7 DÍAS</div>
+        <div class="trial-text-sub">Acceso Pro incluido · Sin tarjeta de crédito</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hero -->
+  <div class="hero">
+    <h1>Elige tu <em>plan de crecimiento</em></h1>
+    <p>Potencia tu contenido, optimiza tu tiempo y haz crecer tu negocio con IA.</p>
+  </div>
+
+  <!-- Plans grid -->
+  <div class="plans-grid">
+
+    <!-- Plan Emprendedor -->
+    <div class="plan-card">
+      <div class="plan-icon">⚡</div>
+      <div class="plan-name">PLAN EMPRENDEDOR</div>
+      <div class="plan-price">
+        <span class="currency">$</span><span class="amount">39.000</span>
+        <span class="period">COP / mes</span>
+      </div>
+      <ul class="plan-features">
+        <li><span class="check check-green">✓</span> 1 Marca registrada</li>
+        <li><span class="check check-green">✓</span> Generación de texto ilimitada</li>
+        <li><span class="check check-green">✓</span> Acceso al Chat Asistente</li>
+      </ul>
+      <hr class="plan-divider">
+      <a href="#" class="btn-plan btn-secondary" onclick="event.preventDefault();suscribirse('emprendedor')">
+        Suscribirse al Starter <span class="arrow">→</span>
+      </a>
+    </div>
+
+    <!-- Plan Crecimiento (featured) -->
+    <div class="plan-card featured">
+      <div class="badge-popular">★ MÁS POPULAR</div>
+      <div class="plan-icon">🚀</div>
+      <div class="plan-name">PLAN CRECIMIENTO</div>
+      <div class="plan-price">
+        <span class="currency">$</span><span class="amount">89.000</span>
+        <span class="period">COP / mes</span>
+      </div>
+      <ul class="plan-features">
+        <li><span class="check check-white">✓</span> Hasta 3 Marcas</li>
+        <li><span class="check check-white">✓</span> Estrategia de 30 días</li>
+        <li><span class="check check-white">✓</span> Programador y Calendario</li>
+        <li><span class="check check-white">✓</span> Simulador de Pauta</li>
+      </ul>
+      <hr class="plan-divider">
+      <a href="#" class="btn-plan btn-primary" onclick="event.preventDefault();suscribirse('crecimiento')">
+        Suscribirse al Pro <span class="arrow">→</span>
+      </a>
+    </div>
+
+    <!-- Plan Agencia -->
+    <div class="plan-card">
+      <div class="plan-icon">🏢</div>
+      <div class="plan-name">PLAN AGENCIA</div>
+      <div class="plan-price">
+        <span class="currency">$</span><span class="amount">199.000</span>
+        <span class="period">COP / mes</span>
+      </div>
+      <ul class="plan-features">
+        <li><span class="check check-green">✓</span> Hasta 10 Marcas</li>
+        <li><span class="check check-green">✓</span> Acceso para Equipo</li>
+        <li><span class="check check-green">✓</span> Reportes PDF para Clientes</li>
+      </ul>
+      <hr class="plan-divider">
+      <a href="#" class="btn-plan btn-secondary" onclick="event.preventDefault();suscribirse('agencia')">
+        Suscribirse a la Agencia <span class="arrow">→</span>
+      </a>
+    </div>
+
+  </div>
+
+  <!-- Trust badges -->
+  <div class="trust-row">
+    <div class="trust-item"><span class="trust-icon">🔓</span> Sin permanencia · Cancela cuando quieras</div>
+    <div class="trust-item"><span class="trust-icon">🔒</span> Pago 100% seguro con Wompi</div>
+    <div class="trust-item"><span class="trust-icon">⚡</span> Actualizaciones incluidas</div>
+    <div class="trust-item"><span class="trust-icon">🤝</span> Soporte prioritario</div>
+  </div>
+
+  <p class="trial-note">
+    ✨ La prueba gratuita de 7 días incluye todas las funcionalidades del <strong>Plan Crecimiento</strong>.
+    <strong>No necesitas tarjeta de crédito.</strong>
+  </p>
+
+  <!-- Botón de prueba temporal — borrar después de verificar el flujo de pago -->
+  <div style="text-align:center;margin-top:32px;">
+    <button onclick="event.preventDefault();suscribirse('test')"
+      style="background:none;border:1px dashed rgba(255,255,255,.2);color:rgba(255,255,255,.3);
+             font-size:11px;padding:6px 14px;border-radius:8px;cursor:pointer;font-family:inherit;">
+      🧪 Pago de prueba ($2.000 COP)
+    </button>
+  </div>
+
+  <!-- Overlay de carga mientras se crea el link de pago -->
+  <div id="pago-overlay" style="
+    display:none; position:fixed; inset:0; z-index:9999;
+    background:rgba(10,6,32,.85); backdrop-filter:blur(8px);
+    align-items:center; justify-content:center; flex-direction:column; gap:16px;
+  ">
+    <div style="width:52px;height:52px;border:4px solid rgba(167,139,250,.3);border-top-color:#A78BFA;border-radius:50%;animation:spin .8s linear infinite;"></div>
+    <p style="color:rgba(255,255,255,.8);font-size:15px;font-weight:600;">Preparando tu checkout seguro…</p>
+    <p id="overlay-plan-name" style="color:rgba(167,139,250,.7);font-size:13px;"></p>
+  </div>
+  <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = 'https://uerrimfgljuszxugnzxg.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_g-QWziUfBuvcamoDFwdbng__cFVNj4G';
+  const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  // Banner si el trial venció
+  if (new URLSearchParams(window.location.search).get('motivo') === 'trial_expirado') {
+    document.addEventListener('DOMContentLoaded', () => {
+      const banner = document.createElement('div');
+      banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:999;background:linear-gradient(135deg,#7C3AED,#6D28D9);color:#fff;text-align:center;padding:13px 20px;font-size:14px;font-weight:600;font-family:system-ui,sans-serif;';
+      banner.textContent = '⏰ Tu prueba gratuita de 7 días terminó — elige un plan para seguir creando contenido';
+      document.body.prepend(banner);
+    });
+  }
+
+  const NOMBRES_PLAN = {
+    emprendedor: 'Plan Emprendedor — $39.000 COP/mes',
+    crecimiento: 'Plan Crecimiento — $89.000 COP/mes',
+    agencia:     'Plan Agencia — $199.000 COP/mes',
+  };
+
+  async function suscribirse(plan) {
+    const overlay = document.getElementById('pago-overlay');
+    const planLabel = document.getElementById('overlay-plan-name');
+    overlay.style.display = 'flex';
+    planLabel.textContent = NOMBRES_PLAN[plan] || plan;
+
+    try {
+      let userId = 'guest';
+      try {
+        const { data: { user } } = await _sb.auth.getUser();
+        if (user?.id) userId = user.id;
+      } catch (_) {}
+
+      const resp = await fetch('/api/crea/crear-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan, user_id: userId }),
+      });
+
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}));
+        throw new Error(err.error || 'Error creando link de pago');
+      }
+
+      const { url } = await resp.json();
+      if (!url) throw new Error('No se recibió URL de pago');
+
+      // Redirigir a la página de checkout de Wompi
+      window.location.href = url;
+    } catch (err) {
+      overlay.style.display = 'none';
+      alert('No se pudo crear el enlace de pago:\n' + err.message + '\n\nIntenta de nuevo o contacta soporte.');
+    }
+  }
+</script>
+</body>
+</html>
