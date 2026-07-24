@@ -246,6 +246,13 @@
     document.getElementById('verify-email-shown').textContent = email;
     document.getElementById('card-registro').style.display = 'none';
     document.getElementById('card-verify').style.display   = 'block';
+
+    // Email de bienvenida al trial (no bloqueante)
+    fetch('/api/crea/bienvenida-trial', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    }).catch(() => {});
   }
 
   async function reenviarCorreo() {
