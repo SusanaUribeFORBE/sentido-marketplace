@@ -151,6 +151,14 @@
     </select>
   </div>
 
+  <!-- Fecha de vigencia del documento -->
+  <div class="card" style="padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+    <label style="font-size:13px;font-weight:600;color:var(--navy);white-space:nowrap;">📅 Fecha de vigencia del documento:</label>
+    <input type="date" id="input-vigencia" class="input" style="max-width:200px;font-size:13px;"
+      oninput="localStorage.setItem('vigia_vigencia_desde', this.value)">
+    <span style="font-size:12px;color:var(--muted);">Aparece en el encabezado de cada carta (FECHA DE VIGENCIA)</span>
+  </div>
+
   <!-- Toolbar -->
   <div class="flex justify-between items-center mb-3">
     <div class="flex gap-2">
@@ -246,7 +254,8 @@ function renderHeader(empresa, prefijoDocs, vigenciaDesde) {
     </table>`;
 }
 
-function renderSVETable(sveLista, recomendaciones) {
+function renderSVETable(sveLista, recomendaciones, restricciones) {
+  const hasRest = restricciones && restricciones.length > 0;
   const used = new Set();
   const rows = (sveLista.length ? sveLista : ['EXAMEN MÉDICO']).map(sve => {
     const matched = matchRec(sve, recomendaciones).filter(r => !used.has(r));
@@ -254,11 +263,17 @@ function renderSVETable(sveLista, recomendaciones) {
     const recTxt = matched.length
       ? matched.map(r => `• ${r}`).join('<br>')
       : 'Control periódico teniendo en cuenta hallazgos del examen.';
+    const resTxt = hasRest
+      ? restricciones.map(r => `• ${r}`).join('<br>')
+      : 'Ninguna';
+    const intTxt = hasRest
+      ? 'Apto con restricciones para el cargo. Ver sección restricciones.'
+      : 'Resultado normal y adecuado para el cargo.';
     return `<tr>
       <td class="td-sve">${sve.toUpperCase()}</td>
       <td class="td-rec">${recTxt}</td>
-      <td class="td-res">Ninguna</td>
-      <td class="td-int">Resultado normal y adecuado para el cargo.</td>
+      <td class="td-res">${resTxt}</td>
+      <td class="td-int">${intTxt}</td>
     </tr>`;
   });
   return `
@@ -351,7 +366,7 @@ function renderCarta(emp, examen) {
       para el Cargo de <strong><u>${(emp.cargo || '__________').toUpperCase()}</u></strong>.
       A continuación, se presentan las recomendaciones:</p>
 
-      ${renderSVETable(sveLista, recomendaciones)}
+      ${renderSVETable(sveLista, recomendaciones, restricciones)}
 
       <p class="seccion">Restricciones:</p>
       <ul class="restricciones-list">
@@ -582,6 +597,10 @@ function volver() {
 async function init() {
   const ok = await VigiaAPI.requireAuth();
   if (!ok) return;
+
+  // Restaurar fecha de vigencia guardada
+  const vigGuardada = localStorage.getItem('vigia_vigencia_desde') || '';
+  if (vigGuardada) document.getElementById('input-vigencia').value = vigGuardada;
 
   document.getElementById('nav-empresa').textContent = VigiaAPI.esAdmin() ? '👑 Admin' : '';
 
