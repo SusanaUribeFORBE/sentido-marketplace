@@ -202,11 +202,81 @@
   }
   .btn-trial-hero:hover { transform: translateY(-2px); box-shadow: 0 10px 36px rgba(255,107,53,.6); }
 
+  /* ── ¿Qué es CREA IA? ── */
+  .que-es {
+    max-width: 1060px; margin: 0 auto 56px; padding: 0 16px;
+    display: grid; grid-template-columns: repeat(3,1fr); gap: 20px;
+  }
+  .que-es-card {
+    background: rgba(255,255,255,.05);
+    border: 1px solid rgba(255,255,255,.09);
+    border-radius: 18px; padding: 28px 24px;
+    text-align: center;
+  }
+  .que-es-icon { font-size: 32px; margin-bottom: 12px; }
+  .que-es-title { font-size: 15px; font-weight: 800; color: #fff; margin-bottom: 7px; }
+  .que-es-desc { font-size: 13.5px; color: rgba(255,255,255,.55); line-height: 1.55; }
+
+  /* ── "Ideal para" tag en cada tarjeta ── */
+  .plan-ideal {
+    font-size: 11.5px; font-weight: 700;
+    color: var(--violet); background: rgba(124,58,237,.1);
+    border: 1px solid rgba(124,58,237,.2);
+    border-radius: 20px; padding: 3px 11px;
+    display: inline-block; margin-bottom: 12px; letter-spacing: .2px;
+  }
+  .plan-card.featured .plan-ideal {
+    color: #C4B5FD; background: rgba(196,181,253,.12);
+    border-color: rgba(196,181,253,.25);
+  }
+
+  /* ── ¿Cuál plan es para mí? ── */
+  .cual-plan {
+    max-width: 680px; margin: 60px auto 0; padding: 0 16px;
+    text-align: center;
+  }
+  .cual-plan h2 { font-size: 22px; font-weight: 900; margin-bottom: 6px; }
+  .cual-plan .sub { font-size: 14px; color: rgba(255,255,255,.5); margin-bottom: 28px; }
+  .cual-plan-grid { display: flex; flex-direction: column; gap: 12px; text-align: left; }
+  .cual-item {
+    background: rgba(255,255,255,.05);
+    border: 1px solid rgba(255,255,255,.09);
+    border-radius: 14px; padding: 16px 20px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .cual-item-emoji { font-size: 26px; flex-shrink: 0; }
+  .cual-item-q { font-size: 13.5px; color: rgba(255,255,255,.65); line-height: 1.4; }
+  .cual-item-a { font-size: 13px; font-weight: 800; margin-top: 3px; }
+  .cual-item-a.color-start   { color: #A78BFA; }
+  .cual-item-a.color-pro     { color: #06B6D4; }
+  .cual-item-a.color-agencia { color: #10B981; }
+
+  /* ── Contacto ── */
+  .contacto {
+    max-width: 560px; margin: 52px auto 0; padding: 0 16px;
+    text-align: center;
+  }
+  .contacto h2 { font-size: 20px; font-weight: 900; margin-bottom: 6px; }
+  .contacto p  { font-size: 13.5px; color: rgba(255,255,255,.5); margin-bottom: 22px; }
+  .contacto-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .btn-contacto {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 12px 22px; border-radius: 12px;
+    font-size: 14px; font-weight: 700; font-family: inherit;
+    text-decoration: none; border: none; cursor: pointer;
+    transition: transform .15s, box-shadow .15s;
+  }
+  .btn-wa  { background: #25D366; color: #fff; box-shadow: 0 4px 16px rgba(37,211,102,.3); }
+  .btn-mail{ background: rgba(255,255,255,.08); border: 1.5px solid rgba(255,255,255,.15); color: rgba(255,255,255,.85); }
+  .btn-wa:hover   { transform: translateY(-1px); box-shadow: 0 6px 22px rgba(37,211,102,.45); }
+  .btn-mail:hover { background: rgba(255,255,255,.13); }
+
   /* ── Responsive ── */
   @media (max-width: 860px) {
     .plans-grid { grid-template-columns: 1fr; max-width: 400px; }
     .plan-card.featured { transform: scale(1); order: -1; }
     .plan-card.featured:hover { transform: translateY(-4px); }
+    .que-es { grid-template-columns: 1fr; max-width: 400px; }
   }
   @media (max-width: 480px) {
     .hero h1 { font-size: 26px; }
@@ -246,6 +316,25 @@
     <div style="font-size:11.5px;color:rgba(255,255,255,.35);margin-top:10px;">Sin tarjeta · Cancela cuando quieras · Acceso inmediato</div>
   </div>
 
+  <!-- ¿Qué es CREA IA? -->
+  <div class="que-es">
+    <div class="que-es-card">
+      <div class="que-es-icon">🧠</div>
+      <div class="que-es-title">Tu estratega de marketing con IA</div>
+      <div class="que-es-desc">CREA IA analiza tu marca, tu sector y tu público para generar contenido que realmente conecta — publicaciones, estrategias, copies y pautas.</div>
+    </div>
+    <div class="que-es-card">
+      <div class="que-es-icon">⚡</div>
+      <div class="que-es-title">Resultados en 30 segundos</div>
+      <div class="que-es-desc">Sin conocimientos de marketing ni diseño. Describes tu negocio una vez y la IA genera publicaciones listas para publicar en Instagram, Facebook, TikTok y más.</div>
+    </div>
+    <div class="que-es-card">
+      <div class="que-es-icon">🎯</div>
+      <div class="que-es-title">Personalizado a tu marca</div>
+      <div class="que-es-desc">Sube tu logo, elige tus colores y define tu tono de comunicación. Todo el contenido sale con la identidad visual y el estilo de tu negocio.</div>
+    </div>
+  </div>
+
   <!-- Plans grid -->
   <div class="plans-grid">
 
@@ -253,6 +342,7 @@
     <div class="plan-card">
       <div class="plan-icon">⚡</div>
       <div class="plan-name">PLAN EMPRENDEDOR</div>
+      <div class="plan-ideal">Ideal para: negocios que inician</div>
       <div class="plan-price">
         <span class="currency">$</span><span class="amount">39.000</span>
         <span class="period">COP / mes</span>
@@ -273,6 +363,7 @@
       <div class="badge-popular">★ MÁS POPULAR</div>
       <div class="plan-icon">🚀</div>
       <div class="plan-name">PLAN CRECIMIENTO</div>
+      <div class="plan-ideal">Ideal para: negocios en crecimiento y freelancers</div>
       <div class="plan-price">
         <span class="currency">$</span><span class="amount">89.000</span>
         <span class="period">COP / mes</span>
@@ -293,6 +384,7 @@
     <div class="plan-card">
       <div class="plan-icon">🏢</div>
       <div class="plan-name">PLAN AGENCIA</div>
+      <div class="plan-ideal">Ideal para: agencias y consultores de marketing</div>
       <div class="plan-price">
         <span class="currency">$</span><span class="amount">199.000</span>
         <span class="period">COP / mes</span>
@@ -316,6 +408,49 @@
     <div class="trust-item"><span class="trust-icon">🔒</span> Pago 100% seguro con Wompi</div>
     <div class="trust-item"><span class="trust-icon">⚡</span> Actualizaciones incluidas</div>
     <div class="trust-item"><span class="trust-icon">🤝</span> Soporte prioritario</div>
+  </div>
+
+  <!-- ¿Cuál plan es para mí? -->
+  <div class="cual-plan">
+    <h2>¿No sabes cuál elegir?</h2>
+    <p class="sub">Escoge según tu situación actual — siempre puedes cambiar de plan.</p>
+    <div class="cual-plan-grid">
+      <div class="cual-item">
+        <div class="cual-item-emoji">🌱</div>
+        <div>
+          <div class="cual-item-q">Tengo 1 negocio y estoy empezando a crear contenido para redes sociales.</div>
+          <div class="cual-item-a color-start">→ Plan Emprendedor — $39.000/mes</div>
+        </div>
+      </div>
+      <div class="cual-item">
+        <div class="cual-item-emoji">🚀</div>
+        <div>
+          <div class="cual-item-q">Quiero estrategia de contenido, calendario mensual, pauta publicitaria y trabajar con varias marcas.</div>
+          <div class="cual-item-a color-pro">→ Plan Crecimiento — $89.000/mes ⭐ el más elegido</div>
+        </div>
+      </div>
+      <div class="cual-item">
+        <div class="cual-item-emoji">🏢</div>
+        <div>
+          <div class="cual-item-q">Soy freelancer de marketing o tengo una agencia con varios clientes y necesito gestionar múltiples marcas.</div>
+          <div class="cual-item-a color-agencia">→ Plan Agencia — $199.000/mes</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contacto -->
+  <div class="contacto">
+    <h2>¿Tienes preguntas?</h2>
+    <p>Escríbenos y te ayudamos a elegir el plan que mejor se ajusta a tu negocio.</p>
+    <div class="contacto-btns">
+      <a href="https://wa.me/573XXXXXXXXX?text=Hola%2C%20tengo%20dudas%20sobre%20CREA%20IA" class="btn-contacto btn-wa" target="_blank">
+        💬 WhatsApp
+      </a>
+      <a href="mailto:consultoria@forbesas.com?subject=Consulta%20CREA%20IA" class="btn-contacto btn-mail">
+        ✉️ consultoria@forbesas.com
+      </a>
+    </div>
   </div>
 
   <p class="trial-note">
