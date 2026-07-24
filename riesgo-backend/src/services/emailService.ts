@@ -1,5 +1,7 @@
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
-const FROM_EMAIL     = 'hola@creaia.co';
+// Usar dominio verificado de Resend mientras creaia.co completa verificación MX
+// Cambiar a 'hola@creaia.co' cuando el dominio quede en verde en Resend
+const FROM_EMAIL = process.env.RESEND_FROM || 'onboarding@resend.dev';
 
 interface EmailPayload {
   to:      string;
