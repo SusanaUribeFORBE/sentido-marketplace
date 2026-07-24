@@ -195,7 +195,8 @@
     padding: 16px 32px;
     background: linear-gradient(135deg, #FF6B35, #FF8C42);
     color: #fff; font-size: 16px; font-weight: 800;
-    border-radius: 14px; text-decoration: none;
+    border: none; border-radius: 14px; cursor: pointer;
+    font-family: inherit; text-decoration: none;
     box-shadow: 0 6px 28px rgba(255,107,53,.45);
     transition: transform .15s, box-shadow .15s;
   }
@@ -225,23 +226,23 @@
   </header>
 
   <!-- Trial banner -->
-  <a href="/contenido/registro.html" class="trial-banner" style="text-decoration:none;cursor:pointer;">
+  <div class="trial-banner" onclick="window.location.href='/contenido/registro.html'" style="cursor:pointer;">
     <div class="trial-banner-inner">
       <span class="trial-rocket">🚀</span>
       <div>
-        <div class="trial-text-main">PRUEBA GRATUITA DE 7 DÍAS</div>
+        <div class="trial-text-main">PRUEBA GRATUITA DE 7 DÍAS →</div>
         <div class="trial-text-sub">Acceso Pro incluido · Sin tarjeta de crédito · Clic para empezar</div>
       </div>
     </div>
-  </a>
+  </div>
 
   <!-- Hero -->
   <div class="hero">
     <h1>Elige tu <em>plan de crecimiento</em></h1>
     <p>Potencia tu contenido, optimiza tu tiempo y haz crecer tu negocio con IA.</p>
-    <a href="/contenido/registro.html" class="btn-trial-hero">
-      Empezar prueba gratis de 7 días <span style="margin-left:4px;">→</span>
-    </a>
+    <button class="btn-trial-hero" onclick="window.location.href='/contenido/registro.html'">
+      Empezar prueba gratis de 7 días →
+    </button>
     <div style="font-size:11.5px;color:rgba(255,255,255,.35);margin-top:10px;">Sin tarjeta · Cancela cuando quieras · Acceso inmediato</div>
   </div>
 
