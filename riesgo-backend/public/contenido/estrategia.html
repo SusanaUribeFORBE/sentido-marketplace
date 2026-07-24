@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CREA — Diagnóstico de estrategia</title>
+<style>
+  :root {
+    --violet:  #7C3AED;
+    --violet2: #6D28D9;
+    --lilac:   #A78BFA;
+    --bg:      #F5F3FF;
+    --card:    #FFFFFF;
+    --border:  #DDD6FE;
+    --text:    #1E1B2E;
+    --muted:   #6B7280;
+    --green:   #059669;
+    --radius:  10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui,-apple-system,sans-serif; background: var(--bg); color: var(--text); font-size: 14px; min-height: 100vh; }
+
+  /* ── Header ── */
+  .header { background: linear-gradient(135deg,#4C1D95 0%,#7C3AED 60%,#A855F7 100%); padding: 20px 32px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .logo { display: flex; align-items: center; }
+  .logo img { height: 38px; width: auto; mix-blend-mode: screen; filter: drop-shadow(0 0 8px rgba(196,181,253,.5)); }
+  .tagline { font-size: 12px; color: rgba(255,255,255,.65); margin-top: 2px; }
+  .header-badge { background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.25); color: #fff; font-size: 11px; padding: 4px 10px; border-radius: 20px; }
+
+  /* ── Subnav ── */
+  .subnav { background: #fff; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 4px; padding: 0 32px; }
+  .subnav-link { text-decoration: none; font-size: 13px; font-weight: 600; padding: 12px 16px; color: var(--muted); border-bottom: 3px solid transparent; transition: all .15s; display: flex; align-items: center; gap: 6px; }
+  .subnav-link:hover { color: var(--violet); }
+  .subnav-link.active { color: var(--violet); border-bottom-color: var(--violet); }
+
+  /* ── Layout ── */
+  .layout { display: grid; grid-template-columns: 420px 1fr; gap: 24px; padding: 24px 32px 40px; max-width: 1200px; margin: 0 auto; }
+  @media (max-width: 900px) { .layout { grid-template-columns: 1fr; padding: 16px; } .subnav { padding: 0 16px; } .subnav-link { padding: 10px 12px; font-size: 12px; } }
+
+  /* ── Panel izquierdo ── */
+  .panel { display: flex; flex-direction: column; gap: 16px; }
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .section-header { background: var(--bg); border-bottom: 1px solid var(--border); padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; }
+  .section-title { font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--violet); }
+  .section-body { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field label { font-size: 12px; font-weight: 600; color: var(--text); }
+  .field input, .field select { border: 1px solid var(--border); border-radius: 7px; padding: 8px 11px; font-size: 13px; font-family: inherit; color: var(--text); background: #fff; transition: border-color .15s; width: 100%; }
+  .field input:focus, .field select:focus { outline: none; border-color: var(--violet); box-shadow: 0 0 0 3px rgba(124,58,237,.1); }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .save-marca { font-size: 11px; color: var(--muted); background: none; border: none; cursor: pointer; text-decoration: underline; padding: 0; }
+  .save-marca:hover { color: var(--violet); }
+  .tono-hint { font-size: 10px; color: var(--green); font-weight: 600; margin-top: 3px; display: none; }
+  .tono-hint.visible { display: block; }
+
+  /* ── Tiles ── */
+  .tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .tiles.cols3 { grid-template-columns: 1fr 1fr 1fr; }
+  .tile { border: 1.5px solid var(--border); background: #fff; border-radius: 10px; padding: 12px 10px; text-align: center; cursor: pointer; transition: all .15s; display: flex; flex-direction: column; align-items: center; gap: 5px; font-family: inherit; }
+  .tile:hover { border-color: var(--lilac); background: #FAF5FF; }
+  .tile.active { border-color: var(--violet); background: #EDE9FE; }
+  .tile-icon { font-size: 22px; }
+  .tile-label { font-size: 12px; font-weight: 700; color: var(--text); line-height: 1.2; }
+  .tile-sub { font-size: 10px; color: var(--muted); }
+  .tile.active .tile-label { color: var(--violet); }
+  .tile { position: relative; }
+  .tile.active::after { content: '✓'; position: absolute; top: 6px; right: 8px; font-size: 9px; font-weight: 900; color: var(--violet); background: #C4B5FD; border-radius: 50%; width: 14px; height: 14px; display: flex; align-items: center; justify-content: center; line-height: 14px; text-align: center; }
+  .tiles-hint { font-size: 10px; color: var(--muted); margin-top: 5px; }
+
+  /* ── Botón generar ── */
+  .btn-generar { background: var(--violet); color: #fff; border: none; border-radius: var(--radius); padding: 13px 20px; font-size: 15px; font-weight: 700; cursor: pointer; width: 100%; transition: background .15s,transform .1s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .btn-generar:hover:not(:disabled) { background: var(--violet2); }
+  .btn-generar:active:not(:disabled) { transform: scale(.98); }
+  .btn-generar:disabled { opacity: .6; cursor: not-allowed; }
+
+  /* ── Historial ── */
+  .hist-section { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; display: none; }
+  .hist-section.visible { display: block; }
+  .hist-toggle { background: var(--bg); border-bottom: 1px solid var(--border); padding: 10px 16px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; user-select: none; }
+  .hist-toggle:hover { background: #EDE9FE; }
+  .hist-arrow { font-size: 10px; color: var(--muted); transition: transform .2s; }
+  .hist-arrow.open { transform: rotate(180deg); }
+  .hist-list { padding: 6px 8px; display: flex; flex-direction: column; gap: 2px; }
+  .hist-entry { display: flex; align-items: center; gap: 8px; padding: 7px 8px; border-radius: 7px; cursor: pointer; border: 1px solid transparent; transition: all .15s; }
+  .hist-entry:hover { background: #EDE9FE; border-color: var(--border); }
+  .hist-badge { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 20px; background: #EDE9FE; color: var(--violet); flex-shrink: 0; white-space: nowrap; }
+  .hist-info { flex: 1; min-width: 0; }
+  .hist-marca { font-size: 12px; font-weight: 700; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .hist-redes { font-size: 10px; color: var(--muted); }
+  .hist-ts { font-size: 10px; color: var(--muted); flex-shrink: 0; }
+  .hist-del { font-size: 14px; color: var(--muted); background: none; border: none; cursor: pointer; padding: 0 2px; flex-shrink: 0; opacity: .5; line-height: 1; }
+  .hist-del:hover { opacity: 1; color: #EF4444; }
+
+  /* ── Panel derecho ── */
+  .results { display: flex; flex-direction: column; gap: 16px; min-height: 200px; }
+  .results-placeholder { background: var(--card); border: 2px dashed var(--border); border-radius: var(--radius); padding: 60px 32px; text-align: center; color: var(--muted); }
+  .results-placeholder .icon { font-size: 40px; margin-bottom: 12px; }
+  .results-placeholder p { font-size: 14px; line-height: 1.5; }
+
+  /* ── Banner plan guardado ── */
+  .plan-banner { background: #EDE9FE; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 18px; display: flex; align-items: center; gap: 12px; }
+  .plan-banner-icon { font-size: 24px; flex-shrink: 0; }
+  .plan-banner-body { flex: 1; }
+  .plan-banner-title { font-size: 13px; font-weight: 700; color: var(--text); }
+  .plan-banner-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .btn-ver-plan { background: var(--violet); color: #fff; border: none; border-radius: 6px; padding: 7px 14px; font-size: 12px; font-weight: 700; cursor: pointer; transition: background .15s; white-space: nowrap; }
+  .btn-ver-plan:hover { background: var(--violet2); }
+  .btn-dismiss { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 20px; padding: 0 2px; flex-shrink: 0; line-height: 1; }
+  .btn-dismiss:hover { color: var(--text); }
+
+  /* Skeleton */
+  .skeleton { animation: pulse 1.4s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+  /* ── Card resultado ── */
+  .result-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .result-head { background: linear-gradient(90deg,#EDE9FE,#F5F3FF); border-bottom: 1px solid var(--border); padding: 14px 20px; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+  .result-head-main { flex: 1; min-width: 0; }
+  .result-head-main h2 { font-size: 16px; font-weight: 800; color: var(--violet); }
+  .result-head-main p { font-size: 12px; color: var(--muted); margin-top: 3px; }
+  .result-head-right { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; flex-shrink: 0; }
+  .red-badges { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+  .red-badge { font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 20px; background: var(--violet); color: #fff; white-space: nowrap; }
+
+  .result-body { padding: 20px; display: flex; flex-direction: column; gap: 20px; }
+
+  /* Razón */
+  .razon-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--lilac); margin-bottom: 6px; }
+  .razon-box { background: #EDE9FE; border-radius: 8px; padding: 12px 16px; font-size: 13px; color: var(--violet2); line-height: 1.55; }
+
+  /* Calendario */
+  .cal-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; }
+  .cal-table { width: 100%; border-collapse: collapse; min-width: 480px; }
+  .cal-table th { background: var(--bg); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); padding: 9px 14px; border-bottom: 1px solid var(--border); text-align: left; }
+  .cal-table td { padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: top; font-size: 13px; }
+  .cal-table tr:last-child td { border-bottom: none; }
+  .cal-dia { font-weight: 700; color: var(--text); font-size: 13px; white-space: nowrap; }
+  .cal-red-badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; display: inline-block; white-space: nowrap; margin-bottom: 4px; }
+  .red-instagram { background: #FEE2E2; color: #991B1B; }
+  .red-tiktok    { background: #1E1B2E; color: #A78BFA; }
+  .red-linkedin  { background: #DBEAFE; color: #1E40AF; }
+  .red-facebook  { background: #EFF6FF; color: #1D4ED8; }
+  .red-whatsapp  { background: #D1FAE5; color: #065F46; }
+  .red-default   { background: #EDE9FE; color: var(--violet); }
+  .cal-tipo { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+  .cal-tema { font-size: 13px; color: var(--text); line-height: 1.4; }
+  .cal-objetivo { font-size: 10px; color: var(--muted); margin-top: 4px; font-style: italic; }
+  .cal-por-que { font-size: 11px; color: var(--violet2); background: #EDE9FE; border-radius: 5px; padding: 4px 8px; margin-top: 6px; display: flex; gap: 5px; align-items: flex-start; line-height: 1.4; }
+  .cal-por-que-label { font-weight: 800; flex-shrink: 0; font-size: 10px; color: var(--violet); }
+  .btn-usar { background: var(--violet); color: #fff; border: none; border-radius: 6px; padding: 5px 12px; font-size: 11px; font-weight: 700; cursor: pointer; transition: background .15s; white-space: nowrap; text-decoration: none; display: inline-block; }
+  .btn-usar:hover { background: var(--violet2); }
+
+  /* Consejo */
+  .consejo-box { background: linear-gradient(135deg,#FFFBEB,#FEF3C7); border: 1px solid #FCD34D; border-radius: 8px; padding: 14px 16px; display: flex; gap: 10px; }
+  .consejo-icon { font-size: 20px; flex-shrink: 0; }
+  .consejo-body { font-size: 13px; line-height: 1.55; color: #78350F; }
+  .consejo-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #B45309; margin-bottom: 4px; }
+
+  /* Acciones resultado */
+  .result-footer { display: flex; gap: 8px; }
+  .btn-guardar-plan { background: none; border: 1.5px solid var(--violet); color: var(--violet); border-radius: var(--radius); padding: 10px 16px; font-size: 13px; font-weight: 700; cursor: pointer; transition: all .15s; flex: 1; }
+  .btn-guardar-plan:hover:not(:disabled) { background: #EDE9FE; }
+  .btn-guardar-plan:disabled { opacity: .6; cursor: not-allowed; }
+  .btn-print { background: none; border: 1.5px solid var(--border); color: var(--muted); border-radius: var(--radius); padding: 10px 16px; font-size: 13px; font-weight: 700; cursor: pointer; transition: all .15s; }
+  .btn-print:hover { border-color: var(--violet); color: var(--violet); background: #EDE9FE; }
+
+  /* Toast */
+  .toast { position: fixed; bottom: 24px; right: 24px; background: #1E1B2E; color: #fff; padding: 10px 18px; border-radius: 8px; font-size: 13px; font-weight: 500; opacity: 0; transform: translateY(8px); transition: all .25s; pointer-events: none; z-index: 99; }
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  /* ── @media print ── */
+  @media print {
+    .header, .subnav, .panel, .toast, .plan-banner, .result-footer, .btn-usar, .no-print { display: none !important; }
+    .layout { display: block; padding: 0; }
+    .results { gap: 0; }
+    .result-card { border: none; border-radius: 0; }
+    .result-head { background: #F5F3FF; border-bottom: 2px solid #7C3AED; padding: 16px 0; }
+    .result-body { padding: 16px 0; }
+    .cal-table { min-width: unset; }
+    body { background: #fff; font-size: 12px; }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header no-print">
+  <div>
+    <div class="logo"><img src="/contenido/logo-crea.png" alt="CREA IA"></div>
+    <div class="tagline">Estrategia de contenido personalizada</div>
+  </div>
+  <div class="header-badge">🧭 Diagnóstico</div>
+</div>
+
+<nav class="subnav no-print">
+  <a href="/contenido/estrategia.html" class="subnav-link active">🧭 Estrategia</a>
+  <a href="/contenido/plan-mensual.html" class="subnav-link">📅 Plan del mes</a>
+  <a href="/contenido/generar.html" class="subnav-link">✨ Generar contenido</a>
+  <a href="/contenido/masiva.html" class="subnav-link">🚀 Masiva</a>
+</nav>
+
+<div class="layout">
+
+  <!-- ── Panel izquierdo ── -->
+  <div class="panel no-print">
+
+    <div class="section">
+      <div class="section-header">
+        <span class="section-title">🏷️ Tu marca</span>
+        <button class="save-marca" onclick="guardarMarca()">Guardar para la próxima vez</button>
+      </div>
+      <div class="section-body">
+        <div class="field">
+          <label>Nombre de la marca *</label>
+          <input id="nombre" type="text" placeholder="Ej: Kattaleya Accesorios" />
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label>Sector</label>
+            <select id="sector">
+              <option value="">Selecciona...</option>
+              <option>Moda y accesorios</option>
+              <option>Alimentos y bebidas</option>
+              <option>Belleza y cuidado personal</option>
+              <option>Hogar y decoración</option>
+              <option>Servicios profesionales</option>
+              <option>Educación y formación</option>
+              <option>Salud y bienestar</option>
+              <option>Tecnología</option>
+              <option>Arte y artesanías</option>
+              <option>Sostenibilidad</option>
+              <option>Retail / comercio</option>
+              <option>Otro</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Tono</label>
+            <select id="tono">
+              <option value="Cercano y cálido">Cercano y cálido — como un amigo</option>
+              <option value="Profesional y serio">Profesional y serio — B2B / técnico</option>
+              <option value="Inspirador y motivador">Inspirador — genera propósito</option>
+              <option value="Divertido y desenfadado">Divertido — audiencias jóvenes</option>
+              <option value="Educativo y experto">Educativo — explica y enseña</option>
+              <option value="Emocional y humano">Emocional — conecta con valores</option>
+            </select>
+            <div class="tono-hint" id="tono-hint">✓ Recomendado para tu sector</div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Público objetivo</label>
+          <input id="publico" type="text" placeholder="Ej: Mujeres 25-45 amantes de la moda sostenible" />
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-title">🕐 ¿Cuánto tiempo tienes para redes?</span></div>
+      <div class="section-body">
+        <div class="tiles cols3" id="tiles-tiempo">
+          <button class="tile" data-val="15-30 minutos por semana" onclick="selTile(this,'tiempo')">
+            <span class="tile-icon">⚡</span>
+            <span class="tile-label">Poco</span>
+            <span class="tile-sub">15-30 min/sem</span>
+          </button>
+          <button class="tile active" data-val="1 hora por semana" onclick="selTile(this,'tiempo')">
+            <span class="tile-icon">🕐</span>
+            <span class="tile-label">Moderado</span>
+            <span class="tile-sub">~1h por semana</span>
+          </button>
+          <button class="tile" data-val="30+ minutos por día" onclick="selTile(this,'tiempo')">
+            <span class="tile-icon">💪</span>
+            <span class="tile-label">Constante</span>
+            <span class="tile-sub">30+ min/día</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-title">🎯 ¿Cuál es tu meta principal?</span></div>
+      <div class="section-body">
+        <div class="tiles" id="tiles-meta">
+          <button class="tile active" data-val="Conseguir clientes nuevos" onclick="toggleTile(this,'meta',2)">
+            <span class="tile-icon">🎯</span>
+            <span class="tile-label">Nuevos clientes</span>
+            <span class="tile-sub">Crecer mi base</span>
+          </button>
+          <button class="tile" data-val="Vender más a quienes ya me conocen" onclick="toggleTile(this,'meta',2)">
+            <span class="tile-icon">💰</span>
+            <span class="tile-label">Vender más</span>
+            <span class="tile-sub">A quien ya me sigue</span>
+          </button>
+          <button class="tile" data-val="Darme a conocer en mi sector" onclick="toggleTile(this,'meta',2)">
+            <span class="tile-icon">🌱</span>
+            <span class="tile-label">Posicionarme</span>
+            <span class="tile-sub">Ser referente</span>
+          </button>
+          <button class="tile" data-val="Fidelizar a mis clientes actuales" onclick="toggleTile(this,'meta',2)">
+            <span class="tile-icon">💙</span>
+            <span class="tile-label">Fidelizar</span>
+            <span class="tile-sub">Mantener clientes</span>
+          </button>
+        </div>
+        <div class="tiles-hint">Puedes elegir hasta 2</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-title">📍 ¿Dónde está tu cliente hoy?</span></div>
+      <div class="section-body">
+        <div class="tiles" id="tiles-cliente">
+          <button class="tile active" data-val="Instagram" onclick="toggleTile(this,'cliente',3)">
+            <span class="tile-icon">📸</span>
+            <span class="tile-label">Instagram</span>
+            <span class="tile-sub">Me sigue o me busca</span>
+          </button>
+          <button class="tile" data-val="WhatsApp Business" onclick="toggleTile(this,'cliente',3)">
+            <span class="tile-icon">💬</span>
+            <span class="tile-label">WhatsApp</span>
+            <span class="tile-sub">Me escribe directo</span>
+          </button>
+          <button class="tile" data-val="LinkedIn" onclick="toggleTile(this,'cliente',3)">
+            <span class="tile-icon">💼</span>
+            <span class="tile-label">LinkedIn</span>
+            <span class="tile-sub">Perfil profesional</span>
+          </button>
+          <button class="tile" data-val="TikTok" onclick="toggleTile(this,'cliente',3)">
+            <span class="tile-icon">🎵</span>
+            <span class="tile-label">TikTok</span>
+            <span class="tile-sub">Audiencia joven</span>
+          </button>
+          <button class="tile" data-val="Facebook" onclick="toggleTile(this,'cliente',3)">
+            <span class="tile-icon">👥</span>
+            <span class="tile-label">Facebook</span>
+            <span class="tile-sub">Grupos y comunidades</span>
+          </button>
+          <button class="tile" data-val="__recomendar__" onclick="toggleTile(this,'cliente',1)">
+            <span class="tile-icon">🤔</span>
+            <span class="tile-label">No sé</span>
+            <span class="tile-sub">Que la IA recomiende</span>
+          </button>
+        </div>
+        <div class="tiles-hint">Puedes elegir varias — o deja que la IA decida</div>
+      </div>
+    </div>
+
+    <button class="btn-generar" id="btn-generar" onclick="generarEstrategia()">
+      <span id="btn-icon">🧭</span>
+      <span id="btn-texto">Crear mi plan de contenido</span>
+    </button>
+
+    <!-- Historial de planes anteriores -->
+    <div class="hist-section" id="hist-section">
+      <div class="hist-toggle" onclick="toggleHistorial()">
+        <span class="section-title">📋 Planes anteriores</span>
+        <span class="hist-arrow" id="hist-arrow">▼</span>
+      </div>
+      <div class="hist-list" id="hist-list" style="display:none;"></div>
+    </div>
+
+  </div>
+
+  <!-- ── Panel derecho ── -->
+  <div class="results" id="results">
+    <div class="results-placeholder" id="placeholder">
+      <div class="icon">🧭</div>
+      <p><strong>Tu plan semanal aparecerá aquí.</strong><br>Responde las 3 preguntas y haz clic en <em>Crear mi plan</em>.<br><br><span style="font-size:12px;">Cada slot del calendario tiene un botón para generar ese contenido directamente.</span></p>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // ── Estado de selección ──
+  const sel = { tiempo: '1 hora por semana', meta: ['Conseguir clientes nuevos'], cliente: ['Instagram'] };
+
+  // tiempo sigue siendo single-select
+  function selTile(btn, grupo) {
+    document.getElementById('tiles-' + grupo).querySelectorAll('.tile').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    sel[grupo] = btn.dataset.val;
+  }
+
+  // meta y cliente son multi-select con límite
+  function toggleTile(btn, grupo, max) {
+    const val = btn.dataset.val;
+
+    // "No sé" es exclusivo: deselecciona todo lo demás
+    if (val === '__recomendar__') {
+      if (btn.classList.contains('active')) { btn.classList.remove('active'); sel[grupo] = []; return; }
+      document.getElementById('tiles-' + grupo).querySelectorAll('.tile').forEach(t => t.classList.remove('active'));
+      btn.classList.add('active');
+      sel[grupo] = ['__recomendar__'];
+      return;
+    }
+
+    // Si se elige una plataforma concreta, quitar "No sé" si estaba activo
+    const noSeBtn = document.querySelector(`#tiles-${grupo} [data-val="__recomendar__"]`);
+    if (noSeBtn) noSeBtn.classList.remove('active');
+    sel[grupo] = sel[grupo].filter(v => v !== '__recomendar__');
+
+    if (btn.classList.contains('active')) {
+      // Deseleccionar — pero mantener al menos 1
+      if (sel[grupo].length <= 1) return;
+      btn.classList.remove('active');
+      sel[grupo] = sel[grupo].filter(v => v !== val);
+    } else {
+      if (sel[grupo].length >= max) {
+        // Quitar el más antiguo seleccionado
+        const primero = document.querySelector(`#tiles-${grupo} .tile.active`);
+        if (primero) { primero.classList.remove('active'); sel[grupo].shift(); }
+      }
+      btn.classList.add('active');
+      sel[grupo].push(val);
+    }
+  }
+
+  // ── Utilidades ──
+  function esc(s) {
+    return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+  function tiempoRelativo(ts) {
+    const m = Math.floor((Date.now() - ts) / 60000);
+    if (m < 1) return 'ahora'; if (m < 60) return `hace ${m}m`;
+    const h = Math.floor(m / 60); if (h < 24) return `hace ${h}h`;
+    return `hace ${Math.floor(h/24)}d`;
+  }
+  function redClass(red) {
+    const r = (red || '').toLowerCase();
+    if (r.includes('instagram')) return 'red-instagram';
+    if (r.includes('tiktok'))    return 'red-tiktok';
+    if (r.includes('linkedin'))  return 'red-linkedin';
+    if (r.includes('facebook'))  return 'red-facebook';
+    if (r.includes('whatsapp'))  return 'red-whatsapp';
+    return 'red-default';
+  }
+  function urlGenerar(red, tipo, tema, tono) {
+    return '/contenido/generar.html?' + new URLSearchParams({ plataforma: red, tipo, tema, ...(tono ? { tono } : {}) }).toString();
+  }
+
+  // ── Marca guardada ──
+  (function cargarMarca() {
+    try {
+      const m = JSON.parse(localStorage.getItem('crea_marca') || '{}');
+      if (m.nombre)  document.getElementById('nombre').value  = m.nombre;
+      if (m.sector)  document.getElementById('sector').value  = m.sector;
+      if (m.tono)    document.getElementById('tono').value    = m.tono;
+      if (m.publico) document.getElementById('publico').value = m.publico;
+    } catch {}
+  })();
+
+  function guardarMarca() {
+    localStorage.setItem('crea_marca', JSON.stringify({
+      nombre:  document.getElementById('nombre').value.trim(),
+      sector:  document.getElementById('sector').value,
+      tono:    document.getElementById('tono').value,
+      publico: document.getElementById('publico').value.trim(),
+    }));
+    toast('Marca guardada ✓');
+  }
+
+  // ── Tono recomendado por sector ──
+  const TONO_POR_SECTOR = {
+    'Moda y accesorios':         'Cercano y cálido',
+    'Alimentos y bebidas':       'Cercano y cálido',
+    'Belleza y cuidado personal':'Emocional y humano',
+    'Hogar y decoración':        'Cercano y cálido',
+    'Servicios profesionales':   'Profesional y serio',
+    'Educación y formación':     'Educativo y experto',
+    'Salud y bienestar':         'Emocional y humano',
+    'Tecnología':                'Profesional y serio',
+    'Arte y artesanías':         'Emocional y humano',
+    'Sostenibilidad':            'Inspirador y motivador',
+    'Retail / comercio':         'Cercano y cálido',
+    'Otro':                      'Cercano y cálido',
+  };
+  document.getElementById('sector').addEventListener('change', function() {
+    const recomendado = TONO_POR_SECTOR[this.value];
+    if (recomendado) {
+      document.getElementById('tono').value = recomendado;
+      document.getElementById('tono-hint').classList.add('visible');
+    }
+  });
+
+  // ── Historial ──
+  const HIST_KEY = 'crea_estrategias_hist';
+  let histAbierto = false;
+
+  function leerHistorial() { try { return JSON.parse(localStorage.getItem(HIST_KEY) || '[]'); } catch { return []; } }
+
+  function guardarHistorial(nombre, data) {
+    const h = leerHistorial();
+    h.unshift({ ts: Date.now(), nombre, redes: (data.redes_recomendadas || []).join(' + '), frecuencia: data.frecuencia || '', data });
+    if (h.length > 10) h.splice(10);
+    localStorage.setItem(HIST_KEY, JSON.stringify(h));
+    renderHistorial();
+  }
+
+  function eliminarHistorial(idx) {
+    const h = leerHistorial(); h.splice(idx, 1);
+    localStorage.setItem(HIST_KEY, JSON.stringify(h)); renderHistorial();
+  }
+
+  function toggleHistorial() {
+    histAbierto = !histAbierto;
+    document.getElementById('hist-list').style.display = histAbierto ? 'flex' : 'none';
+    document.getElementById('hist-arrow').classList.toggle('open', histAbierto);
+  }
+
+  function renderHistorial() {
+    const h = leerHistorial();
+    const sec = document.getElementById('hist-section');
+    const list = document.getElementById('hist-list');
+    if (!h.length) { sec.classList.remove('visible'); return; }
+    sec.classList.add('visible');
+    list.innerHTML = h.map((e, i) => `
+      <div class="hist-entry" onclick="restaurarHistorial(${i})">
+        <span class="hist-badge">${esc(e.nombre).slice(0,2).toUpperCase()}</span>
+        <div class="hist-info">
+          <div class="hist-marca">${esc(e.nombre)}</div>
+          <div class="hist-redes">${esc(e.redes)} · ${esc(e.frecuencia)}</div>
+        </div>
+        <span class="hist-ts">${tiempoRelativo(e.ts)}</span>
+        <button class="hist-del" onclick="event.stopPropagation();eliminarHistorial(${i})" title="Eliminar">×</button>
+      </div>`).join('');
+  }
+
+  function restaurarHistorial(idx) {
+    const entry = leerHistorial()[idx];
+    if (!entry) return;
+    mostrarResultado(entry.data, entry.nombre, false);
+    toast('Plan restaurado');
+  }
+
+  // ── Banner de plan guardado al cargar ──
+  (function mostrarBannerPlanGuardado() {
+    try {
+      const saved = JSON.parse(localStorage.getItem('crea_plan_activo') || 'null');
+      if (!saved || !saved.nombre) return;
+      const banner = document.createElement('div');
+      banner.className = 'plan-banner no-print';
+      banner.id = 'plan-banner';
+      banner.innerHTML = `
+        <div class="plan-banner-icon">📋</div>
+        <div class="plan-banner-body">
+          <div class="plan-banner-title">Tienes un plan guardado: ${esc(saved.nombre)}</div>
+          <div class="plan-banner-sub">${esc(saved.data?.frecuencia || '')} · Generado ${tiempoRelativo(saved.ts)}</div>
+        </div>
+        <button class="btn-ver-plan" onclick="mostrarPlanGuardado()">Ver plan →</button>
+        <button class="btn-dismiss" onclick="cerrarBanner()" title="Cerrar">×</button>`;
+      document.getElementById('results').prepend(banner);
+    } catch {}
+  })();
+
+  function mostrarPlanGuardado() {
+    try {
+      const saved = JSON.parse(localStorage.getItem('crea_plan_activo') || 'null');
+      if (saved) { mostrarResultado(saved.data, saved.nombre, false); toast('Plan cargado'); }
+    } catch {}
+  }
+
+  function cerrarBanner() {
+    const b = document.getElementById('plan-banner');
+    if (b) b.remove();
+  }
+
+  // ── Llamada al backend ──
+  async function generarEstrategia() {
+    const nombre = document.getElementById('nombre').value.trim();
+    if (!nombre) { toast('Escribe el nombre de tu marca'); return; }
+
+    // Guardar perfil automáticamente para que generar.html lo reciba sin re-digitar
+    try {
+      localStorage.setItem('crea_marca', JSON.stringify({
+        nombre,
+        sector:  document.getElementById('sector').value,
+        tono:    document.getElementById('tono').value,
+        publico: document.getElementById('publico').value.trim(),
+      }));
+    } catch {}
+
+    const btn = document.getElementById('btn-generar');
+    btn.disabled = true;
+    document.getElementById('btn-icon').textContent  = '⏳';
+    document.getElementById('btn-texto').textContent = 'Analizando tu caso...';
+    mostrarEsqueleto();
+
+    try {
+      const resp = await fetch('/api/contenido/estrategia', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nombre,
+          sector:        document.getElementById('sector').value,
+          tono:          document.getElementById('tono').value,
+          publico:       document.getElementById('publico').value.trim(),
+          tiempo:        sel.tiempo,
+          meta:          sel.meta.join(' y '),
+          donde_cliente: sel.cliente.includes('__recomendar__')
+            ? 'Recomienda tú las plataformas más adecuadas según el sector y el público objetivo de esta marca'
+            : sel.cliente.join(', '),
+        }),
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || `HTTP ${resp.status}`);
+      mostrarResultado(data, nombre, true);
+    } catch (err) {
+      toast('Error: ' + err.message);
+      mostrarPlaceholder();
+    } finally {
+      btn.disabled = false;
+      document.getElementById('btn-icon').textContent  = '🧭';
+      document.getElementById('btn-texto').textContent = 'Crear mi plan de contenido';
+    }
+  }
+
+  // ── Skeletons / placeholder ──
+  function mostrarEsqueleto() {
+    document.getElementById('results').innerHTML = `
+      <div class="result-card skeleton" style="height:90px;"></div>
+      <div class="result-card skeleton" style="height:240px;"></div>
+      <div class="result-card skeleton" style="height:70px;"></div>`;
+  }
+
+  function mostrarPlaceholder() {
+    document.getElementById('results').innerHTML = `
+      <div class="results-placeholder"><div class="icon">⚠️</div><p>Hubo un error. Intenta de nuevo.</p></div>`;
+  }
+
+  // ── Render resultado ──
+  function mostrarResultado(data, nombre, guardar) {
+    const { redes_recomendadas = [], frecuencia = '', razon = '', plan = [], consejo = '' } = data;
+    const tono = document.getElementById('tono')?.value || '';
+
+    const redBadges = redes_recomendadas.map(r => `<span class="red-badge">${esc(r)}</span>`).join('');
+
+    const filas = plan.map(item => `
+      <tr>
+        <td class="cal-dia">${esc(item.dia)}</td>
+        <td>
+          <span class="cal-red-badge ${redClass(item.red)}">${esc(item.red)}</span>
+          <div class="cal-tipo">${esc(item.tipo)}</div>
+        </td>
+        <td>
+          <div class="cal-tema">${esc(item.tema)}</div>
+          <div class="cal-objetivo">${esc(item.objetivo)}</div>
+          ${item.por_que ? `<div class="cal-por-que"><span class="cal-por-que-label">¿Por qué?</span><span>${esc(item.por_que)}</span></div>` : ''}
+        </td>
+        <td class="no-print">
+          <a href="${esc(urlGenerar(item.red, item.tipo, item.tema, tono))}" class="btn-usar">Generar →</a>
+        </td>
+      </tr>`).join('');
+
+    document.getElementById('results').innerHTML = `
+      <div class="result-card">
+        <div class="result-head">
+          <div class="result-head-main">
+            <h2>Plan de ${esc(nombre)}</h2>
+            <p>${esc(frecuencia)}</p>
+          </div>
+          <div class="result-head-right">
+            <div class="red-badges">${redBadges}</div>
+          </div>
+        </div>
+        <div class="result-body">
+
+          <div>
+            <div class="razon-label">¿Por qué este plan?</div>
+            <div class="razon-box">${esc(razon)}</div>
+          </div>
+
+          <div>
+            <div class="razon-label" style="margin-bottom:8px;">📅 Tu semana de contenido</div>
+            <div class="cal-wrap">
+              <table class="cal-table">
+                <thead>
+                  <tr>
+                    <th>Día</th>
+                    <th>Red · Tipo</th>
+                    <th>Tema sugerido</th>
+                    <th class="no-print"></th>
+                  </tr>
+                </thead>
+                <tbody>${filas}</tbody>
+              </table>
+            </div>
+          </div>
+
+          ${consejo ? `
+          <div class="consejo-box">
+            <div class="consejo-icon">💡</div>
+            <div class="consejo-body">
+              <div class="consejo-label">Consejo para arrancar</div>
+              ${esc(consejo)}
+            </div>
+          </div>` : ''}
+
+          <div class="result-footer no-print">
+            <button class="btn-guardar-plan" id="btn-guardar-plan">💾 Guardar plan</button>
+            <button class="btn-print" onclick="imprimirPlan()">⬇️ PDF / Imprimir</button>
+          </div>
+
+        </div>
+      </div>`;
+
+    // Guardar en historial y localStorage
+    if (guardar) {
+      try { localStorage.setItem('crea_plan_activo', JSON.stringify({ ts: Date.now(), nombre, data })); } catch {}
+      guardarHistorial(nombre, data);
+    }
+
+    // Conectar botón guardar
+    document.getElementById('btn-guardar-plan').addEventListener('click', function() {
+      try {
+        localStorage.setItem('crea_plan_guardado', JSON.stringify({ ts: Date.now(), nombre, data }));
+        this.textContent = '✓ Plan guardado';
+        this.disabled = true;
+      } catch {}
+      toast('Plan guardado ✓');
+    });
+  }
+
+  function imprimirPlan() {
+    window.print();
+  }
+
+  // ── Toast ──
+  let _toastT;
+  function toast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg; el.classList.add('show');
+    clearTimeout(_toastT);
+    _toastT = setTimeout(() => el.classList.remove('show'), 2800);
+  }
+
+  // Cargar historial al iniciar
+  renderHistorial();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/contenido/auth.js"></script>
+<script src="/contenido/chat-widget.js"></script>
+</body>
+</html>
