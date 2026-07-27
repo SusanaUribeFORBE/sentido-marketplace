@@ -445,17 +445,22 @@ async function loadSupabaseData() {
     if (error) throw error;
 
     if (data && data.length > 0) {
-      // Supabase es la fuente viva (los emprendedores editan su propio perfil ahí).
-      // BASE_DATA solo se usa como respaldo si Supabase no responde (catch abajo).
-      ALL_DATA = data.map(e => ({
+      // Supabase enriquece BASE_DATA: actualiza los que ya existen y agrega los nuevos.
+      // Los que están en BASE_DATA pero no en Supabase se conservan (nunca se borran).
+      const sbMap = new Map(data.map(e => [String(e.id), {
         id: e.id, name: e.name, city: e.city || '',
         formal: e.formal || 'NO', tagline: e.tagline || '',
         seals: e.seals || '', impact: e.impact || '',
         photo: e.photo_url || 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&h=400&fit=crop',
         whatsapp: e.whatsapp || '', products: (e.products || [])
-      }));
-      const extra = getExtra();
-      if (extra.length) ALL_DATA = [...ALL_DATA, ...extra];
+      }]));
+      // Partir de BASE_DATA completo, sobrescribir con versión Supabase si existe
+      const base = getAll();
+      const merged = base.map(e => sbMap.has(String(e.id)) ? sbMap.get(String(e.id)) : e);
+      // Agregar emprendedores de Supabase que no están en BASE_DATA (registrados vía app)
+      const baseIds = new Set(base.map(e => String(e.id)));
+      data.forEach(e => { if (!baseIds.has(String(e.id))) merged.push(sbMap.get(String(e.id))); });
+      ALL_DATA = merged;
       render();
     }
   } catch (err) {
