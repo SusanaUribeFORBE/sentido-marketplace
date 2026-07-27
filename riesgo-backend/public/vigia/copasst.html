@@ -628,11 +628,117 @@ function renderActas() {
       <td style="max-width:220px;font-size:12px">${a.temas||'–'}</td>
       <td style="max-width:180px;font-size:12px">${a.compromisos||'–'}</td>
       <td>
+        <button class="btn-xs" onclick="imprimirActaReunion('${a.id}')" title="Imprimir acta">🖨️</button>
         ${a.url_acta?`<a href="${a.url_acta}" target="_blank" class="btn-xs">Ver</a>`:''}
         <button class="btn-xs" onclick="editarActa('${a.id}')">Editar</button>
         <button class="btn-xs del" onclick="eliminarActa('${a.id}')">Eliminar</button>
       </td>
     </tr>`).join('');
+}
+
+function imprimirActaReunion(id) {
+  const a    = _datos.actas.find(x => x.id === id);
+  if (!a) return;
+  const emp  = EMPRESA_NOMBRE() || '[EMPRESA]';
+  const nit  = EMPRESA_NIT();
+  const esCCL = a.tipo === 'CCL';
+  const hoy  = new Date(a.fecha + 'T12:00:00').toLocaleDateString('es-CO', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  const miembros = _datos.miembros.filter(m => m.tipo === a.tipo);
+  const listaAsistentes = (a.asistentes || '').split(',').map(s => s.trim()).filter(Boolean);
+  const temasItems = (a.temas || '').split(/\n|;/).map(s => s.trim()).filter(Boolean);
+  const compItems  = (a.compromisos || '').split(/\n|;/).map(s => s.trim()).filter(Boolean);
+
+  const renderLista = items => items.length
+    ? `<ol style="padding-left:20px;margin:8px 0">${items.map(t => `<li style="margin-bottom:6px;line-height:1.65">${t}</li>`).join('')}</ol>`
+    : '<p style="color:#9CA3AF;font-style:italic">—</p>';
+
+  const firmasMiembros = miembros.length
+    ? miembros.map(m => `
+        <div class="firma-item">
+          <div class="firma-linea">${m.nombre}</div>
+          <div class="firma-cargo">${m.cargo_empresa||''} · ${m.rol === 'EMPLEADOR' ? 'Empleador' : 'Trabajador'}</div>
+        </div>`).join('')
+    : `<div class="firma-item"><div class="firma-linea">_______________</div><div class="firma-cargo">Presidente</div></div>
+       <div class="firma-item"><div class="firma-linea">_______________</div><div class="firma-cargo">Secretario</div></div>`;
+
+  const html = `<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>SG-SST F025 — Acta N°${a.numero||'__'} ${a.tipo} — ${emp}</title>
+<style>
+  @page { size:A4 portrait; margin:20mm 22mm; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{ font-family:Georgia,'Times New Roman',serif; font-size:13.5px; line-height:1.72; color:#1A1A2E; background:#fff; }
+  .membrete{ display:flex; align-items:center; gap:18px; border-bottom:2.5px solid #1B3A5C; padding-bottom:14px; margin-bottom:18px; }
+  .emp-nombre{ font-family:system-ui,sans-serif; font-size:15px; font-weight:800; color:#1B3A5C; }
+  .emp-sub{ font-family:system-ui,sans-serif; font-size:11px; color:#5C6B7A; margin-top:2px; }
+  .doc-meta{ margin-left:auto; text-align:right; font-family:system-ui,sans-serif; font-size:11px; color:#5C6B7A; line-height:1.6; }
+  .titulo-bloque{ text-align:center; padding:14px 0; margin-bottom:16px; border-top:1px solid #C8D8E8; border-bottom:1px solid #C8D8E8; }
+  .eyebrow{ font-family:system-ui,sans-serif; font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:#4A6785; margin-bottom:5px; }
+  .doc-titulo{ font-size:19px; font-weight:700; color:#1B3A5C; text-transform:uppercase; letter-spacing:.4px; }
+  .doc-subtitulo{ font-size:13px; color:#4A6785; margin-top:3px; }
+  .datos-grid{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:18px; }
+  .dato-box{ background:#F0F4FF; border-radius:5px; padding:8px 12px; }
+  .dato-lbl{ font-family:system-ui,sans-serif; font-size:9.5px; font-weight:700; letter-spacing:.8px; text-transform:uppercase; color:#4A6785; margin-bottom:2px; }
+  .dato-val{ font-size:13px; font-weight:700; color:#1B3A5C; }
+  .sec-titulo{ font-family:system-ui,sans-serif; font-size:10.5px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase; color:#2557A7; border-left:3px solid #2557A7; padding-left:9px; margin:20px 0 9px; }
+  .asistentes-grid{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:4px; }
+  .asistente-chip{ background:#F3F4F6; border:1px solid #E5E7EB; border-radius:20px; padding:4px 12px; font-size:12px; }
+  .box-contenido{ border:1px solid #C8D8E8; border-radius:5px; padding:12px 14px; margin-bottom:6px; min-height:60px; font-size:13.5px; }
+  .proxima-reunion{ border:1px solid #BFD0E4; border-left:4px solid #059669; background:#F0FDF4; border-radius:4px; padding:10px 14px; font-size:12.5px; color:#14532D; margin-top:14px; }
+  .firmas-bloque{ margin-top:40px; padding-top:14px; border-top:1px solid #C8D8E8; }
+  .firma-ciudad{ font-size:13px; color:#5C6B7A; font-style:italic; margin-bottom:44px; }
+  .firmas-grid{ display:flex; justify-content:space-around; flex-wrap:wrap; gap:20px; }
+  .firma-item{ text-align:center; min-width:160px; }
+  .firma-linea{ border-top:1px solid #1A1A2E; margin-top:40px; padding-top:5px; font-size:12px; font-weight:700; color:#1B3A5C; font-family:system-ui,sans-serif; }
+  .firma-cargo{ font-size:11px; color:#5C6B7A; font-family:system-ui,sans-serif; }
+  .pie-doc{ margin-top:28px; padding-top:10px; border-top:1px solid #C8D8E8; display:flex; justify-content:space-between; font-family:system-ui,sans-serif; font-size:10px; color:#9CA3AF; }
+</style>
+</head>
+<body>
+<div class="membrete">
+  <div>
+    <div class="emp-nombre">${emp.toUpperCase()}</div>
+    <div class="emp-sub">${nit ? 'NIT ' + nit + ' ·' : ''} Sistema de Gestión de SST</div>
+  </div>
+  <div class="doc-meta"><strong>SG-SST F025</strong><br>Versión 1.0<br>${new Date().toLocaleDateString('es-CO',{month:'long',year:'numeric'})}</div>
+</div>
+<div class="titulo-bloque">
+  <div class="eyebrow">${esCCL ? 'Comité de Convivencia Laboral' : 'Comité Paritario de SST — COPASST'}</div>
+  <div class="doc-titulo">Acta de Reunión N° ${a.numero||'__'}</div>
+  <div class="doc-subtitulo">${hoy}</div>
+</div>
+<div class="datos-grid">
+  <div class="dato-box"><div class="dato-lbl">Comité</div><div class="dato-val">${a.tipo}</div></div>
+  <div class="dato-box"><div class="dato-lbl">Lugar</div><div class="dato-val">Itagüí - Antioquia</div></div>
+  <div class="dato-box"><div class="dato-lbl">Hora de inicio</div><div class="dato-val">_________ a.m./p.m.</div></div>
+</div>
+<div class="sec-titulo">Asistentes</div>
+${listaAsistentes.length
+  ? `<div class="asistentes-grid">${listaAsistentes.map(n => `<span class="asistente-chip">${n}</span>`).join('')}</div>`
+  : '<div class="box-contenido" style="min-height:44px;color:#9CA3AF;font-style:italic;font-size:12px">Registrar en el acta física</div>'}
+<div class="sec-titulo">Orden del día / Temas tratados</div>
+<div class="box-contenido">${renderLista(temasItems)}</div>
+<div class="sec-titulo">Desarrollo de la reunión</div>
+<div class="box-contenido" style="min-height:90px"><p style="color:#9CA3AF;font-style:italic;font-size:12px">(Descripción de los debates y conclusiones por tema)</p></div>
+<div class="sec-titulo">Compromisos y decisiones</div>
+<div class="box-contenido">${renderLista(compItems)}</div>
+<div class="proxima-reunion"><strong>Próxima reunión:</strong> Fecha: __________________ · Hora: __________ · Lugar: __________________________</div>
+<div class="firmas-bloque">
+  <div class="firma-ciudad">Itagüí - Antioquia, ${hoy}</div>
+  <div class="firmas-grid">${firmasMiembros}</div>
+</div>
+<div class="pie-doc">
+  <span>SG-SST F025 · Vigía 360 · ${esCCL ? 'Res. 652/2012' : 'Decreto 1072/2015'}</span>
+  <span>Generado el ${new Date().toLocaleDateString('es-CO')}</span>
+</div>
+<script>window.onload = () => window.print();<\/script>
+</body></html>`;
+
+  const win = window.open('', '_blank', 'width=900,height=720');
+  win.document.write(html);
+  win.document.close();
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1013,103 +1119,391 @@ function imprimirDoc(html) {
 function imprimirConvocatoria() {
   leerFormularioPaso1();
   const { tipo, ntrab, fconv, fvot, hora, lugar, finicio, ffin, fcierre } = _wiz;
-  const emp = EMPRESA_NOMBRE();
-  const p = puestosRequeridos();
-  const norma = tipo === 'CCL'
-    ? 'Resolución 652 de 2012 y Resolución 1356 de 2012'
-    : 'Decreto 1072 de 2015 (Art. 2.2.4.6.8) y Resolución 734 de 2006';
-  imprimirDoc(`
-    <h1>Convocatoria a Proceso Electoral</h1>
-    <h2>${tipo === 'CCL' ? 'Comité de Convivencia Laboral (CCL)' : 'Comité Paritario de Seguridad y Salud en el Trabajo (COPASST)'}</h2>
-    <p>${emp || '[EMPRESA]'} ${EMPRESA_NIT() ? '· NIT ' + EMPRESA_NIT() : ''}</p>
-    <p>La empresa convoca a todos sus trabajadores a participar en el proceso de elección de los representantes de los trabajadores ante el <strong>${tipo === 'CCL' ? 'Comité de Convivencia Laboral' : 'COPASST'}</strong>, de conformidad con lo establecido en ${norma}.</p>
-    <h2 style="font-size:12pt;margin-top:20px">FECHAS DEL PROCESO</h2>
-    <table>
-      <tr><th>Evento</th><th>Fecha</th></tr>
-      <tr><td>Publicación de la convocatoria</td><td>${fmtD(fconv)}</td></tr>
-      <tr><td>Cierre de inscripciones de candidatos</td><td>${fmtD(fcierre)}</td></tr>
-      <tr><td>Jornada de votación</td><td>${fmtD(fvot)} ${hora ? '· ' + hora : ''}</td></tr>
-      <tr><td>Lugar de votación</td><td>${lugar || '—'}</td></tr>
-      <tr><td>Inicio del período</td><td>${fmtD(finicio)}</td></tr>
-      <tr><td>Fin del período</td><td>${fmtD(ffin)}</td></tr>
-    </table>
-    <h2 style="font-size:12pt;margin-top:20px">PUESTOS A ELEGIR</h2>
-    <p>${p.label}.</p>
-    <p>La empresa cuenta con <strong>${ntrab || '___'}</strong> trabajadores.</p>
-    <h2 style="font-size:12pt;margin-top:20px">REQUISITOS PARA CANDIDATOS</h2>
-    <ol class="numerales">
-      <li>Ser trabajador activo de la empresa al momento de la inscripción.</li>
-      <li>No haber sido sancionado disciplinariamente en los últimos 6 meses.</li>
-      <li>Presentar su inscripción por escrito antes del cierre de postulaciones.</li>
-    </ol>
-    <h2 style="font-size:12pt;margin-top:20px">MECANISMO DE VOTACIÓN</h2>
-    <p>La votación es <strong>secreta, individual y directa</strong>. Cada trabajador puede emitir un (1) voto a favor de su candidato preferido. Los resultados serán publicados mediante acta de escrutinio.</p>
-    <div class="firma-row">
-      <div class="firma-bloque">
-        <div class="firma-linea">Representante Legal<br>${emp}</div>
-      </div>
-      <div class="firma-bloque">
-        <div class="firma-linea">Responsable SST<br>${emp}</div>
-      </div>
-    </div>
-    <p style="font-size:9pt;margin-top:20px;color:#666">Generado por Vigía 360 · ${new Date().toLocaleDateString('es-CO')}</p>`);
+  const emp  = EMPRESA_NOMBRE() || '[EMPRESA]';
+  const nit  = EMPRESA_NIT();
+  const p    = puestosRequeridos();
+  const hoy  = new Date().toLocaleDateString('es-CO', { year:'numeric', month:'long', day:'numeric' });
+  const esCCL = tipo === 'CCL';
+
+  const normaTexto   = esCCL
+    ? '<strong>Resolución 652 de 2012</strong> y la <strong>Resolución 1356 de 2012</strong>'
+    : '<strong>Decreto 1072 de 2015 (Art. 2.2.4.6.8)</strong> y la <strong>Resolución 734 de 2006</strong>';
+  const nombreComite = esCCL
+    ? 'Comité de Convivencia Laboral (CCL)'
+    : 'Comité Paritario de Seguridad y Salud en el Trabajo (COPASST)';
+  const recuadroNorma = esCCL
+    ? `<strong>Marco normativo:</strong> Resolución 652 de 2012 · Resolución 1356 de 2012 · Ley 1010 de 2006.<br>
+       El CCL tiene como objetivo <strong>prevenir el acoso laboral</strong> y debe reunirse <strong>mínimo cada 3 meses</strong>.`
+    : `<strong>Marco normativo:</strong> Decreto 1072 de 2015 (Art. 2.2.4.6.8) · Resolución 734 de 2006 · Ley 1562 de 2012.<br>
+       El COPASST es obligatorio en empresas con <strong>10 o más trabajadores</strong>; vigencia de <strong>dos (2) años</strong>.`;
+  const thSuplente = esCCL ? '' : '<th style="background:#1B3A5C;color:#fff;padding:8px 12px;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px">Suplentes</th>';
+  const tdSuplente = esCCL ? '' : `<td style="text-align:center">${p.suplentes}</td>`;
+  const reqExtra = esCCL
+    ? '<li>Tener una conducta acorde con los principios éticos y de respeto establecidos en el reglamento interno de trabajo.</li>'
+    : '<li>No tener parentesco hasta cuarto grado de consanguinidad o segundo de afinidad con el Representante Legal.</li>';
+
+  const html = `<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Convocatoria ${tipo} — ${emp}</title>
+<style>
+  @page { size:A4 portrait; margin:20mm 22mm; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{ font-family:Georgia,'Times New Roman',serif; font-size:13.5px; line-height:1.72; color:#1A1A2E; background:#fff; }
+  .membrete{ display:flex; align-items:center; gap:18px; border-bottom:2.5px solid #1B3A5C; padding-bottom:14px; margin-bottom:18px; }
+  .logo-box{ width:68px; height:68px; border:1.5px solid #BFD0E4; border-radius:6px; background:#E8F0FA; display:flex; align-items:center; justify-content:center; font-size:26px; flex-shrink:0; }
+  .emp-nombre{ font-family:system-ui,sans-serif; font-size:15px; font-weight:800; color:#1B3A5C; }
+  .emp-sub{ font-family:system-ui,sans-serif; font-size:11px; color:#5C6B7A; margin-top:2px; }
+  .doc-meta{ margin-left:auto; text-align:right; font-family:system-ui,sans-serif; font-size:11px; color:#5C6B7A; line-height:1.5; }
+  .titulo-bloque{ text-align:center; padding:14px 0; margin-bottom:16px; border-top:1px solid #C8D8E8; border-bottom:1px solid #C8D8E8; }
+  .eyebrow{ font-family:system-ui,sans-serif; font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:#4A6785; margin-bottom:5px; }
+  .doc-titulo{ font-size:19px; font-weight:700; color:#1B3A5C; text-transform:uppercase; letter-spacing:.4px; }
+  .doc-subtitulo{ font-size:13px; color:#4A6785; margin-top:3px; }
+  .cuerpo{ font-size:13.5px; line-height:1.75; text-align:justify; margin-bottom:14px; }
+  .recuadro{ border:1px solid #BFD0E4; border-left:4px solid #2557A7; background:#E8F0FA; border-radius:4px; padding:10px 14px; font-size:12.5px; color:#4A6785; margin:14px 0; line-height:1.6; }
+  .sec-titulo{ font-family:system-ui,sans-serif; font-size:10.5px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase; color:#2557A7; border-left:3px solid #2557A7; padding-left:9px; margin:20px 0 9px; }
+  table.cron{ width:100%; border-collapse:collapse; font-size:12.5px; margin-bottom:4px; }
+  table.cron thead tr{ background:#1B3A5C; }
+  table.cron thead th{ color:#fff; padding:8px 11px; text-align:left; font-family:system-ui,sans-serif; font-size:10.5px; font-weight:700; letter-spacing:.5px; text-transform:uppercase; }
+  table.cron tbody tr:nth-child(even){ background:#F0F4FF; }
+  table.cron tbody td{ padding:7px 11px; border-bottom:1px solid #C8D8E8; vertical-align:top; }
+  table.cron td:first-child{ color:#5C6B7A; font-size:12px; }
+  table.cron td:nth-child(2){ font-weight:700; color:#1B3A5C; }
+  table.cron td:last-child{ font-style:italic; color:#5C6B7A; font-size:12px; }
+  table.pst{ width:100%; border-collapse:collapse; font-size:12.5px; margin:10px 0 4px; }
+  table.pst th{ background:#1B3A5C; color:#fff; padding:8px 12px; font-size:10.5px; font-weight:700; font-family:system-ui,sans-serif; text-transform:uppercase; letter-spacing:.5px; text-align:center; }
+  table.pst td{ padding:7px 12px; border:1px solid #BFD0E4; text-align:center; }
+  table.pst td:first-child{ text-align:left; }
+  .be{ background:#EFF6FF; color:#1D4ED8; border-radius:4px; padding:2px 8px; font-size:11px; font-weight:700; font-family:system-ui,sans-serif; }
+  .bt{ background:#F3E8FF; color:#7C3AED; border-radius:4px; padding:2px 8px; font-size:11px; font-weight:700; font-family:system-ui,sans-serif; }
+  .nota-pie{ font-size:11.5px; color:#5C6B7A; font-style:italic; margin-top:3px; }
+  ol.arts{ padding-left:20px; margin-bottom:12px; }
+  ol.arts li{ margin-bottom:7px; font-size:13.5px; line-height:1.65; text-align:justify; }
+  ol.arts li::marker{ color:#2557A7; font-weight:700; }
+  .firmas-bloque{ margin-top:44px; padding-top:14px; border-top:1px solid #C8D8E8; }
+  .firma-ciudad{ font-size:13px; color:#5C6B7A; font-style:italic; margin-bottom:46px; }
+  .firmas-grid{ display:flex; justify-content:space-around; gap:24px; }
+  .firma-item{ text-align:center; width:220px; }
+  .firma-linea{ border-top:1px solid #1A1A2E; margin-top:42px; padding-top:5px; font-size:12.5px; font-weight:700; color:#1B3A5C; font-family:system-ui,sans-serif; }
+  .firma-cargo{ font-size:11.5px; color:#5C6B7A; font-family:system-ui,sans-serif; }
+  .pie-doc{ margin-top:36px; padding-top:10px; border-top:1px solid #C8D8E8; display:flex; justify-content:space-between; font-family:system-ui,sans-serif; font-size:10px; color:#9CA3AF; }
+</style>
+</head>
+<body>
+<div class="membrete">
+  <div class="logo-box">🏭</div>
+  <div>
+    <div class="emp-nombre">${emp.toUpperCase()}</div>
+    <div class="emp-sub">${nit ? 'NIT ' + nit + ' ·' : ''} Sistema de Gestión de SST</div>
+  </div>
+  <div class="doc-meta"><strong>SG-SST F008</strong><br>Versión 1.0<br>${new Date().toLocaleDateString('es-CO',{month:'long',year:'numeric'})}</div>
+</div>
+<div class="titulo-bloque">
+  <div class="eyebrow">Comunicado Interno — Proceso Electoral 2026</div>
+  <div class="doc-titulo">Convocatoria al Proceso Electoral</div>
+  <div class="doc-subtitulo">${nombreComite}</div>
+</div>
+<p class="cuerpo">La empresa <strong>${emp}</strong>, en cumplimiento de lo establecido en el ${normaTexto}, convoca a todos sus trabajadores a participar en el proceso de elección de los representantes de los trabajadores ante el <strong>${nombreComite}</strong>${finicio && ffin ? ` para el período <strong>${fmtD(finicio)} – ${fmtD(ffin)}</strong>` : ''}.</p>
+<div class="recuadro">${recuadroNorma}</div>
+<div class="sec-titulo">Cronograma del proceso</div>
+<table class="cron">
+  <thead><tr><th>Etapa</th><th>Fecha</th><th>Observación</th></tr></thead>
+  <tbody>
+    <tr><td>Publicación de la convocatoria</td><td>${fmtD(fconv)}</td><td>Cartelera y correo interno</td></tr>
+    ${fcierre ? `<tr><td>Cierre de inscripciones</td><td>${fmtD(fcierre)}</td><td>Ante RRHH o Responsable SST</td></tr>` : ''}
+    <tr><td>Jornada de votación</td><td>${fmtD(fvot)}${hora ? ' · ' + hora : ''}</td><td>${lugar || '—'}</td></tr>
+    ${finicio ? `<tr><td>Inicio del período</td><td>${fmtD(finicio)}</td><td>Primera reunión de instalación</td></tr>` : ''}
+    ${ffin    ? `<tr><td>Fin del período</td><td>${fmtD(ffin)}</td><td></td></tr>` : ''}
+  </tbody>
+</table>
+<div class="sec-titulo">Puestos a elegir — ${tipo}</div>
+<table class="pst">
+  <thead><tr><th style="text-align:left">Representación</th><th>Principales</th>${thSuplente}<th>Designación</th></tr></thead>
+  <tbody>
+    <tr><td><span class="be">Empleador</span></td><td>${p.principales}</td>${tdSuplente}<td>Directa por el empleador</td></tr>
+    <tr style="background:#F0F4FF"><td><span class="bt">Trabajadores</span></td><td>${p.principales}</td>${tdSuplente}<td>Votación secreta y directa</td></tr>
+  </tbody>
+</table>
+<p class="nota-pie">* La empresa cuenta con <strong>${ntrab || '___'}</strong> trabajadores activos. ${p.label}.</p>
+<div class="sec-titulo">Requisitos para inscribirse como candidato</div>
+<ol class="arts">
+  <li>Ser trabajador activo de la empresa al momento de la inscripción.</li>
+  <li>No haber sido objeto de sanción disciplinaria en los últimos seis (6) meses.</li>
+  <li>Presentar la solicitud por escrito indicando nombre completo, cédula y cargo, antes del cierre de postulaciones.</li>
+  ${reqExtra}
+</ol>
+<div class="sec-titulo">Mecanismo de votación</div>
+<ol class="arts">
+  <li>La votación es <strong>secreta, individual y directa</strong>.</li>
+  <li>Cada trabajador podrá emitir <strong>un (1) voto</strong> a favor de su candidato utilizando el tarjetón electoral.</li>
+  <li>El escrutinio se realizará en presencia de los candidatos y un delegado de la Dirección, levantando el acta correspondiente.</li>
+  <li>Mayor votación → principal; siguiente en ranking → suplente. En caso de empate se decidirá por sorteo.</li>
+</ol>
+<div class="sec-titulo">Notificación al Ministerio de Trabajo</div>
+<p class="cuerpo" style="font-size:13px">Constituido el comité, la empresa notificará al <strong>Ministerio de Trabajo</strong> dentro de los <strong>ocho (8) días hábiles</strong> siguientes (Art. 4° Res. 734/2006).</p>
+<div class="firmas-bloque">
+  <div class="firma-ciudad">${lugar || 'Itagüí - Antioquia'}, ${hoy}</div>
+  <div class="firmas-grid">
+    <div class="firma-item"><div class="firma-linea">Representante Legal</div><div class="firma-cargo">${emp}</div></div>
+    <div class="firma-item"><div class="firma-linea">Responsable del SG-SST</div><div class="firma-cargo">${emp}</div></div>
+  </div>
+</div>
+<div class="pie-doc"><span>SG-SST F008 · Vigía 360</span><span>Generado el ${new Date().toLocaleDateString('es-CO')}</span></div>
+<script>window.onload = () => window.print();<\/script>
+</body></html>`;
+
+  const win = window.open('', '_blank', 'width=900,height=720');
+  win.document.write(html);
+  win.document.close();
 }
 
 function imprimirTarjeton() {
-  const emp = EMPRESA_NOMBRE();
+  const emp   = EMPRESA_NOMBRE() || '[EMPRESA]';
+  const nit   = EMPRESA_NIT();
+  const tipo  = _wiz.tipo;
+  const codigo = tipo === 'CCL' ? 'SG-SST F012' : 'SG-SST F009';
   const cands = _wiz.candidatos.filter(c => c.nombre);
   if (!cands.length) { toast('Agrega candidatos antes de imprimir el tarjetón', 'error'); return; }
+  const hoy = new Date().toLocaleDateString('es-CO', { year:'numeric', month:'long', day:'numeric' });
+
   const filas = cands.map((c,i) => `
     <tr>
-      <td style="text-align:center;font-weight:700;font-size:16pt">${i+1}</td>
-      <td style="font-size:13pt">${c.nombre}</td>
-      <td>${c.cargo||'—'}</td>
-      <td style="text-align:center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+      <td style="text-align:center;font-size:18px;font-weight:900;color:#1B3A5C;padding:10px 8px">${i+1}</td>
+      <td style="padding:10px 12px;font-size:13px;font-weight:700">${c.nombre}</td>
+      <td style="padding:10px 12px;font-size:12px;color:#5C6B7A">${c.cargo||'—'}</td>
+      <td style="text-align:center;padding:10px;width:70px">
+        <div style="width:44px;height:44px;border:2px solid #1B3A5C;border-radius:4px;margin:auto"></div>
+      </td>
     </tr>`).join('');
-  imprimirDoc(`
-    <h1>Tarjetón Electoral</h1>
-    <h2>${_wiz.tipo === 'CCL' ? 'Comité de Convivencia Laboral' : 'COPASST'} · ${emp}</h2>
-    <p>Fecha de votación: <strong>${fmtD(_wiz.fvot)}</strong> ${_wiz.hora ? '· ' + _wiz.hora : ''} · Lugar: ${_wiz.lugar||'—'}</p>
-    <p>Marque con una <strong>X</strong> el candidato de su preferencia. Solo puede marcar <strong>UN (1)</strong> candidato.</p>
-    <table>
-      <thead><tr><th>N°</th><th>Nombre del candidato</th><th>Cargo</th><th style="width:80px">Su voto</th></tr></thead>
-      <tbody>${filas}</tbody>
-    </table>
-    <div style="margin-top:24px;border-top:1px solid #ccc;padding-top:8px;font-size:10pt;color:#666">
-      Esta tarjeta debe permanecer en secreto. No la muestre a nadie. Dóblela y deposítela en la urna.
-    </div>`);
+
+  const html = `<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>${codigo} — Tarjetón Electoral ${tipo} — ${emp}</title>
+<style>
+  @page { size:A4 portrait; margin:18mm 20mm; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{ font-family:Georgia,'Times New Roman',serif; font-size:13px; color:#1A1A2E; background:#fff; }
+  .header{ border-bottom:2.5px solid #1B3A5C; padding-bottom:12px; margin-bottom:16px; display:flex; align-items:center; gap:16px; }
+  .emp-nombre{ font-family:system-ui,sans-serif; font-size:14px; font-weight:800; color:#1B3A5C; }
+  .emp-sub{ font-family:system-ui,sans-serif; font-size:11px; color:#5C6B7A; }
+  .doc-meta{ margin-left:auto; text-align:right; font-family:system-ui,sans-serif; font-size:11px; color:#5C6B7A; }
+  .titulo-bloque{ text-align:center; border:2px solid #1B3A5C; border-radius:6px; padding:14px; margin-bottom:18px; }
+  .eyebrow{ font-family:system-ui,sans-serif; font-size:9px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:#4A6785; }
+  .doc-titulo{ font-size:20px; font-weight:700; color:#1B3A5C; text-transform:uppercase; margin:4px 0 2px; }
+  .doc-sub{ font-size:12px; color:#4A6785; }
+  .aviso{ border:1.5px solid #BFD0E4; border-left:4px solid #2557A7; background:#E8F0FA; border-radius:4px; padding:9px 13px; font-size:12.5px; color:#4A6785; margin-bottom:14px; line-height:1.6; }
+  .dato-votacion{ display:flex; gap:20px; margin-bottom:16px; font-size:12.5px; }
+  .dato{ background:#F0F4FF; border-radius:4px; padding:7px 12px; }
+  .dato strong{ display:block; font-family:system-ui,sans-serif; font-size:10px; font-weight:700; letter-spacing:.5px; text-transform:uppercase; color:#4A6785; }
+  table.tarjeton{ width:100%; border-collapse:collapse; margin-bottom:12px; }
+  table.tarjeton thead tr{ background:#1B3A5C; }
+  table.tarjeton thead th{ color:#fff; padding:9px 12px; text-align:left; font-family:system-ui,sans-serif; font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; }
+  table.tarjeton thead th:last-child{ text-align:center; }
+  table.tarjeton tbody tr{ border-bottom:1px solid #BFD0E4; }
+  table.tarjeton tbody tr:nth-child(even){ background:#F8F9FD; }
+  .cortar{ margin-top:18px; border-top:2px dashed #9CA3AF; padding-top:12px; font-size:11px; color:#6B7280; text-align:center; font-family:system-ui,sans-serif; }
+  .secreto{ margin-top:10px; background:#FFF3CD; border:1px solid #FFC107; border-radius:4px; padding:8px 12px; font-size:11.5px; color:#856404; text-align:center; }
+  .pie-doc{ margin-top:24px; padding-top:8px; border-top:1px solid #C8D8E8; display:flex; justify-content:space-between; font-family:system-ui,sans-serif; font-size:9px; color:#9CA3AF; }
+</style>
+</head>
+<body>
+<div class="header">
+  <div>
+    <div class="emp-nombre">${emp.toUpperCase()}</div>
+    <div class="emp-sub">${nit ? 'NIT ' + nit + ' ·' : ''} Sistema de Gestión de SST</div>
+  </div>
+  <div class="doc-meta"><strong>${codigo}</strong><br>Versión 1.0</div>
+</div>
+<div class="titulo-bloque">
+  <div class="eyebrow">Proceso Electoral — ${tipo === 'CCL' ? 'Comité de Convivencia Laboral' : 'COPASST'}</div>
+  <div class="doc-titulo">Tarjetón Electoral</div>
+  <div class="doc-sub">${emp} · ${hoy}</div>
+</div>
+<div class="aviso">
+  <strong>Instrucciones:</strong> Marque con una <strong>X</strong> dentro del recuadro junto al candidato de su preferencia.
+  Solo puede marcar <strong>UN (1) candidato</strong>. El voto debe ser secreto — no muestre su tarjetón a nadie.
+</div>
+<div class="dato-votacion">
+  <div class="dato"><strong>Fecha de votación</strong>${fmtD(_wiz.fvot)}${_wiz.hora ? ' · ' + _wiz.hora : ''}</div>
+  <div class="dato"><strong>Lugar</strong>${_wiz.lugar || 'Itagüí - Antioquia'}</div>
+  <div class="dato"><strong>Comité</strong>${tipo === 'CCL' ? 'Convivencia Laboral' : 'COPASST'}</div>
+</div>
+<table class="tarjeton">
+  <thead>
+    <tr>
+      <th style="width:50px">N°</th>
+      <th>Nombre del candidato</th>
+      <th>Cargo en la empresa</th>
+      <th style="width:80px;text-align:center">Su voto ✓</th>
+    </tr>
+  </thead>
+  <tbody>${filas}</tbody>
+</table>
+<div class="secreto">⚠️ Esta tarjeta debe permanecer en secreto. Dóblela y deposítela en la urna sin mostrarla a nadie.</div>
+<div class="cortar">✂ ─────────────────────── Doblar y depositar en la urna ───────────────────────</div>
+<div class="pie-doc"><span>${codigo} · Vigía 360</span><span>Generado el ${new Date().toLocaleDateString('es-CO')}</span></div>
+<script>window.onload = () => window.print();<\/script>
+</body></html>`;
+
+  const win = window.open('', '_blank', 'width=900,height=720');
+  win.document.write(html);
+  win.document.close();
 }
 
 function imprimirActaConstitucion() {
-  const emp = EMPRESA_NOMBRE();
-  const empRows = _wiz.empleador.map(r =>
-    `<tr><td>${r.nombre||'—'}</td><td>${r.cargo||'—'}</td><td>Empleador (designado)</td><td>${r.rol_comite||'Vocal'}</td></tr>`
-  ).join('');
+  const emp    = EMPRESA_NOMBRE() || '[EMPRESA]';
+  const nit    = EMPRESA_NIT();
+  const tipo   = _wiz.tipo;
+  const esCCL  = tipo === 'CCL';
+  const codigo = esCCL ? 'SG-SST F053' : 'SG-SST F011';
+  const norma  = esCCL ? 'Resolución 652 de 2012 y Resolución 1356 de 2012' : 'Decreto 1072 de 2015 (Art. 2.2.4.6.8) y Resolución 734 de 2006';
+  const hoy    = new Date().toLocaleDateString('es-CO', { year:'numeric', month:'long', day:'numeric' });
+  const ciudad = _wiz.lugar || 'Itagüí - Antioquia';
+
+  const empRows = _wiz.empleador.map(r => `
+    <tr>
+      <td style="font-weight:700">${r.nombre||'—'}</td>
+      <td>${r.cargo||'—'}</td>
+      <td><span style="background:#EFF6FF;color:#1D4ED8;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:700;font-family:system-ui,sans-serif">Empleador</span></td>
+      <td>Designado</td>
+      <td>${r.rol_comite||'Vocal'}</td>
+    </tr>`).join('');
+
   const candRows = [..._wiz.candidatos]
-    .sort((a,b)=>(b.votos||0)-(a.votos||0))
-    .filter(c=>c.resultado==='PRINCIPAL'||c.resultado==='SUPLENTE')
-    .map(c=>`<tr><td>${c.nombre}</td><td>${c.cargo||'—'}</td><td>Trabajador (electo: ${c.votos||0} votos)</td><td>${c.resultado==='PRINCIPAL'?'Vocal':'Suplente'}</td></tr>`)
-    .join('');
-  const norma = _wiz.tipo==='CCL'?'Resolución 652 de 2012':'Decreto 1072 de 2015';
-  imprimirDoc(`
-    <h1>Acta de Constitución</h1>
-    <h2>${_wiz.tipo==='CCL'?'Comité de Convivencia Laboral (CCL)':'Comité Paritario de SST (COPASST)'}</h2>
-    <p>Empresa: <strong>${emp}</strong> · Fecha: <strong>${fmtD(_wiz.fvot)}</strong></p>
-    <p>En las instalaciones de <strong>${emp}</strong>, reunidos los representantes del empleador y de los trabajadores, de conformidad con lo establecido en <strong>${norma}</strong>, se procede a constituir el ${_wiz.tipo} para el período comprendido entre <strong>${fmtD(_wiz.finicio)}</strong> y <strong>${fmtD(_wiz.ffin)}</strong>.</p>
-    <h2 style="font-size:12pt;margin-top:16px">INTEGRANTES DEL COMITÉ</h2>
-    <table>
-      <thead><tr><th>Nombre</th><th>Cargo empresa</th><th>Forma de designación</th><th>Rol en el comité</th></tr></thead>
-      <tbody>${empRows}${candRows}</tbody>
-    </table>
-    <p style="margin-top:16px">Los integrantes del comité se comprometen a cumplir con las funciones establecidas en la normativa vigente, reunirse con la periodicidad requerida y registrar las actas de cada sesión.</p>
-    <p>Se notificará al Ministerio de Trabajo dentro de los <strong>8 días hábiles</strong> siguientes a la constitución del comité (Res. 734/2006).</p>
-    <div class="firma-row">
-      ${_wiz.empleador.slice(0,2).map(r=>`<div class="firma-bloque"><div class="firma-linea">${r.nombre}<br>${r.cargo||''}</div></div>`).join('')}
-    </div>
-    <div class="firma-row" style="margin-top:20px">
-      ${_wiz.candidatos.filter(c=>c.resultado==='PRINCIPAL').map(c=>`<div class="firma-bloque"><div class="firma-linea">${c.nombre}<br>${c.cargo||''}</div></div>`).join('')}
-    </div>
-    <p style="font-size:9pt;margin-top:20px;color:#666">Generado por Vigía 360 · ${new Date().toLocaleDateString('es-CO')}</p>`);
+    .sort((a,b) => (b.votos||0) - (a.votos||0))
+    .filter(c => c.resultado === 'PRINCIPAL' || c.resultado === 'SUPLENTE')
+    .map(c => `
+    <tr>
+      <td style="font-weight:700">${c.nombre}</td>
+      <td>${c.cargo||'—'}</td>
+      <td><span style="background:#F3E8FF;color:#7C3AED;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:700;font-family:system-ui,sans-serif">Trabajador</span></td>
+      <td>Electo · ${c.votos||0} votos</td>
+      <td>${c.resultado === 'PRINCIPAL' ? 'Vocal / Principal' : 'Suplente'}</td>
+    </tr>`).join('');
+
+  const firmasEmp  = _wiz.empleador.slice(0, 3).map(r => `
+    <div class="firma-item">
+      <div class="firma-linea">${r.nombre||'_______________'}</div>
+      <div class="firma-cargo">${r.cargo||''} · Empleador</div>
+    </div>`).join('');
+  const firmasTrab = _wiz.candidatos.filter(c => c.resultado === 'PRINCIPAL').slice(0, 3).map(c => `
+    <div class="firma-item">
+      <div class="firma-linea">${c.nombre||'_______________'}</div>
+      <div class="firma-cargo">${c.cargo||''} · Trabajador</div>
+    </div>`).join('');
+
+  const html = `<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>${codigo} — Acta de Constitución ${tipo} — ${emp}</title>
+<style>
+  @page { size:A4 portrait; margin:20mm 22mm; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{ font-family:Georgia,'Times New Roman',serif; font-size:13.5px; line-height:1.72; color:#1A1A2E; background:#fff; }
+  .membrete{ display:flex; align-items:center; gap:18px; border-bottom:2.5px solid #1B3A5C; padding-bottom:14px; margin-bottom:18px; }
+  .emp-nombre{ font-family:system-ui,sans-serif; font-size:15px; font-weight:800; color:#1B3A5C; }
+  .emp-sub{ font-family:system-ui,sans-serif; font-size:11px; color:#5C6B7A; margin-top:2px; }
+  .doc-meta{ margin-left:auto; text-align:right; font-family:system-ui,sans-serif; font-size:11px; color:#5C6B7A; line-height:1.5; }
+  .titulo-bloque{ text-align:center; padding:14px 0; margin-bottom:16px; border-top:1px solid #C8D8E8; border-bottom:1px solid #C8D8E8; }
+  .eyebrow{ font-family:system-ui,sans-serif; font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:#4A6785; margin-bottom:5px; }
+  .doc-titulo{ font-size:19px; font-weight:700; color:#1B3A5C; text-transform:uppercase; letter-spacing:.4px; }
+  .doc-subtitulo{ font-size:13px; color:#4A6785; margin-top:3px; }
+  .cuerpo{ font-size:13.5px; line-height:1.75; text-align:justify; margin-bottom:14px; }
+  .sec-titulo{ font-family:system-ui,sans-serif; font-size:10.5px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase; color:#2557A7; border-left:3px solid #2557A7; padding-left:9px; margin:20px 0 9px; }
+  table.miembros{ width:100%; border-collapse:collapse; font-size:12.5px; margin-bottom:6px; }
+  table.miembros thead tr{ background:#1B3A5C; }
+  table.miembros thead th{ color:#fff; padding:8px 11px; text-align:left; font-family:system-ui,sans-serif; font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; }
+  table.miembros tbody tr:nth-child(even){ background:#F0F4FF; }
+  table.miembros tbody td{ padding:8px 11px; border-bottom:1px solid #C8D8E8; vertical-align:middle; }
+  .compromisos{ border:1px solid #BFD0E4; border-left:4px solid #059669; background:#F0FDF4; border-radius:4px; padding:10px 14px; font-size:12.5px; color:#14532D; margin:14px 0; line-height:1.65; }
+  .firmas-bloque{ margin-top:40px; padding-top:14px; border-top:1px solid #C8D8E8; }
+  .firma-ciudad{ font-size:13px; color:#5C6B7A; font-style:italic; margin-bottom:44px; }
+  .firmas-grid{ display:flex; justify-content:space-around; flex-wrap:wrap; gap:20px; margin-bottom:28px; }
+  .firma-item{ text-align:center; min-width:180px; }
+  .firma-linea{ border-top:1px solid #1A1A2E; margin-top:40px; padding-top:5px; font-size:12px; font-weight:700; color:#1B3A5C; font-family:system-ui,sans-serif; }
+  .firma-cargo{ font-size:11px; color:#5C6B7A; font-family:system-ui,sans-serif; }
+  .firmas-label{ font-family:system-ui,sans-serif; font-size:10.5px; font-weight:800; letter-spacing:1px; text-transform:uppercase; color:#4A6785; margin-bottom:4px; }
+  .pie-doc{ margin-top:28px; padding-top:10px; border-top:1px solid #C8D8E8; display:flex; justify-content:space-between; font-family:system-ui,sans-serif; font-size:10px; color:#9CA3AF; }
+</style>
+</head>
+<body>
+<div class="membrete">
+  <div>
+    <div class="emp-nombre">${emp.toUpperCase()}</div>
+    <div class="emp-sub">${nit ? 'NIT ' + nit + ' ·' : ''} Sistema de Gestión de SST</div>
+  </div>
+  <div class="doc-meta"><strong>${codigo}</strong><br>Versión 1.0<br>${new Date().toLocaleDateString('es-CO',{month:'long',year:'numeric'})}</div>
+</div>
+
+<div class="titulo-bloque">
+  <div class="eyebrow">Acta N° 001 — ${hoy}</div>
+  <div class="doc-titulo">Acta de Constitución</div>
+  <div class="doc-subtitulo">${esCCL ? 'Comité de Convivencia Laboral (CCL)' : 'Comité Paritario de Seguridad y Salud en el Trabajo (COPASST)'}</div>
+</div>
+
+<p class="cuerpo">
+  En las instalaciones de <strong>${emp}</strong>, municipio de <strong>${ciudad}</strong>, el día <strong>${hoy}</strong>,
+  reunidos los representantes del empleador y los representantes de los trabajadores electos mediante
+  votación secreta celebrada el <strong>${fmtD(_wiz.fvot)}</strong>, de conformidad con lo establecido en la
+  <strong>${norma}</strong>, se procede a constituir formalmente el
+  <strong>${esCCL ? 'Comité de Convivencia Laboral' : 'Comité Paritario de Seguridad y Salud en el Trabajo (COPASST)'}</strong>
+  para el período comprendido entre <strong>${fmtD(_wiz.finicio)}</strong> y <strong>${fmtD(_wiz.ffin)}</strong>.
+</p>
+
+<div class="sec-titulo">Integrantes del comité</div>
+<table class="miembros">
+  <thead>
+    <tr>
+      <th>Nombre completo</th>
+      <th>Cargo en la empresa</th>
+      <th>Representación</th>
+      <th>Forma de designación</th>
+      <th>Rol en el comité</th>
+    </tr>
+  </thead>
+  <tbody>
+    ${empRows || '<tr><td colspan="5" style="text-align:center;color:#9CA3AF;padding:12px">Sin representantes del empleador registrados</td></tr>'}
+    ${candRows || '<tr><td colspan="5" style="text-align:center;color:#9CA3AF;padding:12px">Sin trabajadores electos registrados</td></tr>'}
+  </tbody>
+</table>
+
+<div class="compromisos">
+  <strong>Compromisos de los integrantes:</strong><br>
+  Los miembros se comprometen a: (1) Cumplir con las funciones establecidas en la normativa vigente;
+  (2) Reunirse con la periodicidad requerida${esCCL ? ' (mínimo cada 3 meses)' : ' (mínimo una vez al mes)'}
+  y levantar el acta de cada sesión; (3) Guardar la reserva de la información conocida en ejercicio de sus funciones;
+  (4) Actuar con imparcialidad y objetividad en el desempeño de su cargo.
+</div>
+
+<p class="cuerpo" style="font-size:13px">
+  La empresa procederá a notificar al <strong>Ministerio de Trabajo</strong> dentro de los
+  <strong>ocho (8) días hábiles</strong> siguientes a la presente constitución (Art. 4° Res. 734/2006).
+</p>
+
+<div class="firmas-bloque">
+  <div class="firma-ciudad">${ciudad}, ${hoy}</div>
+
+  <div class="firmas-label">Representantes del Empleador</div>
+  <div class="firmas-grid">${firmasEmp || '<div class="firma-item"><div class="firma-linea">_______________</div><div class="firma-cargo">Empleador</div></div>'}</div>
+
+  <div class="firmas-label">Representantes de los Trabajadores</div>
+  <div class="firmas-grid">${firmasTrab || '<div class="firma-item"><div class="firma-linea">_______________</div><div class="firma-cargo">Trabajador</div></div>'}</div>
+</div>
+
+<div class="pie-doc">
+  <span>${codigo} · Vigía 360</span>
+  <span>Generado el ${new Date().toLocaleDateString('es-CO')}</span>
+</div>
+<script>window.onload = () => window.print();<\/script>
+</body></html>`;
+
+  const win = window.open('', '_blank', 'width=900,height=720');
+  win.document.write(html);
+  win.document.close();
 }
 
 // ═══════════════════════════════════════════════════════

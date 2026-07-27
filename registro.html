@@ -630,7 +630,7 @@
   </div>
 
   <!-- ══ PANTALLA: APROBADO ══ -->
-  <div class="result-screen" id="result-approved">
+  <div class="result-screen" id="result-received">
     <div class="result-page">
       <span class="deco deco-tl">🌿<br>🌱<br>💧</span>
       <span class="deco deco-tr">🍃 🌿<br>🌱<br>🍀</span>
@@ -640,72 +640,17 @@
         <div class="result-logo">
           <img src="logo_sentido.png" alt="SENTIDO — impacto real y marketplace" />
         </div>
-        <h1 class="result-main-title">SOLICITUD APROBADA</h1>
-        <p class="result-main-sub">¡Bienvenido/a a Sentido!</p>
+        <h1 class="result-main-title">SOLICITUD RECIBIDA</h1>
+        <p class="result-main-sub">¡Gracias por postular a Sentido!</p>
         <div class="result-badge-wrap">
-          <div class="result-badge">Tu emprendimiento fue admitido al marketplace</div>
+          <div class="result-badge">Tu solicitud fue recibida con éxito</div>
         </div>
         <div class="result-body">
-          <p>Hola, <span id="approved-name"></span></p>
-          <p>Tenemos una noticia que nos alegra mucho compartirte. Revisamos tu solicitud con cuidado y encontramos lo que buscamos: impacto real, verificable y con propósito. A partir de hoy, tu emprendimiento es parte oficial del marketplace Sentido.</p>
-          <p>En los próximos días recibirás en tu correo el link para completar tu perfil y aparecer en el catálogo. ¡Bienvenido/a a esta comunidad que cree en el cambio real!</p>
-          <p><strong>Sellos verificados:</strong> <span id="approved-seals" style="color:#2D5A3D;font-weight:600"></span></p>
+          <p>Hola, <span id="received-name"></span></p>
+          <p>Recibimos tu solicitud de admisión a Sentido Colombia. Valoramos profundamente tu interés en construir un impacto social positivo y en sumarte a una comunidad que cree en el cambio real.</p>
+          <p>Nuestro equipo revisará tu registro y se comunicará contigo en los próximos días para confirmar tu aceptación a la plataforma.</p>
         </div>
-        <a href="marketplace.html" class="result-cta">Ver el marketplace →</a>
-      </div>
-    </div>
-  </div>
-
-  <!-- ══ PANTALLA: EN REVISIÓN ══ -->
-  <div class="result-screen" id="result-review">
-    <div class="result-page">
-      <span class="deco deco-tl">🌿<br>🌱<br>💧</span>
-      <span class="deco deco-tr">🍃 🌿<br>🌱<br>🍀</span>
-      <span class="deco deco-bl">🌱<br>🌿 💧</span>
-      <span class="deco deco-br">🍃<br>🌿 🌱<br>💧 🍀</span>
-      <div class="result-inner">
-        <div class="result-logo">
-          <img src="logo_sentido.png" alt="SENTIDO — impacto real y marketplace" />
-        </div>
-        <h1 class="result-main-title">SOLICITUD EN REVISIÓN</h1>
-        <p class="result-main-sub">Tu registro requiere atención</p>
-        <div class="result-badge-wrap">
-          <div class="result-badge">REQUIERE INFORMACIÓN FALTANTE PARA VERIFICACIÓN</div>
-        </div>
-        <div class="result-body">
-          <p>Hola, <span id="review-name"></span></p>
-          <p>Gracias por postular tu emprendimiento a Sentido Colombia. Valoramos profundamente tu interés en construir un impacto social positivo y en sumarte a una comunidad que cree en el cambio real.</p>
-          <p>Tras revisar cuidadosamente tu registro, encontramos que aún no cumple con todos los criterios de nuestro sistema de verificación. Será enviado un correo en los próximos días para que incluyas la información faltante.</p>
-          <p style="font-size:14px;color:#7A7060"><strong>Puntos a completar:</strong> <span id="review-pending"></span></p>
-        </div>
-        <a href="registro.html" class="result-cta" style="background:#8B9E6A">Ajustar mi solicitud →</a>
-      </div>
-    </div>
-  </div>
-
-  <!-- ══ PANTALLA: RECHAZADO ══ -->
-  <div class="result-screen" id="result-rejected">
-    <div class="result-page">
-      <span class="deco deco-tl">🌿<br>🌱<br>💧</span>
-      <span class="deco deco-tr">🍃 🌿<br>🌱<br>🍀</span>
-      <span class="deco deco-bl">🌱<br>🌿 💧</span>
-      <span class="deco deco-br">🍃<br>🌿 🌱<br>💧 🍀</span>
-      <div class="result-inner">
-        <div class="result-logo">
-          <img src="logo_sentido.png" alt="SENTIDO — impacto real y marketplace" />
-        </div>
-        <h1 class="result-main-title">SOBRE TU SOLICITUD<br>DE ADMISIÓN</h1>
-        <p class="result-main-sub">Marketplace de impacto social y ambiental · Colombia</p>
-        <div class="result-badge-wrap">
-          <div class="result-badge">Aún no es el momento, / pero la puerta sigue abierta</div>
-        </div>
-        <div class="result-body">
-          <p>Hola, <span id="rejected-name"></span></p>
-          <p>Gracias por tomarte el tiempo de aplicar y por querer ser parte de este mercado con propósito. Revisamos con cuidado la solicitud y en esta ocasión no nos es posible aprobar la admisión.</p>
-          <p>Te animamos a seguir construyendo tu historia de impacto. Cuando sientas que tu emprendimiento cumple mejor con los criterios de los sellos SENTIDO, podrás volver a aplicar.</p>
-          <p style="font-size:14px;color:#7A7060"><strong>Nota del equipo:</strong> <span id="rejected-notes"></span></p>
-        </div>
-        <a href="index.html" class="result-cta" style="background:#8B7355">Volver al inicio</a>
+        <a href="index.html" class="result-cta">Volver al inicio →</a>
       </div>
     </div>
   </div>
@@ -940,31 +885,15 @@ async function confirmAndSave() {
 
     // Notificar al equipo SENTIDO y al emprendedor por correo HTML
     enviarCorreoAdmin(savedFormData, ai);
-    enviarCorreoEmprendedor(savedFormData, ai);
-
-    const rec   = ai.recommendation || 'REVISAR';
-    const owner = savedFormData.owner_name || '';
+    enviarCorreoEmprendedor(savedFormData);
 
     // Ocultar vista IA (los pasos 1-4 ya están ocultos desde submitForm())
     document.getElementById('ai-verify-view').classList.remove('active');
 
-    // Mostrar pantalla de resultado según recomendación IA
-    if (rec === 'APROBAR') {
-      document.getElementById('approved-name').textContent = owner;
-      document.getElementById('approved-seals').textContent =
-        (ai.verified_seals || []).join(' · ') || savedFormData.seals.replace(/;/g, ' · ');
-      document.getElementById('result-approved').classList.add('show');
-    } else if (rec === 'RECHAZAR') {
-      document.getElementById('rejected-name').textContent = owner;
-      document.getElementById('rejected-notes').textContent =
-        ai.justification || 'Los sellos solicitados requieren mayor evidencia de impacto.';
-      document.getElementById('result-rejected').classList.add('show');
-    } else {
-      document.getElementById('review-name').textContent = owner;
-      document.getElementById('review-pending').textContent =
-        (ai.pending_seals || []).join(', ') || 'Información adicional sobre el impacto del emprendimiento.';
-      document.getElementById('result-review').classList.add('show');
-    }
+    // El veredicto de la IA queda guardado para el equipo SENTIDO (panel admin);
+    // al solicitante siempre se le muestra el mismo mensaje de recibido.
+    document.getElementById('received-name').textContent = savedFormData.owner_name || '';
+    document.getElementById('result-received').classList.add('show');
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
   } catch (err) {
@@ -1085,53 +1014,18 @@ function enviarCorreoAdmin(data, ai) {
 }
 
 // ── Correo al emprendedor: resultado ────────────────────────────
-function enviarCorreoEmprendedor(data, ai) {
-  const rec = ai.recommendation || 'REVISAR';
-
-  if (rec === 'APROBAR') {
-    const seals = (ai.verified_seals||[]).join(' &nbsp;·&nbsp; ') || data.seals.replace(/;/g,' · ');
-    const body = `
-      <p>Hola, <strong>${data.owner_name}</strong></p>
-      <p>Tenemos una noticia que nos alegra mucho compartirte. Revisamos tu solicitud con cuidado y encontramos lo que buscamos: <strong>impacto real, verificable y con propósito.</strong></p>
-      <p>A partir de hoy, <strong>${data.name}</strong> es parte oficial del marketplace Sentido.</p>
-      ${seals ? `<p style="margin:16px 0;padding:12px 18px;background:#E8EDD8;border-radius:8px;border-left:4px solid #2D5A3D"><span style="font-weight:700;color:#2D5A3D">Sellos verificados:</span><br><span style="color:#3A5228">${seals}</span></p>` : ''}
-      <p>En los próximos días recibirás el link para completar tu perfil y aparecer en el catálogo. ¡Bienvenido/a a esta comunidad que cree en el cambio real!</p>
-      <br>
-      <table cellpadding="0" cellspacing="0"><tr><td style="background:#2D5A3D;border-radius:8px;padding:12px 24px">
-        <a href="${window.location.origin}/marketplace.html" style="color:white;text-decoration:none;font-weight:800;font-size:14px">→ Ver el marketplace Sentido</a>
-      </td></tr></table>`;
-    enviarEmail({
-      to: data.email,
-      subject: `✅ ¡${data.name} fue admitido al marketplace Sentido!`,
-      html: emailBase('SOLICITUD APROBADA', '¡Bienvenido/a a Sentido!', 'Tu emprendimiento fue admitido al marketplace', body)
-    });
-
-  } else if (rec === 'RECHAZAR') {
-    const body = `
-      <p>Hola, <strong>${data.owner_name}</strong></p>
-      <p>Gracias por tomarte el tiempo de aplicar y por querer ser parte de este mercado con propósito. Revisamos con cuidado la solicitud y en esta ocasión no nos es posible aprobar la admisión.</p>
-      ${ai.justification ? `<p style="margin:16px 0;padding:12px 18px;background:#FFF5F0;border-radius:8px;border-left:4px solid #C4895A;color:#5C3010;font-style:italic">"${ai.justification}"</p>` : ''}
-      <p>Te animamos a seguir construyendo tu historia de impacto. Cuando sientas que tu emprendimiento cumple mejor con los criterios de los sellos SENTIDO, podrás volver a aplicar.</p>`;
-    enviarEmail({
-      to: data.email,
-      subject: `Sobre tu solicitud de admisión a Sentido — ${data.name}`,
-      html: emailBase('SOBRE TU SOLICITUD<br>DE ADMISIÓN', 'Marketplace de impacto social y ambiental · Colombia', 'Aún no es el momento, pero la puerta sigue abierta', body)
-    });
-
-  } else {
-    const pending = (ai.pending_seals||[]).join(', ') || 'Información adicional sobre el impacto.';
-    const body = `
-      <p>Hola, <strong>${data.owner_name}</strong></p>
-      <p>Gracias por postular tu emprendimiento a Sentido Colombia. Valoramos profundamente tu interés en construir un impacto social positivo y en sumarte a una comunidad que cree en el cambio real.</p>
-      <p>Tras revisar cuidadosamente tu registro, encontramos que aún no cumple con todos los criterios de nuestro sistema de verificación.</p>
-      <p style="margin:16px 0;padding:12px 18px;background:#FFFBEB;border-radius:8px;border-left:4px solid #D97706;color:#92400E"><strong>Información que necesitamos completar:</strong><br>${pending}</p>
-      <p>Será enviado un correo en los próximos días para que incluyas la información faltante. Estamos aquí para acompañarte en el proceso.</p>`;
-    enviarEmail({
-      to: data.email,
-      subject: `Solicitud en revisión — ${data.name} | Sentido`,
-      html: emailBase('SOLICITUD EN REVISIÓN', 'Tu registro requiere atención', 'REQUIERE INFORMACIÓN FALTANTE PARA VERIFICACIÓN', body)
-    });
-  }
+function enviarCorreoEmprendedor(data) {
+  // El veredicto de la IA (ai) es solo para uso interno del equipo SENTIDO
+  // (panel admin) — al solicitante siempre se le envía el mismo mensaje.
+  const body = `
+    <p>Hola, <strong>${data.owner_name}</strong></p>
+    <p>Recibimos tu solicitud de admisión de <strong>${data.name}</strong> a Sentido Colombia. Valoramos profundamente tu interés en construir un impacto social positivo y en sumarte a una comunidad que cree en el cambio real.</p>
+    <p>Nuestro equipo revisará tu registro y se comunicará contigo en los próximos días para confirmar tu aceptación a la plataforma.</p>`;
+  enviarEmail({
+    to: data.email,
+    subject: `Recibimos tu solicitud — ${data.name} | Sentido`,
+    html: emailBase('SOLICITUD RECIBIDA', '¡Gracias por postular a Sentido!', 'Tu solicitud fue recibida con éxito', body)
+  });
 }
 
 // ── Volver al formulario desde la vista IA ──────────────────────

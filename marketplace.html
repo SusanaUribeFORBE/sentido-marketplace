@@ -48,6 +48,20 @@
     .hero-mini h1 { font-size: 20px; font-weight: 800; margin-bottom: 4px; }
     .hero-mini p { font-size: 13px; color: rgba(255,255,255,0.7); }
 
+    .impact-strip { background: #162B1E; }
+    .impact-inner { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, 1fr); }
+    .impact-stat {
+      padding: 22px 20px; text-align: center;
+      border-right: 1px solid rgba(255,255,255,0.1); transition: background 0.15s;
+    }
+    .impact-stat:last-child { border-right: none; }
+    .impact-stat:hover { background: rgba(255,255,255,0.05); }
+    .impact-num {
+      font-size: 36px; font-weight: 900; color: #ffffff;
+      line-height: 1; margin-bottom: 6px; font-variant-numeric: tabular-nums;
+    }
+    .impact-label { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 0.07em; }
+
     .controls {
       background: var(--cream-dark); border-bottom: 1px solid var(--gray-200);
       padding: 14px 24px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
@@ -188,6 +202,11 @@
     .success-sub { font-size: 14px; color: var(--gray-600); line-height: 1.5; }
 
     @media (max-width: 600px) {
+      .impact-inner { grid-template-columns: repeat(2, 1fr); }
+      .impact-stat { border-right: 1px solid rgba(255,255,255,0.1); border-bottom: 1px solid rgba(255,255,255,0.1); }
+      .impact-stat:nth-child(2n) { border-right: none; }
+      .impact-stat:nth-child(3), .impact-stat:nth-child(4) { border-bottom: none; }
+      .impact-num { font-size: 28px; }
       .controls { padding: 12px 16px; }
       .container { padding: 18px 16px; }
       .grid { grid-template-columns: 1fr; }
@@ -215,6 +234,27 @@
   <div class="hero-mini-inner">
     <h1>🛍️ Marketplace</h1>
     <p id="hero-sub">Cargando emprendimientos...</p>
+  </div>
+</div>
+
+<div class="impact-strip">
+  <div class="impact-inner">
+    <div class="impact-stat">
+      <div class="impact-num" id="stat-emps">—</div>
+      <div class="impact-label">Emprendimientos</div>
+    </div>
+    <div class="impact-stat">
+      <div class="impact-num" id="stat-prods">—</div>
+      <div class="impact-label">Productos disponibles</div>
+    </div>
+    <div class="impact-stat">
+      <div class="impact-num" id="stat-cities">—</div>
+      <div class="impact-label">Ciudades de Colombia</div>
+    </div>
+    <div class="impact-stat">
+      <div class="impact-num" id="stat-mujeres">—</div>
+      <div class="impact-label">Lideradas por mujeres</div>
+    </div>
   </div>
 </div>
 
@@ -468,7 +508,24 @@ async function loadSupabaseData() {
   }
 }
 
+function renderIndicadores() {
+  const total = ALL_DATA.length;
+  const prods = ALL_DATA.reduce((s, e) => s + (e.products?.length || 0), 0);
+  const ciudades = new Set(
+    ALL_DATA.map(e => (e.city || '').split(',')[0].trim().toLowerCase()).filter(Boolean)
+  ).size;
+  const mujeres = ALL_DATA.filter(e => {
+    const s = (e.seals || '').toLowerCase();
+    return s.includes('jefatura') || s.includes('liderazgo');
+  }).length;
+  document.getElementById('stat-emps').textContent    = total;
+  document.getElementById('stat-prods').textContent   = prods + '+';
+  document.getElementById('stat-cities').textContent  = ciudades;
+  document.getElementById('stat-mujeres').textContent = mujeres + '+';
+}
+
 function render() {
+  renderIndicadores();
   const q = (document.getElementById('search').value || '').toLowerCase();
   const filtered = ALL_DATA.filter(e => {
     const mq = !q || e.name.toLowerCase().includes(q) || e.tagline.toLowerCase().includes(q) ||

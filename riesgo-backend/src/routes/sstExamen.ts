@@ -70,7 +70,10 @@ Reglas:
 // ── Endpoint de visión: PDF escaneado → imágenes base64 → Groq vision ────────
 sstExamenRouter.post('/analizar-examen-imagen', async (req: Request, res: Response) => {
   const apiKey = process.env.GROQ_API_KEY;
-  const VISION_MODEL = 'meta-llama/llama-4-scout-17b-16e-instruct';
+  // Modelos en orden de preferencia; se intenta el siguiente si el anterior falla
+  const VISION_MODELS = [
+    'qwen/qwen3.6-27b', // modelo de visión activo en Groq (jul 2026)
+  ];
 
   if (!apiKey) return res.status(503).json({ error: 'GROQ_API_KEY no configurada' });
 
@@ -79,48 +82,72 @@ sstExamenRouter.post('/analizar-examen-imagen', async (req: Request, res: Respon
     return res.status(400).json({ error: 'Se requiere al menos una imagen base64' });
   }
 
+  // Estrategia de páginas: para exámenes de 3+ páginas la última suele tener el
+  // qwen/qwen3.6-27b tiene límite de 8000 TPM (on_demand).
+  // 3 imágenes a escala normal ≈ 10 229 tokens → excede el límite.
+  // Máximo 2 páginas: primera (datos demográficos) + última (aptitud + firma médico).
+  let paginasAEnviar: string[];
+  if (imagenes.length <= 2) {
+    paginasAEnviar = imagenes;
+  } else {
+    paginasAEnviar = [imagenes[0], imagenes[imagenes.length - 1]];
+  }
+
   const content: object[] = [
     { type: 'text', text: `Analiza este examen médico ocupacional colombiano escaneado y extrae los datos.\n\n${PROMPT_SISTEMA}` },
-    // solo primeras 2 páginas para no saturar tokens
-    ...imagenes.slice(0, 2).map(b64 => ({
+    ...paginasAEnviar.map(b64 => ({
       type: 'image_url',
       image_url: { url: `data:image/jpeg;base64,${b64}` },
     })),
   ];
 
-  try {
-    const groqResp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-      body: JSON.stringify({
-        model: VISION_MODEL,
-        temperature: 0,
-        max_tokens: 2000,
-        messages: [{ role: 'user', content }],
-      }),
-    });
+  let lastError = '';
+  for (const model of VISION_MODELS) {
+    try {
+      const groqResp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+        body: JSON.stringify({ model, temperature: 0, max_tokens: 2000,
+          messages: [{ role: 'user', content }] }),
+      });
 
-    if (!groqResp.ok) {
-      const err = await groqResp.text();
-      console.error('[sstExamen/imagen] Groq error:', err);
-      return res.status(502).json({ error: 'Error IA visión', detalle: err });
+      if (!groqResp.ok) {
+        lastError = await groqResp.text();
+        console.error(`[sstExamen/imagen] ${model} error:`, lastError);
+        continue; // intentar siguiente modelo
+      }
+
+      const groqData = await groqResp.json() as any;
+      const contenido = groqData.choices?.[0]?.message?.content || '';
+      const finishReason = groqData.choices?.[0]?.finish_reason || 'desconocido';
+      console.log(`[sstExamen/imagen] ${model} finish_reason=${finishReason} content_len=${contenido.length}`);
+      if (contenido.length > 0) console.log(`[sstExamen/imagen] contenido_inicio: ${contenido.slice(0, 300)}`);
+      const jsonMatch = contenido.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        lastError = `Sin JSON (finish=${finishReason}): ${contenido.slice(0, 200)}`;
+        console.error('[sstExamen/imagen]', lastError);
+        continue;
+      }
+
+      console.log(`[sstExamen/imagen] OK con modelo ${model}, páginas: ${paginasAEnviar.length}`);
+      return res.json(JSON.parse(jsonMatch[0]));
+    } catch (err: any) {
+      lastError = err.message;
+      console.error(`[sstExamen/imagen] excepción con ${model}:`, err.message);
     }
-
-    const groqData = await groqResp.json() as any;
-    const contenido = groqData.choices?.[0]?.message?.content || '';
-    const jsonMatch = contenido.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) return res.status(502).json({ error: 'La IA no devolvió JSON válido', raw: contenido });
-
-    return res.json(JSON.parse(jsonMatch[0]));
-  } catch (err: any) {
-    return res.status(500).json({ error: err.message });
   }
+
+  return res.status(502).json({ error: 'No se pudo extraer el examen con ningún modelo IA', detalle: lastError });
 });
 
 // ── Endpoint estándar: PDF con texto digital ──────────────────────────────────
 sstExamenRouter.post('/analizar-examen', async (req: Request, res: Response) => {
   const apiKey = process.env.GROQ_API_KEY;
-  const model  = process.env.GROQ_MODEL || 'llama-3.1-8b-instant';
+  const TEXT_MODELS = [
+    process.env.GROQ_MODEL || 'llama-3.1-8b-instant',
+    'llama-3.3-70b-versatile',
+    'llama-3.1-70b-versatile',
+  ];
 
   if (!apiKey) {
     return res.status(503).json({ error: 'GROQ_API_KEY no configurada en el servidor' });
@@ -131,48 +158,45 @@ sstExamenRouter.post('/analizar-examen', async (req: Request, res: Response) => 
     return res.status(400).json({ error: 'El campo "texto" es requerido y debe contener el texto del PDF' });
   }
 
-  // Limitar a 6000 caracteres para no superar tokens
   const textoLimitado = texto.slice(0, 6000);
 
-  try {
-    const groqResp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type':  'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model,
-        temperature: 0,
-        max_tokens:  2000,
-        messages: [
-          { role: 'system', content: PROMPT_SISTEMA },
-          { role: 'user',   content: `Texto del examen médico:\n\n${textoLimitado}` },
-        ],
-      }),
-    });
+  let lastError = '';
+  for (const model of TEXT_MODELS) {
+    try {
+      const groqResp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+        body: JSON.stringify({
+          model, temperature: 0, max_tokens: 2000,
+          messages: [
+            { role: 'system', content: PROMPT_SISTEMA },
+            { role: 'user',   content: `Texto del examen médico:\n\n${textoLimitado}` },
+          ],
+        }),
+      });
 
-    if (!groqResp.ok) {
-      const err = await groqResp.text();
-      console.error('[sstExamen] Groq error:', err);
-      return res.status(502).json({ error: 'Error al consultar la IA', detalle: err });
+      if (!groqResp.ok) {
+        lastError = await groqResp.text();
+        console.error(`[sstExamen/texto] ${model} error:`, lastError);
+        continue;
+      }
+
+      const groqData = await groqResp.json() as any;
+      const contenido = groqData.choices?.[0]?.message?.content || '';
+      const jsonMatch = contenido.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        lastError = `JSON no encontrado en respuesta de ${model}`;
+        console.error('[sstExamen/texto]', lastError, contenido.slice(0, 200));
+        continue;
+      }
+
+      console.log(`[sstExamen/texto] OK con modelo ${model}`);
+      return res.json(JSON.parse(jsonMatch[0]));
+    } catch (err: any) {
+      lastError = err.message;
+      console.error(`[sstExamen/texto] excepción con ${model}:`, err.message);
     }
-
-    const groqData = await groqResp.json() as any;
-    const contenido = groqData.choices?.[0]?.message?.content || '';
-
-    // Extraer JSON de la respuesta
-    const jsonMatch = contenido.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      console.error('[sstExamen] La IA no devolvió JSON válido:', contenido);
-      return res.status(502).json({ error: 'La IA no devolvió datos en formato válido' });
-    }
-
-    const datos = JSON.parse(jsonMatch[0]);
-    return res.json(datos);
-
-  } catch (err: any) {
-    console.error('[sstExamen] Error inesperado:', err);
-    return res.status(500).json({ error: err.message || 'Error interno del servidor' });
   }
+
+  return res.status(502).json({ error: 'No se pudo analizar el examen', detalle: lastError });
 });

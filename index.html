@@ -368,6 +368,7 @@
   // Update stat with localStorage extras
   const total = getAll().length;
   document.getElementById('stat-emp').textContent = total;
+  document.querySelector('.feat-link a').textContent = `Ver los ${total} emprendimientos →`;
 
   // Render 3 featured ventures (IDs 6, 7, 1 — diverse sectors)
   const FEATURED_IDS = [6, 1, 7];
