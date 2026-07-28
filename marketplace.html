@@ -328,8 +328,8 @@
           <label class="form-label">Ciudad de entrega</label>
           <input class="form-input" id="co-city" type="text" placeholder="Medellín, Bogotá..." />
         </div>
-        <button class="pay-btn" onclick="submitOrder()">🔒 Confirmar pedido</button>
-        <div class="wompi-note">Pago seguro · Próximamente integración con Wompi / PSE</div>
+        <button class="pay-btn" id="pay-btn" onclick="submitOrder()">🔒 Pagar con Wompi</button>
+        <div class="wompi-note">Pago seguro con tarjeta, PSE o Nequi · Powered by Wompi</div>
       </div>
     </div>
     <div class="success-modal" id="success-view">
@@ -445,20 +445,74 @@ function openCheckout() {
 
 function closeCheckout() { document.getElementById('checkout-modal').classList.remove('open'); }
 
-function submitOrder() {
-  const name = document.getElementById('co-name').value.trim();
+async function submitOrder() {
+  const name  = document.getElementById('co-name').value.trim();
   const email = document.getElementById('co-email').value.trim();
   const phone = document.getElementById('co-phone').value.trim();
-  const city = document.getElementById('co-city').value.trim();
+  const city  = document.getElementById('co-city').value.trim();
   if (!name || !email) { alert('Por favor completa tu nombre y correo.'); return; }
-  const total = cart.filter(i=>i.price>0).reduce((s,i)=>s+i.price*i.qty,0);
-  const lines = cart.map(i=>`- ${i.qty}x ${i.name} (${i.brand})${i.price?': '+fmt(i.price*i.qty):' (cotizar)'}`).join('\n');
-  const msg = `🛒 *Nuevo pedido SENTIDO*\n\n👤 ${name}\n📧 ${email}\n📱 ${phone || 'no indicado'}\n📍 ${city || 'no indicada'}\n\n${lines}\n\n💰 *Total: ${fmt(total)}*`;
-  document.getElementById('checkout-form-view').style.display = 'none';
-  document.getElementById('success-msg').innerHTML = `Gracias, <strong>${name}</strong>! Tu pedido por <strong>${fmt(total)}</strong> fue recibido.<br><br>Te contactaremos a <strong>${email}</strong> con los detalles de pago y entrega.`;
-  document.getElementById('success-view').classList.add('show');
-  cart = []; saveCart(cart); syncCartBadge();
-  setTimeout(() => window.open(`https://wa.me/${ADMIN_WA}?text=${encodeURIComponent(msg)}`, '_blank'), 600);
+
+  const total       = cart.filter(i => i.price > 0).reduce((s, i) => s + i.price * i.qty, 0);
+  const soloSinPrecio = cart.every(i => !i.price || i.price === 0);
+  const lines       = cart.map(i => `- ${i.qty}x ${i.name} (${i.brand})${i.price ? ': ' + fmt(i.price * i.qty) : ' (cotizar)'}`).join('\n');
+
+  // Si no hay productos con precio conocido → flujo WhatsApp para cotización
+  if (soloSinPrecio) {
+    const msg = `🛒 *Cotización SENTIDO*\n\n👤 ${name}\n📧 ${email}\n📱 ${phone || 'no indicado'}\n📍 ${city || 'no indicada'}\n\n${lines}`;
+    document.getElementById('checkout-form-view').style.display = 'none';
+    document.getElementById('success-msg').innerHTML = `Gracias, <strong>${name}</strong>! Te contactaremos a <strong>${email}</strong> con la cotización.`;
+    document.getElementById('success-view').classList.add('show');
+    cart = []; saveCart(cart); syncCartBadge();
+    setTimeout(() => window.open(`https://wa.me/${ADMIN_WA}?text=${encodeURIComponent(msg)}`, '_blank'), 600);
+    return;
+  }
+
+  // Flujo Wompi para pedidos con precio
+  const btn = document.getElementById('pay-btn');
+  btn.disabled = true;
+  btn.textContent = 'Procesando…';
+
+  try {
+    const reference = `SENTIDO-${Date.now()}`;
+    const amountCents = total * 100; // Wompi trabaja en centavos
+
+    // Pedir firma al backend (la clave de integridad nunca sale del servidor)
+    const resp = await fetch('https://creaia.co/api/wompi/firmar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ reference, amount_in_cents: amountCents, currency: 'COP' })
+    });
+    if (!resp.ok) throw new Error('Error al firmar');
+    const { signature, public_key } = await resp.json();
+
+    // Guardar orden en localStorage para mostrarla en gracias.html
+    localStorage.setItem('sentido_pending_order', JSON.stringify({ name, email, phone, city, cart, total, reference }));
+
+    // Notificar al admin por WhatsApp (en segundo plano)
+    const msg = `🛒 *Pedido SENTIDO — en pago*\n\n👤 ${name}\n📧 ${email}\n📱 ${phone || 'no indicado'}\n📍 ${city || 'no indicada'}\n\n${lines}\n\n💰 *Total: ${fmt(total)}*\n🔑 Ref: ${reference}`;
+    window.open(`https://wa.me/${ADMIN_WA}?text=${encodeURIComponent(msg)}`, '_blank');
+
+    // Redirigir a Wompi Checkout
+    const params = new URLSearchParams({
+      'public-key':                   public_key,
+      'currency':                     'COP',
+      'amount-in-cents':              String(amountCents),
+      'reference':                    reference,
+      'signature:integrity':          signature,
+      'redirect-url':                 'https://sentidomarket.co/gracias.html',
+      'customer-data:full-name':      name,
+      'customer-data:email':          email,
+      'customer-data:phone-number-prefix': '+57',
+      'customer-data:phone-number':   phone.replace(/\D/g, '').slice(-10),
+    });
+    window.location.href = `https://checkout.wompi.co/p/?${params.toString()}`;
+
+  } catch (err) {
+    console.error(err);
+    btn.disabled = false;
+    btn.textContent = '🔒 Pagar con Wompi';
+    alert('Error al iniciar el pago. Intenta de nuevo.');
+  }
 }
 
 function closeSuccess() { closeCheckout(); closeCart(); }

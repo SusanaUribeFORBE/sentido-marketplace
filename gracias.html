@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pedido confirmado — SENTIDO</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: #F5F0E8; color: #1F1C17; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; }
+    .card { background: #fff; border-radius: 20px; border: 1.5px solid #E0DAD0; padding: 40px 36px; max-width: 480px; width: 100%; text-align: center; }
+    .icon { font-size: 56px; margin-bottom: 16px; }
+    .title { font-size: 24px; font-weight: 800; margin-bottom: 8px; }
+    .sub   { font-size: 14px; color: #5C554A; line-height: 1.6; margin-bottom: 24px; }
+    .ref   { font-size: 12px; color: #9C9488; margin-bottom: 24px; }
+    .detail-box { background: #F5F0E8; border-radius: 12px; padding: 16px; text-align: left; margin-bottom: 24px; }
+    .detail-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #9C9488; margin-bottom: 10px; }
+    .detail-row { display: flex; justify-content: space-between; font-size: 13px; color: #5C554A; margin-bottom: 6px; }
+    .detail-row:last-child { margin-bottom: 0; font-weight: 700; color: #1F1C17; border-top: 1px solid #E0DAD0; padding-top: 8px; margin-top: 4px; }
+    .status-pill { display: inline-block; font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 10px; margin-bottom: 20px; }
+    .status-approved { background: #dcfce7; color: #15803d; }
+    .status-pending   { background: #fef3c7; color: #b45309; }
+    .status-declined  { background: #fee2e2; color: #b91c1c; }
+    .btn { display: inline-block; background: #2D5A3D; color: #fff; font-size: 14px; font-weight: 700; padding: 12px 28px; border-radius: 10px; text-decoration: none; margin-top: 8px; }
+    .btn:hover { background: #1F3D2B; }
+    .logo { margin-bottom: 28px; }
+    .logo img { height: 48px; }
+  </style>
+</head>
+<body>
+<div class="card">
+  <div class="logo"><a href="index.html"><img src="logo_sentido.png" alt="SENTIDO" /></a></div>
+  <div id="content">
+    <div class="icon">⏳</div>
+    <div class="title">Verificando pago…</div>
+  </div>
+</div>
+
+<script>
+  function fmt(n) { return '$ ' + Math.round(n).toLocaleString('es-CO'); }
+
+  const params  = new URLSearchParams(window.location.search);
+  const txId    = params.get('id') || '';
+  const status  = (params.get('status') || '').toUpperCase();
+  const order   = (() => { try { return JSON.parse(localStorage.getItem('sentido_pending_order') || 'null'); } catch { return null; } })();
+
+  const statusMap = {
+    APPROVED: { icon: '🎉', title: '¡Pago aprobado!', pill: 'Aprobado', pillClass: 'status-approved', msg: 'Tu pedido está confirmado. Te enviaremos los detalles de entrega a tu correo.' },
+    PENDING:  { icon: '⏳', title: 'Pago en revisión', pill: 'Pendiente', pillClass: 'status-pending',  msg: 'Tu pago está siendo procesado. Te notificaremos cuando se confirme.' },
+    DECLINED: { icon: '❌', title: 'Pago no aprobado', pill: 'Rechazado', pillClass: 'status-declined', msg: 'El pago no pudo procesarse. Por favor intenta de nuevo o elige otro método.' },
+    ERROR:    { icon: '⚠️', title: 'Error en el pago', pill: 'Error',     pillClass: 'status-declined', msg: 'Ocurrió un error. Intenta de nuevo o contáctanos por WhatsApp.' },
+  };
+
+  const s = statusMap[status] || { icon: '🛒', title: 'Pedido recibido', pill: '', pillClass: '', msg: 'Gracias por tu compra. Te contactaremos pronto.' };
+
+  let detailHTML = '';
+  if (order && order.cart && order.cart.length) {
+    const rows = order.cart.map(i =>
+      `<div class="detail-row"><span>${i.qty}× ${i.name}</span><span>${i.price ? fmt(i.price * i.qty) : 'Cotizar'}</span></div>`
+    ).join('');
+    detailHTML = `
+      <div class="detail-box">
+        <div class="detail-title">Resumen del pedido</div>
+        ${rows}
+        <div class="detail-row"><span>Total</span><span>${fmt(order.total)}</span></div>
+      </div>`;
+  }
+
+  const refLine = (order?.reference || txId) ? `<div class="ref">Referencia: ${order?.reference || txId}</div>` : '';
+  const pillHTML = s.pill ? `<span class="status-pill ${s.pillClass}">${s.pill}</span><br>` : '';
+  const backBtn  = status === 'DECLINED' || status === 'ERROR'
+    ? `<a href="marketplace.html" class="btn">Volver al marketplace</a>`
+    : `<a href="index.html" class="btn">Ir al inicio</a>`;
+
+  document.getElementById('content').innerHTML = `
+    <div class="icon">${s.icon}</div>
+    <div class="title">${s.title}</div>
+    ${pillHTML}
+    <div class="sub">${s.msg}${order?.name ? `<br><br>Hola, <strong>${order.name}</strong> — gracias por apoyar el emprendimiento sostenible en Colombia.` : ''}</div>
+    ${refLine}
+    ${detailHTML}
+    ${backBtn}
+  `;
+
+  // Limpiar carrito solo si el pago fue aprobado
+  if (status === 'APPROVED') {
+    localStorage.removeItem('sentido_pending_order');
+    localStorage.removeItem('sentido_cart');
+  }
+</script>
+</body>
+</html>

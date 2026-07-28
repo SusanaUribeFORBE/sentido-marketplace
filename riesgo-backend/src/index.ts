@@ -17,6 +17,7 @@ import { clientAuth } from './middleware/clientAuth';
 import { arlAuth } from './middleware/arlAuth';
 import { creaAuth } from './middleware/creaAuth';
 import { creaPlanesRouter } from './routes/creaPlanes';
+import { wompiRouter } from './routes/wompi';
 
 const app = express();
 app.set('trust proxy', 1);
@@ -90,6 +91,7 @@ app.use('/api/crea', creaPlanesRouter);
 app.use('/api/contenido', creaAuth, contenidoRouter);
 app.use('/api/sst', examLimiter, sstExamenRouter);
 app.use('/api/sentido', sentidoLimiter, sentidoAgenteRouter);
+app.use('/api/wompi', wompiRouter);
 app.use('/api', pinLimiter, authRouter);
 app.use('/api', gameRouter);
 app.use('/api', analyticsRouter);
