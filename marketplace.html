@@ -195,6 +195,10 @@
     .pay-btn { width: 100%; padding: 14px; background: var(--green); color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 800; cursor: pointer; transition: background 0.15s; }
     .pay-btn:hover { background: var(--green-dark); }
     .wompi-note { text-align: center; font-size: 11px; color: var(--gray-400); margin-top: 10px; }
+    .pay-methods { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+    .pay-method-badge { display: flex; align-items: center; gap: 5px; background: var(--gray-100); border: 1px solid var(--gray-200); border-radius: 8px; padding: 5px 10px; font-size: 11px; font-weight: 600; color: var(--gray-600); }
+    .pay-method-badge svg { flex-shrink: 0; }
+    .pay-secure-label { width: 100%; text-align: center; font-size: 10px; color: var(--gray-400); margin-top: 4px; letter-spacing: 0.03em; }
     .success-modal { display: none; flex-direction: column; align-items: center; text-align: center; padding: 32px 24px; }
     .success-modal.show { display: flex; }
     .success-icon { font-size: 56px; margin-bottom: 12px; }
@@ -328,8 +332,35 @@
           <label class="form-label">Ciudad de entrega</label>
           <input class="form-input" id="co-city" type="text" placeholder="Medellín, Bogotá..." />
         </div>
-        <button class="pay-btn" id="pay-btn" onclick="submitOrder()">🔒 Pagar con Wompi</button>
-        <div class="wompi-note">Pago seguro con tarjeta, PSE o Nequi · Powered by Wompi</div>
+        <button class="pay-btn" id="pay-btn" onclick="submitOrder()">🔒 Pagar ahora</button>
+        <div class="pay-methods">
+          <!-- Tarjeta -->
+          <div class="pay-method-badge">
+            <svg width="18" height="13" viewBox="0 0 18 13" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="0.5" y="0.5" width="17" height="12" rx="1.5" fill="#F5F5F5" stroke="#E0E0E0"/>
+              <rect y="3" width="18" height="3" fill="#1565C0"/>
+              <rect x="2" y="8" width="5" height="1.5" rx="0.75" fill="#9E9E9E"/>
+            </svg>
+            Tarjeta
+          </div>
+          <!-- PSE -->
+          <div class="pay-method-badge">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect width="16" height="16" rx="3" fill="#003087"/>
+              <text x="8" y="11.5" font-size="7" font-weight="bold" fill="white" text-anchor="middle" font-family="Arial">PSE</text>
+            </svg>
+            PSE
+          </div>
+          <!-- Nequi -->
+          <div class="pay-method-badge">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect width="16" height="16" rx="3" fill="#6B21A8"/>
+              <text x="8" y="11.5" font-size="5.5" font-weight="bold" fill="white" text-anchor="middle" font-family="Arial">Nequi</text>
+            </svg>
+            Nequi
+          </div>
+        </div>
+        <div class="pay-secure-label">🔒 Pago 100% seguro · Procesado por Wompi</div>
       </div>
     </div>
     <div class="success-modal" id="success-view">
@@ -510,7 +541,7 @@ async function submitOrder() {
   } catch (err) {
     console.error(err);
     btn.disabled = false;
-    btn.textContent = '🔒 Pagar con Wompi';
+    btn.textContent = '🔒 Pagar ahora';
     alert('Error al iniciar el pago. Intenta de nuevo.');
   }
 }
