@@ -124,6 +124,10 @@ function buildConfirmationEmail(order: OrderPayload): string {
     <div style="font-size:42px;margin-bottom:14px;">🎉</div>
     <h1 style="margin:0 0 10px;font-size:22px;font-weight:900;color:#1F1C17;line-height:1.25;">¡Tu compra está cambiando<br>una vida real, ${name}!</h1>
     <p style="margin:0;font-size:14px;color:#5C554A;line-height:1.7;max-width:440px;margin:0 auto;">Tu decisión de hoy va mucho más allá de adquirir un producto. Elegiste decirle <strong>NO al greenwashing</strong> y respaldar una economía transparente, circular y justa en Colombia.</p>
+    <div style="margin-top:14px;background:#FEF9EC;border:1px solid #F5D97A;border-radius:10px;padding:12px 16px;max-width:440px;margin:14px auto 0;text-align:left;">
+      <span style="font-size:11px;font-weight:700;color:#92400E;text-transform:uppercase;letter-spacing:0.05em;">¿Qué es el greenwashing?</span><br>
+      <span style="font-size:12px;color:#78350F;line-height:1.6;">Es la práctica engañosa de marketing donde una empresa <em>afirma ser sostenible</em> sin serlo realmente — o donde sus acciones positivas son insignificantes frente al daño que causa. En SENTIDO, cada emprendimiento pasa por un filtro de verificación para que tu dinero genere un impacto real y auditado.</span>
+    </div>
   </td></tr>
 
   <!-- IMPACT -->
@@ -131,7 +135,7 @@ function buildConfirmationEmail(order: OrderPayload): string {
     <div style="border:2px solid #2D5A3D;border-radius:14px;padding:22px;">
       <div style="font-size:12px;font-weight:800;color:#2D5A3D;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:16px;">🛡️ Impacto Verificado de tu Pedido</div>
       ${impactSection}
-      <div style="margin-top:14px;padding-top:12px;border-top:1px solid #E0DAD0;font-size:11px;color:#9C9488;">Curaduría verificada por el equipo SENTIDO · Libre de greenwashing garantizado.</div>
+      <div style="margin-top:14px;padding-top:12px;border-top:1px solid #E0DAD0;font-size:12px;color:#5C554A;">✅ Aplicamos un filtro de verificación para asegurar el impacto real de cada emprendimiento.</div>
     </div>
   </td></tr>
 
