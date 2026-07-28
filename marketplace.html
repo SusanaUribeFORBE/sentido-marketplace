@@ -516,8 +516,13 @@ async function submitOrder() {
     if (!resp.ok) throw new Error('Error al firmar');
     const { signature, public_key } = await resp.json();
 
+    // Enriquecer carrito con sellos del emprendedor para el correo de confirmación
+    const enrichedCart = cart.map(item => {
+      const emp = ALL_DATA.find(e => String(e.id) === String(item.empId));
+      return emp ? { ...item, seals: emp.seals || '', empCity: emp.city || '' } : item;
+    });
     // Guardar orden en localStorage para mostrarla en gracias.html
-    localStorage.setItem('sentido_pending_order', JSON.stringify({ name, email, phone, city, cart, total, reference }));
+    localStorage.setItem('sentido_pending_order', JSON.stringify({ name, email, phone, city, cart: enrichedCart, total, reference }));
 
     // Notificar al admin por WhatsApp (en segundo plano)
     const msg = `🛒 *Pedido SENTIDO — en pago*\n\n👤 ${name}\n📧 ${email}\n📱 ${phone || 'no indicado'}\n📍 ${city || 'no indicada'}\n\n${lines}\n\n💰 *Total: ${fmt(total)}*\n🔑 Ref: ${reference}`;

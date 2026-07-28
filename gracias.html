@@ -82,8 +82,15 @@
     ${backBtn}
   `;
 
-  // Limpiar carrito solo si el pago fue aprobado
+  // Limpiar carrito y enviar correo de confirmación solo si el pago fue aprobado
   if (status === 'APPROVED') {
+    if (order) {
+      fetch('https://creaia.co/api/wompi/confirmar-correo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(order),
+      }).catch(() => {});
+    }
     localStorage.removeItem('sentido_pending_order');
     localStorage.removeItem('sentido_cart');
   }
