@@ -56,7 +56,7 @@ loginForm.addEventListener('submit', async (e) => {
 
   try {
     const res = await fetch('/api/admin/analytics', { headers: { 'x-admin-key': key } });
-    if (!res.ok) {
+    if (res.status === 401) {
       sessionStorage.removeItem('riesgo_admin_key');
       loginMessage.textContent = 'Clave inválida.';
       loginMessage.className = 'message error';
