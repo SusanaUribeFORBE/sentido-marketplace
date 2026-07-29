@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CESTA STUDIO — Ropa Técnica de Cancha</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black:   #16180F;
+      --olive:   #3A5A28;
+      --olive-l: #4E7A36;
+      --espresso:#6B4226;
+      --stone:   #B8B09A;
+      --sand:    #D4C9B0;
+      --bone:    #EDE8DC;
+      --bone-d:  #DDD5C4;
+      --white:   #F7F4EE;
+      --text-dark:  #16180F;
+      --text-mid:   #4A4A38;
+      --text-light: #EDE8DC;
+      --text-muted: #B8B09A;
+      --ff-body: system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif;
+      --radius: 4px;
+      --transition: 0.2s ease;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bone:   #1E2018; --bone-d: #252820; --white:  #2A2D24; --sand:   #3A3D32;
+        --text-dark: #EDE8DC; --text-mid:  #B8B09A;
+      }
+    }
+    :root[data-theme="light"] {
+      --bone: #EDE8DC; --bone-d: #DDD5C4; --white: #F7F4EE; --sand: #D4C9B0;
+      --text-dark: #16180F; --text-mid: #4A4A38;
+    }
+    :root[data-theme="dark"] {
+      --bone: #1E2018; --bone-d: #252820; --white: #2A2D24; --sand: #3A3D32;
+      --text-dark: #EDE8DC; --text-mid: #B8B09A;
+    }
+
+    html { scroll-behavior: smooth; }
+    body { font-family: var(--ff-body); background: var(--bone); color: var(--text-dark); font-size: 15px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+
+    /* ANNOUNCEMENT BAR */
+    .ann-bar { background: var(--olive); color: #fff; font-size: 11.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em; text-align: center; padding: 9px 16px; position: relative; overflow: hidden; }
+    .ann-messages { display: flex; }
+    .ann-msg { min-width: 100%; text-align: center; opacity: 0; position: absolute; top: 50%; transform: translateY(-50%); transition: opacity 0.6s; pointer-events: none; }
+    .ann-msg.active { opacity: 1; position: static; transform: none; pointer-events: auto; }
+
+    /* NAV */
+    nav { background: var(--black); display: flex; align-items: center; justify-content: space-between; padding: 0 32px; height: 60px; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .nav-logo { display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 900; letter-spacing: 0.18em; color: var(--bone); text-transform: uppercase; text-decoration: none; }
+    .nav-logo span { color: var(--olive-l); font-weight: 400; letter-spacing: 0.22em; font-size: 12px; }
+    .nav-links { display: flex; gap: 28px; list-style: none; }
+    .nav-links a { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--stone); text-decoration: none; transition: color var(--transition); }
+    .nav-links a:hover { color: #fff; }
+    .nav-right { display: flex; align-items: center; gap: 18px; }
+    .nav-icon { background: none; border: none; cursor: pointer; color: var(--stone); font-size: 18px; transition: color var(--transition); padding: 4px; }
+    .nav-icon:hover { color: #fff; }
+    .nav-cta { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #fff; background: var(--olive); border: none; padding: 8px 18px; border-radius: var(--radius); cursor: pointer; text-decoration: none; transition: background var(--transition); }
+    .nav-cta:hover { background: var(--olive-l); }
+
+    /* HERO */
+    .hero { background: var(--black); min-height: calc(100vh - 96px); display: grid; grid-template-columns: 1fr 1fr; position: relative; overflow: hidden; }
+    .hero::before { content: ''; position: absolute; inset: 0; background-image: linear-gradient(to right, rgba(58,90,40,0.07) 1px, transparent 1px), linear-gradient(to bottom, rgba(58,90,40,0.07) 1px, transparent 1px); background-size: 48px 48px; pointer-events: none; }
+    .hero::after { content: ''; position: absolute; right: -80px; top: 50%; transform: translateY(-50%); width: 480px; height: 480px; border: 2px solid rgba(58,90,40,0.18); border-radius: 50%; pointer-events: none; }
+    .hero-text { display: flex; flex-direction: column; justify-content: center; padding: 72px 56px 72px 64px; position: relative; z-index: 2; }
+    .hero-eyebrow { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.22em; color: var(--olive-l); margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+    .hero-eyebrow::before { content: ''; display: block; width: 28px; height: 1px; background: var(--olive-l); }
+    .hero h1 { font-size: clamp(48px, 6vw, 80px); font-weight: 900; line-height: 0.95; letter-spacing: -0.03em; text-transform: uppercase; color: var(--bone); margin-bottom: 24px; }
+    .hero h1 em { font-style: normal; color: var(--olive-l); display: block; }
+    .hero-sub { font-size: 15px; color: var(--stone); line-height: 1.7; max-width: 380px; margin-bottom: 36px; }
+    .hero-actions { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+    .btn-primary { display: inline-block; background: var(--olive); color: #fff; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; padding: 14px 32px; border-radius: var(--radius); text-decoration: none; border: none; cursor: pointer; transition: background var(--transition); }
+    .btn-primary:hover { background: var(--olive-l); }
+    .btn-ghost { display: inline-block; color: var(--stone); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; padding: 14px 0; text-decoration: none; border-bottom: 1px solid var(--stone); transition: color var(--transition), border-color var(--transition); }
+    .btn-ghost:hover { color: var(--bone); border-color: var(--bone); }
+    .hero-visual { display: flex; align-items: center; justify-content: center; position: relative; z-index: 2; padding: 48px 48px 48px 0; }
+    .hero-card { width: 100%; max-width: 360px; aspect-ratio: 3/4; background: linear-gradient(160deg, #2A3520 0%, #1A2012 100%); border-radius: 8px; border: 1px solid rgba(58,90,40,0.3); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; position: relative; overflow: hidden; }
+    .hero-card::before { content: ''; position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 40%, rgba(22,24,15,0.8)); }
+    .hero-card-badge { position: absolute; top: 20px; right: 20px; background: var(--olive); color: #fff; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; padding: 5px 10px; border-radius: 20px; z-index: 2; }
+    .hero-card-content { position: absolute; bottom: 24px; left: 24px; right: 24px; z-index: 2; }
+    .hero-card-name { font-size: 13px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; color: #fff; margin-bottom: 4px; }
+    .hero-card-detail { font-size: 11px; color: var(--stone); }
+    .hero-silhouette { width: 140px; height: 240px; opacity: 0.15; }
+    .hero-stats { display: flex; gap: 32px; margin-top: 40px; padding-top: 32px; border-top: 1px solid rgba(184,176,154,0.2); }
+    .stat-num { font-size: 24px; font-weight: 900; color: var(--bone); letter-spacing: -0.02em; line-height: 1; margin-bottom: 4px; }
+    .stat-label { font-size: 10px; color: var(--stone); text-transform: uppercase; letter-spacing: 0.1em; }
+
+    /* PILLARS */
+    .pillars { background: var(--white); padding: 88px 64px; }
+    .section-label { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.2em; color: var(--olive); margin-bottom: 12px; }
+    .section-title { font-size: clamp(28px, 3.5vw, 44px); font-weight: 900; line-height: 1.05; letter-spacing: -0.025em; text-transform: uppercase; color: var(--text-dark); margin-bottom: 56px; max-width: 520px; }
+    .pillars-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; background: var(--sand); border: 1px solid var(--sand); border-radius: 8px; overflow: hidden; }
+    .pillar { background: var(--white); padding: 40px 32px; transition: background var(--transition); }
+    .pillar:hover { background: var(--bone); }
+    .pillar-num { font-size: 11px; font-weight: 700; color: var(--olive); letter-spacing: 0.15em; margin-bottom: 20px; }
+    .pillar-icon { width: 44px; height: 44px; background: linear-gradient(135deg, var(--olive) 0%, #2A4A1C 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; margin-bottom: 20px; }
+    .pillar h3 { font-size: 17px; font-weight: 900; text-transform: uppercase; letter-spacing: -0.01em; color: var(--text-dark); line-height: 1.1; margin-bottom: 14px; }
+    .pillar p { font-size: 13.5px; color: var(--text-mid); line-height: 1.7; }
+    .pillar-tag { display: inline-block; margin-top: 20px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--olive); border: 1px solid var(--olive); border-radius: 20px; padding: 4px 10px; }
+
+    /* PRODUCTS */
+    .products { background: var(--bone); padding: 88px 64px; }
+    .products-header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 48px; flex-wrap: wrap; gap: 16px; }
+    .products-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .product-card { background: var(--white); border-radius: 8px; overflow: hidden; border: 1px solid var(--sand); transition: transform var(--transition), box-shadow var(--transition); cursor: pointer; }
+    .product-card:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(22,24,15,0.1); }
+    .product-img { aspect-ratio: 3/4; background: linear-gradient(145deg, #2A3020 0%, #1C2418 100%); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+    .product-img::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 60%; background: linear-gradient(to top, rgba(22,24,15,0.5), transparent); }
+    .product-color-dot { position: absolute; bottom: 16px; left: 16px; display: flex; gap: 6px; z-index: 2; }
+    .dot { width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.4); }
+    .product-placeholder-icon { font-size: 48px; opacity: 0.12; }
+    .product-info { padding: 20px 22px 24px; }
+    .product-cat { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.14em; color: var(--olive); margin-bottom: 6px; }
+    .product-name-es { font-size: 16px; font-weight: 900; text-transform: uppercase; letter-spacing: -0.01em; color: var(--text-dark); margin-bottom: 2px; }
+    .product-name-en { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; color: var(--stone); margin-bottom: 10px; }
+    .product-desc { font-size: 12.5px; color: var(--text-mid); line-height: 1.6; margin-bottom: 18px; }
+    .product-footer { display: flex; align-items: center; justify-content: space-between; }
+    .product-price { font-size: 16px; font-weight: 900; color: var(--text-dark); font-variant-numeric: tabular-nums; }
+    .product-price span { font-size: 11px; font-weight: 600; color: var(--stone); }
+    .add-btn { background: var(--black); color: #fff; border: none; border-radius: var(--radius); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; padding: 8px 16px; cursor: pointer; transition: background var(--transition); }
+    .add-btn:hover { background: var(--olive); }
+
+    /* MANIFESTO */
+    .manifesto { background: var(--black); padding: 100px 64px; position: relative; overflow: hidden; }
+    .manifesto::before { content: ''; position: absolute; left: -120px; top: 50%; transform: translateY(-50%); width: 500px; height: 500px; border: 1.5px solid rgba(58,90,40,0.15); border-radius: 50%; pointer-events: none; }
+    .manifesto-inner { max-width: 800px; margin: 0 auto; text-align: center; position: relative; z-index: 2; }
+    .manifesto-eyebrow { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.2em; color: var(--olive-l); margin-bottom: 28px; }
+    .manifesto blockquote { font-size: clamp(20px, 2.5vw, 30px); font-weight: 700; line-height: 1.55; color: var(--bone); letter-spacing: -0.01em; font-style: italic; margin-bottom: 36px; }
+    .manifesto blockquote strong { font-style: normal; color: var(--olive-l); }
+    .manifesto-attr { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.16em; color: var(--stone); }
+    .manifesto-divider { width: 40px; height: 1px; background: var(--olive); margin: 0 auto 24px; }
+
+    /* NEWSLETTER */
+    .newsletter { background: var(--olive); padding: 64px; display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
+    .nl-text h2 { font-size: clamp(24px, 3vw, 38px); font-weight: 900; text-transform: uppercase; letter-spacing: -0.025em; color: #fff; line-height: 1.05; margin-bottom: 10px; }
+    .nl-text p { font-size: 14px; color: rgba(255,255,255,0.75); line-height: 1.6; }
+    .nl-form { display: flex; gap: 10px; flex-wrap: wrap; }
+    .nl-input { flex: 1; min-width: 200px; padding: 13px 18px; background: rgba(255,255,255,0.12); border: 1.5px solid rgba(255,255,255,0.25); border-radius: var(--radius); color: #fff; font-size: 13px; outline: none; font-family: var(--ff-body); transition: border-color var(--transition); }
+    .nl-input::placeholder { color: rgba(255,255,255,0.5); }
+    .nl-input:focus { border-color: rgba(255,255,255,0.6); }
+    .nl-btn { background: var(--black); color: #fff; border: none; border-radius: var(--radius); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; padding: 13px 24px; cursor: pointer; white-space: nowrap; transition: background var(--transition); }
+    .nl-btn:hover { background: #2A2A20; }
+    .nl-note { font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 10px; width: 100%; }
+
+    /* FOOTER */
+    footer { background: #0F1009; padding: 64px 64px 32px; color: var(--stone); }
+    .footer-top { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 48px; padding-bottom: 48px; border-bottom: 1px solid rgba(184,176,154,0.1); margin-bottom: 28px; }
+    .footer-brand-logo { margin-bottom: 16px; }
+    .footer-brand-desc { font-size: 12.5px; line-height: 1.7; color: var(--stone); margin-bottom: 20px; }
+    .footer-social { display: flex; gap: 10px; }
+    .social-btn { width: 32px; height: 32px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; font-size: 13px; text-decoration: none; transition: background var(--transition); cursor: pointer; }
+    .social-btn:hover { background: var(--olive); }
+    .footer-col h4 { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.16em; color: #fff; margin-bottom: 18px; }
+    .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .footer-col a { font-size: 12.5px; color: var(--stone); text-decoration: none; transition: color var(--transition); }
+    .footer-col a:hover { color: #fff; }
+    .footer-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 10.5px; color: var(--stone); border: 1px solid rgba(184,176,154,0.25); border-radius: 20px; padding: 4px 10px; margin-top: 8px; }
+    .footer-bottom { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+    .footer-copy { font-size: 11.5px; color: rgba(184,176,154,0.5); }
+    .footer-legal { display: flex; gap: 20px; }
+    .footer-legal a { font-size: 11px; color: rgba(184,176,154,0.4); text-decoration: none; transition: color var(--transition); }
+    .footer-legal a:hover { color: var(--stone); }
+
+    /* RESPONSIVE */
+    @media (max-width: 900px) {
+      .hero { grid-template-columns: 1fr; min-height: auto; }
+      .hero-visual { display: none; }
+      .hero-text { padding: 56px 32px; }
+      .pillars { padding: 64px 32px; }
+      .pillars-grid { grid-template-columns: 1fr; }
+      .products { padding: 64px 32px; }
+      .products-grid { grid-template-columns: 1fr; }
+      .manifesto { padding: 72px 32px; }
+      .newsletter { grid-template-columns: 1fr; padding: 48px 32px; gap: 28px; }
+      footer { padding: 48px 32px 24px; }
+      .footer-top { grid-template-columns: 1fr 1fr; gap: 32px; }
+      nav { padding: 0 20px; }
+      .nav-links { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ANNOUNCEMENT BAR -->
+<div class="ann-bar">
+  <div class="ann-messages" id="ann">
+    <div class="ann-msg active">Envíos gratis en pedidos desde $200.000 · Todo Colombia &nbsp;→</div>
+    <div class="ann-msg">Acceso anticipado a Colección Tierra '25 — Regístrate ahora &nbsp;→</div>
+    <div class="ann-msg">Producción bajo pedido · Sin sobrestock · Hecho en nuestro taller</div>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">
+    <svg width="30" height="40" viewBox="56 26 166 216" fill="#EDE8DC" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M 218,182 A 92,92 0 1,1 218,58 L 197,78 A 63,63 0 1,0 197,162 Z"/>
+      <path d="M 189,156 A 53,53 0 1,1 189,85 L 180,93 A 40,40 0 1,0 180,147 Z"/>
+      <rect x="113" y="162" width="107" height="9"/>
+      <g fill="none" stroke="#EDE8DC" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="118" y1="171" x2="129" y2="207"/><line x1="140" y1="171" x2="129" y2="207"/>
+        <line x1="140" y1="171" x2="163" y2="207"/><line x1="186" y1="171" x2="163" y2="207"/>
+        <line x1="186" y1="171" x2="197" y2="207"/><line x1="208" y1="171" x2="197" y2="207"/>
+        <line x1="129" y1="207" x2="163" y2="237"/><line x1="163" y1="207" x2="163" y2="237"/>
+        <line x1="197" y1="207" x2="163" y2="237"/>
+      </g>
+    </svg>
+    CESTA <span>STUDIO</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#coleccion">Colección</a></li>
+    <li><a href="#nosotros">Nosotros</a></li>
+    <li><a href="#taller">Taller</a></li>
+    <li><a href="#stockists">Dónde comprar</a></li>
+  </ul>
+  <div class="nav-right">
+    <button class="nav-icon" aria-label="Buscar">🔍</button>
+    <button class="nav-icon" aria-label="Carrito">🛒</button>
+    <a href="#newsletter" class="nav-cta">Lista VIP</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-text">
+    <div class="hero-eyebrow">Colección Tierra '25</div>
+    <h1>Hecho para<br>moverse.<br><em>Confeccionado<br>para durar.</em></h1>
+    <p class="hero-sub">Ropa deportiva técnica con raíces en la cancha. Corte atlético entallado, telas eco-técnicas y producción local sin excedentes.</p>
+    <div class="hero-actions">
+      <a href="#coleccion" class="btn-primary">Ver Colección</a>
+      <a href="#nosotros" class="btn-ghost">Nuestra historia</a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat-item"><div class="stat-num">100%</div><div class="stat-label">Confección local</div></div>
+      <div class="stat-item"><div class="stat-num">0</div><div class="stat-label">Sobreproducción</div></div>
+      <div class="stat-item"><div class="stat-num">4+</div><div class="stat-label">Textiles técnicos</div></div>
+    </div>
+  </div>
+  <svg style="position:absolute;right:-60px;top:50%;transform:translateY(-50%);width:500px;height:500px;opacity:0.04;pointer-events:none;" viewBox="56 26 166 216" fill="#EDE8DC" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <path d="M 218,182 A 92,92 0 1,1 218,58 L 197,78 A 63,63 0 1,0 197,162 Z"/>
+    <path d="M 189,156 A 53,53 0 1,1 189,85 L 180,93 A 40,40 0 1,0 180,147 Z"/>
+    <rect x="113" y="162" width="107" height="9"/>
+    <g fill="none" stroke="#EDE8DC" stroke-width="4" stroke-linecap="round">
+      <line x1="118" y1="171" x2="129" y2="207"/><line x1="140" y1="171" x2="129" y2="207"/>
+      <line x1="140" y1="171" x2="163" y2="207"/><line x1="186" y1="171" x2="163" y2="207"/>
+      <line x1="186" y1="171" x2="197" y2="207"/><line x1="208" y1="171" x2="197" y2="207"/>
+      <line x1="129" y1="207" x2="163" y2="237"/><line x1="163" y1="207" x2="163" y2="237"/>
+      <line x1="197" y1="207" x2="163" y2="237"/>
+    </g>
+  </svg>
+  <div class="hero-visual">
+    <div class="hero-card">
+      <div class="hero-card-badge">Nuevo</div>
+      <svg class="hero-silhouette" viewBox="0 0 140 240" fill="none">
+        <ellipse cx="70" cy="30" rx="18" ry="18" fill="white"/>
+        <rect x="48" y="52" width="44" height="60" rx="6" fill="white"/>
+        <rect x="30" y="55" width="20" height="50" rx="5" fill="white"/>
+        <rect x="90" y="55" width="20" height="50" rx="5" fill="white"/>
+        <rect x="50" y="110" width="16" height="75" rx="5" fill="white"/>
+        <rect x="74" y="110" width="16" height="75" rx="5" fill="white"/>
+      </svg>
+      <div class="hero-card-content">
+        <div class="hero-card-name">Slim Tech Jogger</div>
+        <div class="hero-card-detail">Verde Oliva · Talla S–XL</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PILLARS -->
+<section class="pillars" id="taller">
+  <div class="section-label">Por qué CESTA</div>
+  <div class="section-title">Tres principios.<br>Una sola prenda.</div>
+  <div class="pillars-grid">
+    <div class="pillar">
+      <div class="pillar-num">01</div>
+      <div class="pillar-icon">🏭</div>
+      <h3>Taller Propio.<br>Sin excedentes.</h3>
+      <p>Cada prenda sale de nuestras manos. Sin intermediarios, sin sobreproducción. Solo lo que se encarga, se confecciona — y cada costura lleva el estándar de quien la firma.</p>
+      <span class="pillar-tag">Confección local · Medellín</span>
+    </div>
+    <div class="pillar">
+      <div class="pillar-num">02</div>
+      <div class="pillar-icon">⚡</div>
+      <h3>Corte Ergonómico.<br>Para quien se mueve.</h3>
+      <p>Diseñado para el cuerpo en movimiento. Silueta atlética entallada — ni holgada ni restrictiva — que acompaña cada paso, salto y kilómetro sin perder la forma.</p>
+      <span class="pillar-tag">Corte fitted · Sin volumen innecesario</span>
+    </div>
+    <div class="pillar">
+      <div class="pillar-num">03</div>
+      <div class="pillar-icon">🧵</div>
+      <h3>Textiles Técnicos.<br>Que duran de verdad.</h3>
+      <p>Telas eco-técnicas de alta durabilidad: transpiran, se estiran con el cuerpo y resisten el lavado sin perder su forma, su color ni su rendimiento en el tiempo.</p>
+      <span class="pillar-tag">Eco-técnico · Alta durabilidad</span>
+    </div>
+  </div>
+</section>
+
+<!-- PRODUCT GRID -->
+<section class="products" id="coleccion">
+  <div class="products-header">
+    <div>
+      <div class="section-label">Colección Tierra '25</div>
+      <div class="section-title" style="margin-bottom:0;">Lo esencial,<br>sin concesiones.</div>
+    </div>
+    <a href="#" class="btn-ghost" style="color:var(--text-mid);border-color:var(--text-mid);">Ver todos los productos</a>
+  </div>
+  <div class="products-grid">
+    <div class="product-card">
+      <div class="product-img">
+        <div class="product-placeholder-icon">👕</div>
+        <div class="product-color-dot">
+          <div class="dot" style="background:#3A5A28;"></div>
+          <div class="dot" style="background:#16180F;"></div>
+          <div class="dot" style="background:#EDE8DC;"></div>
+        </div>
+      </div>
+      <div class="product-info">
+        <div class="product-cat">Parte superior</div>
+        <div class="product-name-es">Camiseta Técnica</div>
+        <div class="product-name-en">Performance Tee</div>
+        <div class="product-desc">Ligereza y compresión justa para el entrenamiento y la calle. Tejido cuatro vías con control de humedad.</div>
+        <div class="product-footer">
+          <div class="product-price">$189.000 <span>COP</span></div>
+          <button class="add-btn">Agregar</button>
+        </div>
+      </div>
+    </div>
+    <div class="product-card">
+      <div class="product-img">
+        <div class="product-placeholder-icon">🩳</div>
+        <div class="product-color-dot">
+          <div class="dot" style="background:#16180F;"></div>
+          <div class="dot" style="background:#6B4226;"></div>
+          <div class="dot" style="background:#3A5A28;"></div>
+        </div>
+      </div>
+      <div class="product-info">
+        <div class="product-cat">Parte inferior</div>
+        <div class="product-name-es">Pantaloneta Híbrida</div>
+        <div class="product-name-en">Hybrid Short 7"</div>
+        <div class="product-desc">Rango de movimiento completo con longitud de cancha. De la sesión a la ciudad sin cambiar de ropa.</div>
+        <div class="product-footer">
+          <div class="product-price">$215.000 <span>COP</span></div>
+          <button class="add-btn">Agregar</button>
+        </div>
+      </div>
+    </div>
+    <div class="product-card">
+      <div class="product-img">
+        <div class="product-placeholder-icon">👖</div>
+        <div class="product-color-dot">
+          <div class="dot" style="background:#3A5A28;"></div>
+          <div class="dot" style="background:#16180F;"></div>
+          <div class="dot" style="background:#6B4226;"></div>
+        </div>
+      </div>
+      <div class="product-info">
+        <div class="product-cat">Parte inferior</div>
+        <div class="product-name-es">Jogger Técnico Slim</div>
+        <div class="product-name-en">Slim Tech Jogger</div>
+        <div class="product-desc">El pantalón que se adapta: sesión de entrenamiento, vuelo, caminata o reunión. Un solo fondo para todo el día.</div>
+        <div class="product-footer">
+          <div class="product-price">$265.000 <span>COP</span></div>
+          <button class="add-btn">Agregar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MANIFESTO -->
+<section class="manifesto" id="nosotros">
+  <div class="manifesto-inner">
+    <div class="manifesto-eyebrow">Nuestra Historia</div>
+    <div class="manifesto-divider"></div>
+    <blockquote>"CESTA STUDIO nació en una cancha. En ese espacio donde el cuerpo aprende a moverse con propósito, entendimos que la ropa no debía frenar el juego — debía seguirlo. Tomamos el corte del uniforme de baloncesto, lo refinamos con telas técnicas de alto rendimiento y lo trajimos al día a día: al entrenamiento, al viaje, a la ciudad. <strong>Cada prenda de CESTA es una línea de pase perfecta entre función y forma.</strong>"</blockquote>
+    <div class="manifesto-attr">— Fundadores, CESTA STUDIO · Taller propio · Colombia</div>
+  </div>
+</section>
+
+<!-- NEWSLETTER -->
+<section class="newsletter" id="newsletter">
+  <div class="nl-text">
+    <h2>Acceso<br>anticipado.<br>Lista VIP.</h2>
+    <p>Sé el primero en conocer los nuevos lanzamientos, preventas exclusivas y el detrás de cámaras de nuestro taller. Sin spam — solo lo que vale la pena.</p>
+  </div>
+  <div>
+    <div class="nl-form">
+      <input class="nl-input" type="email" placeholder="tu@correo.com" />
+      <button class="nl-btn">Unirme</button>
+      <span class="nl-note">Al registrarte aceptas recibir novedades de CESTA STUDIO. Puedes cancelar cuando quieras.</span>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-top">
+    <div>
+      <div class="footer-brand-logo">
+        <svg width="130" height="140" viewBox="0 0 300 330" xmlns="http://www.w3.org/2000/svg" aria-label="CESTA STUDIO">
+          <path fill="#B8B09A" d="M 218,182 A 92,92 0 1,1 218,58 L 197,78 A 63,63 0 1,0 197,162 Z"/>
+          <path fill="#B8B09A" d="M 189,156 A 53,53 0 1,1 189,85 L 180,93 A 40,40 0 1,0 180,147 Z"/>
+          <rect fill="#B8B09A" x="113" y="162" width="107" height="9"/>
+          <g fill="none" stroke="#B8B09A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="118" y1="171" x2="129" y2="207"/><line x1="140" y1="171" x2="129" y2="207"/>
+            <line x1="140" y1="171" x2="163" y2="207"/><line x1="186" y1="171" x2="163" y2="207"/>
+            <line x1="186" y1="171" x2="197" y2="207"/><line x1="208" y1="171" x2="197" y2="207"/>
+            <line x1="129" y1="207" x2="163" y2="237"/><line x1="163" y1="207" x2="163" y2="237"/>
+            <line x1="197" y1="207" x2="163" y2="237"/>
+          </g>
+          <text x="147" y="284" font-family="'Helvetica Neue',Arial,sans-serif" font-size="46" font-weight="700" letter-spacing="13" text-anchor="middle" fill="#D4C9B0">CESTA</text>
+          <line x1="54" y1="302" x2="86" y2="302" stroke="#5A5A48" stroke-width="1.2"/>
+          <text x="150" y="307" font-family="'Helvetica Neue',Arial,sans-serif" font-size="13" font-weight="400" letter-spacing="9" text-anchor="middle" fill="#6A6A56">STUDIO</text>
+          <line x1="214" y1="302" x2="246" y2="302" stroke="#5A5A48" stroke-width="1.2"/>
+        </svg>
+      </div>
+      <div class="footer-brand-desc">Ropa deportiva técnica con raíces en el baloncesto. Confeccionada en taller propio en Colombia con telas eco-técnicas de alta durabilidad.</div>
+      <div class="footer-social">
+        <a class="social-btn" href="#" aria-label="Instagram">📷</a>
+        <a class="social-btn" href="#" aria-label="TikTok">🎵</a>
+        <a class="social-btn" href="#" aria-label="WhatsApp">💬</a>
+      </div>
+      <div style="margin-top:16px;"><div class="footer-badge">🏭 Confección local · Medellín, Colombia</div></div>
+    </div>
+    <div class="footer-col">
+      <h4>Colección</h4>
+      <ul>
+        <li><a href="#">Camisetas técnicas</a></li>
+        <li><a href="#">Pantalonetas</a></li>
+        <li><a href="#">Joggers</a></li>
+        <li><a href="#">Accesorios</a></li>
+        <li><a href="#">Novedades</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Taller y Marca</h4>
+      <ul>
+        <li><a href="#">Nuestra historia</a></li>
+        <li><a href="#">Proceso de confección</a></li>
+        <li><a href="#">Materiales</a></li>
+        <li><a href="#">Sostenibilidad</a></li>
+        <li><a href="#">Prensa</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Ayuda y Garantías</h4>
+      <ul>
+        <li><a href="#">Guía de tallas</a></li>
+        <li><a href="#">Envíos y entregas</a></li>
+        <li><a href="#">Garantía de taller</a></li>
+        <li><a href="#">Cambios y devoluciones</a></li>
+        <li><a href="#">Contáctanos</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="footer-copy">© 2025 CESTA STUDIO. Todos los derechos reservados.</div>
+    <div class="footer-legal">
+      <a href="#">Política de privacidad</a>
+      <a href="#">Términos de uso</a>
+      <a href="#">Garantía de taller</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  const msgs = document.querySelectorAll('.ann-msg');
+  let cur = 0;
+  setInterval(() => {
+    msgs[cur].classList.remove('active');
+    cur = (cur + 1) % msgs.length;
+    msgs[cur].classList.add('active');
+  }, 4000);
+
+  document.querySelectorAll('.add-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const orig = this.textContent;
+      this.textContent = '✓ Añadido';
+      this.style.background = 'var(--olive)';
+      setTimeout(() => { this.textContent = orig; this.style.background = ''; }, 1400);
+    });
+  });
+
+  const nlForm = document.querySelector('.nl-form');
+  const nlBtn = nlForm.querySelector('.nl-btn');
+  nlBtn.addEventListener('click', () => {
+    const input = nlForm.querySelector('.nl-input');
+    if (!input.value || !input.value.includes('@')) {
+      input.style.borderColor = 'rgba(255,100,100,0.6)';
+      setTimeout(() => input.style.borderColor = '', 1200);
+      return;
+    }
+    nlBtn.textContent = '✓ Registrada';
+    nlBtn.style.background = '#2A4A1C';
+    input.value = '';
+    input.disabled = true;
+  });
+</script>
+</body>
+</html>
