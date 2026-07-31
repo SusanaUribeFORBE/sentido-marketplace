@@ -1,0 +1,13 @@
+{
+  "name": "voz-ia",
+  "version": "1.0.0",
+  "description": "Generador de contenido de marca con IA para pymes",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}

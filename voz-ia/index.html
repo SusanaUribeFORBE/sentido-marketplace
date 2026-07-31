@@ -1290,13 +1290,9 @@ Cada variación debe tener un ángulo distinto (ej: emocional / racional / urgen
 }
 
 async function callClaude(system, userMsg) {
-  const response = await fetch(`${PROXY}/v1/messages`, {
+  const response = await fetch('/api/generate', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'anthropic-version': '2023-06-01',
-      'x-api-key': 'proxy-key'
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       model: MODEL,
       max_tokens: 2048,
