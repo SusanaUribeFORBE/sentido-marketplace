@@ -1,0 +1,1561 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VOZ — Contenido de marca con IA</title>
+<style>
+:root {
+  --bg:        #0D0D16;
+  --surface:   #14141F;
+  --surface-2: #1D1D2E;
+  --surface-3: #262638;
+  --border:    #2C2C42;
+  --primary:   #7B5EEA;
+  --primary-d: rgba(123,94,234,.18);
+  --accent:    #F05A7E;
+  --accent-d:  rgba(240,90,126,.15);
+  --green:     #34D399;
+  --yellow:    #FBBF24;
+  --text:      #E4E1FF;
+  --text-2:    #9390B0;
+  --text-3:    #5C5A78;
+  --radius:    12px;
+  --shadow:    0 4px 24px rgba(0,0,0,.4);
+}
+[data-theme="light"] {
+  --bg:        #F0EFF8;
+  --surface:   #FFFFFF;
+  --surface-2: #ECEAF6;
+  --surface-3: #E2E0F0;
+  --border:    #D0CEEA;
+  --text:      #1A1730;
+  --text-2:    #5A5875;
+  --text-3:    #9390B0;
+  --shadow:    0 4px 24px rgba(0,0,0,.12);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+/* ── HEADER ─────────────────────────────────────────── */
+header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 0 28px;
+  height: 60px;
+}
+.logo {
+  font-weight: 800;
+  font-size: 20px;
+  letter-spacing: -.5px;
+  color: var(--text);
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.logo-spark { color: var(--primary); font-size: 14px; }
+
+nav {
+  display: flex;
+  gap: 2px;
+  flex: 1;
+}
+.tab-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-2);
+  transition: all .15s;
+  white-space: nowrap;
+}
+.tab-btn:hover { background: var(--surface-2); color: var(--text); }
+.tab-btn.active { background: var(--primary-d); color: var(--primary); }
+
+.header-right { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+
+.brand-badge {
+  display: none;
+  font-size: 12px;
+  padding: 4px 10px;
+  background: var(--primary-d);
+  color: var(--primary);
+  border-radius: 20px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.brand-badge.visible { display: block; }
+
+.theme-btn {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  font-size: 16px;
+  color: var(--text-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all .15s;
+}
+.theme-btn:hover { color: var(--text); }
+
+/* ── MAIN LAYOUT ─────────────────────────────────────── */
+main { padding: 32px 28px; max-width: 1200px; margin: 0 auto; }
+
+.tab-pane { display: none; }
+.tab-pane.active { display: block; }
+
+/* ── SECTION HEADER ─────────────────────────────────── */
+.section-header { margin-bottom: 28px; }
+.section-header h2 { font-size: 22px; font-weight: 700; letter-spacing: -.3px; }
+.section-header p { color: var(--text-2); margin-top: 4px; font-size: 14px; }
+
+/* ── FORM ELEMENTS ───────────────────────────────────── */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.form-full { grid-column: 1 / -1; }
+
+.field { display: flex; flex-direction: column; gap: 6px; }
+label { font-size: 13px; font-weight: 600; color: var(--text-2); letter-spacing: .3px; text-transform: uppercase; }
+
+input[type="text"], input[type="email"], textarea, select {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: var(--text);
+  font-size: 14px;
+  font-family: inherit;
+  transition: border-color .15s;
+  outline: none;
+  width: 100%;
+}
+input[type="text"]:focus, textarea:focus, select:focus {
+  border-color: var(--primary);
+  background: var(--surface-3);
+}
+textarea { resize: vertical; min-height: 90px; }
+
+::placeholder { color: var(--text-3); }
+
+/* ── TONE SELECTOR ───────────────────────────────────── */
+.tone-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+.tone-option { display: none; }
+.tone-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 8px;
+  background: var(--surface-2);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-2);
+  text-align: center;
+  transition: all .15s;
+  line-height: 1.3;
+}
+.tone-label .icon { font-size: 22px; }
+.tone-option:checked + .tone-label {
+  background: var(--primary-d);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+/* ── VALUES CHIPS ────────────────────────────────────── */
+.chips-group { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip-input { display: none; }
+.chip {
+  padding: 6px 14px;
+  background: var(--surface-2);
+  border: 1.5px solid var(--border);
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-2);
+  transition: all .15s;
+  user-select: none;
+}
+.chip-input:checked + .chip {
+  background: var(--primary-d);
+  border-color: var(--primary);
+  color: var(--primary);
+  font-weight: 600;
+}
+
+/* ── BUTTONS ─────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 22px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  transition: all .15s;
+  white-space: nowrap;
+}
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+}
+.btn-primary:hover { opacity: .88; transform: translateY(-1px); }
+.btn-primary:active { transform: translateY(0); }
+
+.btn-ghost {
+  background: var(--surface-2);
+  color: var(--text-2);
+  border: 1px solid var(--border);
+}
+.btn-ghost:hover { color: var(--text); background: var(--surface-3); }
+
+.btn-sm { padding: 6px 14px; font-size: 12px; }
+.btn-lg { padding: 14px 32px; font-size: 15px; width: 100%; }
+
+.btn:disabled { opacity: .45; cursor: not-allowed; pointer-events: none; }
+
+/* ── GENERATE TAB ────────────────────────────────────── */
+.gen-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 24px;
+  align-items: start;
+}
+.gen-sidebar {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: sticky;
+  top: 76px;
+}
+.gen-sidebar h3 { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--text-3); margin-bottom: 8px; }
+
+.channel-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+.channel-option { display: none; }
+.channel-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  background: var(--surface-2);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-2);
+  transition: all .15s;
+}
+.channel-label .ch-icon { font-size: 16px; }
+.channel-option:checked + .channel-label {
+  background: var(--primary-d);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.type-list { display: flex; flex-direction: column; gap: 4px; }
+.type-option { display: none; }
+.type-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-2);
+  transition: all .15s;
+}
+.type-label:hover { background: var(--surface-2); color: var(--text); }
+.type-option:checked + .type-label {
+  background: var(--accent-d);
+  color: var(--accent);
+  font-weight: 600;
+}
+.type-label .type-icon { font-size: 15px; }
+
+.gen-main { display: flex; flex-direction: column; gap: 20px; }
+.gen-topic {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.gen-topic h3 { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--text-3); }
+
+.gen-topic textarea { min-height: 70px; }
+
+.brand-warning {
+  display: none;
+  padding: 12px 16px;
+  background: rgba(251,191,36,.08);
+  border: 1px solid rgba(251,191,36,.25);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--yellow);
+  gap: 8px;
+  align-items: center;
+}
+.brand-warning.show { display: flex; }
+
+/* ── RESULT CARDS ────────────────────────────────────── */
+.results-area { display: flex; flex-direction: column; gap: 16px; }
+.results-empty {
+  padding: 48px 24px;
+  text-align: center;
+  color: var(--text-3);
+  background: var(--surface);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+}
+.results-empty .empty-icon { font-size: 36px; margin-bottom: 12px; }
+.results-empty p { font-size: 14px; }
+
+.result-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  animation: fadeUp .3s ease;
+}
+@keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+
+.card-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.card-num {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.card-channel-tag {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--primary-d);
+  color: var(--primary);
+}
+.card-type-tag {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--accent-d);
+  color: var(--accent);
+}
+
+.card-body { font-size: 14px; line-height: 1.7; color: var(--text); white-space: pre-wrap; }
+
+.card-hashtags {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.hashtag {
+  font-size: 12px;
+  color: var(--primary);
+  background: var(--primary-d);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.card-cta {
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--text-2);
+  padding: 8px 12px;
+  background: var(--surface-2);
+  border-radius: 6px;
+  border-left: 3px solid var(--accent);
+}
+.card-cta strong { color: var(--accent); }
+
+.card-note {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--text-3);
+  font-style: italic;
+}
+
+.card-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+/* ── LOADING ─────────────────────────────────────────── */
+.loading-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 40px 24px;
+  text-align: center;
+  color: var(--text-2);
+}
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+  margin: 0 auto 16px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.typing-indicator { display: flex; gap: 6px; justify-content: center; margin-top: 8px; }
+.typing-dot {
+  width: 6px; height: 6px;
+  background: var(--primary);
+  border-radius: 50%;
+  animation: bounce .9s ease infinite;
+}
+.typing-dot:nth-child(2) { animation-delay: .15s; }
+.typing-dot:nth-child(3) { animation-delay: .3s; }
+@keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+
+/* ── CALENDAR ────────────────────────────────────────── */
+.calendar-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.calendar-header h2 { font-size: 22px; font-weight: 700; }
+.cal-nav { display: flex; gap: 4px; }
+.cal-nav-btn {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  color: var(--text-2);
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all .15s;
+}
+.cal-nav-btn:hover { color: var(--text); }
+
+.calendar-grid {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.cal-week-header {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  border-bottom: 1px solid var(--border);
+}
+.cal-day-name {
+  padding: 10px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.cal-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+.cal-day {
+  min-height: 90px;
+  padding: 8px;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  transition: background .15s;
+}
+.cal-day:nth-child(7n) { border-right: none; }
+.cal-day.empty { background: var(--bg); }
+.cal-day.today { background: var(--primary-d); }
+.cal-day-num {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-2);
+  margin-bottom: 6px;
+}
+.cal-day.today .cal-day-num { color: var(--primary); }
+.cal-post {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  font-weight: 600;
+}
+.cal-post.instagram { background: rgba(240,90,126,.2); color: #F05A7E; }
+.cal-post.linkedin  { background: rgba(10,102,194,.25); color: #4B9EFF; }
+.cal-post.facebook  { background: rgba(24,119,242,.2); color: #6AADFF; }
+.cal-post.twitter   { background: rgba(29,161,242,.2); color: #5BBEFF; }
+.cal-post.tiktok    { background: rgba(0,0,0,.3); color: #d0d0d0; }
+.cal-post.email     { background: rgba(52,211,153,.15); color: #34D399; }
+
+/* ── BANCO ───────────────────────────────────────────── */
+.banco-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.filter-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.filter-tab {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 5px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: all .15s;
+}
+.filter-tab.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+
+.banco-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+.banco-empty {
+  grid-column: 1/-1;
+  padding: 64px 24px;
+  text-align: center;
+  color: var(--text-3);
+}
+.banco-empty .empty-icon { font-size: 40px; margin-bottom: 12px; }
+
+.banco-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  animation: fadeUp .3s ease;
+}
+.banco-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.banco-card-tags { display: flex; gap: 6px; }
+.banco-card-date { font-size: 11px; color: var(--text-3); }
+.banco-card-body {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text);
+  margin-bottom: 10px;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.banco-card-actions { display: flex; gap: 6px; }
+
+/* ── TOAST ───────────────────────────────────────────── */
+.toast-container {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 1000;
+}
+.toast {
+  padding: 12px 20px;
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--text);
+  animation: slideIn .25s ease;
+  box-shadow: var(--shadow);
+  max-width: 320px;
+}
+.toast.success { border-color: var(--green); color: var(--green); }
+.toast.error { border-color: var(--accent); color: var(--accent); }
+@keyframes slideIn { from { opacity:0; transform:translateX(16px); } to { opacity:1; transform:translateX(0); } }
+
+/* ── MODAL ───────────────────────────────────────────── */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.6);
+  backdrop-filter: blur(4px);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.modal-overlay.show { display: flex; }
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px;
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+.modal h3 { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+.modal p { color: var(--text-2); font-size: 13px; margin-bottom: 20px; }
+.modal-actions { display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end; }
+
+/* ── RESPONSIVE ──────────────────────────────────────── */
+@media (max-width: 768px) {
+  header { padding: 0 16px; }
+  main { padding: 20px 16px; }
+  .gen-layout { grid-template-columns: 1fr; }
+  .form-grid { grid-template-columns: 1fr; }
+  .tone-grid { grid-template-columns: repeat(3, 1fr); }
+  .gen-sidebar { position: static; }
+  nav { gap: 0; }
+  .tab-btn { padding: 8px 10px; font-size: 12px; }
+}
+
+/* ── SETUP HERO ──────────────────────────────────────── */
+.setup-hero {
+  background: linear-gradient(135deg, var(--primary-d) 0%, transparent 70%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 32px;
+  margin-bottom: 28px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+.setup-hero-text h1 { font-size: 26px; font-weight: 800; letter-spacing: -.5px; }
+.setup-hero-text h1 span { color: var(--primary); }
+.setup-hero-text p { color: var(--text-2); margin-top: 6px; font-size: 14px; max-width: 480px; }
+.setup-hero-icon { font-size: 56px; flex-shrink: 0; }
+
+/* ── STAT ROW ────────────────────────────────────────── */
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 28px;
+}
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.stat-icon { font-size: 24px; }
+.stat-num { font-size: 22px; font-weight: 800; color: var(--primary); }
+.stat-label { font-size: 12px; color: var(--text-2); }
+
+/* ── FORM CARD ───────────────────────────────────────── */
+.form-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 20px;
+}
+.form-card h3 {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">VOZ <span class="logo-spark">✦</span></div>
+  <nav>
+    <button class="tab-btn active" data-tab="marca">Mi Marca</button>
+    <button class="tab-btn" data-tab="generar">Generar</button>
+    <button class="tab-btn" data-tab="calendario">Calendario</button>
+    <button class="tab-btn" data-tab="banco">Banco</button>
+  </nav>
+  <div class="header-right">
+    <span class="brand-badge" id="brandBadge">✦ sin configurar</span>
+    <button class="theme-btn" id="themeBtn" title="Cambiar tema">◐</button>
+  </div>
+</header>
+
+<main>
+
+<!-- ── TAB: MI MARCA ──────────────────────────────────── -->
+<section class="tab-pane active" id="pane-marca">
+
+  <div class="setup-hero">
+    <div class="setup-hero-text">
+      <h1>Define la <span>voz</span> de tu marca</h1>
+      <p>Configura tu identidad una sola vez. VOZ usará este perfil para generar contenido que siempre suene como tú — coherente, consistente y auténtico.</p>
+    </div>
+    <div class="setup-hero-icon">🎙️</div>
+  </div>
+
+  <div class="stat-row">
+    <div class="stat-card">
+      <div class="stat-icon">💬</div>
+      <div>
+        <div class="stat-num" id="statGenerated">0</div>
+        <div class="stat-label">posts generados</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">💾</div>
+      <div>
+        <div class="stat-num" id="statSaved">0</div>
+        <div class="stat-label">guardados en banco</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">📅</div>
+      <div>
+        <div class="stat-num" id="statScheduled">0</div>
+        <div class="stat-label">en calendario</div>
+      </div>
+    </div>
+  </div>
+
+  <form id="brandForm">
+    <div class="form-card">
+      <h3>Identidad básica</h3>
+      <div class="form-grid">
+        <div class="field">
+          <label for="brandName">Nombre de la empresa</label>
+          <input type="text" id="brandName" placeholder="ej. Panadería Flores" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="brandSector">Sector / Industria</label>
+          <input type="text" id="brandSector" placeholder="ej. Alimentación artesanal" autocomplete="off">
+        </div>
+        <div class="field form-full">
+          <label for="brandDesc">¿Qué hace tu negocio? (descripción breve)</label>
+          <textarea id="brandDesc" placeholder="ej. Producimos pan artesanal de masa madre con ingredientes locales para familias que valoran lo natural y lo cercano..."></textarea>
+        </div>
+        <div class="field">
+          <label for="brandAudience">Público objetivo</label>
+          <input type="text" id="brandAudience" placeholder="ej. Madres 30-45 años, hogares conscientes" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="brandKeywords">Hashtags / Palabras clave</label>
+          <input type="text" id="brandKeywords" placeholder="ej. panadería, artesanal, masaMadre" autocomplete="off">
+        </div>
+      </div>
+    </div>
+
+    <div class="form-card">
+      <h3>Tono de voz</h3>
+      <div class="tone-grid">
+        <div>
+          <input type="radio" name="tone" id="tone-pro" class="tone-option" value="Profesional y serio">
+          <label class="tone-label" for="tone-pro"><span class="icon">💼</span>Profesional y serio</label>
+        </div>
+        <div>
+          <input type="radio" name="tone" id="tone-friendly" class="tone-option" value="Cercano y amigable" checked>
+          <label class="tone-label" for="tone-friendly"><span class="icon">🤗</span>Cercano y amigable</label>
+        </div>
+        <div>
+          <input type="radio" name="tone" id="tone-inspire" class="tone-option" value="Inspirador y motivacional">
+          <label class="tone-label" for="tone-inspire"><span class="icon">🚀</span>Inspirador y motivacional</label>
+        </div>
+        <div>
+          <input type="radio" name="tone" id="tone-expert" class="tone-option" value="Educativo y experto">
+          <label class="tone-label" for="tone-expert"><span class="icon">🎓</span>Educativo y experto</label>
+        </div>
+        <div>
+          <input type="radio" name="tone" id="tone-fun" class="tone-option" value="Divertido y desenfadado">
+          <label class="tone-label" for="tone-fun"><span class="icon">🎉</span>Divertido y desenfadado</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-card">
+      <h3>Valores de marca</h3>
+      <div class="chips-group">
+        <input type="checkbox" id="val-calidad" class="chip-input" value="Calidad">
+        <label class="chip" for="val-calidad">Calidad</label>
+        <input type="checkbox" id="val-confianza" class="chip-input" value="Confianza">
+        <label class="chip" for="val-confianza">Confianza</label>
+        <input type="checkbox" id="val-innovacion" class="chip-input" value="Innovación">
+        <label class="chip" for="val-innovacion">Innovación</label>
+        <input type="checkbox" id="val-sostenibilidad" class="chip-input" value="Sostenibilidad">
+        <label class="chip" for="val-sostenibilidad">Sostenibilidad</label>
+        <input type="checkbox" id="val-comunidad" class="chip-input" value="Comunidad">
+        <label class="chip" for="val-comunidad">Comunidad</label>
+        <input type="checkbox" id="val-tradicion" class="chip-input" value="Tradición">
+        <label class="chip" for="val-tradicion">Tradición</label>
+        <input type="checkbox" id="val-transparencia" class="chip-input" value="Transparencia">
+        <label class="chip" for="val-transparencia">Transparencia</label>
+        <input type="checkbox" id="val-cercania" class="chip-input" value="Cercanía">
+        <label class="chip" for="val-cercania">Cercanía</label>
+        <input type="checkbox" id="val-pasion" class="chip-input" value="Pasión">
+        <label class="chip" for="val-pasion">Pasión</label>
+        <input type="checkbox" id="val-resultado" class="chip-input" value="Resultados">
+        <label class="chip" for="val-resultado">Resultados</label>
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-lg">Guardar perfil de marca ✦</button>
+  </form>
+</section>
+
+<!-- ── TAB: GENERAR ───────────────────────────────────── -->
+<section class="tab-pane" id="pane-generar">
+  <div class="gen-layout">
+    <aside class="gen-sidebar">
+
+      <div>
+        <h3>Canal</h3>
+        <div class="channel-grid">
+          <div>
+            <input type="radio" name="channel" id="ch-instagram" class="channel-option" value="Instagram" checked>
+            <label class="channel-label" for="ch-instagram"><span class="ch-icon">📸</span>Instagram</label>
+          </div>
+          <div>
+            <input type="radio" name="channel" id="ch-linkedin" class="channel-option" value="LinkedIn">
+            <label class="channel-label" for="ch-linkedin"><span class="ch-icon">💼</span>LinkedIn</label>
+          </div>
+          <div>
+            <input type="radio" name="channel" id="ch-facebook" class="channel-option" value="Facebook">
+            <label class="channel-label" for="ch-facebook"><span class="ch-icon">👥</span>Facebook</label>
+          </div>
+          <div>
+            <input type="radio" name="channel" id="ch-twitter" class="channel-option" value="X / Twitter">
+            <label class="channel-label" for="ch-twitter"><span class="ch-icon">🐦</span>X / Twitter</label>
+          </div>
+          <div>
+            <input type="radio" name="channel" id="ch-tiktok" class="channel-option" value="TikTok">
+            <label class="channel-label" for="ch-tiktok"><span class="ch-icon">🎵</span>TikTok</label>
+          </div>
+          <div>
+            <input type="radio" name="channel" id="ch-email" class="channel-option" value="Email / Newsletter">
+            <label class="channel-label" for="ch-email"><span class="ch-icon">📧</span>Email</label>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h3>Tipo de contenido</h3>
+        <div class="type-list">
+          <div>
+            <input type="radio" name="ctype" id="ct-edu" class="type-option" value="Educativo (tips, datos, cómo hacer)" checked>
+            <label class="type-label" for="ct-edu"><span class="type-icon">🎓</span>Educativo</label>
+          </div>
+          <div>
+            <input type="radio" name="ctype" id="ct-promo" class="type-option" value="Promocional (producto, oferta, servicio)">
+            <label class="type-label" for="ct-promo"><span class="type-icon">🛍️</span>Promocional</label>
+          </div>
+          <div>
+            <input type="radio" name="ctype" id="ct-story" class="type-option" value="Storytelling (historia, detrás de escena)">
+            <label class="type-label" for="ct-story"><span class="type-icon">📖</span>Storytelling</label>
+          </div>
+          <div>
+            <input type="radio" name="ctype" id="ct-engage" class="type-option" value="Engagement (pregunta, debate, encuesta)">
+            <label class="type-label" for="ct-engage"><span class="type-icon">💬</span>Engagement</label>
+          </div>
+          <div>
+            <input type="radio" name="ctype" id="ct-announce" class="type-option" value="Anuncio (novedad, lanzamiento, evento)">
+            <label class="type-label" for="ct-announce"><span class="type-icon">📣</span>Anuncio</label>
+          </div>
+          <div>
+            <input type="radio" name="ctype" id="ct-trend" class="type-option" value="Tendencia o fecha especial">
+            <label class="type-label" for="ct-trend"><span class="type-icon">🔥</span>Tendencia</label>
+          </div>
+        </div>
+      </div>
+
+    </aside>
+
+    <div class="gen-main">
+      <div class="gen-topic">
+        <h3>Tema / Idea</h3>
+        <div class="brand-warning" id="brandWarning">
+          ⚠️ Configura primero tu marca en «Mi Marca» para que el contenido tenga tu voz.
+        </div>
+        <textarea id="topicInput" placeholder="ej. Los beneficios de la masa madre para la digestión...
+ej. Descuento del 20% en tortas personalizadas este fin de semana...
+ej. Cómo elegir el pan correcto para cada comida..."></textarea>
+        <div class="field">
+          <label for="extraInstructions">Instrucciones adicionales (opcional)</label>
+          <input type="text" id="extraInstructions" placeholder="ej. Incluye emoji, hazlo más corto, usa humor...">
+        </div>
+        <button class="btn btn-primary" id="generateBtn" onclick="generateContent()">
+          ✦ Generar contenido
+        </button>
+      </div>
+
+      <div class="results-area" id="resultsArea">
+        <div class="results-empty">
+          <div class="empty-icon">✦</div>
+          <p>Configura el canal, el tipo y el tema,<br>y VOZ generará 3 variaciones con la voz de tu marca.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── TAB: CALENDARIO ────────────────────────────────── -->
+<section class="tab-pane" id="pane-calendario">
+  <div class="calendar-header">
+    <div class="cal-nav">
+      <button class="cal-nav-btn" onclick="changeMonth(-1)">‹</button>
+      <button class="cal-nav-btn" onclick="changeMonth(1)">›</button>
+    </div>
+    <h2 id="calTitle"></h2>
+    <div style="margin-left:auto; display:flex; gap:8px; font-size:12px; align-items:center; color:var(--text-2);">
+      <span style="background:rgba(240,90,126,.2);color:#F05A7E;padding:2px 8px;border-radius:4px;font-weight:600">Instagram</span>
+      <span style="background:rgba(10,102,194,.25);color:#4B9EFF;padding:2px 8px;border-radius:4px;font-weight:600">LinkedIn</span>
+      <span style="background:rgba(24,119,242,.2);color:#6AADFF;padding:2px 8px;border-radius:4px;font-weight:600">Facebook</span>
+      <span style="background:rgba(52,211,153,.15);color:#34D399;padding:2px 8px;border-radius:4px;font-weight:600">Email</span>
+    </div>
+  </div>
+  <div class="calendar-grid">
+    <div class="cal-week-header">
+      <div class="cal-day-name">Dom</div>
+      <div class="cal-day-name">Lun</div>
+      <div class="cal-day-name">Mar</div>
+      <div class="cal-day-name">Mié</div>
+      <div class="cal-day-name">Jue</div>
+      <div class="cal-day-name">Vie</div>
+      <div class="cal-day-name">Sáb</div>
+    </div>
+    <div class="cal-days" id="calDays"></div>
+  </div>
+</section>
+
+<!-- ── TAB: BANCO ─────────────────────────────────────── -->
+<section class="tab-pane" id="pane-banco">
+  <div class="section-header">
+    <h2>Banco de contenido</h2>
+    <p>Todo el contenido guardado, listo para usar o programar.</p>
+  </div>
+  <div class="banco-header">
+    <div class="filter-tabs" id="filterTabs">
+      <button class="filter-tab active" data-filter="all">Todos</button>
+      <button class="filter-tab" data-filter="Instagram">Instagram</button>
+      <button class="filter-tab" data-filter="LinkedIn">LinkedIn</button>
+      <button class="filter-tab" data-filter="Facebook">Facebook</button>
+      <button class="filter-tab" data-filter="X / Twitter">X / Twitter</button>
+      <button class="filter-tab" data-filter="TikTok">TikTok</button>
+      <button class="filter-tab" data-filter="Email / Newsletter">Email</button>
+    </div>
+    <button class="btn btn-ghost btn-sm" onclick="clearBanco()" style="margin-left:auto">Limpiar banco</button>
+  </div>
+  <div class="banco-grid" id="bancoGrid"></div>
+</section>
+
+</main>
+
+<!-- ── MODAL: PROGRAMAR ───────────────────────────────── -->
+<div class="modal-overlay" id="scheduleModal">
+  <div class="modal">
+    <h3>Programar en calendario</h3>
+    <p>Elige la fecha en que quieres publicar este contenido.</p>
+    <div class="field">
+      <label for="scheduleDate">Fecha de publicación</label>
+      <input type="date" id="scheduleDate">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="confirmSchedule()">Programar ✦</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ── STATE ────────────────────────────────────────────────
+const PROXY = 'https://smartranks.co/proxy/a40f649b-92c5-44fd-9d19-91e373a37b60';
+const MODEL  = 'claude-haiku-4-5-20251001';
+
+let state = {
+  brand:       JSON.parse(localStorage.getItem('voz_brand') || 'null'),
+  content:     JSON.parse(localStorage.getItem('voz_content') || '[]'),
+  calendar:    JSON.parse(localStorage.getItem('voz_calendar') || '[]'),
+  generated:   parseInt(localStorage.getItem('voz_generated') || '0'),
+  currentMonth: new Date(),
+  pendingSchedule: null,
+  filter: 'all'
+};
+
+// ── INIT ─────────────────────────────────────────────────
+function init() {
+  setupTabs();
+  setupTheme();
+  loadBrandForm();
+  updateStats();
+  updateBadge();
+  renderCalendar();
+  renderBanco();
+  setupFilterTabs();
+
+  document.getElementById('brandForm').addEventListener('submit', saveBrand);
+
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('scheduleDate').value = today;
+  document.getElementById('scheduleDate').min = today;
+}
+
+// ── TABS ─────────────────────────────────────────────────
+function setupTabs() {
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tab = btn.dataset.tab;
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('pane-' + tab).classList.add('active');
+      if (tab === 'calendario') renderCalendar();
+      if (tab === 'banco') renderBanco();
+    });
+  });
+}
+
+// ── THEME ────────────────────────────────────────────────
+function setupTheme() {
+  const saved = localStorage.getItem('voz_theme') || 'dark';
+  document.documentElement.dataset.theme = saved;
+  document.getElementById('themeBtn').addEventListener('click', () => {
+    const current = document.documentElement.dataset.theme;
+    const next = current === 'dark' ? 'light' : 'dark';
+    document.documentElement.dataset.theme = next;
+    localStorage.setItem('voz_theme', next);
+  });
+}
+
+// ── BRAND FORM ───────────────────────────────────────────
+function loadBrandForm() {
+  if (!state.brand) return;
+  const b = state.brand;
+  document.getElementById('brandName').value = b.name || '';
+  document.getElementById('brandSector').value = b.sector || '';
+  document.getElementById('brandDesc').value = b.description || '';
+  document.getElementById('brandAudience').value = b.audience || '';
+  document.getElementById('brandKeywords').value = b.keywords || '';
+  if (b.tone) {
+    const toneEl = document.querySelector(`input[name="tone"][value="${b.tone}"]`);
+    if (toneEl) toneEl.checked = true;
+  }
+  if (b.values) {
+    b.values.forEach(v => {
+      const el = document.querySelector(`.chip-input[value="${v}"]`);
+      if (el) el.checked = true;
+    });
+  }
+}
+
+function saveBrand(e) {
+  e.preventDefault();
+  const tone = document.querySelector('input[name="tone"]:checked')?.value || 'Cercano y amigable';
+  const values = Array.from(document.querySelectorAll('.chip-input:checked')).map(el => el.value);
+
+  state.brand = {
+    name: document.getElementById('brandName').value.trim(),
+    sector: document.getElementById('brandSector').value.trim(),
+    description: document.getElementById('brandDesc').value.trim(),
+    audience: document.getElementById('brandAudience').value.trim(),
+    keywords: document.getElementById('brandKeywords').value.trim(),
+    tone,
+    values
+  };
+
+  if (!state.brand.name) { toast('Escribe el nombre de tu empresa', 'error'); return; }
+
+  localStorage.setItem('voz_brand', JSON.stringify(state.brand));
+  updateBadge();
+  toast('Perfil de marca guardado ✦', 'success');
+}
+
+function updateBadge() {
+  const badge = document.getElementById('brandBadge');
+  if (state.brand?.name) {
+    badge.textContent = '✦ ' + state.brand.name;
+    badge.classList.add('visible');
+  } else {
+    badge.textContent = '✦ sin configurar';
+    badge.classList.add('visible');
+  }
+}
+
+// ── STATS ────────────────────────────────────────────────
+function updateStats() {
+  document.getElementById('statGenerated').textContent = state.generated;
+  document.getElementById('statSaved').textContent = state.content.length;
+  document.getElementById('statScheduled').textContent = state.calendar.length;
+}
+
+// ── GENERATE ─────────────────────────────────────────────
+async function generateContent() {
+  const topic = document.getElementById('topicInput').value.trim();
+  if (!topic) { toast('Escribe un tema o idea para generar', 'error'); return; }
+
+  const channel = document.querySelector('input[name="channel"]:checked')?.value || 'Instagram';
+  const ctype   = document.querySelector('input[name="ctype"]:checked')?.value || 'Educativo';
+  const extra   = document.getElementById('extraInstructions').value.trim();
+
+  const warning = document.getElementById('brandWarning');
+  if (!state.brand?.name) {
+    warning.classList.add('show');
+  } else {
+    warning.classList.remove('show');
+  }
+
+  const btn = document.getElementById('generateBtn');
+  btn.disabled = true;
+  btn.textContent = 'Generando…';
+
+  const resultsArea = document.getElementById('resultsArea');
+  resultsArea.innerHTML = `
+    <div class="loading-card">
+      <div class="spinner"></div>
+      <p style="color:var(--text-2);font-size:14px">VOZ está creando contenido con la voz de tu marca…</p>
+      <div class="typing-indicator">
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+      </div>
+    </div>`;
+
+  try {
+    const system = buildSystemPrompt(channel, ctype);
+    const userMsg = buildUserPrompt(topic, channel, ctype, extra);
+    const text = await callClaude(system, userMsg);
+    const posts = parseResponse(text);
+
+    state.generated += 3;
+    localStorage.setItem('voz_generated', state.generated);
+    updateStats();
+
+    renderResults(posts, channel, ctype);
+  } catch (err) {
+    resultsArea.innerHTML = `
+      <div class="results-empty">
+        <div class="empty-icon">⚠️</div>
+        <p>Error al generar contenido: ${err.message}</p>
+        <p style="margin-top:8px;font-size:12px">Verifica tu conexión y vuelve a intentarlo.</p>
+      </div>`;
+    console.error(err);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '✦ Generar contenido';
+  }
+}
+
+function buildSystemPrompt(channel, ctype) {
+  const b = state.brand;
+  if (!b?.name) {
+    return `Eres un experto en marketing digital para pymes. Genera contenido auténtico y útil.`;
+  }
+
+  const toneRules = {
+    'Profesional y serio': 'Usa lenguaje formal, sin emojis en exceso. Datos y hechos concretos. Autoridad y expertise.',
+    'Cercano y amigable': 'Habla de tú a tú, como un amigo experto. Cálido, accesible. Emojis moderados.',
+    'Inspirador y motivacional': 'Frases con energía y esperanza. Verbos de acción. Emociona y moviliza.',
+    'Educativo y experto': 'Aporta valor real, enseña algo. Estructura clara. Datos y contexto. Sin jerga innecesaria.',
+    'Divertido y desenfadado': 'Humor sutil, energía alta, lenguaje informal. Creatividad y sorpresa.'
+  };
+
+  return `Eres el director creativo de contenido digital de "${b.name}", una pyme del sector "${b.sector}".
+
+PERFIL DE MARCA:
+- Descripción: ${b.description || 'No especificada'}
+- Público objetivo: ${b.audience || 'No especificado'}
+- Tono de voz: ${b.tone || 'Cercano y amigable'}
+- Valores: ${(b.values || []).join(', ') || 'No especificados'}
+- Keywords/Hashtags: ${b.keywords || 'No especificados'}
+
+REGLAS DE TONO (${b.tone}):
+${toneRules[b.tone] || toneRules['Cercano y amigable']}
+
+REGLAS DE VOZ DE MARCA (SIEMPRE):
+- Cada palabra debe sonar exactamente como "${b.name}" — nunca genérico
+- Habla directamente al público: ${b.audience || 'tu cliente ideal'}
+- Evita clichés vacíos como "somos los mejores" o "calidad insuperable"
+- Sé específico, concreto y verdadero al sector "${b.sector}"
+
+REGLAS DE CANAL (${channel}):
+${getChannelRules(channel)}`;
+}
+
+function getChannelRules(channel) {
+  const rules = {
+    'Instagram': 'Texto 80-150 palabras. Gancho fuerte en línea 1. 5-10 hashtags relevantes. Llamado a la acción visual ("guarda este post", "etiqueta a alguien"). Emojis que aporten, no decoren.',
+    'LinkedIn': 'Texto 100-200 palabras. Tono más profesional. Insight o aprendizaje claro. Sin hashtags en exceso (máx 3). Invita a la conversación. Estructura con saltos de línea.',
+    'Facebook': 'Texto 80-160 palabras. Conversacional y cercano. Pregunta al final para generar comentarios. 1-3 hashtags. Emojis moderados.',
+    'X / Twitter': 'Máximo 240 caracteres por hilo. Directo, impactante. Un solo punto central. Máx 2 hashtags. Sin relleno.',
+    'TikTok': 'Guión de video corto (15-30 seg). Gancho en los primeros 2 segundos. Estructura: Hook → Contenido → CTA. Énfasis en lo visual y auditivo.',
+    'Email / Newsletter': 'Asunto atractivo (max 50 chars). Saludo personalizado. Texto claro y escaneable. Un solo CTA principal. Tono más personal que redes.'
+  };
+  return rules[channel] || rules['Instagram'];
+}
+
+function buildUserPrompt(topic, channel, ctype, extra) {
+  return `Genera EXACTAMENTE 3 variaciones de contenido para ${channel} sobre el siguiente tema:
+
+TEMA: "${topic}"
+TIPO DE CONTENIDO: ${ctype}
+${extra ? `INSTRUCCIONES ADICIONALES: ${extra}` : ''}
+
+Responde SOLO con JSON válido, sin texto antes ni después:
+{
+  "posts": [
+    {
+      "texto": "el copy completo del post, listo para publicar",
+      "hashtags": ["hashtag1", "hashtag2"],
+      "cta": "llamado a la acción específico",
+      "enfoque": "una frase corta que describe el ángulo de esta variación"
+    },
+    { ... },
+    { ... }
+  ]
+}
+
+Cada variación debe tener un ángulo distinto (ej: emocional / racional / urgencia, o datos / historia / pregunta).`;
+}
+
+async function callClaude(system, userMsg) {
+  const response = await fetch(`${PROXY}/v1/messages`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'anthropic-version': '2023-06-01',
+      'x-api-key': 'proxy-key'
+    },
+    body: JSON.stringify({
+      model: MODEL,
+      max_tokens: 2048,
+      system,
+      messages: [{ role: 'user', content: userMsg }]
+    })
+  });
+
+  if (!response.ok) {
+    const err = await response.text();
+    throw new Error(`API ${response.status}: ${err}`);
+  }
+  const data = await response.json();
+  return data.content[0].text;
+}
+
+function parseResponse(text) {
+  try {
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      const parsed = JSON.parse(jsonMatch[0]);
+      if (parsed.posts && Array.isArray(parsed.posts)) return parsed.posts;
+    }
+  } catch (e) {}
+
+  return [{
+    texto: text,
+    hashtags: [],
+    cta: '',
+    enfoque: 'Variación generada'
+  }];
+}
+
+function renderResults(posts, channel, ctype) {
+  const resultsArea = document.getElementById('resultsArea');
+  resultsArea.innerHTML = '';
+
+  posts.forEach((post, i) => {
+    const card = document.createElement('div');
+    card.className = 'result-card';
+
+    const channelKey = channel.toLowerCase().replace(/ .*/, '').replace('x', 'twitter');
+
+    card.innerHTML = `
+      <div class="card-meta">
+        <div class="card-num">${i + 1}</div>
+        <span class="card-channel-tag">${channel}</span>
+        <span class="card-type-tag">${ctype.split(' ')[0]}</span>
+        ${post.enfoque ? `<span style="font-size:12px;color:var(--text-3);margin-left:4px">${post.enfoque}</span>` : ''}
+      </div>
+      <div class="card-body">${escHtml(post.texto)}</div>
+      ${post.hashtags?.length ? `<div class="card-hashtags">${post.hashtags.map(h => `<span class="hashtag">#${h.replace(/^#/, '')}</span>`).join('')}</div>` : ''}
+      ${post.cta ? `<div class="card-cta"><strong>CTA:</strong> ${escHtml(post.cta)}</div>` : ''}
+      <div class="card-actions">
+        <button class="btn btn-ghost btn-sm" onclick="copyPost(this, ${i})">📋 Copiar</button>
+        <button class="btn btn-ghost btn-sm" onclick="savePost(${i}, '${escAttr(channel)}', '${escAttr(ctype)}')">💾 Guardar</button>
+        <button class="btn btn-primary btn-sm" onclick="openSchedule(${i}, '${escAttr(channel)}')">📅 Programar</button>
+      </div>`;
+
+    resultsArea.appendChild(card);
+  });
+
+  window._lastPosts = posts.map(p => ({ ...p, channel, ctype, date: new Date().toLocaleDateString('es-CO') }));
+}
+
+function copyPost(btn, idx) {
+  const post = window._lastPosts[idx];
+  const text = post.texto + (post.hashtags?.length ? '\n\n' + post.hashtags.map(h => '#' + h.replace(/^#/, '')).join(' ') : '');
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '✓ Copiado';
+    setTimeout(() => btn.textContent = '📋 Copiar', 2000);
+  });
+}
+
+function savePost(idx, channel, ctype) {
+  const post = { ...window._lastPosts[idx], channel, ctype, savedAt: new Date().toISOString(), id: Date.now() + idx };
+  state.content.push(post);
+  localStorage.setItem('voz_content', JSON.stringify(state.content));
+  updateStats();
+  toast('Guardado en el banco de contenido ✦', 'success');
+}
+
+// ── SCHEDULE ─────────────────────────────────────────────
+function openSchedule(idx, channel) {
+  state.pendingSchedule = { post: window._lastPosts[idx], channel };
+  document.getElementById('scheduleModal').classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('scheduleModal').classList.remove('show');
+  state.pendingSchedule = null;
+}
+
+function confirmSchedule() {
+  const date = document.getElementById('scheduleDate').value;
+  if (!date) { toast('Elige una fecha', 'error'); return; }
+  if (!state.pendingSchedule) return;
+
+  const entry = {
+    ...state.pendingSchedule.post,
+    channel: state.pendingSchedule.channel,
+    date,
+    id: Date.now()
+  };
+  state.calendar.push(entry);
+  localStorage.setItem('voz_calendar', JSON.stringify(state.calendar));
+  updateStats();
+  closeModal();
+  toast('Programado para el ' + formatDate(date) + ' ✦', 'success');
+}
+
+// ── CALENDAR ─────────────────────────────────────────────
+function changeMonth(delta) {
+  const d = state.currentMonth;
+  state.currentMonth = new Date(d.getFullYear(), d.getMonth() + delta, 1);
+  renderCalendar();
+}
+
+function renderCalendar() {
+  const d = state.currentMonth;
+  const year = d.getFullYear();
+  const month = d.getMonth();
+
+  const monthNames = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  document.getElementById('calTitle').textContent = `${monthNames[month]} ${year}`;
+
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const today = new Date();
+
+  const container = document.getElementById('calDays');
+  container.innerHTML = '';
+
+  for (let i = 0; i < firstDay; i++) {
+    const el = document.createElement('div');
+    el.className = 'cal-day empty';
+    container.appendChild(el);
+  }
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const el = document.createElement('div');
+    const isToday = today.getDate() === d && today.getMonth() === month && today.getFullYear() === year;
+    el.className = 'cal-day' + (isToday ? ' today' : '');
+
+    const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dayPosts = state.calendar.filter(p => p.date === dateStr);
+
+    el.innerHTML = `<div class="cal-day-num">${d}</div>`;
+    dayPosts.forEach(p => {
+      const chip = document.createElement('div');
+      const chKey = p.channel?.toLowerCase().split(/[\/ ]/)[0] || 'instagram';
+      chip.className = `cal-post ${chKey}`;
+      chip.textContent = p.texto?.substring(0, 30) + (p.texto?.length > 30 ? '…' : '');
+      chip.title = p.texto;
+      el.appendChild(chip);
+    });
+
+    container.appendChild(el);
+  }
+}
+
+// ── BANCO ────────────────────────────────────────────────
+function setupFilterTabs() {
+  document.querySelectorAll('.filter-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.filter = btn.dataset.filter;
+      renderBanco();
+    });
+  });
+}
+
+function renderBanco() {
+  const grid = document.getElementById('bancoGrid');
+  let items = state.content;
+  if (state.filter !== 'all') items = items.filter(p => p.channel === state.filter);
+
+  if (!items.length) {
+    grid.innerHTML = `<div class="banco-empty"><div class="empty-icon">💾</div><p>No hay contenido guardado aún.<br>Genera y guarda posts desde la pestaña Generar.</p></div>`;
+    return;
+  }
+
+  grid.innerHTML = items.map((post, i) => {
+    const chKey = post.channel?.toLowerCase().split(/[\/ ]/)[0] || 'instagram';
+    return `
+    <div class="banco-card">
+      <div class="banco-card-top">
+        <div class="banco-card-tags">
+          <span class="card-channel-tag">${post.channel || ''}</span>
+          <span class="card-type-tag">${(post.ctype || '').split(' ')[0]}</span>
+        </div>
+        <span class="banco-card-date">${post.date || ''}</span>
+      </div>
+      <div class="banco-card-body">${escHtml(post.texto || '')}</div>
+      ${post.hashtags?.length ? `<div class="card-hashtags">${post.hashtags.slice(0,4).map(h => `<span class="hashtag">#${h.replace(/^#/,'')}</span>`).join('')}</div>` : ''}
+      <div class="banco-card-actions" style="margin-top:12px">
+        <button class="btn btn-ghost btn-sm" onclick="copyBancoPost(${state.content.indexOf(post)})">📋 Copiar</button>
+        <button class="btn btn-ghost btn-sm" onclick="openScheduleFromBanco(${state.content.indexOf(post)})">📅 Programar</button>
+        <button class="btn btn-ghost btn-sm" style="color:var(--accent)" onclick="deletePost(${state.content.indexOf(post)})">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function copyBancoPost(idx) {
+  const post = state.content[idx];
+  const text = post.texto + (post.hashtags?.length ? '\n\n' + post.hashtags.map(h => '#' + h.replace(/^#/,'')).join(' ') : '');
+  navigator.clipboard.writeText(text).then(() => toast('Copiado al portapapeles ✦', 'success'));
+}
+
+function openScheduleFromBanco(idx) {
+  state.pendingSchedule = { post: state.content[idx], channel: state.content[idx].channel };
+  document.getElementById('scheduleModal').classList.add('show');
+}
+
+function deletePost(idx) {
+  state.content.splice(idx, 1);
+  localStorage.setItem('voz_content', JSON.stringify(state.content));
+  updateStats();
+  renderBanco();
+}
+
+function clearBanco() {
+  if (!confirm('¿Eliminar todo el contenido guardado?')) return;
+  state.content = [];
+  localStorage.setItem('voz_content', JSON.stringify(state.content));
+  updateStats();
+  renderBanco();
+  toast('Banco limpiado', 'success');
+}
+
+// ── UTILS ─────────────────────────────────────────────────
+function toast(msg, type = 'default') {
+  const container = document.getElementById('toastContainer');
+  const el = document.createElement('div');
+  el.className = 'toast ' + (type !== 'default' ? type : '');
+  el.textContent = msg;
+  container.appendChild(el);
+  setTimeout(() => el.remove(), 3200);
+}
+
+function escHtml(str) {
+  return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function escAttr(str) {
+  return (str || '').replace(/'/g,"\\'");
+}
+function formatDate(d) {
+  const [y,m,day] = d.split('-');
+  const months = ['','ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  return `${parseInt(day)} de ${months[parseInt(m)]} de ${y}`;
+}
+
+document.getElementById('scheduleModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('scheduleModal')) closeModal();
+});
+
+init();
+</script>
+</body>
+</html>
