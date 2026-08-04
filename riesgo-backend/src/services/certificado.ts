@@ -8,6 +8,8 @@ import { supabase } from '../supabase';
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
 
+const EMAIL_ANDINA_COORDINADORA = 'vanessafranco@andina.com.co';
+
 const ASSETS_DIR = path.join(__dirname, '..', '..', 'assets');
 const LOGO_RIESGO = path.join(ASSETS_DIR, 'logo-riesgo.png');
 const LOGO_RIESGO_VIAL = path.join(ASSETS_DIR, 'logo-riesgovial.png');
@@ -142,6 +144,11 @@ export async function generarCertificado(params: GenerarCertificadoParams) {
   const { data: urlData } = supabase.storage.from('certificados').getPublicUrl(filePath);
   const urlPdf = urlData.publicUrl;
 
+  const esControladorVial = MODULOS_ANDINA_FORBE.has(params.modulo);
+  const emailDestinatario = esControladorVial
+    ? EMAIL_ANDINA_COORDINADORA
+    : params.emailSst;
+
   const { data: cert, error: insertError } = await supabase
     .from('certificados')
     .insert({
@@ -152,18 +159,20 @@ export async function generarCertificado(params: GenerarCertificadoParams) {
       modulo: params.modulo,
       codigo_qr: codigoQr,
       url_pdf: urlPdf,
-      enviado_a: params.emailSst || '',
+      enviado_a: emailDestinatario || '',
     })
     .select()
     .single();
 
   if (insertError) throw insertError;
 
-  if (resend && params.emailSst) {
+  if (resend && emailDestinatario) {
     await resend.emails.send({
       from: process.env.RESEND_FROM || 'RiesGO <onboarding@resend.dev>',
-      to: params.emailSst,
-      subject: `Certificado RiesGO! - ${params.nombreUsuario} (${params.modulo})`,
+      to: emailDestinatario,
+      subject: esControladorVial
+        ? `Nuevo certificado Controladores Viales – ${params.nombreUsuario}`
+        : `Certificado RiesGO! - ${params.nombreUsuario} (${params.modulo})`,
       html: buildEmailHtml(params, urlPdf, verificationUrl),
       attachments: [{ filename: `${codigoQr}.pdf`, content: pdfBuffer.toString('base64') }],
     });
@@ -452,6 +461,20 @@ function buildPdf(
 }
 
 function buildEmailHtml(data: GenerarCertificadoParams, urlPdf: string, verificationUrl: string) {
+  const esControladorVial = MODULOS_ANDINA_FORBE.has(data.modulo);
+
+  if (esControladorVial) {
+    return `
+      <h2>Nuevo certificado – Controladores Viales</h2>
+      <p>Hola Vanessa,</p>
+      <p>El participante <strong>${data.nombreUsuario}</strong> (cédula ${data.cedulaUsuario})
+      completó el curso de <strong>Controladores Viales</strong>.</p>
+      <p>Adjunto el certificado en PDF para que puedan proceder con las firmas físicas.</p>
+      <p>También disponible en: <a href="${urlPdf}">${urlPdf}</a></p>
+      <p>Verificación QR: <a href="${verificationUrl}">${verificationUrl}</a></p>
+    `;
+  }
+
   return `
     <h2>Nuevo certificado RiesGO!</h2>
     <p><strong>${data.nombreUsuario}</strong> (cédula ${data.cedulaUsuario}) aprobó el módulo
