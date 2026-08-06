@@ -59,7 +59,7 @@ window.MotorJuego = {
   // ===== Nivel tipo obstáculos (cazador de riesgos) =====
   // config: { nombre, instrucciones, total, intervalo, duracionCaida, tipos: string[], particulas?: {} }
   ejecutarNivelObstaculos(container, config, onFin) {
-    const VIDAS_INICIALES = 3;
+    const VIDAS_INICIALES = 5;
     const PARTICULAS = Object.assign({ default: '✨' }, config.particulas || {});
 
     let vidas = VIDAS_INICIALES;
@@ -180,7 +180,7 @@ window.MotorJuego = {
   // ===== Nivel tipo reacción (tap/swipe contra el reloj) =====
   // config: { nombre, instrucciones, retos: [{ tipo: 'tap-repetido'|'swipe-abajo'|'swipe-lateral', emoji, situacion, accionTexto, tapsRequeridos?, exito, fallo }] }
   ejecutarNivelReaccion(container, config, onFin) {
-    const VIDAS_INICIALES = 3;
+    const VIDAS_INICIALES = 5;
     const TIEMPO_LIMITE = 4500;
 
     let vidas = VIDAS_INICIALES;
@@ -363,7 +363,7 @@ window.MotorJuego = {
   // ===== Nivel tipo trivia (quiz de escenarios con vidas) =====
   // config: { nombre, preguntas: [{ emoji, texto, pregunta, opciones, correcta, explicacion }] }
   ejecutarNivelTrivia(container, config, onFin) {
-    const VIDAS_INICIALES = 3;
+    const VIDAS_INICIALES = 5;
     const preguntas = config.preguntas;
 
     let indice = 0;
