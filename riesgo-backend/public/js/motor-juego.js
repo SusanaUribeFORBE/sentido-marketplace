@@ -103,6 +103,8 @@ window.MotorJuego = {
       setTimeout(() => p.remove(), 650);
     }
 
+    const minAciertos = config.minAciertos ?? Math.ceil(config.total * 0.65);
+
     function tropezar() {
       vidas -= 1;
       actualizarHud();
@@ -112,7 +114,7 @@ window.MotorJuego = {
       setTimeout(() => avatar.classList.remove('trip'), 600);
 
       if (vidas <= 0) {
-        terminar('reprobado');
+        terminar(aciertos >= minAciertos ? 'aprobado' : 'reprobado');
       }
     }
 
@@ -161,8 +163,8 @@ window.MotorJuego = {
 
     function comprobarFin() {
       if (!activo) return;
-      if (resueltos >= config.total && vidas > 0) {
-        terminar('aprobado');
+      if (resueltos >= config.total) {
+        terminar(aciertos >= minAciertos ? 'aprobado' : 'reprobado');
       }
     }
 
