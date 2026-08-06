@@ -321,6 +321,7 @@ window.MODULOS['controladoresviales'] = {
       // ══════════════════════════════════════════════════════
       {
         tipo: 'obstaculos',
+        opcional: true,
         config: {
           nombre: 'Nivel 4: Operación Segura — El Factor Humano',
           instrucciones: '¡Mantén la zona segura! Toca cada amenaza antes de que llegue a los trabajadores. Recuerda: alguien te espera en casa. 🏠',

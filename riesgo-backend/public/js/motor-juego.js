@@ -31,7 +31,7 @@ window.MotorJuego = {
           );
         }
 
-        if (resultado === 'reprobado') {
+        if (resultado === 'reprobado' && !nivel.opcional) {
           finalizar(
             'reprobado',
             `No superaste "${nivel.config.nombre}". Acertaste ${totalAciertos} de ${totalItems} en total.`,
