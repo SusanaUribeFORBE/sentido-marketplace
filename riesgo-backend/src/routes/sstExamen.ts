@@ -144,9 +144,9 @@ sstExamenRouter.post('/analizar-examen-imagen', async (req: Request, res: Respon
 sstExamenRouter.post('/analizar-examen', async (req: Request, res: Response) => {
   const apiKey = process.env.GROQ_API_KEY;
   const TEXT_MODELS = [
-    process.env.GROQ_MODEL || 'llama-3.1-8b-instant',
-    'llama-3.3-70b-versatile',
-    'llama-3.1-70b-versatile',
+    process.env.GROQ_MODEL || 'openai/gpt-oss-120b',
+    'groq/compound',
+    'openai/gpt-oss-20b',
   ];
 
   if (!apiKey) {

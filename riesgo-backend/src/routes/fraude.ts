@@ -54,7 +54,7 @@ fraudeRouter.post('/analizar', async (req: Request, res: Response) => {
     ? `MENSAJE:\n${texto.trim()}\n\nURL O ENLACE INCLUIDO: ${url.trim()}`
     : `MENSAJE:\n${texto.trim()}`;
 
-  const MODELS = ['llama-3.3-70b-versatile', 'llama-3.1-70b-versatile', 'llama-3.1-8b-instant'];
+  const MODELS = ['openai/gpt-oss-120b', 'groq/compound', 'openai/gpt-oss-20b'];
   let lastError = '';
 
   for (const model of MODELS) {
