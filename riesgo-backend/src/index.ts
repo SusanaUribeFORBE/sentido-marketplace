@@ -18,6 +18,7 @@ import { arlAuth } from './middleware/arlAuth';
 import { creaAuth } from './middleware/creaAuth';
 import { creaPlanesRouter } from './routes/creaPlanes';
 import { wompiRouter } from './routes/wompi';
+import { fraudeRouter } from './routes/fraude';
 
 const app = express();
 app.set('trust proxy', 1);
@@ -86,6 +87,7 @@ app.get('/crea/login',       (_req, res) => res.redirect(301, '/contenido/login.
 app.get('/crea/registro',    (_req, res) => res.redirect(301, '/contenido/registro.html'));
 app.get('/crea/app',         (_req, res) => res.redirect(301, '/contenido/estrategia.html'));
 
+app.use('/api/fraude', fraudeRouter);
 app.use('/api/vigia', vigiaRouter);
 app.use('/api/crea', creaPlanesRouter);
 app.use('/api/contenido', creaAuth, contenidoRouter);

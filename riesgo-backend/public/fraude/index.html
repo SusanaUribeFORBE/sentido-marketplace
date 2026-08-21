@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Detector de Fraudes — RiesGO!</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #0B0E1A;
+    --surface:   #141827;
+    --elevated:  #1C2035;
+    --border:    #252A42;
+    --accent:    #4A7CF8;
+    --accent-dim:#1E3580;
+    --text:      #E2E6F3;
+    --muted:     #7B82A0;
+    --alto:      #FF4757;
+    --alto-bg:   rgba(255,71,87,.12);
+    --medio:     #FFA502;
+    --medio-bg:  rgba(255,165,2,.12);
+    --bajo:      #2ED573;
+    --bajo-bg:   rgba(46,213,115,.12);
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 16px 60px;
+  }
+
+  /* ── HEADER ─────────────────────────────────────────────── */
+  header {
+    width: 100%;
+    max-width: 720px;
+    padding: 36px 0 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .shield {
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, var(--accent), #7B4AF8);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    box-shadow: 0 0 24px rgba(74,124,248,.35);
+  }
+
+  h1 {
+    font-size: 1.7rem;
+    font-weight: 700;
+    letter-spacing: -0.4px;
+    text-align: center;
+  }
+
+  .tagline {
+    color: var(--muted);
+    font-size: .92rem;
+    text-align: center;
+    max-width: 480px;
+    line-height: 1.5;
+  }
+
+  /* ── CARD ───────────────────────────────────────────────── */
+  .card {
+    width: 100%;
+    max-width: 720px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+  }
+
+  .card + .card { margin-top: 16px; }
+
+  .card-label {
+    font-size: .75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+
+  /* ── FORM ───────────────────────────────────────────────── */
+  textarea {
+    width: 100%;
+    min-height: 200px;
+    background: var(--elevated);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: .95rem;
+    line-height: 1.6;
+    padding: 14px 16px;
+    resize: vertical;
+    outline: none;
+    transition: border-color .2s;
+  }
+  textarea:focus { border-color: var(--accent); }
+  textarea::placeholder { color: var(--muted); }
+
+  .url-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+  }
+
+  input[type="url"] {
+    flex: 1;
+    background: var(--elevated);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: .9rem;
+    padding: 11px 14px;
+    outline: none;
+    transition: border-color .2s;
+  }
+  input[type="url"]:focus { border-color: var(--accent); }
+  input[type="url"]::placeholder { color: var(--muted); }
+
+  .btn-analyze {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: .95rem;
+    font-weight: 600;
+    padding: 12px 28px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: opacity .15s, transform .1s;
+    white-space: nowrap;
+  }
+  .btn-analyze:hover { opacity: .88; }
+  .btn-analyze:active { transform: scale(.97); }
+  .btn-analyze:disabled { opacity: .45; cursor: not-allowed; }
+
+  .btn-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 16px;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .hint {
+    font-size: .8rem;
+    color: var(--muted);
+    line-height: 1.4;
+    max-width: 340px;
+  }
+
+  /* ── LOADING SCANNER ────────────────────────────────────── */
+  #scanner {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 0;
+  }
+  #scanner.active { display: flex; }
+
+  .scan-bar {
+    width: 100%;
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .scan-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--accent), #7B4AF8);
+    border-radius: 2px;
+    animation: scanning 1.8s ease-in-out infinite;
+  }
+  @keyframes scanning {
+    0%   { width: 0%;   margin-left: 0%; }
+    50%  { width: 60%;  margin-left: 20%; }
+    100% { width: 0%;   margin-left: 100%; }
+  }
+
+  .scan-text {
+    font-size: .88rem;
+    color: var(--muted);
+    letter-spacing: .04em;
+  }
+  .scan-text span { animation: blink 1.2s step-start infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* ── RESULTS ─────────────────────────────────────────────── */
+  #results { display: none; }
+  #results.visible { display: block; }
+
+  /* Veredicto principal */
+  .verdict-banner {
+    border-radius: 12px;
+    padding: 24px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 16px;
+    border: 1px solid transparent;
+  }
+  .verdict-banner.ALTO  { background: var(--alto-bg);  border-color: var(--alto);  }
+  .verdict-banner.MEDIO { background: var(--medio-bg); border-color: var(--medio); }
+  .verdict-banner.BAJO  { background: var(--bajo-bg);  border-color: var(--bajo);  }
+
+  .verdict-icon {
+    font-size: 2.8rem;
+    flex-shrink: 0;
+    filter: drop-shadow(0 0 10px currentColor);
+  }
+  .verdict-banner.ALTO  .verdict-icon { color: var(--alto); }
+  .verdict-banner.MEDIO .verdict-icon { color: var(--medio); }
+  .verdict-banner.BAJO  .verdict-icon { color: var(--bajo); }
+
+  .verdict-body { flex: 1; min-width: 0; }
+
+  .verdict-level {
+    font-size: 1.35rem;
+    font-weight: 800;
+    letter-spacing: .04em;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .ALTO  .verdict-level { color: var(--alto); }
+  .MEDIO .verdict-level { color: var(--medio); }
+  .BAJO  .verdict-level { color: var(--bajo); }
+
+  .verdict-type {
+    font-size: .85rem;
+    color: var(--muted);
+    margin-bottom: 10px;
+    font-weight: 500;
+  }
+
+  .verdict-summary {
+    font-size: .93rem;
+    line-height: 1.6;
+    color: var(--text);
+  }
+
+  .confianza-bar {
+    margin-top: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .confianza-label { font-size: .75rem; color: var(--muted); white-space: nowrap; }
+  .confianza-track {
+    flex: 1;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .confianza-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width .6s ease;
+  }
+  .ALTO  .confianza-fill { background: var(--alto); }
+  .MEDIO .confianza-fill { background: var(--medio); }
+  .BAJO  .confianza-fill { background: var(--bajo); }
+  .confianza-pct { font-size: .75rem; color: var(--muted); white-space: nowrap; }
+
+  /* Indicadores */
+  .section-title {
+    font-size: .78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  .indicators {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .indicator {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: var(--elevated);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: .88rem;
+    line-height: 1.5;
+    border-left: 3px solid var(--alto);
+  }
+  .indicator-icon { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+
+  /* Recomendaciones */
+  .recommendations {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .recommendation {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: var(--elevated);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: .88rem;
+    line-height: 1.5;
+    border-left: 3px solid var(--bajo);
+  }
+  .rec-icon { font-size: 1rem; flex-shrink: 0; color: var(--bajo); margin-top: 1px; }
+
+  /* Botón nueva consulta */
+  .btn-reset {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: .85rem;
+    padding: 8px 18px;
+    cursor: pointer;
+    margin-top: 16px;
+    transition: color .15s, border-color .15s;
+  }
+  .btn-reset:hover { color: var(--text); border-color: var(--muted); }
+
+  /* Ejemplos */
+  .examples {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 14px;
+  }
+  .example-chip {
+    background: var(--elevated);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 5px 12px;
+    font-size: .78rem;
+    color: var(--muted);
+    cursor: pointer;
+    transition: color .15s, border-color .15s;
+    user-select: none;
+  }
+  .example-chip:hover { color: var(--text); border-color: var(--accent); }
+
+  .examples-label {
+    font-size: .78rem;
+    color: var(--muted);
+    margin-top: 14px;
+    margin-bottom: 4px;
+  }
+
+  /* Entidad suplantada badge */
+  .entity-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--elevated);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 3px 10px;
+    font-size: .78rem;
+    color: var(--text);
+    margin-bottom: 10px;
+  }
+
+  /* Footer */
+  footer {
+    margin-top: 40px;
+    text-align: center;
+    font-size: .75rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  /* ── RESPONSIVE ──────────────────────────────────────────── */
+  @media (max-width: 520px) {
+    h1 { font-size: 1.4rem; }
+    .card { padding: 20px; }
+    .verdict-banner { flex-direction: column; gap: 12px; align-items: flex-start; }
+    .verdict-icon { font-size: 2rem; }
+    .url-row { flex-direction: column; }
+    .btn-row { flex-direction: column; align-items: stretch; }
+    .btn-analyze { justify-content: center; }
+  }
+
+  /* ── ENTRADA ANIMADA ─────────────────────────────────────── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .fade-up { animation: fadeUp .35s ease both; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="shield">🛡️</div>
+  <h1>Detector de Fraudes</h1>
+  <p class="tagline">Pega el texto de un email, mensaje de WhatsApp o SMS sospechoso y la IA analiza si es un intento de fraude.</p>
+</header>
+
+<!-- INPUT -->
+<div class="card" id="input-card">
+  <div class="card-label">Texto del mensaje sospechoso</div>
+  <textarea id="texto"
+    placeholder="Pega aquí el contenido completo del email o mensaje sospechoso…&#10;&#10;Ejemplo: &quot;Estimado usuario, su cuenta ha sido bloqueada. Haga clic aquí para desbloquearla...&quot;"
+  ></textarea>
+
+  <div class="url-row">
+    <input type="url" id="url-input" placeholder="URL o enlace sospechoso (opcional) — ej: https://bancolombia-seguro.xyz/acceder" />
+  </div>
+
+  <div class="btn-row">
+    <p class="hint">El análisis es privado. El texto no se almacena.</p>
+    <button class="btn-analyze" id="btn-analyze" onclick="analizar()">
+      <span>🔍</span> Analizar mensaje
+    </button>
+  </div>
+
+  <p class="examples-label">Ejemplos de fraudes frecuentes:</p>
+  <div class="examples">
+    <span class="example-chip" onclick="cargarEjemplo('bancolombia')">🏦 Falso Bancolombia</span>
+    <span class="example-chip" onclick="cargarEjemplo('dian')">🏛️ Falsa DIAN</span>
+    <span class="example-chip" onclick="cargarEjemplo('reembolso')">💰 Estafa de reembolso</span>
+    <span class="example-chip" onclick="cargarEjemplo('trabajo')">💼 Falsa oferta laboral</span>
+  </div>
+</div>
+
+<!-- ESCÁNER -->
+<div class="card" id="scanner-card" style="display:none">
+  <div id="scanner" class="active">
+    <div class="scan-bar"><div class="scan-fill"></div></div>
+    <p class="scan-text">Analizando mensaje con IA<span>...</span></p>
+  </div>
+</div>
+
+<!-- RESULTADOS -->
+<div id="results">
+
+  <div id="verdict-banner" class="verdict-banner fade-up">
+    <div class="verdict-icon" id="verdict-icon"></div>
+    <div class="verdict-body">
+      <div id="entity-badge"></div>
+      <div class="verdict-level" id="verdict-level"></div>
+      <div class="verdict-type" id="verdict-type"></div>
+      <div class="verdict-summary" id="verdict-summary"></div>
+      <div class="confianza-bar">
+        <span class="confianza-label">Confianza IA</span>
+        <div class="confianza-track">
+          <div class="confianza-fill" id="confianza-fill" style="width:0%"></div>
+        </div>
+        <span class="confianza-pct" id="confianza-pct">—</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card fade-up" id="indicators-card" style="display:none">
+    <div class="section-title">⚠️ Señales de alerta detectadas</div>
+    <div class="indicators" id="indicators-list"></div>
+  </div>
+
+  <div class="card fade-up" id="recs-card" style="display:none">
+    <div class="section-title">✅ Qué hacer ahora</div>
+    <div class="recommendations" id="recs-list"></div>
+  </div>
+
+  <div style="display:flex; justify-content:flex-end; max-width:720px; width:100%">
+    <button class="btn-reset" onclick="reiniciar()">↩ Analizar otro mensaje</button>
+  </div>
+
+</div>
+
+<footer>
+  Análisis impulsado por IA (Groq) · RiesGO! Vial — FORBE SAS<br>
+  No reemplaza la denuncia formal. Ante fraudes consumados contacta a tu banco o la Policía Nacional.
+</footer>
+
+<script>
+const API = '/api/fraude/analizar';
+
+const EJEMPLOS = {
+  bancolombia: `Asunto: Actualización urgente de seguridad - Ref 2026-002355-9933269-996\n\nDEPARTAMENTO DE CARTERAS Y COBRANZA BANCOLOMBIA\n\nEstimado/a codeudor\n\nLe informamos que su cuenta presenta una obligación pendiente con medidas cautelares activas. Para evitar el embargo de sus bienes, acceda al portal oficial en el siguiente enlace y regularice su situación en las próximas 24 horas.\n\nAcceda aquí: https://bancolombia-cartera-co.servicioportal.de/acceso\n\nAtentamente,\nDepartamento de Carteras - oficinavial@departamentalinfracciones.com`,
+
+  dian: `De: notificaciones@dian-colombia-impuestos.net\nAsunto: NOTIFICACIÓN URGENTE - Deuda tributaria Ref: 2026-COL-482901\n\nEstimado contribuyente,\n\nLa DIAN le informa que presenta una deuda fiscal por valor de $8.450.000 COP correspondiente al periodo gravable 2024. De no regularizar su situación en un plazo de 48 horas, se procederá con el embargo de sus cuentas bancarias y bienes inmuebles.\n\nPague ahora en: http://dian.gov.co.pago-urgente.xyz/ref482901\n\nDirección de Impuestos y Aduanas Nacionales`,
+
+  reembolso: `De: admin@aoezkara.de\nAsunto: Comunicación oficial sobre solicitud de reembolso\n\nEstimado(a) usuario(a),\n\nLe informamos que su solicitud de reembolso ha sido registrada correctamente y se encuentra disponible para revisión dentro de nuestro sistema.\n\nValor encontrado: COP $5.072.000\n\nPara consultar el detalle y continuar con el proceso, acceda al portal oficial mediante el siguiente botón.\n\nAcceder al portal oficial: https://reembolso-oficial.servicio.de/usuario\n\nSi el pago ya fue realizado o necesita asistencia adicional, puede comunicarse con nuestro equipo.`,
+
+  trabajo: `Hola! Vi tu perfil y me interesa ofrecerte una oportunidad de trabajo desde casa. Ganarás entre $2.000.000 y $5.000.000 mensuales solo con tu celular, 2-3 horas diarias. No necesitas experiencia. Somos una empresa internacional de marketing digital.\n\nSolo necesitamos:\n- Foto de tu cédula por ambos lados\n- Número de cuenta bancaria para los pagos\n- Depósito inicial de $150.000 para activar tu cuenta\n\nEscríbeme al WhatsApp +57 300 123 4567 para empezar hoy mismo!`
+};
+
+function cargarEjemplo(tipo) {
+  document.getElementById('texto').value = EJEMPLOS[tipo];
+  document.getElementById('texto').focus();
+}
+
+async function analizar() {
+  const texto = document.getElementById('texto').value.trim();
+  if (!texto) {
+    document.getElementById('texto').focus();
+    return;
+  }
+
+  const url = document.getElementById('url-input').value.trim();
+
+  // UI → loading
+  document.getElementById('input-card').style.display = 'none';
+  document.getElementById('scanner-card').style.display = 'block';
+  document.getElementById('results').style.display = 'none';
+
+  try {
+    const resp = await fetch(API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ texto, url: url || undefined }),
+    });
+
+    if (!resp.ok) throw new Error(`Error ${resp.status}`);
+    const data = await resp.json();
+    mostrarResultados(data);
+  } catch (err) {
+    document.getElementById('scanner-card').style.display = 'none';
+    document.getElementById('input-card').style.display = 'block';
+    alert('No se pudo analizar el mensaje. Intenta nuevamente.');
+    console.error(err);
+  }
+}
+
+function mostrarResultados(d) {
+  document.getElementById('scanner-card').style.display = 'none';
+
+  const nivel = d.nivel_riesgo || 'MEDIO';
+  const iconos = { ALTO: '🚨', MEDIO: '⚠️', BAJO: '✅' };
+  const etiquetas = {
+    ALTO:  'RIESGO ALTO — Fraude detectado',
+    MEDIO: 'RIESGO MEDIO — Mensaje sospechoso',
+    BAJO:  'RIESGO BAJO — Parece legítimo',
+  };
+
+  // Banner
+  const banner = document.getElementById('verdict-banner');
+  banner.className = `verdict-banner fade-up ${nivel}`;
+  document.getElementById('verdict-icon').textContent = iconos[nivel];
+  document.getElementById('verdict-level').textContent = etiquetas[nivel];
+
+  const tipo = d.tipo_fraude ? d.tipo_fraude : (d.es_fraude ? 'Fraude detectado' : 'Sin indicadores de fraude');
+  document.getElementById('verdict-type').textContent = tipo;
+
+  // Entidad suplantada
+  const eb = document.getElementById('entity-badge');
+  if (d.entidad_suplantada) {
+    eb.innerHTML = `<span>🎭</span> Suplanta a: <strong>${d.entidad_suplantada}</strong>`;
+    eb.style.display = 'inline-flex';
+  } else {
+    eb.style.display = 'none';
+  }
+
+  document.getElementById('verdict-summary').textContent = d.resumen || '';
+
+  // Confianza
+  const pct = d.confianza ?? 0;
+  document.getElementById('confianza-pct').textContent = `${pct}%`;
+  setTimeout(() => {
+    document.getElementById('confianza-fill').style.width = `${pct}%`;
+  }, 100);
+
+  // Indicadores
+  const indicList = document.getElementById('indicators-list');
+  indicList.innerHTML = '';
+  if (d.indicadores?.length) {
+    d.indicadores.forEach(ind => {
+      const el = document.createElement('div');
+      el.className = 'indicator';
+      el.innerHTML = `<span class="indicator-icon">⚠️</span><span>${ind}</span>`;
+      indicList.appendChild(el);
+    });
+    document.getElementById('indicators-card').style.display = 'block';
+  } else {
+    document.getElementById('indicators-card').style.display = 'none';
+  }
+
+  // Recomendaciones
+  const recList = document.getElementById('recs-list');
+  recList.innerHTML = '';
+  if (d.recomendaciones?.length) {
+    d.recomendaciones.forEach(rec => {
+      const el = document.createElement('div');
+      el.className = 'recommendation';
+      el.innerHTML = `<span class="rec-icon">✓</span><span>${rec}</span>`;
+      recList.appendChild(el);
+    });
+    document.getElementById('recs-card').style.display = 'block';
+  } else {
+    document.getElementById('recs-card').style.display = 'none';
+  }
+
+  document.getElementById('results').style.display = 'flex';
+  document.getElementById('results').style.flexDirection = 'column';
+  document.getElementById('results').style.alignItems = 'center';
+  document.getElementById('results').style.width = '100%';
+  document.getElementById('results').style.maxWidth = '720px';
+  document.getElementById('results').style.gap = '0';
+
+  // Scroll suave al resultado
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function reiniciar() {
+  document.getElementById('results').style.display = 'none';
+  document.getElementById('input-card').style.display = 'block';
+  document.getElementById('texto').value = '';
+  document.getElementById('url-input').value = '';
+  document.getElementById('texto').focus();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Enter en URL no envía el formulario accidentalmente
+document.getElementById('url-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') analizar();
+});
+</script>
+</body>
+</html>
