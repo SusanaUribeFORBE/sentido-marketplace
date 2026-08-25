@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>AXA Colpatria · Órdenes de Servicio</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+<style>
+:root{--axa:#00008F;--axa-dk:#00006B;--axa-red:#FF1721;--gray:#F4F5F8;--border:#DEE2E9}
+body{background:var(--gray);font-size:.9rem}
+.axa-nav{background:var(--axa)}
+.axa-logo{background:#fff;color:var(--axa);font-weight:900;font-size:.85rem;letter-spacing:1px;padding:3px 8px;border-radius:4px}
+.kpi-card{border-radius:10px;border:1px solid var(--border)!important}
+.kpi-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.kpi-num{font-size:1.7rem;font-weight:800;line-height:1}
+.kpi-lbl{font-size:.7rem;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
+.btn-xs{padding:.2rem .45rem;font-size:.75rem}
+.form-label{font-size:.8rem;font-weight:600;margin-bottom:.3rem}
+.form-control,.form-select{font-size:.875rem;border-color:var(--border);border-radius:8px}
+.form-control:focus,.form-select:focus{border-color:var(--axa);box-shadow:0 0 0 .15rem rgba(0,0,143,.15)}
+.card{border-radius:10px}
+table thead th{font-size:.73rem;letter-spacing:.04em;text-transform:uppercase;font-weight:700;white-space:nowrap;position:sticky;top:0;background:#f8f9fa;z-index:1}
+table tbody td{vertical-align:middle;font-size:.875rem}
+table tbody tr:hover{background:#f0f4ff}
+.badge{font-size:.68rem;font-weight:600;padding:.35em .65em;border-radius:6px}
+.section-title{font-size:1rem;font-weight:700;color:var(--axa)}
+.font-mono{font-family:monospace;font-size:.82rem}
+footer{background:#fff;border-top:1px solid var(--border)}
+#spinner{display:none}
+.toast-container{z-index:9999}
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg navbar-dark axa-nav shadow-sm">
+  <div class="container-fluid px-4">
+    <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+      <span class="axa-logo">AXA</span>
+      <span class="fw-bold" style="font-size:.95rem">ARL Colpatria
+        <span class="d-none d-sm-inline fw-normal opacity-75 small">· Órdenes de Servicio</span>
+      </span>
+    </a>
+    <button class="btn btn-light btn-sm fw-semibold ms-auto" onclick="abrirModalNueva()">
+      <i class="fas fa-plus me-1"></i>Nueva Orden
+    </button>
+  </div>
+</nav>
+
+<!-- PAGE HEADER -->
+<div class="bg-white border-bottom py-2 px-4 small">
+  <span class="text-muted"><i class="fas fa-home me-1"></i></span>
+  <span class="fw-semibold text-dark">Dashboard</span>
+</div>
+
+<main class="container-fluid px-4 py-4">
+
+  <!-- ALERTAS -->
+  <div id="alertZone"></div>
+
+  <!-- KPI CARDS -->
+  <div class="row g-3 mb-4" id="kpiRow">
+    <div class="col-6 col-md-3">
+      <div class="card border-0 shadow-sm kpi-card h-100">
+        <div class="card-body d-flex align-items-center gap-3 py-3">
+          <div class="kpi-icon bg-info bg-opacity-10"><i class="fas fa-clipboard-check text-info"></i></div>
+          <div><div class="kpi-num text-info" id="kAprobadas">—</div><div class="kpi-lbl">Aprobadas</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card border-0 shadow-sm kpi-card h-100">
+        <div class="card-body d-flex align-items-center gap-3 py-3">
+          <div class="kpi-icon bg-warning bg-opacity-10"><i class="fas fa-clock text-warning"></i></div>
+          <div><div class="kpi-num text-warning" id="kPendientes">—</div><div class="kpi-lbl">Pend. Ejecutar</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card border-0 shadow-sm kpi-card h-100">
+        <div class="card-body d-flex align-items-center gap-3 py-3">
+          <div class="kpi-icon bg-success bg-opacity-10"><i class="fas fa-check-double text-success"></i></div>
+          <div><div class="kpi-num text-success" id="kEjecutadas">—</div><div class="kpi-lbl">Ejecutadas</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card border-0 shadow-sm kpi-card h-100">
+        <div class="card-body d-flex align-items-center gap-3 py-3">
+          <div class="kpi-icon" style="background:rgba(0,0,143,.08)"><i class="fas fa-file-invoice-dollar" style="color:var(--axa)"></i></div>
+          <div><div class="kpi-num" style="color:var(--axa)" id="kFacturadas">—</div><div class="kpi-lbl">Facturadas</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-4">
+      <div class="card border-0 shadow-sm kpi-card h-100">
+        <div class="card-body py-3">
+          <div class="kpi-lbl mb-1"><i class="fas fa-coins me-1 text-secondary"></i>Valor Total</div>
+          <div class="fw-bold fs-5" id="kTotal">—</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-4">
+      <div class="card border-0 shadow-sm kpi-card h-100" style="background:#f0fdf4">
+        <div class="card-body py-3">
+          <div class="kpi-lbl mb-1 text-success"><i class="fas fa-check-circle me-1"></i>Facturado</div>
+          <div class="fw-bold fs-5 text-success" id="kFacturado">—</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-4">
+      <div class="card border-0 shadow-sm kpi-card h-100" style="background:#fffbeb">
+        <div class="card-body py-3">
+          <div class="kpi-lbl mb-1 text-warning"><i class="fas fa-hourglass-half me-1"></i>Por Facturar</div>
+          <div class="fw-bold fs-5 text-warning" id="kPorFacturar">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FILTROS -->
+  <div class="card border-0 shadow-sm mb-3">
+    <div class="card-body py-3">
+      <div class="row g-2 align-items-end">
+        <div class="col-12 col-md-3">
+          <label class="form-label">Buscar</label>
+          <div class="input-group">
+            <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted fa-sm"></i></span>
+            <input type="text" id="fBuscar" class="form-control border-start-0 ps-0" placeholder="N° Orden, Trabajador o Factura"/>
+          </div>
+        </div>
+        <div class="col-6 col-md-2">
+          <label class="form-label">Desde</label>
+          <input type="date" id="fDesde" class="form-control"/>
+        </div>
+        <div class="col-6 col-md-2">
+          <label class="form-label">Hasta</label>
+          <input type="date" id="fHasta" class="form-control"/>
+        </div>
+        <div class="col-12 col-md-2">
+          <label class="form-label">Estado</label>
+          <select id="fEstado" class="form-select">
+            <option value="">— Todos —</option>
+            <option value="Aprobada">Aprobada</option>
+            <option value="PendienteEjecutar">Pend. Ejecutar</option>
+            <option value="Ejecutada">Ejecutada</option>
+            <option value="Facturada">Facturada</option>
+          </select>
+        </div>
+        <div class="col-12 col-md-3 d-flex gap-2 flex-wrap">
+          <button class="btn btn-primary btn-sm px-3" onclick="cargar()">
+            <i class="fas fa-filter me-1"></i>Filtrar
+          </button>
+          <button class="btn btn-outline-secondary btn-sm" onclick="limpiarFiltros()" title="Limpiar">
+            <i class="fas fa-times"></i>
+          </button>
+          <button class="btn btn-outline-success btn-sm" onclick="exportarCsv()" title="Exportar CSV">
+            <i class="fas fa-file-csv me-1"></i>CSV
+          </button>
+          <button class="btn btn-success btn-sm ms-auto" onclick="abrirModalNueva()">
+            <i class="fas fa-plus me-1"></i>Nueva
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABLA -->
+  <div class="card border-0 shadow-sm">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center py-2 px-3">
+      <span class="section-title"><i class="fas fa-list-ul me-1"></i><span id="conteo">…</span></span>
+      <div id="spinner" class="spinner-border spinner-border-sm text-secondary" role="status"></div>
+    </div>
+    <div class="table-responsive" style="max-height:60vh;overflow-y:auto">
+      <table class="table table-hover align-middle mb-0">
+        <thead>
+          <tr>
+            <th>N° Orden</th>
+            <th>Trabajador / Afiliado</th>
+            <th>Tipo Servicio</th>
+            <th class="text-end">Valor</th>
+            <th>F. Aprobación</th>
+            <th>F. Ejecución</th>
+            <th>Estado</th>
+            <th>N° Factura</th>
+            <th class="text-center" style="min-width:150px">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</main>
+
+<footer class="py-3 px-4 mt-4">
+  <div class="container-fluid d-flex justify-content-between flex-wrap gap-2">
+    <span class="small text-muted"><strong class="text-dark">AXA Colpatria</strong> · Gestión de Órdenes ARL</span>
+    <span class="small text-muted">FORBE SAS © 2025</span>
+  </div>
+</footer>
+
+<!-- Toast -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+  <div id="toast" class="toast align-items-center text-white border-0" role="alert">
+    <div class="d-flex">
+      <div class="toast-body fw-semibold" id="toastMsg"></div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL NUEVA / EDITAR ───────────────────────────────────────── -->
+<div class="modal fade" id="mOrden" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header text-white" style="background:var(--axa)">
+        <h5 class="modal-title" id="mOrdenTitle"><i class="fas fa-plus-circle me-2"></i>Nueva Orden</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <input type="hidden" id="oId"/>
+        <div class="row g-3">
+          <div class="col-12 col-md-6">
+            <label class="form-label">N° Orden AXA <span class="text-danger">*</span></label>
+            <input type="text" id="oNumero" class="form-control text-uppercase" placeholder="Ej: AXA-2025-00001"/>
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label">F. Aprobación <span class="text-danger">*</span></label>
+            <input type="date" id="oFechaAprob" class="form-control"/>
+          </div>
+          <div class="col-12">
+            <label class="form-label">Trabajador / Afiliado <span class="text-danger">*</span></label>
+            <input type="text" id="oTrabajador" class="form-control" placeholder="Nombre completo"/>
+          </div>
+          <div class="col-12">
+            <label class="form-label">Tipo de Servicio <span class="text-danger">*</span></label>
+            <input type="text" id="oServicio" class="form-control" placeholder="Fisioterapia, Radiografía, Consulta…"/>
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label">Valor del Servicio <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <span class="input-group-text bg-white">$</span>
+              <input type="number" id="oValor" class="form-control text-end" min="0" step="0.01" placeholder="0"/>
+            </div>
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label">Estado</label>
+            <select id="oEstado" class="form-select">
+              <option value="Aprobada">Aprobada</option>
+              <option value="PendienteEjecutar">Pendiente Ejecutar</option>
+              <option value="Ejecutada">Ejecutada</option>
+              <option value="Facturada">Facturada</option>
+            </select>
+          </div>
+          <div class="col-12 col-md-6" id="rowFechaEjec" style="display:none">
+            <label class="form-label">F. Ejecución</label>
+            <input type="date" id="oFechaEjec" class="form-control"/>
+          </div>
+          <div class="col-12 col-md-6" id="rowNumFact" style="display:none">
+            <label class="form-label">N° Factura</label>
+            <input type="text" id="oNumFact" class="form-control text-uppercase font-mono"/>
+          </div>
+          <div class="col-12 col-md-6" id="rowFechaFact" style="display:none">
+            <label class="form-label">F. Facturación</label>
+            <input type="date" id="oFechaFact" class="form-control"/>
+          </div>
+          <div class="col-12">
+            <label class="form-label">Observaciones</label>
+            <textarea id="oObs" class="form-control" rows="2" placeholder="Opcional…"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-primary px-4" onclick="guardarOrden()">
+          <i class="fas fa-save me-1"></i>Guardar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL FACTURAR ─────────────────────────────────────────────── -->
+<div class="modal fade" id="mFacturar" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header text-white" style="background:var(--axa)">
+        <h5 class="modal-title"><i class="fas fa-file-invoice me-2"></i>Registrar Factura</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <input type="hidden" id="fId"/>
+        <div class="bg-light rounded-3 p-3 mb-4 small">
+          <div class="d-flex justify-content-between mb-1">
+            <span class="text-muted">Orden N°</span><strong class="font-mono" id="fOrden"></strong>
+          </div>
+          <div class="d-flex justify-content-between mb-1">
+            <span class="text-muted">Trabajador</span><strong id="fTrabajador"></strong>
+          </div>
+          <div class="d-flex justify-content-between">
+            <span class="text-muted">Valor</span><strong class="text-success" id="fValor"></strong>
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">N° de Factura <span class="text-danger">*</span></label>
+          <input type="text" id="fNumFact" class="form-control text-uppercase fw-semibold" placeholder="FE-2025-001234"/>
+        </div>
+        <div>
+          <label class="form-label">Fecha de Facturación <span class="text-danger">*</span></label>
+          <input type="date" id="fFechaFact" class="form-control"/>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-primary px-4" onclick="confirmarFacturar()">
+          <i class="fas fa-save me-1"></i>Guardar Factura
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL DETALLE ──────────────────────────────────────────────── -->
+<div class="modal fade" id="mDetalle" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header py-3" style="background:var(--axa)">
+        <h5 class="modal-title text-white fw-bold" id="dTitle">Detalle</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-0">
+        <table class="table table-borderless mb-0" id="dTable"></table>
+      </div>
+      <div class="modal-footer" id="dFooter"></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const BASE = '/api/axa';
+const co   = new Intl.NumberFormat('es-CO', {style:'currency',currency:'COP',minimumFractionDigits:0});
+let ordenes = [];
+let mOrden, mFacturar, mDetalle, toastEl;
+
+document.addEventListener('DOMContentLoaded', () => {
+  mOrden   = new bootstrap.Modal('#mOrden');
+  mFacturar= new bootstrap.Modal('#mFacturar');
+  mDetalle = new bootstrap.Modal('#mDetalle');
+  toastEl  = new bootstrap.Toast('#toast', {delay:3500});
+
+  document.getElementById('oEstado').addEventListener('change', toggleCamposEstado);
+  document.getElementById('fDesde').value = firstDayOfMonth();
+  cargar();
+});
+
+function firstDayOfMonth(){
+  const d = new Date(); d.setDate(1);
+  return d.toISOString().slice(0,10);
+}
+
+function today(){ return new Date().toISOString().slice(0,10); }
+
+async function cargar(){
+  mostrarSpinner(true);
+  const params = new URLSearchParams();
+  const b = document.getElementById('fBuscar').value.trim();
+  const d = document.getElementById('fDesde').value;
+  const h = document.getElementById('fHasta').value;
+  const e = document.getElementById('fEstado').value;
+  if(b) params.set('buscar',b);
+  if(d) params.set('desde',d);
+  if(h) params.set('hasta',h);
+  if(e) params.set('estado',e);
+
+  try {
+    const r = await fetch(`${BASE}/ordenes?${params}`);
+    ordenes  = await r.json();
+    if(!r.ok) throw new Error(ordenes.error || 'Error al cargar');
+    renderTabla();
+    actualizarKPIs();
+  } catch(e){ toast('❌ '+e.message,'danger'); }
+  mostrarSpinner(false);
+}
+
+function renderTabla(){
+  const tb = document.getElementById('tbody');
+  document.getElementById('conteo').textContent =
+    `${ordenes.length} orden${ordenes.length!==1?'es':''} encontrada${ordenes.length!==1?'s':''}`;
+
+  if(!ordenes.length){
+    tb.innerHTML = `<tr><td colspan="9" class="text-center text-muted py-5">
+      <i class="fas fa-search fa-2x mb-3 d-block opacity-25"></i>
+      No se encontraron órdenes con los filtros aplicados.</td></tr>`;
+    return;
+  }
+
+  tb.innerHTML = ordenes.map(o => `
+    <tr>
+      <td><span class="font-mono fw-semibold">${o.numero_orden}</span></td>
+      <td><span class="fw-semibold">${o.nombre_trabajador}</span></td>
+      <td class="text-muted small">${o.tipo_servicio}</td>
+      <td class="text-end fw-semibold">${co.format(o.valor_servicio)}</td>
+      <td class="small">${fmt(o.fecha_aprobacion)}</td>
+      <td class="small">${fmt(o.fecha_ejecucion)}</td>
+      <td>${badge(o.estado)}</td>
+      <td class="font-mono small text-muted">${o.numero_factura||'—'}</td>
+      <td>
+        <div class="d-flex gap-1 justify-content-center flex-wrap">
+          <button class="btn btn-outline-secondary btn-xs" title="Ver detalle" onclick='verDetalle(${o.id})'>
+            <i class="fas fa-eye fa-sm"></i>
+          </button>
+          <button class="btn btn-outline-primary btn-xs" title="Editar" onclick='editarOrden(${o.id})'>
+            <i class="fas fa-pen fa-sm"></i>
+          </button>
+          ${['Aprobada','PendienteEjecutar'].includes(o.estado) ? `
+          <button class="btn btn-outline-success btn-xs" title="Marcar Ejecutada"
+            onclick="marcarEjecutada(${o.id},'${o.numero_orden}')">
+            <i class="fas fa-check fa-sm"></i>
+          </button>` : ''}
+          ${o.estado==='Ejecutada' ? `
+          <button class="btn btn-outline-info btn-xs" title="Facturar"
+            onclick='abrirFacturar(${o.id},"${o.numero_orden}","${o.nombre_trabajador}",${o.valor_servicio})'>
+            <i class="fas fa-file-invoice fa-sm"></i>
+          </button>` : ''}
+          <button class="btn btn-outline-danger btn-xs" title="Eliminar"
+            onclick="eliminar(${o.id},'${o.numero_orden}')">
+            <i class="fas fa-trash fa-sm"></i>
+          </button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+function actualizarKPIs(){
+  const ap = ordenes.filter(o=>o.estado==='Aprobada').length;
+  const pe = ordenes.filter(o=>o.estado==='PendienteEjecutar').length;
+  const ej = ordenes.filter(o=>o.estado==='Ejecutada').length;
+  const fa = ordenes.filter(o=>o.estado==='Facturada').length;
+  const total       = ordenes.reduce((s,o)=>s+Number(o.valor_servicio),0);
+  const facturado   = ordenes.filter(o=>o.estado==='Facturada').reduce((s,o)=>s+Number(o.valor_servicio),0);
+  const porFacturar = ordenes.filter(o=>o.estado!=='Facturada').reduce((s,o)=>s+Number(o.valor_servicio),0);
+
+  document.getElementById('kAprobadas').textContent  = ap;
+  document.getElementById('kPendientes').textContent = pe;
+  document.getElementById('kEjecutadas').textContent = ej;
+  document.getElementById('kFacturadas').textContent = fa;
+  document.getElementById('kTotal').textContent       = co.format(total);
+  document.getElementById('kFacturado').textContent  = co.format(facturado);
+  document.getElementById('kPorFacturar').textContent= co.format(porFacturar);
+}
+
+function badge(estado){
+  const cls = {
+    Aprobada:'bg-info text-white',
+    PendienteEjecutar:'bg-warning text-dark',
+    Ejecutada:'bg-success text-white',
+    Facturada:'bg-primary text-white',
+  };
+  const lbl = {PendienteEjecutar:'Pend. Ejecutar'};
+  return `<span class="badge ${cls[estado]||'bg-secondary'}">${lbl[estado]||estado}</span>`;
+}
+
+function fmt(fecha){
+  if(!fecha) return '—';
+  const [y,m,d] = fecha.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+// ── Nueva / Editar ────────────────────────────────────────────────
+function abrirModalNueva(){
+  document.getElementById('mOrdenTitle').innerHTML='<i class="fas fa-plus-circle me-2"></i>Nueva Orden';
+  document.getElementById('oId').value='';
+  document.getElementById('oNumero').value='';
+  document.getElementById('oFechaAprob').value=today();
+  document.getElementById('oTrabajador').value='';
+  document.getElementById('oServicio').value='';
+  document.getElementById('oValor').value='';
+  document.getElementById('oEstado').value='Aprobada';
+  document.getElementById('oFechaEjec').value='';
+  document.getElementById('oNumFact').value='';
+  document.getElementById('oFechaFact').value='';
+  document.getElementById('oObs').value='';
+  toggleCamposEstado();
+  mOrden.show();
+}
+
+function editarOrden(id){
+  const o = ordenes.find(x=>x.id===id);
+  if(!o) return;
+  document.getElementById('mOrdenTitle').innerHTML='<i class="fas fa-pen me-2"></i>Editar Orden';
+  document.getElementById('oId').value            = o.id;
+  document.getElementById('oNumero').value        = o.numero_orden;
+  document.getElementById('oFechaAprob').value    = o.fecha_aprobacion||'';
+  document.getElementById('oTrabajador').value    = o.nombre_trabajador;
+  document.getElementById('oServicio').value      = o.tipo_servicio;
+  document.getElementById('oValor').value         = o.valor_servicio;
+  document.getElementById('oEstado').value        = o.estado;
+  document.getElementById('oFechaEjec').value     = o.fecha_ejecucion||'';
+  document.getElementById('oNumFact').value       = o.numero_factura||'';
+  document.getElementById('oFechaFact').value     = o.fecha_facturacion||'';
+  document.getElementById('oObs').value           = o.observaciones||'';
+  toggleCamposEstado();
+  mOrden.show();
+}
+
+function toggleCamposEstado(){
+  const e = document.getElementById('oEstado').value;
+  document.getElementById('rowFechaEjec').style.display = ['Ejecutada','Facturada'].includes(e)?'':'none';
+  document.getElementById('rowNumFact').style.display   = e==='Facturada'?'':'none';
+  document.getElementById('rowFechaFact').style.display = e==='Facturada'?'':'none';
+}
+
+async function guardarOrden(){
+  const id        = document.getElementById('oId').value;
+  const body = {
+    numero_orden:      document.getElementById('oNumero').value.trim(),
+    nombre_trabajador: document.getElementById('oTrabajador').value.trim(),
+    tipo_servicio:     document.getElementById('oServicio').value.trim(),
+    valor_servicio:    document.getElementById('oValor').value,
+    fecha_aprobacion:  document.getElementById('oFechaAprob').value,
+    estado:            document.getElementById('oEstado').value,
+    fecha_ejecucion:   document.getElementById('oFechaEjec').value||null,
+    numero_factura:    document.getElementById('oNumFact').value||null,
+    fecha_facturacion: document.getElementById('oFechaFact').value||null,
+    observaciones:     document.getElementById('oObs').value||null,
+  };
+
+  if(!body.numero_orden||!body.nombre_trabajador||!body.tipo_servicio||!body.valor_servicio||!body.fecha_aprobacion){
+    toast('⚠️ Complete los campos obligatorios','warning'); return;
+  }
+
+  try {
+    const url    = id ? `${BASE}/ordenes/${id}` : `${BASE}/ordenes`;
+    const method = id ? 'PUT' : 'POST';
+    const r = await fetch(url, {method, headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
+    const data = await r.json();
+    if(!r.ok) throw new Error(data.error||'Error al guardar');
+    mOrden.hide();
+    toast('✅ Orden guardada correctamente','success');
+    await cargar();
+  } catch(e){ toast('❌ '+e.message,'danger'); }
+}
+
+// ── Ejecutar ──────────────────────────────────────────────────────
+async function marcarEjecutada(id, numero){
+  if(!confirm(`¿Marcar la orden ${numero} como Ejecutada hoy?`)) return;
+  try {
+    const r    = await fetch(`${BASE}/ordenes/${id}/ejecutar`, {method:'POST'});
+    const data = await r.json();
+    if(!r.ok) throw new Error(data.error||'Error');
+    toast('✅ Orden marcada como Ejecutada','success');
+    await cargar();
+  } catch(e){ toast('❌ '+e.message,'danger'); }
+}
+
+// ── Facturar ──────────────────────────────────────────────────────
+function abrirFacturar(id, orden, trabajador, valor){
+  document.getElementById('fId').value          = id;
+  document.getElementById('fOrden').textContent = orden;
+  document.getElementById('fTrabajador').textContent = trabajador;
+  document.getElementById('fValor').textContent = co.format(valor);
+  document.getElementById('fNumFact').value     = '';
+  document.getElementById('fFechaFact').value   = today();
+  mFacturar.show();
+  setTimeout(()=>document.getElementById('fNumFact').focus(),350);
+}
+
+async function confirmarFacturar(){
+  const id   = document.getElementById('fId').value;
+  const nf   = document.getElementById('fNumFact').value.trim();
+  const ff   = document.getElementById('fFechaFact').value;
+  if(!nf||!ff){ toast('⚠️ Complete N° de factura y fecha','warning'); return; }
+  try {
+    const r    = await fetch(`${BASE}/ordenes/${id}/facturar`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({numero_factura:nf, fecha_facturacion:ff}),
+    });
+    const data = await r.json();
+    if(!r.ok) throw new Error(data.error||'Error');
+    mFacturar.hide();
+    toast('✅ Factura registrada correctamente','success');
+    await cargar();
+  } catch(e){ toast('❌ '+e.message,'danger'); }
+}
+
+// ── Eliminar ──────────────────────────────────────────────────────
+async function eliminar(id, numero){
+  if(!confirm(`¿Eliminar definitivamente la orden ${numero}?`)) return;
+  try {
+    const r = await fetch(`${BASE}/ordenes/${id}`, {method:'DELETE'});
+    if(!r.ok){ const d=await r.json(); throw new Error(d.error||'Error'); }
+    toast('🗑️ Orden eliminada','secondary');
+    await cargar();
+  } catch(e){ toast('❌ '+e.message,'danger'); }
+}
+
+// ── Ver detalle ───────────────────────────────────────────────────
+function verDetalle(id){
+  const o = ordenes.find(x=>x.id===id);
+  if(!o) return;
+  document.getElementById('dTitle').textContent = o.numero_orden;
+
+  const fila = (lbl, val) =>
+    `<tr class="border-bottom">
+       <th class="ps-4 py-2 text-muted fw-semibold small" style="width:42%">${lbl}</th>
+       <td class="pe-4 py-2">${val||'—'}</td>
+     </tr>`;
+
+  document.getElementById('dTable').innerHTML = `<tbody>
+    ${fila('Estado', badge(o.estado))}
+    ${fila('Trabajador / Afiliado', `<strong>${o.nombre_trabajador}</strong>`)}
+    ${fila('Tipo de Servicio', o.tipo_servicio)}
+    ${fila('Valor', `<strong class="text-success fs-6">${co.format(o.valor_servicio)}</strong>`)}
+    ${fila('F. Aprobación', fmt(o.fecha_aprobacion))}
+    ${fila('F. Ejecución', fmt(o.fecha_ejecucion))}
+    ${fila('N° Factura', o.numero_factura?`<span class="font-mono">${o.numero_factura}</span>`:'')}
+    ${fila('F. Facturación', fmt(o.fecha_facturacion))}
+    ${o.observaciones?fila('Observaciones',`<span class="text-muted">${o.observaciones}</span>`):''}
+  </tbody>`;
+
+  const footer = document.getElementById('dFooter');
+  let btns = `<button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button>
+    <button class="btn btn-outline-primary" onclick="mDetalle.hide();editarOrden(${o.id})">
+      <i class="fas fa-pen me-1"></i>Editar</button>`;
+  if(['Aprobada','PendienteEjecutar'].includes(o.estado))
+    btns += `<button class="btn btn-outline-success"
+      onclick="mDetalle.hide();marcarEjecutada(${o.id},'${o.numero_orden}')">
+      <i class="fas fa-check me-1"></i>Ejecutada</button>`;
+  if(o.estado==='Ejecutada')
+    btns += `<button class="btn btn-outline-info"
+      onclick="mDetalle.hide();abrirFacturar(${o.id},'${o.numero_orden}','${o.nombre_trabajador}',${o.valor_servicio})">
+      <i class="fas fa-file-invoice me-1"></i>Facturar</button>`;
+  footer.innerHTML = btns;
+  mDetalle.show();
+}
+
+// ── CSV ───────────────────────────────────────────────────────────
+function exportarCsv(){
+  const params = new URLSearchParams();
+  const b = document.getElementById('fBuscar').value.trim();
+  const d = document.getElementById('fDesde').value;
+  const h = document.getElementById('fHasta').value;
+  const e = document.getElementById('fEstado').value;
+  if(b) params.set('buscar',b);
+  if(d) params.set('desde',d);
+  if(h) params.set('hasta',h);
+  if(e) params.set('estado',e);
+  window.open(`${BASE}/ordenes/exportar-csv?${params}`);
+}
+
+// ── Helpers ───────────────────────────────────────────────────────
+function limpiarFiltros(){
+  document.getElementById('fBuscar').value='';
+  document.getElementById('fDesde').value=firstDayOfMonth();
+  document.getElementById('fHasta').value='';
+  document.getElementById('fEstado').value='';
+  cargar();
+}
+
+function mostrarSpinner(v){
+  document.getElementById('spinner').style.display = v?'inline-block':'none';
+}
+
+function toast(msg, tipo='success'){
+  const el = document.getElementById('toast');
+  el.className = `toast align-items-center text-white border-0 bg-${tipo}`;
+  document.getElementById('toastMsg').textContent = msg;
+  toastEl.show();
+}
+</script>
+</body>
+</html>
