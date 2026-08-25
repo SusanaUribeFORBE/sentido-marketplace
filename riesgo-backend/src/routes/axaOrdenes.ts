@@ -187,6 +187,81 @@ axaOrdenesRouter.post('/ordenes/:id/facturar', async (req: Request, res: Respons
   }
 });
 
+// ── POST /api/axa/ordenes/importar ──────────────────────────────────
+axaOrdenesRouter.post('/ordenes/importar', async (req: Request, res: Response) => {
+  try {
+    const { filas } = req.body as { filas: Record<string, any>[] };
+    if (!Array.isArray(filas) || filas.length === 0) {
+      return res.status(400).json({ error: 'No se enviaron filas.' });
+    }
+
+    const parseDate = (v: any): string | null => {
+      if (!v) return null;
+      const s = String(v).trim();
+      // DD/MM/YYYY
+      if (/^\d{2}\/\d{2}\/\d{4}$/.test(s)) {
+        const [d, m, y] = s.split('/');
+        return `${y}-${m}-${d}`;
+      }
+      // YYYY-MM-DD
+      if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+      // Excel serial number
+      const n = Number(v);
+      if (!isNaN(n) && n > 40000) {
+        const d = new Date(Math.round((n - 25569) * 86400 * 1000));
+        return d.toISOString().slice(0, 10);
+      }
+      return null;
+    };
+
+    const ESTADOS_VALIDOS = ['Aprobada', 'PendienteEjecutar', 'Ejecutada', 'Facturada'];
+
+    const importadas: any[] = [];
+    const errores: { fila: number; mensaje: string }[] = [];
+
+    for (let i = 0; i < filas.length; i++) {
+      const f = filas[i];
+      const fila = i + 2; // fila 1 = encabezados
+
+      const numero_orden      = String(f.numero_orden || '').trim().toUpperCase();
+      const nombre_trabajador = String(f.nombre_trabajador || '').trim();
+      const tipo_servicio     = String(f.tipo_servicio || '').trim();
+      const valor_servicio    = Number(String(f.valor_servicio || '').replace(/[^0-9.]/g, ''));
+      const fecha_aprobacion  = parseDate(f.fecha_aprobacion);
+      const estado            = ESTADOS_VALIDOS.includes(f.estado) ? f.estado : 'Aprobada';
+      const observaciones     = String(f.observaciones || '').trim() || null;
+
+      if (!numero_orden)      { errores.push({ fila, mensaje: 'N° Orden vacío' }); continue; }
+      if (!nombre_trabajador) { errores.push({ fila, mensaje: `Fila ${fila}: Trabajador vacío` }); continue; }
+      if (!tipo_servicio)     { errores.push({ fila, mensaje: `Fila ${fila}: Tipo Servicio vacío` }); continue; }
+      if (!valor_servicio)    { errores.push({ fila, mensaje: `Fila ${fila}: Valor inválido` }); continue; }
+      if (!fecha_aprobacion)  { errores.push({ fila, mensaje: `Fila ${fila}: Fecha Aprobación inválida` }); continue; }
+
+      importadas.push({ numero_orden, nombre_trabajador, tipo_servicio, valor_servicio, fecha_aprobacion, estado, observaciones });
+    }
+
+    if (importadas.length === 0) {
+      return res.status(422).json({ importadas: 0, errores });
+    }
+
+    // Insertar en lotes de 100
+    let totalOk = 0;
+    for (let i = 0; i < importadas.length; i += 100) {
+      const lote = importadas.slice(i, i + 100);
+      const { error } = await supabase.from('axa_ordenes').upsert(lote, { onConflict: 'numero_orden', ignoreDuplicates: false });
+      if (error) {
+        errores.push({ fila: i + 2, mensaje: error.message });
+      } else {
+        totalOk += lote.length;
+      }
+    }
+
+    res.json({ importadas: totalOk, errores });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // ── DELETE /api/axa/ordenes/:id ──────────────────────────────────────
 axaOrdenesRouter.delete('/ordenes/:id', async (req: Request, res: Response) => {
   try {
