@@ -8,40 +8,39 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
-:root{--axa:#00008F;--axa-dk:#00006B;--axa-red:#FF1721;--gray:#F4F5F8;--border:#DEE2E9}
-body{background:var(--gray);font-size:.9rem}
+:root{--axa:#00008F;--axa-dk:#00006B;--gray:#F4F5F8;--border:#DEE2E9}
+body{background:var(--gray);font-size:.875rem}
 .axa-nav{background:var(--axa)}
 .axa-logo{background:#fff;color:var(--axa);font-weight:900;font-size:.85rem;letter-spacing:1px;padding:3px 8px;border-radius:4px}
 .kpi-card{border-radius:10px;border:1px solid var(--border)!important}
-.kpi-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.kpi-num{font-size:1.7rem;font-weight:800;line-height:1}
-.kpi-lbl{font-size:.7rem;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
-.btn-xs{padding:.2rem .45rem;font-size:.75rem}
-.form-label{font-size:.8rem;font-weight:600;margin-bottom:.3rem}
-.form-control,.form-select{font-size:.875rem;border-color:var(--border);border-radius:8px}
+.kpi-icon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.kpi-num{font-size:1.6rem;font-weight:800;line-height:1}
+.kpi-lbl{font-size:.68rem;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
+.btn-xs{padding:.18rem .4rem;font-size:.72rem}
+.form-label{font-size:.78rem;font-weight:600;margin-bottom:.25rem}
+.form-control,.form-select{font-size:.85rem;border-color:var(--border);border-radius:8px}
 .form-control:focus,.form-select:focus{border-color:var(--axa);box-shadow:0 0 0 .15rem rgba(0,0,143,.15)}
 .card{border-radius:10px}
-table thead th{font-size:.73rem;letter-spacing:.04em;text-transform:uppercase;font-weight:700;white-space:nowrap;position:sticky;top:0;background:#f8f9fa;z-index:1}
-table tbody td{vertical-align:middle;font-size:.875rem}
+.section-title{font-size:.95rem;font-weight:700;color:var(--axa)}
+.font-mono{font-family:monospace;font-size:.8rem}
+table thead th{font-size:.7rem;letter-spacing:.04em;text-transform:uppercase;font-weight:700;white-space:nowrap;position:sticky;top:0;background:#f8f9fa;z-index:1;border-bottom:2px solid var(--axa)}
+table tbody td{vertical-align:middle;font-size:.825rem}
 table tbody tr:hover{background:#f0f4ff}
-.badge{font-size:.68rem;font-weight:600;padding:.35em .65em;border-radius:6px}
-.section-title{font-size:1rem;font-weight:700;color:var(--axa)}
-.font-mono{font-family:monospace;font-size:.82rem}
+.badge{font-size:.66rem;font-weight:600;padding:.33em .6em;border-radius:6px}
 footer{background:#fff;border-top:1px solid var(--border)}
 #spinner{display:none}
-.toast-container{z-index:9999}
+.form-section{border-left:3px solid var(--axa);padding-left:.75rem;margin-bottom:1rem}
+.form-section-title{font-size:.78rem;font-weight:700;color:var(--axa);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.5rem}
+.vencida{background:#fff3cd!important}
 </style>
 </head>
 <body>
 
-<!-- NAVBAR -->
 <nav class="navbar navbar-expand-lg navbar-dark axa-nav shadow-sm">
   <div class="container-fluid px-4">
     <a class="navbar-brand d-flex align-items-center gap-2" href="#">
       <span class="axa-logo">AXA</span>
-      <span class="fw-bold" style="font-size:.95rem">ARL Colpatria
-        <span class="d-none d-sm-inline fw-normal opacity-75 small">· Órdenes de Servicio</span>
-      </span>
+      <span class="fw-bold">ARL Colpatria <span class="d-none d-sm-inline fw-normal opacity-75 small">· Órdenes de Servicio</span></span>
     </a>
     <button class="btn btn-light btn-sm fw-semibold ms-auto" onclick="abrirModalNueva()">
       <i class="fas fa-plus me-1"></i>Nueva Orden
@@ -49,175 +48,106 @@ footer{background:#fff;border-top:1px solid var(--border)}
   </div>
 </nav>
 
-<!-- PAGE HEADER -->
 <div class="bg-white border-bottom py-2 px-4 small">
-  <span class="text-muted"><i class="fas fa-home me-1"></i></span>
-  <span class="fw-semibold text-dark">Dashboard</span>
+  <span class="text-muted"><i class="fas fa-home me-1"></i></span><span class="fw-semibold">Dashboard</span>
 </div>
 
 <main class="container-fluid px-4 py-4">
 
-  <!-- ALERTAS -->
-  <div id="alertZone"></div>
+<div id="alertZone"></div>
 
-  <!-- KPI CARDS -->
-  <div class="row g-3 mb-4" id="kpiRow">
-    <div class="col-6 col-md-3">
-      <div class="card border-0 shadow-sm kpi-card h-100">
-        <div class="card-body d-flex align-items-center gap-3 py-3">
-          <div class="kpi-icon bg-info bg-opacity-10"><i class="fas fa-clipboard-check text-info"></i></div>
-          <div><div class="kpi-num text-info" id="kAprobadas">—</div><div class="kpi-lbl">Aprobadas</div></div>
-        </div>
+<!-- KPIs -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3"><div class="card border-0 shadow-sm kpi-card h-100"><div class="card-body d-flex align-items-center gap-3 py-3"><div class="kpi-icon bg-info bg-opacity-10"><i class="fas fa-clipboard-check text-info"></i></div><div><div class="kpi-num text-info" id="kAprobadas">—</div><div class="kpi-lbl">Aprobadas</div></div></div></div></div>
+  <div class="col-6 col-md-3"><div class="card border-0 shadow-sm kpi-card h-100"><div class="card-body d-flex align-items-center gap-3 py-3"><div class="kpi-icon bg-warning bg-opacity-10"><i class="fas fa-clock text-warning"></i></div><div><div class="kpi-num text-warning" id="kPendientes">—</div><div class="kpi-lbl">Pend. Ejecutar</div></div></div></div></div>
+  <div class="col-6 col-md-3"><div class="card border-0 shadow-sm kpi-card h-100"><div class="card-body d-flex align-items-center gap-3 py-3"><div class="kpi-icon bg-success bg-opacity-10"><i class="fas fa-check-double text-success"></i></div><div><div class="kpi-num text-success" id="kEjecutadas">—</div><div class="kpi-lbl">Ejecutadas</div></div></div></div></div>
+  <div class="col-6 col-md-3"><div class="card border-0 shadow-sm kpi-card h-100"><div class="card-body d-flex align-items-center gap-3 py-3"><div class="kpi-icon" style="background:rgba(0,0,143,.08)"><i class="fas fa-file-invoice-dollar" style="color:var(--axa)"></i></div><div><div class="kpi-num" style="color:var(--axa)" id="kFacturadas">—</div><div class="kpi-lbl">Facturadas</div></div></div></div></div>
+  <div class="col-12 col-md-4"><div class="card border-0 shadow-sm kpi-card h-100"><div class="card-body py-3"><div class="kpi-lbl mb-1"><i class="fas fa-coins me-1 text-secondary"></i>Valor Total</div><div class="fw-bold fs-5" id="kTotal">—</div></div></div></div>
+  <div class="col-12 col-md-4"><div class="card border-0 shadow-sm kpi-card h-100" style="background:#f0fdf4"><div class="card-body py-3"><div class="kpi-lbl mb-1 text-success"><i class="fas fa-check-circle me-1"></i>Facturado</div><div class="fw-bold fs-5 text-success" id="kFacturado">—</div></div></div></div>
+  <div class="col-12 col-md-4"><div class="card border-0 shadow-sm kpi-card h-100" style="background:#fffbeb"><div class="card-body py-3"><div class="kpi-lbl mb-1 text-warning"><i class="fas fa-hourglass-half me-1"></i>Por Facturar</div><div class="fw-bold fs-5 text-warning" id="kPorFacturar">—</div></div></div></div>
+</div>
+
+<!-- Filtros -->
+<div class="card border-0 shadow-sm mb-3">
+  <div class="card-body py-3">
+    <div class="row g-2 align-items-end">
+      <div class="col-12 col-md-3">
+        <label class="form-label">Buscar</label>
+        <div class="input-group"><span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted fa-sm"></i></span><input type="text" id="fBuscar" class="form-control border-start-0 ps-0" placeholder="N° Orden, Empresa, Consultor, Código"/></div>
       </div>
-    </div>
-    <div class="col-6 col-md-3">
-      <div class="card border-0 shadow-sm kpi-card h-100">
-        <div class="card-body d-flex align-items-center gap-3 py-3">
-          <div class="kpi-icon bg-warning bg-opacity-10"><i class="fas fa-clock text-warning"></i></div>
-          <div><div class="kpi-num text-warning" id="kPendientes">—</div><div class="kpi-lbl">Pend. Ejecutar</div></div>
-        </div>
+      <div class="col-6 col-md-2"><label class="form-label">F. Aprobación desde</label><input type="date" id="fDesde" class="form-control"/></div>
+      <div class="col-6 col-md-2"><label class="form-label">hasta</label><input type="date" id="fHasta" class="form-control"/></div>
+      <div class="col-12 col-md-2"><label class="form-label">Estado</label>
+        <select id="fEstado" class="form-select">
+          <option value="">— Todos —</option>
+          <option value="Aprobada">Aprobada</option>
+          <option value="PendienteEjecutar">Pend. Ejecutar</option>
+          <option value="Ejecutada">Ejecutada</option>
+          <option value="Facturada">Facturada</option>
+        </select>
       </div>
-    </div>
-    <div class="col-6 col-md-3">
-      <div class="card border-0 shadow-sm kpi-card h-100">
-        <div class="card-body d-flex align-items-center gap-3 py-3">
-          <div class="kpi-icon bg-success bg-opacity-10"><i class="fas fa-check-double text-success"></i></div>
-          <div><div class="kpi-num text-success" id="kEjecutadas">—</div><div class="kpi-lbl">Ejecutadas</div></div>
-        </div>
-      </div>
-    </div>
-    <div class="col-6 col-md-3">
-      <div class="card border-0 shadow-sm kpi-card h-100">
-        <div class="card-body d-flex align-items-center gap-3 py-3">
-          <div class="kpi-icon" style="background:rgba(0,0,143,.08)"><i class="fas fa-file-invoice-dollar" style="color:var(--axa)"></i></div>
-          <div><div class="kpi-num" style="color:var(--axa)" id="kFacturadas">—</div><div class="kpi-lbl">Facturadas</div></div>
-        </div>
-      </div>
-    </div>
-    <div class="col-12 col-md-4">
-      <div class="card border-0 shadow-sm kpi-card h-100">
-        <div class="card-body py-3">
-          <div class="kpi-lbl mb-1"><i class="fas fa-coins me-1 text-secondary"></i>Valor Total</div>
-          <div class="fw-bold fs-5" id="kTotal">—</div>
-        </div>
-      </div>
-    </div>
-    <div class="col-12 col-md-4">
-      <div class="card border-0 shadow-sm kpi-card h-100" style="background:#f0fdf4">
-        <div class="card-body py-3">
-          <div class="kpi-lbl mb-1 text-success"><i class="fas fa-check-circle me-1"></i>Facturado</div>
-          <div class="fw-bold fs-5 text-success" id="kFacturado">—</div>
-        </div>
-      </div>
-    </div>
-    <div class="col-12 col-md-4">
-      <div class="card border-0 shadow-sm kpi-card h-100" style="background:#fffbeb">
-        <div class="card-body py-3">
-          <div class="kpi-lbl mb-1 text-warning"><i class="fas fa-hourglass-half me-1"></i>Por Facturar</div>
-          <div class="fw-bold fs-5 text-warning" id="kPorFacturar">—</div>
-        </div>
+      <div class="col-12 col-md-3 d-flex gap-2 flex-wrap">
+        <button class="btn btn-primary btn-sm px-3" onclick="cargar()"><i class="fas fa-filter me-1"></i>Filtrar</button>
+        <button class="btn btn-outline-secondary btn-sm" onclick="limpiarFiltros()" title="Limpiar"><i class="fas fa-times"></i></button>
+        <button class="btn btn-outline-success btn-sm" onclick="exportarCsv()" title="CSV"><i class="fas fa-file-csv me-1"></i>CSV</button>
+        <button class="btn btn-outline-warning btn-sm" onclick="abrirImportar()" title="Importar"><i class="fas fa-file-upload me-1"></i>Importar</button>
+        <button class="btn btn-success btn-sm ms-auto" onclick="abrirModalNueva()"><i class="fas fa-plus me-1"></i>Nueva</button>
       </div>
     </div>
   </div>
+</div>
 
-  <!-- FILTROS -->
-  <div class="card border-0 shadow-sm mb-3">
-    <div class="card-body py-3">
-      <div class="row g-2 align-items-end">
-        <div class="col-12 col-md-3">
-          <label class="form-label">Buscar</label>
-          <div class="input-group">
-            <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted fa-sm"></i></span>
-            <input type="text" id="fBuscar" class="form-control border-start-0 ps-0" placeholder="N° Orden, Trabajador o Factura"/>
-          </div>
-        </div>
-        <div class="col-6 col-md-2">
-          <label class="form-label">Desde</label>
-          <input type="date" id="fDesde" class="form-control"/>
-        </div>
-        <div class="col-6 col-md-2">
-          <label class="form-label">Hasta</label>
-          <input type="date" id="fHasta" class="form-control"/>
-        </div>
-        <div class="col-12 col-md-2">
-          <label class="form-label">Estado</label>
-          <select id="fEstado" class="form-select">
-            <option value="">— Todos —</option>
-            <option value="Aprobada">Aprobada</option>
-            <option value="PendienteEjecutar">Pend. Ejecutar</option>
-            <option value="Ejecutada">Ejecutada</option>
-            <option value="Facturada">Facturada</option>
-          </select>
-        </div>
-        <div class="col-12 col-md-3 d-flex gap-2 flex-wrap">
-          <button class="btn btn-primary btn-sm px-3" onclick="cargar()">
-            <i class="fas fa-filter me-1"></i>Filtrar
-          </button>
-          <button class="btn btn-outline-secondary btn-sm" onclick="limpiarFiltros()" title="Limpiar">
-            <i class="fas fa-times"></i>
-          </button>
-          <button class="btn btn-outline-success btn-sm" onclick="exportarCsv()" title="Exportar CSV">
-            <i class="fas fa-file-csv me-1"></i>CSV
-          </button>
-          <button class="btn btn-outline-warning btn-sm" onclick="abrirImportar()" title="Importar Excel/CSV">
-            <i class="fas fa-file-upload me-1"></i>Importar
-          </button>
-          <button class="btn btn-success btn-sm ms-auto" onclick="abrirModalNueva()">
-            <i class="fas fa-plus me-1"></i>Nueva
-          </button>
-        </div>
-      </div>
-    </div>
+<!-- Tabla -->
+<div class="card border-0 shadow-sm">
+  <div class="card-header bg-white d-flex justify-content-between align-items-center py-2 px-3">
+    <span class="section-title"><i class="fas fa-list-ul me-1"></i><span id="conteo">…</span></span>
+    <div id="spinner" class="spinner-border spinner-border-sm text-secondary" role="status"></div>
   </div>
-
-  <!-- TABLA -->
-  <div class="card border-0 shadow-sm">
-    <div class="card-header bg-white d-flex justify-content-between align-items-center py-2 px-3">
-      <span class="section-title"><i class="fas fa-list-ul me-1"></i><span id="conteo">…</span></span>
-      <div id="spinner" class="spinner-border spinner-border-sm text-secondary" role="status"></div>
-    </div>
-    <div class="table-responsive" style="max-height:60vh;overflow-y:auto">
-      <table class="table table-hover align-middle mb-0">
-        <thead>
-          <tr>
-            <th>N° Orden</th>
-            <th>Trabajador / Afiliado</th>
-            <th>Tipo Servicio</th>
-            <th class="text-end">Valor</th>
-            <th>F. Aprobación</th>
-            <th>F. Ejecución</th>
-            <th>Estado</th>
-            <th>N° Factura</th>
-            <th class="text-center" style="min-width:150px">Acciones</th>
-          </tr>
-        </thead>
-        <tbody id="tbody"></tbody>
-      </table>
-    </div>
+  <div class="table-responsive" style="max-height:62vh;overflow-y:auto">
+    <table class="table table-hover align-middle mb-0">
+      <thead>
+        <tr>
+          <th>N° Orden</th>
+          <th>Empresa Afiliada</th>
+          <th>N° Afil.</th>
+          <th>Cód.</th>
+          <th>Descripción</th>
+          <th class="text-center">Cant.</th>
+          <th class="text-end">VR Unit.</th>
+          <th class="text-end">VR Total</th>
+          <th>Ciudad</th>
+          <th>F. Aprob.</th>
+          <th>F. Venc.</th>
+          <th>Estado</th>
+          <th>Consultor</th>
+          <th>Técnico ARL</th>
+          <th class="text-center" style="min-width:165px">Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
   </div>
-
+</div>
 </main>
 
 <footer class="py-3 px-4 mt-4">
   <div class="container-fluid d-flex justify-content-between flex-wrap gap-2">
-    <span class="small text-muted"><strong class="text-dark">AXA Colpatria</strong> · Gestión de Órdenes ARL</span>
-    <span class="small text-muted">FORBE SAS © 2025</span>
+    <span class="small text-muted"><strong>AXA Colpatria</strong> · Gestión de Órdenes ARL</span>
+    <span class="small text-muted">FORBE SAS © 2026</span>
   </div>
 </footer>
 
 <!-- Toast -->
 <div class="toast-container position-fixed bottom-0 end-0 p-3">
   <div id="toast" class="toast align-items-center text-white border-0" role="alert">
-    <div class="d-flex">
-      <div class="toast-body fw-semibold" id="toastMsg"></div>
-      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-    </div>
+    <div class="d-flex"><div class="toast-body fw-semibold" id="toastMsg"></div>
+    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>
   </div>
 </div>
 
-<!-- ── MODAL NUEVA / EDITAR ───────────────────────────────────────── -->
+<!-- ── MODAL NUEVA / EDITAR ─────────────────────────────────────────── -->
 <div class="modal fade" id="mOrden" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered modal-lg">
+  <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable">
     <div class="modal-content border-0 shadow">
       <div class="modal-header text-white" style="background:var(--axa)">
         <h5 class="modal-title" id="mOrdenTitle"><i class="fas fa-plus-circle me-2"></i>Nueva Orden</h5>
@@ -226,67 +156,86 @@ footer{background:#fff;border-top:1px solid var(--border)}
       <div class="modal-body p-4">
         <input type="hidden" id="oId"/>
         <div class="row g-3">
-          <div class="col-12 col-md-6">
-            <label class="form-label">N° Orden AXA <span class="text-danger">*</span></label>
-            <input type="text" id="oNumero" class="form-control text-uppercase" placeholder="Ej: AXA-2025-00001"/>
-          </div>
-          <div class="col-12 col-md-6">
-            <label class="form-label">F. Aprobación <span class="text-danger">*</span></label>
-            <input type="date" id="oFechaAprob" class="form-control"/>
-          </div>
-          <div class="col-12">
-            <label class="form-label">Trabajador / Afiliado <span class="text-danger">*</span></label>
-            <input type="text" id="oTrabajador" class="form-control" placeholder="Nombre completo"/>
-          </div>
-          <div class="col-12">
-            <label class="form-label">Tipo de Servicio <span class="text-danger">*</span></label>
-            <input type="text" id="oServicio" class="form-control" placeholder="Fisioterapia, Radiografía, Consulta…"/>
-          </div>
-          <div class="col-12 col-md-6">
-            <label class="form-label">Valor del Servicio <span class="text-danger">*</span></label>
-            <div class="input-group">
-              <span class="input-group-text bg-white">$</span>
-              <input type="number" id="oValor" class="form-control text-end" min="0" step="0.01" placeholder="0"/>
+
+          <!-- SECCIÓN: Identificación de la Orden -->
+          <div class="col-12"><div class="form-section"><div class="form-section-title">Identificación de la Orden</div>
+            <div class="row g-2">
+              <div class="col-12 col-md-4"><label class="form-label">N° Orden <span class="text-danger">*</span></label><input type="text" id="oNumero" class="form-control text-uppercase font-mono" placeholder="70-0001014180"/></div>
+              <div class="col-6 col-md-3"><label class="form-label">UPR</label><input type="text" id="oUpr" class="form-control font-mono" placeholder="7053"/></div>
+              <div class="col-6 col-md-3"><label class="form-label">F. Aprobación <span class="text-danger">*</span></label><input type="date" id="oFechaAprob" class="form-control"/></div>
+              <div class="col-12 col-md-2"><label class="form-label">F. Vencimiento</label><input type="date" id="oFechaVenc" class="form-control"/></div>
             </div>
-          </div>
-          <div class="col-12 col-md-6">
-            <label class="form-label">Estado</label>
-            <select id="oEstado" class="form-select">
-              <option value="Aprobada">Aprobada</option>
-              <option value="PendienteEjecutar">Pendiente Ejecutar</option>
-              <option value="Ejecutada">Ejecutada</option>
-              <option value="Facturada">Facturada</option>
-            </select>
-          </div>
-          <div class="col-12 col-md-6" id="rowFechaEjec" style="display:none">
-            <label class="form-label">F. Ejecución</label>
-            <input type="date" id="oFechaEjec" class="form-control"/>
-          </div>
-          <div class="col-12 col-md-6" id="rowNumFact" style="display:none">
-            <label class="form-label">N° Factura</label>
-            <input type="text" id="oNumFact" class="form-control text-uppercase font-mono"/>
-          </div>
-          <div class="col-12 col-md-6" id="rowFechaFact" style="display:none">
-            <label class="form-label">F. Facturación</label>
-            <input type="date" id="oFechaFact" class="form-control"/>
-          </div>
-          <div class="col-12">
-            <label class="form-label">Observaciones</label>
-            <textarea id="oObs" class="form-control" rows="2" placeholder="Opcional…"></textarea>
-          </div>
+          </div></div>
+
+          <!-- SECCIÓN: Empresa Afiliada -->
+          <div class="col-12"><div class="form-section"><div class="form-section-title">Empresa Afiliada</div>
+            <div class="row g-2">
+              <div class="col-12 col-md-5"><label class="form-label">Empresa Afiliada <span class="text-danger">*</span></label><input type="text" id="oEmpresa" class="form-control text-uppercase" placeholder="Nombre de la empresa"/></div>
+              <div class="col-6 col-md-2"><label class="form-label">N° Afiliación</label><input type="text" id="oAfiliacion" class="form-control font-mono" placeholder="9034403"/></div>
+              <div class="col-12 col-md-3"><label class="form-label">Nombre Contacto</label><input type="text" id="oContacto" class="form-control text-uppercase" placeholder="Nombre completo"/></div>
+              <div class="col-6 col-md-2"><label class="form-label">Tel. Contacto</label><input type="text" id="oTelContacto" class="form-control" placeholder="4549595"/></div>
+              <div class="col-12 col-md-4"><label class="form-label">Cargo Contacto</label><input type="text" id="oCargoContacto" class="form-control text-uppercase" placeholder="REPRESENTANTE LEGAL"/></div>
+            </div>
+          </div></div>
+
+          <!-- SECCIÓN: Actividad -->
+          <div class="col-12"><div class="form-section"><div class="form-section-title">Actividad</div>
+            <div class="row g-2">
+              <div class="col-6 col-md-2"><label class="form-label">Código Actividad</label><input type="text" id="oCodigo" class="form-control text-uppercase font-mono" placeholder="SEI635"/></div>
+              <div class="col-12 col-md-5"><label class="form-label">Descripción <span class="text-danger">*</span></label><input type="text" id="oDescripcion" class="form-control text-uppercase" placeholder="CAP EMERGENCIAS ESP"/></div>
+              <div class="col-6 col-md-3"><label class="form-label">Ciudad Ejecución</label><input type="text" id="oCiudad" class="form-control text-uppercase" placeholder="MEDELLIN"/></div>
+              <div class="col-4 col-md-1"><label class="form-label">Cantidad</label><input type="number" id="oCantidad" class="form-control text-center" min="1" placeholder="1"/></div>
+              <div class="col-8 col-md-2">
+                <label class="form-label">VR Unitario <span class="text-danger">*</span></label>
+                <div class="input-group"><span class="input-group-text bg-white">$</span><input type="number" id="oValorUnit" class="form-control text-end" min="0" step="1000" placeholder="75000" oninput="calcularTotal()"/></div>
+              </div>
+              <div class="col-12 col-md-3">
+                <label class="form-label">VR Total (calculado)</label>
+                <div class="input-group"><span class="input-group-text bg-white">$</span><input type="number" id="oValorTotal" class="form-control text-end bg-light" min="0" step="1000" placeholder="0" readonly/></div>
+                <div class="form-text">Cantidad × VR Unitario</div>
+              </div>
+            </div>
+          </div></div>
+
+          <!-- SECCIÓN: Responsables -->
+          <div class="col-12"><div class="form-section"><div class="form-section-title">Responsables</div>
+            <div class="row g-2">
+              <div class="col-12 col-md-4"><label class="form-label">Técnico ARL AXA</label><input type="text" id="oTecnico" class="form-control text-uppercase" placeholder="CHRISTIAN ANDRES RODRIGUEZ"/></div>
+              <div class="col-12 col-md-4"><label class="form-label">Consultor FORBE Asignado</label><input type="text" id="oConsultor" class="form-control text-uppercase" placeholder="(asignar manualmente)"/></div>
+              <div class="col-6 col-md-2"><label class="form-label">Estado</label>
+                <select id="oEstado" class="form-select" onchange="toggleCamposEstado()">
+                  <option value="Aprobada">Aprobada</option>
+                  <option value="PendienteEjecutar">Pend. Ejecutar</option>
+                  <option value="Ejecutada">Ejecutada</option>
+                  <option value="Facturada">Facturada</option>
+                </select>
+              </div>
+              <div class="col-6 col-md-2" id="rowFechaEjec" style="display:none"><label class="form-label">F. Ejecución</label><input type="date" id="oFechaEjec" class="form-control"/></div>
+            </div>
+          </div></div>
+
+          <!-- SECCIÓN: Facturación (condicional) -->
+          <div class="col-12" id="rowFacturacion" style="display:none"><div class="form-section"><div class="form-section-title">Facturación</div>
+            <div class="row g-2">
+              <div class="col-12 col-md-5"><label class="form-label">N° Factura</label><input type="text" id="oNumFact" class="form-control text-uppercase font-mono"/></div>
+              <div class="col-6 col-md-3"><label class="form-label">F. Facturación</label><input type="date" id="oFechaFact" class="form-control"/></div>
+            </div>
+          </div></div>
+
+          <!-- Observaciones -->
+          <div class="col-12"><label class="form-label">Observaciones</label><textarea id="oObs" class="form-control" rows="2" placeholder="Información adicional de la orden…"></textarea></div>
+
         </div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button class="btn btn-primary px-4" onclick="guardarOrden()">
-          <i class="fas fa-save me-1"></i>Guardar
-        </button>
+        <button class="btn btn-primary px-4" onclick="guardarOrden()"><i class="fas fa-save me-1"></i>Guardar</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ── MODAL FACTURAR ─────────────────────────────────────────────── -->
+<!-- ── MODAL FACTURAR ──────────────────────────────────────────────── -->
 <div class="modal fade" id="mFacturar" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content border-0 shadow">
@@ -297,52 +246,36 @@ footer{background:#fff;border-top:1px solid var(--border)}
       <div class="modal-body p-4">
         <input type="hidden" id="fId"/>
         <div class="bg-light rounded-3 p-3 mb-4 small">
-          <div class="d-flex justify-content-between mb-1">
-            <span class="text-muted">Orden N°</span><strong class="font-mono" id="fOrden"></strong>
-          </div>
-          <div class="d-flex justify-content-between mb-1">
-            <span class="text-muted">Trabajador</span><strong id="fTrabajador"></strong>
-          </div>
-          <div class="d-flex justify-content-between">
-            <span class="text-muted">Valor</span><strong class="text-success" id="fValor"></strong>
-          </div>
+          <div class="d-flex justify-content-between mb-1"><span class="text-muted">Orden N°</span><strong class="font-mono" id="fOrden"></strong></div>
+          <div class="d-flex justify-content-between mb-1"><span class="text-muted">Empresa</span><strong id="fEmpresa"></strong></div>
+          <div class="d-flex justify-content-between"><span class="text-muted">Valor</span><strong class="text-success" id="fValor"></strong></div>
         </div>
-        <div class="mb-3">
-          <label class="form-label">N° de Factura <span class="text-danger">*</span></label>
-          <input type="text" id="fNumFact" class="form-control text-uppercase fw-semibold" placeholder="FE-2025-001234"/>
-        </div>
-        <div>
-          <label class="form-label">Fecha de Facturación <span class="text-danger">*</span></label>
-          <input type="date" id="fFechaFact" class="form-control"/>
-        </div>
+        <div class="mb-3"><label class="form-label">N° de Factura <span class="text-danger">*</span></label><input type="text" id="fNumFact" class="form-control text-uppercase fw-semibold" placeholder="FE-2026-001234"/></div>
+        <div><label class="form-label">Fecha de Facturación <span class="text-danger">*</span></label><input type="date" id="fFechaFact" class="form-control"/></div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button class="btn btn-primary px-4" onclick="confirmarFacturar()">
-          <i class="fas fa-save me-1"></i>Guardar Factura
-        </button>
+        <button class="btn btn-primary px-4" onclick="confirmarFacturar()"><i class="fas fa-save me-1"></i>Guardar Factura</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ── MODAL DETALLE ──────────────────────────────────────────────── -->
+<!-- ── MODAL DETALLE ───────────────────────────────────────────────── -->
 <div class="modal fade" id="mDetalle" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered">
+  <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
     <div class="modal-content border-0 shadow">
       <div class="modal-header py-3" style="background:var(--axa)">
         <h5 class="modal-title text-white fw-bold" id="dTitle">Detalle</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
-      <div class="modal-body p-0">
-        <table class="table table-borderless mb-0" id="dTable"></table>
-      </div>
+      <div class="modal-body p-0"><div id="dBody"></div></div>
       <div class="modal-footer" id="dFooter"></div>
     </div>
   </div>
 </div>
 
-<!-- ── MODAL IMPORTAR ─────────────────────────────────────────────── -->
+<!-- ── MODAL IMPORTAR ──────────────────────────────────────────────── -->
 <div class="modal fade" id="mImportar" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered modal-xl">
     <div class="modal-content border-0 shadow">
@@ -351,78 +284,35 @@ footer{background:#fff;border-top:1px solid var(--border)}
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body p-4">
-
-        <!-- Paso 1: seleccionar archivo -->
         <div id="importStep1">
-          <div class="row g-3 align-items-center mb-4">
-            <div class="col-12 col-md-7">
-              <label class="form-label fw-bold">Selecciona tu archivo Excel (.xlsx) o CSV (.csv)</label>
-              <input type="file" id="importFile" class="form-control"
-                     accept=".xlsx,.xls,.csv"
-                     onchange="previsualizarArchivo(this)"/>
-              <div class="form-text">Columnas requeridas: <code>numero_orden</code>, <code>nombre_trabajador</code>, <code>tipo_servicio</code>, <code>valor_servicio</code>, <code>fecha_aprobacion</code></div>
-            </div>
-            <div class="col-12 col-md-5 text-md-end">
-              <button class="btn btn-outline-secondary btn-sm" onclick="descargarPlantilla()">
-                <i class="fas fa-download me-1"></i>Descargar plantilla Excel
-              </button>
-            </div>
-          </div>
-
-          <div class="bg-light rounded-3 p-3 mb-3 small">
-            <strong>Columnas aceptadas en el archivo:</strong>
-            <div class="row mt-2 g-1">
-              <div class="col-6 col-md-4"><span class="badge bg-primary me-1">requerida</span><code>numero_orden</code></div>
-              <div class="col-6 col-md-4"><span class="badge bg-primary me-1">requerida</span><code>nombre_trabajador</code></div>
-              <div class="col-6 col-md-4"><span class="badge bg-primary me-1">requerida</span><code>tipo_servicio</code></div>
-              <div class="col-6 col-md-4"><span class="badge bg-primary me-1">requerida</span><code>valor_servicio</code></div>
-              <div class="col-6 col-md-4"><span class="badge bg-primary me-1">requerida</span><code>fecha_aprobacion</code> <span class="text-muted">(DD/MM/YYYY)</span></div>
-              <div class="col-6 col-md-4"><span class="badge bg-secondary me-1">opcional</span><code>estado</code></div>
-              <div class="col-6 col-md-4"><span class="badge bg-secondary me-1">opcional</span><code>observaciones</code></div>
-            </div>
+          <div class="row g-3 align-items-center mb-3">
+            <div class="col-12 col-md-8"><label class="form-label fw-bold">Selecciona archivo Excel (.xlsx) o CSV (.csv)</label><input type="file" id="importFile" class="form-control" accept=".xlsx,.xls,.csv" onchange="previsualizarArchivo(this)"/></div>
+            <div class="col-12 col-md-4 text-md-end"><button class="btn btn-outline-secondary btn-sm" onclick="descargarPlantilla()"><i class="fas fa-download me-1"></i>Descargar plantilla</button></div>
           </div>
         </div>
-
-        <!-- Paso 2: previsualización -->
         <div id="importStep2" style="display:none">
-          <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-            <div>
-              <span class="fw-bold" id="importResumen"></span>
-              <button class="btn btn-link btn-sm p-0 ms-3" onclick="resetImportar()">
-                <i class="fas fa-redo me-1"></i>Cambiar archivo
-              </button>
-            </div>
-            <div id="importErroresPrev" class="text-danger small fw-semibold"></div>
+          <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+            <span class="fw-bold" id="importResumen"></span>
+            <button class="btn btn-link btn-sm p-0" onclick="resetImportar()"><i class="fas fa-redo me-1"></i>Cambiar archivo</button>
           </div>
-          <div class="table-responsive" style="max-height:360px;overflow-y:auto">
-            <table class="table table-sm table-bordered align-middle mb-0" id="importPreview">
-              <thead class="table-dark">
-                <tr>
-                  <th>#</th><th>N° Orden</th><th>Trabajador</th><th>Servicio</th>
-                  <th class="text-end">Valor</th><th>F. Aprobación</th><th>Estado</th><th>Obs.</th><th></th>
-                </tr>
-              </thead>
+          <div class="table-responsive" style="max-height:320px;overflow-y:auto">
+            <table class="table table-sm table-bordered align-middle mb-0">
+              <thead class="table-dark"><tr><th>#</th><th>N° Orden</th><th>Empresa</th><th>Cód.</th><th>Descripción</th><th>Ciudad</th><th class="text-center">Cant.</th><th class="text-end">VR Total</th><th>F. Aprob.</th><th>Estado</th><th></th></tr></thead>
               <tbody id="importTbody"></tbody>
             </table>
           </div>
         </div>
-
-        <!-- Paso 3: resultado -->
         <div id="importStep3" style="display:none">
           <div class="text-center py-3">
             <div id="importResultIcon" class="fs-1 mb-2"></div>
-            <div id="importResultMsg" class="fw-bold fs-5 mb-3"></div>
+            <div id="importResultMsg" class="fw-bold fs-5 mb-2"></div>
             <div id="importResultDetalle" class="small text-muted"></div>
           </div>
         </div>
-
       </div>
-      <div class="modal-footer" id="importFooter">
+      <div class="modal-footer">
         <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button class="btn btn-warning fw-bold px-4" id="btnConfirmarImport"
-                style="display:none" onclick="confirmarImportar()">
-          <i class="fas fa-upload me-1"></i>Importar <span id="btnImportCount"></span> órdenes
-        </button>
+        <button class="btn btn-warning fw-bold px-4" id="btnConfirmarImport" style="display:none" onclick="confirmarImportar()"><i class="fas fa-upload me-1"></i>Importar <span id="btnImportCount"></span> órdenes</button>
       </div>
     </div>
   </div>
@@ -432,8 +322,7 @@ footer{background:#fff;border-top:1px solid var(--border)}
 <script>
 const BASE = '/api/axa';
 const co   = new Intl.NumberFormat('es-CO', {style:'currency',currency:'COP',minimumFractionDigits:0});
-let ordenes = [];
-let mOrden, mFacturar, mDetalle, toastEl;
+let ordenes = [], mOrden, mFacturar, mDetalle, mImportar, toastEl, filasParaImportar = [];
 
 document.addEventListener('DOMContentLoaded', () => {
   mOrden    = new bootstrap.Modal('#mOrden');
@@ -441,154 +330,130 @@ document.addEventListener('DOMContentLoaded', () => {
   mDetalle  = new bootstrap.Modal('#mDetalle');
   mImportar = new bootstrap.Modal('#mImportar');
   toastEl   = new bootstrap.Toast('#toast', {delay:3500});
-
-  document.getElementById('oEstado').addEventListener('change', toggleCamposEstado);
-  document.getElementById('fDesde').value = firstDayOfMonth();
+  document.getElementById('oCantidad').addEventListener('input', calcularTotal);
   cargar();
 });
 
-function firstDayOfMonth(){
-  const d = new Date(); d.setDate(1);
-  return d.toISOString().slice(0,10);
-}
-
 function today(){ return new Date().toISOString().slice(0,10); }
+function fmt(d){ if(!d) return '—'; const [y,m,dd]=d.split('-'); return `${dd}/${m}/${y}`; }
+function esVencida(d){ return d && d < today(); }
 
 async function cargar(){
   mostrarSpinner(true);
   const params = new URLSearchParams();
-  const b = document.getElementById('fBuscar').value.trim();
-  const d = document.getElementById('fDesde').value;
-  const h = document.getElementById('fHasta').value;
-  const e = document.getElementById('fEstado').value;
+  const b=document.getElementById('fBuscar').value.trim();
+  const d=document.getElementById('fDesde').value;
+  const h=document.getElementById('fHasta').value;
+  const e=document.getElementById('fEstado').value;
   if(b) params.set('buscar',b);
   if(d) params.set('desde',d);
   if(h) params.set('hasta',h);
   if(e) params.set('estado',e);
-
-  try {
-    const r = await fetch(`${BASE}/ordenes?${params}`);
-    ordenes  = await r.json();
-    if(!r.ok) throw new Error(ordenes.error || 'Error al cargar');
-    renderTabla();
-    actualizarKPIs();
-  } catch(e){ toast('❌ '+e.message,'danger'); }
+  try{
+    const r=await fetch(`${BASE}/ordenes?${params}`);
+    ordenes=await r.json();
+    if(!r.ok) throw new Error(ordenes.error||'Error al cargar');
+    renderTabla(); actualizarKPIs();
+  }catch(e){ toast('❌ '+e.message,'danger'); }
   mostrarSpinner(false);
 }
 
 function renderTabla(){
-  const tb = document.getElementById('tbody');
-  document.getElementById('conteo').textContent =
-    `${ordenes.length} orden${ordenes.length!==1?'es':''} encontrada${ordenes.length!==1?'s':''}`;
-
+  const tb=document.getElementById('tbody');
+  document.getElementById('conteo').textContent=`${ordenes.length} orden${ordenes.length!==1?'es':''} encontrada${ordenes.length!==1?'s':''}`;
   if(!ordenes.length){
-    tb.innerHTML = `<tr><td colspan="9" class="text-center text-muted py-5">
-      <i class="fas fa-search fa-2x mb-3 d-block opacity-25"></i>
-      No se encontraron órdenes con los filtros aplicados.</td></tr>`;
+    tb.innerHTML=`<tr><td colspan="15" class="text-center text-muted py-5"><i class="fas fa-search fa-2x mb-3 d-block opacity-25"></i>No se encontraron órdenes.</td></tr>`;
     return;
   }
-
-  tb.innerHTML = ordenes.map(o => `
-    <tr>
+  tb.innerHTML=ordenes.map(o=>`
+    <tr class="${esVencida(o.fecha_vencimiento)&&o.estado!=='Ejecutada'&&o.estado!=='Facturada'?'vencida':''}">
       <td><span class="font-mono fw-semibold">${o.numero_orden}</span></td>
-      <td><span class="fw-semibold">${o.nombre_trabajador}</span></td>
-      <td class="text-muted small">${o.tipo_servicio}</td>
+      <td><span class="fw-semibold">${o.nombre_trabajador||'—'}</span></td>
+      <td class="font-mono small text-muted">${o.numero_afiliacion||'—'}</td>
+      <td><span class="badge bg-secondary">${o.codigo_actividad||'—'}</span></td>
+      <td class="small">${o.tipo_servicio||'—'}</td>
+      <td class="text-center">${o.cantidad||1}</td>
+      <td class="text-end small">${o.valor_unitario?co.format(o.valor_unitario):'—'}</td>
       <td class="text-end fw-semibold">${co.format(o.valor_servicio)}</td>
+      <td class="small">${o.ciudad_ejecucion||'—'}</td>
       <td class="small">${fmt(o.fecha_aprobacion)}</td>
-      <td class="small">${fmt(o.fecha_ejecucion)}</td>
+      <td class="small ${esVencida(o.fecha_vencimiento)&&o.estado!=='Ejecutada'&&o.estado!=='Facturada'?'text-danger fw-bold':''}">${fmt(o.fecha_vencimiento)}</td>
       <td>${badge(o.estado)}</td>
-      <td class="font-mono small text-muted">${o.numero_factura||'—'}</td>
+      <td class="small">${o.consultor_asignado||'<span class="text-muted fst-italic">Sin asignar</span>'}</td>
+      <td class="small text-muted">${o.tecnico_arl||'—'}</td>
       <td>
         <div class="d-flex gap-1 justify-content-center flex-wrap">
-          <button class="btn btn-outline-secondary btn-xs" title="Ver detalle" onclick='verDetalle(${o.id})'>
-            <i class="fas fa-eye fa-sm"></i>
-          </button>
-          <button class="btn btn-outline-primary btn-xs" title="Editar" onclick='editarOrden(${o.id})'>
-            <i class="fas fa-pen fa-sm"></i>
-          </button>
-          ${['Aprobada','PendienteEjecutar'].includes(o.estado) ? `
-          <button class="btn btn-outline-success btn-xs" title="Marcar Ejecutada"
-            onclick="marcarEjecutada(${o.id},'${o.numero_orden}')">
-            <i class="fas fa-check fa-sm"></i>
-          </button>` : ''}
-          ${o.estado==='Ejecutada' ? `
-          <button class="btn btn-outline-info btn-xs" title="Facturar"
-            onclick='abrirFacturar(${o.id},"${o.numero_orden}","${o.nombre_trabajador}",${o.valor_servicio})'>
-            <i class="fas fa-file-invoice fa-sm"></i>
-          </button>` : ''}
-          <button class="btn btn-outline-danger btn-xs" title="Eliminar"
-            onclick="eliminar(${o.id},'${o.numero_orden}')">
-            <i class="fas fa-trash fa-sm"></i>
-          </button>
+          <button class="btn btn-outline-secondary btn-xs" title="Ver detalle" onclick="verDetalle(${o.id})"><i class="fas fa-eye fa-sm"></i></button>
+          <button class="btn btn-outline-primary btn-xs" title="Editar" onclick="editarOrden(${o.id})"><i class="fas fa-pen fa-sm"></i></button>
+          <a class="btn btn-outline-dark btn-xs" title="Descargar PDF" href="${BASE}/ordenes/${o.id}/pdf" target="_blank"><i class="fas fa-file-pdf fa-sm"></i></a>
+          ${['Aprobada','PendienteEjecutar'].includes(o.estado)?`
+          <button class="btn btn-outline-success btn-xs" title="Marcar Ejecutada" onclick="marcarEjecutada(${o.id},'${o.numero_orden}')"><i class="fas fa-check fa-sm"></i></button>`:''}
+          ${o.estado==='Ejecutada'?`
+          <button class="btn btn-outline-info btn-xs" title="Facturar" onclick="abrirFacturar(${o.id},'${o.numero_orden}','${o.nombre_trabajador}',${o.valor_servicio})"><i class="fas fa-file-invoice fa-sm"></i></button>`:''}
+          <button class="btn btn-outline-danger btn-xs" title="Eliminar" onclick="eliminar(${o.id},'${o.numero_orden}')"><i class="fas fa-trash fa-sm"></i></button>
         </div>
       </td>
     </tr>`).join('');
 }
 
 function actualizarKPIs(){
-  const ap = ordenes.filter(o=>o.estado==='Aprobada').length;
-  const pe = ordenes.filter(o=>o.estado==='PendienteEjecutar').length;
-  const ej = ordenes.filter(o=>o.estado==='Ejecutada').length;
-  const fa = ordenes.filter(o=>o.estado==='Facturada').length;
-  const total       = ordenes.reduce((s,o)=>s+Number(o.valor_servicio),0);
-  const facturado   = ordenes.filter(o=>o.estado==='Facturada').reduce((s,o)=>s+Number(o.valor_servicio),0);
-  const porFacturar = ordenes.filter(o=>o.estado!=='Facturada').reduce((s,o)=>s+Number(o.valor_servicio),0);
-
-  document.getElementById('kAprobadas').textContent  = ap;
-  document.getElementById('kPendientes').textContent = pe;
-  document.getElementById('kEjecutadas').textContent = ej;
-  document.getElementById('kFacturadas').textContent = fa;
-  document.getElementById('kTotal').textContent       = co.format(total);
-  document.getElementById('kFacturado').textContent  = co.format(facturado);
-  document.getElementById('kPorFacturar').textContent= co.format(porFacturar);
+  document.getElementById('kAprobadas').textContent  = ordenes.filter(o=>o.estado==='Aprobada').length;
+  document.getElementById('kPendientes').textContent = ordenes.filter(o=>o.estado==='PendienteEjecutar').length;
+  document.getElementById('kEjecutadas').textContent = ordenes.filter(o=>o.estado==='Ejecutada').length;
+  document.getElementById('kFacturadas').textContent = ordenes.filter(o=>o.estado==='Facturada').length;
+  document.getElementById('kTotal').textContent       = co.format(ordenes.reduce((s,o)=>s+Number(o.valor_servicio),0));
+  document.getElementById('kFacturado').textContent  = co.format(ordenes.filter(o=>o.estado==='Facturada').reduce((s,o)=>s+Number(o.valor_servicio),0));
+  document.getElementById('kPorFacturar').textContent= co.format(ordenes.filter(o=>o.estado!=='Facturada').reduce((s,o)=>s+Number(o.valor_servicio),0));
 }
 
 function badge(estado){
-  const cls = {
-    Aprobada:'bg-info text-white',
-    PendienteEjecutar:'bg-warning text-dark',
-    Ejecutada:'bg-success text-white',
-    Facturada:'bg-primary text-white',
-  };
-  const lbl = {PendienteEjecutar:'Pend. Ejecutar'};
+  const cls={Aprobada:'bg-info text-white',PendienteEjecutar:'bg-warning text-dark',Ejecutada:'bg-success text-white',Facturada:'bg-primary text-white'};
+  const lbl={PendienteEjecutar:'Pend. Ejecutar'};
   return `<span class="badge ${cls[estado]||'bg-secondary'}">${lbl[estado]||estado}</span>`;
 }
 
-function fmt(fecha){
-  if(!fecha) return '—';
-  const [y,m,d] = fecha.split('-');
-  return `${d}/${m}/${y}`;
-}
-
-// ── Nueva / Editar ────────────────────────────────────────────────
+// ── Nueva / Editar ─────────────────────────────────────────────────
 function abrirModalNueva(){
   document.getElementById('mOrdenTitle').innerHTML='<i class="fas fa-plus-circle me-2"></i>Nueva Orden';
-  document.getElementById('oId').value='';
-  document.getElementById('oNumero').value='';
+  ['oId','oNumero','oUpr','oAfiliacion','oContacto','oTelContacto','oCargoContacto',
+   'oCodigo','oDescripcion','oCiudad','oTecnico','oConsultor','oNumFact','oObs'].forEach(id=>{
+    document.getElementById(id).value='';
+  });
+  document.getElementById('oEmpresa').value='';
   document.getElementById('oFechaAprob').value=today();
-  document.getElementById('oTrabajador').value='';
-  document.getElementById('oServicio').value='';
-  document.getElementById('oValor').value='';
+  document.getElementById('oFechaVenc').value='';
+  document.getElementById('oCantidad').value=1;
+  document.getElementById('oValorUnit').value=75000;
+  document.getElementById('oValorTotal').value=75000;
   document.getElementById('oEstado').value='Aprobada';
   document.getElementById('oFechaEjec').value='';
-  document.getElementById('oNumFact').value='';
   document.getElementById('oFechaFact').value='';
-  document.getElementById('oObs').value='';
   toggleCamposEstado();
   mOrden.show();
 }
 
 function editarOrden(id){
-  const o = ordenes.find(x=>x.id===id);
-  if(!o) return;
+  const o=ordenes.find(x=>x.id===id); if(!o) return;
   document.getElementById('mOrdenTitle').innerHTML='<i class="fas fa-pen me-2"></i>Editar Orden';
-  document.getElementById('oId').value            = o.id;
-  document.getElementById('oNumero').value        = o.numero_orden;
+  document.getElementById('oId').value           = o.id;
+  document.getElementById('oNumero').value        = o.numero_orden||'';
+  document.getElementById('oUpr').value           = o.upr||'';
   document.getElementById('oFechaAprob').value    = o.fecha_aprobacion||'';
-  document.getElementById('oTrabajador').value    = o.nombre_trabajador;
-  document.getElementById('oServicio').value      = o.tipo_servicio;
-  document.getElementById('oValor').value         = o.valor_servicio;
-  document.getElementById('oEstado').value        = o.estado;
+  document.getElementById('oFechaVenc').value     = o.fecha_vencimiento||'';
+  document.getElementById('oEmpresa').value       = o.nombre_trabajador||'';
+  document.getElementById('oAfiliacion').value    = o.numero_afiliacion||'';
+  document.getElementById('oContacto').value      = o.nombre_contacto||'';
+  document.getElementById('oTelContacto').value   = o.telefono_contacto||'';
+  document.getElementById('oCargoContacto').value = o.cargo_contacto||'';
+  document.getElementById('oCodigo').value        = o.codigo_actividad||'';
+  document.getElementById('oDescripcion').value   = o.tipo_servicio||'';
+  document.getElementById('oCiudad').value        = o.ciudad_ejecucion||'';
+  document.getElementById('oCantidad').value      = o.cantidad||1;
+  document.getElementById('oValorUnit').value     = o.valor_unitario||0;
+  document.getElementById('oValorTotal').value    = o.valor_servicio||0;
+  document.getElementById('oTecnico').value       = o.tecnico_arl||'';
+  document.getElementById('oConsultor').value     = o.consultor_asignado||'';
+  document.getElementById('oEstado').value        = o.estado||'Aprobada';
   document.getElementById('oFechaEjec').value     = o.fecha_ejecucion||'';
   document.getElementById('oNumFact').value       = o.numero_factura||'';
   document.getElementById('oFechaFact').value     = o.fecha_facturacion||'';
@@ -597,338 +462,279 @@ function editarOrden(id){
   mOrden.show();
 }
 
+function calcularTotal(){
+  const cant=Number(document.getElementById('oCantidad').value)||1;
+  const unit=Number(document.getElementById('oValorUnit').value)||0;
+  document.getElementById('oValorTotal').value = cant*unit;
+}
+
 function toggleCamposEstado(){
-  const e = document.getElementById('oEstado').value;
-  document.getElementById('rowFechaEjec').style.display = ['Ejecutada','Facturada'].includes(e)?'':'none';
-  document.getElementById('rowNumFact').style.display   = e==='Facturada'?'':'none';
-  document.getElementById('rowFechaFact').style.display = e==='Facturada'?'':'none';
+  const e=document.getElementById('oEstado').value;
+  document.getElementById('rowFechaEjec').style.display=['Ejecutada','Facturada'].includes(e)?'':'none';
+  document.getElementById('rowFacturacion').style.display=e==='Facturada'?'':'none';
 }
 
 async function guardarOrden(){
-  const id        = document.getElementById('oId').value;
-  const body = {
-    numero_orden:      document.getElementById('oNumero').value.trim(),
-    nombre_trabajador: document.getElementById('oTrabajador').value.trim(),
-    tipo_servicio:     document.getElementById('oServicio').value.trim(),
-    valor_servicio:    document.getElementById('oValor').value,
-    fecha_aprobacion:  document.getElementById('oFechaAprob').value,
-    estado:            document.getElementById('oEstado').value,
-    fecha_ejecucion:   document.getElementById('oFechaEjec').value||null,
-    numero_factura:    document.getElementById('oNumFact').value||null,
-    fecha_facturacion: document.getElementById('oFechaFact').value||null,
-    observaciones:     document.getElementById('oObs').value||null,
+  const id=document.getElementById('oId').value;
+  const cant=Number(document.getElementById('oCantidad').value)||1;
+  const unit=Number(document.getElementById('oValorUnit').value)||0;
+  const body={
+    numero_orden:       document.getElementById('oNumero').value.trim(),
+    upr:                document.getElementById('oUpr').value.trim()||null,
+    nombre_trabajador:  document.getElementById('oEmpresa').value.trim(),
+    numero_afiliacion:  document.getElementById('oAfiliacion').value.trim()||null,
+    nombre_contacto:    document.getElementById('oContacto').value.trim()||null,
+    telefono_contacto:  document.getElementById('oTelContacto').value.trim()||null,
+    cargo_contacto:     document.getElementById('oCargoContacto').value.trim()||null,
+    codigo_actividad:   document.getElementById('oCodigo').value.trim()||null,
+    tipo_servicio:      document.getElementById('oDescripcion').value.trim(),
+    ciudad_ejecucion:   document.getElementById('oCiudad').value.trim()||null,
+    cantidad:           cant,
+    valor_unitario:     unit,
+    valor_servicio:     cant*unit,
+    fecha_aprobacion:   document.getElementById('oFechaAprob').value,
+    fecha_vencimiento:  document.getElementById('oFechaVenc').value||null,
+    tecnico_arl:        document.getElementById('oTecnico').value.trim()||null,
+    consultor_asignado: document.getElementById('oConsultor').value.trim()||null,
+    estado:             document.getElementById('oEstado').value,
+    fecha_ejecucion:    document.getElementById('oFechaEjec').value||null,
+    numero_factura:     document.getElementById('oNumFact').value||null,
+    fecha_facturacion:  document.getElementById('oFechaFact').value||null,
+    observaciones:      document.getElementById('oObs').value||null,
   };
-
   if(!body.numero_orden||!body.nombre_trabajador||!body.tipo_servicio||!body.valor_servicio||!body.fecha_aprobacion){
     toast('⚠️ Complete los campos obligatorios','warning'); return;
   }
-
-  try {
-    const url    = id ? `${BASE}/ordenes/${id}` : `${BASE}/ordenes`;
-    const method = id ? 'PUT' : 'POST';
-    const r = await fetch(url, {method, headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
-    const data = await r.json();
+  try{
+    const url=id?`${BASE}/ordenes/${id}`:`${BASE}/ordenes`;
+    const r=await fetch(url,{method:id?'PUT':'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    const data=await r.json();
     if(!r.ok) throw new Error(data.error||'Error al guardar');
-    mOrden.hide();
-    toast('✅ Orden guardada correctamente','success');
-    await cargar();
-  } catch(e){ toast('❌ '+e.message,'danger'); }
+    mOrden.hide(); toast('✅ Orden guardada','success'); await cargar();
+  }catch(e){ toast('❌ '+e.message,'danger'); }
 }
 
-// ── Ejecutar ──────────────────────────────────────────────────────
-async function marcarEjecutada(id, numero){
+// ── Ejecutar / Facturar / Eliminar ────────────────────────────────
+async function marcarEjecutada(id,numero){
   if(!confirm(`¿Marcar la orden ${numero} como Ejecutada hoy?`)) return;
-  try {
-    const r    = await fetch(`${BASE}/ordenes/${id}/ejecutar`, {method:'POST'});
-    const data = await r.json();
-    if(!r.ok) throw new Error(data.error||'Error');
-    toast('✅ Orden marcada como Ejecutada','success');
-    await cargar();
-  } catch(e){ toast('❌ '+e.message,'danger'); }
+  try{
+    const r=await fetch(`${BASE}/ordenes/${id}/ejecutar`,{method:'POST'});
+    const d=await r.json();
+    if(!r.ok) throw new Error(d.error||'Error');
+    toast('✅ Orden marcada como Ejecutada','success'); await cargar();
+  }catch(e){ toast('❌ '+e.message,'danger'); }
 }
 
-// ── Facturar ──────────────────────────────────────────────────────
-function abrirFacturar(id, orden, trabajador, valor){
-  document.getElementById('fId').value          = id;
-  document.getElementById('fOrden').textContent = orden;
-  document.getElementById('fTrabajador').textContent = trabajador;
-  document.getElementById('fValor').textContent = co.format(valor);
-  document.getElementById('fNumFact').value     = '';
-  document.getElementById('fFechaFact').value   = today();
+function abrirFacturar(id,orden,empresa,valor){
+  document.getElementById('fId').value=id;
+  document.getElementById('fOrden').textContent=orden;
+  document.getElementById('fEmpresa').textContent=empresa;
+  document.getElementById('fValor').textContent=co.format(valor);
+  document.getElementById('fNumFact').value='';
+  document.getElementById('fFechaFact').value=today();
   mFacturar.show();
   setTimeout(()=>document.getElementById('fNumFact').focus(),350);
 }
 
 async function confirmarFacturar(){
-  const id   = document.getElementById('fId').value;
-  const nf   = document.getElementById('fNumFact').value.trim();
-  const ff   = document.getElementById('fFechaFact').value;
-  if(!nf||!ff){ toast('⚠️ Complete N° de factura y fecha','warning'); return; }
-  try {
-    const r    = await fetch(`${BASE}/ordenes/${id}/facturar`, {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({numero_factura:nf, fecha_facturacion:ff}),
-    });
-    const data = await r.json();
-    if(!r.ok) throw new Error(data.error||'Error');
-    mFacturar.hide();
-    toast('✅ Factura registrada correctamente','success');
-    await cargar();
-  } catch(e){ toast('❌ '+e.message,'danger'); }
+  const id=document.getElementById('fId').value;
+  const nf=document.getElementById('fNumFact').value.trim();
+  const ff=document.getElementById('fFechaFact').value;
+  if(!nf||!ff){toast('⚠️ Complete N° de factura y fecha','warning');return;}
+  try{
+    const r=await fetch(`${BASE}/ordenes/${id}/facturar`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({numero_factura:nf,fecha_facturacion:ff})});
+    const d=await r.json();
+    if(!r.ok) throw new Error(d.error||'Error');
+    mFacturar.hide(); toast('✅ Factura registrada','success'); await cargar();
+  }catch(e){ toast('❌ '+e.message,'danger'); }
 }
 
-// ── Eliminar ──────────────────────────────────────────────────────
-async function eliminar(id, numero){
+async function eliminar(id,numero){
   if(!confirm(`¿Eliminar definitivamente la orden ${numero}?`)) return;
-  try {
-    const r = await fetch(`${BASE}/ordenes/${id}`, {method:'DELETE'});
-    if(!r.ok){ const d=await r.json(); throw new Error(d.error||'Error'); }
-    toast('🗑️ Orden eliminada','secondary');
-    await cargar();
-  } catch(e){ toast('❌ '+e.message,'danger'); }
+  try{
+    const r=await fetch(`${BASE}/ordenes/${id}`,{method:'DELETE'});
+    if(!r.ok){const d=await r.json();throw new Error(d.error||'Error');}
+    toast('🗑️ Orden eliminada','secondary'); await cargar();
+  }catch(e){ toast('❌ '+e.message,'danger'); }
 }
 
-// ── Ver detalle ───────────────────────────────────────────────────
+// ── Ver detalle ────────────────────────────────────────────────────
 function verDetalle(id){
-  const o = ordenes.find(x=>x.id===id);
-  if(!o) return;
-  document.getElementById('dTitle').textContent = o.numero_orden;
-
-  const fila = (lbl, val) =>
-    `<tr class="border-bottom">
-       <th class="ps-4 py-2 text-muted fw-semibold small" style="width:42%">${lbl}</th>
-       <td class="pe-4 py-2">${val||'—'}</td>
-     </tr>`;
-
-  document.getElementById('dTable').innerHTML = `<tbody>
-    ${fila('Estado', badge(o.estado))}
-    ${fila('Trabajador / Afiliado', `<strong>${o.nombre_trabajador}</strong>`)}
-    ${fila('Tipo de Servicio', o.tipo_servicio)}
-    ${fila('Valor', `<strong class="text-success fs-6">${co.format(o.valor_servicio)}</strong>`)}
+  const o=ordenes.find(x=>x.id===id); if(!o) return;
+  document.getElementById('dTitle').textContent=o.numero_orden;
+  const fila=(lbl,val,cls='')=>`<tr class="border-bottom"><th class="ps-4 py-2 text-muted fw-semibold small" style="width:38%">${lbl}</th><td class="pe-4 py-2 ${cls}">${val||'—'}</td></tr>`;
+  document.getElementById('dBody').innerHTML=`
+  <div class="p-3 text-center border-bottom">${badge(o.estado)}</div>
+  <table class="table table-borderless mb-0"><tbody>
+    ${fila('N° Orden',`<span class="font-mono fw-bold">${o.numero_orden}</span>`)}
+    ${fila('UPR', o.upr)}
+    ${fila('Empresa Afiliada',`<strong>${o.nombre_trabajador}</strong>`)}
+    ${fila('N° Afiliación',`<span class="font-mono">${o.numero_afiliacion}</span>`)}
+    ${fila('Nombre Contacto', o.nombre_contacto)}
+    ${fila('Teléfono Contacto', o.telefono_contacto)}
+    ${fila('Cargo Contacto', o.cargo_contacto)}
+    ${fila('Código Actividad',`<span class="badge bg-secondary fs-6">${o.codigo_actividad||'—'}</span>`)}
+    ${fila('Descripción', o.tipo_servicio)}
+    ${fila('Ciudad Ejecución', o.ciudad_ejecucion)}
+    ${fila('Cantidad', o.cantidad)}
+    ${fila('VR Unitario', o.valor_unitario?co.format(o.valor_unitario):null)}
+    ${fila('VR Total',`<strong class="text-success fs-6">${co.format(o.valor_servicio)}</strong>`)}
     ${fila('F. Aprobación', fmt(o.fecha_aprobacion))}
+    ${fila('F. Vencimiento', fmt(o.fecha_vencimiento), esVencida(o.fecha_vencimiento)&&o.estado!=='Ejecutada'&&o.estado!=='Facturada'?'text-danger fw-bold':'')}
     ${fila('F. Ejecución', fmt(o.fecha_ejecucion))}
-    ${fila('N° Factura', o.numero_factura?`<span class="font-mono">${o.numero_factura}</span>`:'')}
+    ${fila('Técnico ARL AXA', o.tecnico_arl)}
+    ${fila('Consultor FORBE', o.consultor_asignado||'<span class="text-muted fst-italic">Sin asignar</span>')}
+    ${fila('N° Factura',`<span class="font-mono">${o.numero_factura||'—'}</span>`)}
     ${fila('F. Facturación', fmt(o.fecha_facturacion))}
-    ${o.observaciones?fila('Observaciones',`<span class="text-muted">${o.observaciones}</span>`):''}
-  </tbody>`;
+    ${o.observaciones?fila('Observaciones',`<span class="text-muted small">${o.observaciones}</span>`):''}
+  </tbody></table>`;
 
-  const footer = document.getElementById('dFooter');
-  let btns = `<button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button>
-    <button class="btn btn-outline-primary" onclick="mDetalle.hide();editarOrden(${o.id})">
-      <i class="fas fa-pen me-1"></i>Editar</button>`;
-  if(['Aprobada','PendienteEjecutar'].includes(o.estado))
-    btns += `<button class="btn btn-outline-success"
-      onclick="mDetalle.hide();marcarEjecutada(${o.id},'${o.numero_orden}')">
-      <i class="fas fa-check me-1"></i>Ejecutada</button>`;
-  if(o.estado==='Ejecutada')
-    btns += `<button class="btn btn-outline-info"
-      onclick="mDetalle.hide();abrirFacturar(${o.id},'${o.numero_orden}','${o.nombre_trabajador}',${o.valor_servicio})">
-      <i class="fas fa-file-invoice me-1"></i>Facturar</button>`;
-  footer.innerHTML = btns;
+  const footer=document.getElementById('dFooter');
+  footer.innerHTML=`
+    <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button>
+    <a class="btn btn-outline-dark" href="${BASE}/ordenes/${o.id}/pdf" target="_blank"><i class="fas fa-file-pdf me-1"></i>Descargar PDF</a>
+    <button class="btn btn-outline-primary" onclick="mDetalle.hide();editarOrden(${o.id})"><i class="fas fa-pen me-1"></i>Editar</button>
+    ${['Aprobada','PendienteEjecutar'].includes(o.estado)?`<button class="btn btn-outline-success" onclick="mDetalle.hide();marcarEjecutada(${o.id},'${o.numero_orden}')"><i class="fas fa-check me-1"></i>Ejecutada</button>`:''}
+    ${o.estado==='Ejecutada'?`<button class="btn btn-outline-info" onclick="mDetalle.hide();abrirFacturar(${o.id},'${o.numero_orden}','${o.nombre_trabajador}',${o.valor_servicio})"><i class="fas fa-file-invoice me-1"></i>Facturar</button>`:''}`;
   mDetalle.show();
 }
 
-// ── CSV ───────────────────────────────────────────────────────────
+// ── CSV / Filtros ──────────────────────────────────────────────────
 function exportarCsv(){
-  const params = new URLSearchParams();
-  const b = document.getElementById('fBuscar').value.trim();
-  const d = document.getElementById('fDesde').value;
-  const h = document.getElementById('fHasta').value;
-  const e = document.getElementById('fEstado').value;
-  if(b) params.set('buscar',b);
-  if(d) params.set('desde',d);
-  if(h) params.set('hasta',h);
-  if(e) params.set('estado',e);
-  window.open(`${BASE}/ordenes/exportar-csv?${params}`);
+  const p=new URLSearchParams();
+  const b=document.getElementById('fBuscar').value.trim();
+  const d=document.getElementById('fDesde').value;
+  const h=document.getElementById('fHasta').value;
+  const e=document.getElementById('fEstado').value;
+  if(b)p.set('buscar',b);if(d)p.set('desde',d);if(h)p.set('hasta',h);if(e)p.set('estado',e);
+  window.open(`${BASE}/ordenes/exportar-csv?${p}`);
 }
 
-// ── Helpers ───────────────────────────────────────────────────────
 function limpiarFiltros(){
-  document.getElementById('fBuscar').value='';
-  document.getElementById('fDesde').value=firstDayOfMonth();
-  document.getElementById('fHasta').value='';
+  ['fBuscar','fDesde','fHasta'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('fEstado').value='';
   cargar();
 }
 
-function mostrarSpinner(v){
-  document.getElementById('spinner').style.display = v?'inline-block':'none';
-}
+function mostrarSpinner(v){ document.getElementById('spinner').style.display=v?'inline-block':'none'; }
 
-function toast(msg, tipo='success'){
-  const el = document.getElementById('toast');
-  el.className = `toast align-items-center text-white border-0 bg-${tipo}`;
-  document.getElementById('toastMsg').textContent = msg;
+function toast(msg,tipo='success'){
+  const el=document.getElementById('toast');
+  el.className=`toast align-items-center text-white border-0 bg-${tipo}`;
+  document.getElementById('toastMsg').textContent=msg;
   toastEl.show();
 }
 
-// ── IMPORTAR MASIVO ───────────────────────────────────────────────
-let filasParaImportar = [];
-
-function abrirImportar(){
-  resetImportar();
-  mImportar.show();
-}
+// ── IMPORTAR MASIVO ────────────────────────────────────────────────
+function abrirImportar(){ resetImportar(); mImportar.show(); }
 
 function resetImportar(){
-  document.getElementById('importFile').value = '';
-  document.getElementById('importStep1').style.display = '';
-  document.getElementById('importStep2').style.display = 'none';
-  document.getElementById('importStep3').style.display = 'none';
-  document.getElementById('btnConfirmarImport').style.display = 'none';
-  filasParaImportar = [];
+  document.getElementById('importFile').value='';
+  document.getElementById('importStep1').style.display='';
+  document.getElementById('importStep2').style.display='none';
+  document.getElementById('importStep3').style.display='none';
+  document.getElementById('btnConfirmarImport').style.display='none';
+  filasParaImportar=[];
 }
 
 function previsualizarArchivo(input){
-  const file = input.files[0];
-  if(!file) return;
-
-  const reader = new FileReader();
-  reader.onload = function(e){
+  const file=input.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=function(e){
     let wb;
-    try {
-      const data = new Uint8Array(e.target.result);
-      wb = XLSX.read(data, {type:'array', cellDates:false});
-    } catch(err){
-      toast('❌ No se pudo leer el archivo: '+err.message, 'danger'); return;
-    }
-
-    const ws   = wb.Sheets[wb.SheetNames[0]];
-    const rows = XLSX.utils.sheet_to_json(ws, {defval:''});
-
-    if(!rows.length){ toast('⚠️ El archivo está vacío','warning'); return; }
-
-    // Normalizar nombres de columna (case-insensitive, sin tildes)
-    const norm = s => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,'_');
-    const MAP = {
-      numero_orden:'numero_orden', 'n_orden':'numero_orden', 'no_orden':'numero_orden',
-      nombre_trabajador:'nombre_trabajador', trabajador:'nombre_trabajador', afiliado:'nombre_trabajador',
-      tipo_servicio:'tipo_servicio', servicio:'tipo_servicio', tipo:'tipo_servicio',
-      valor_servicio:'valor_servicio', valor:'valor_servicio',
-      fecha_aprobacion:'fecha_aprobacion', fecha:'fecha_aprobacion', f_aprobacion:'fecha_aprobacion',
-      estado:'estado', observaciones:'observaciones', obs:'observaciones',
-    };
-
-    filasParaImportar = rows.map(row => {
-      const out = {};
-      for(const [k,v] of Object.entries(row)){
-        const key = MAP[norm(k)];
-        if(key) out[key] = v;
-      }
+    try{ wb=XLSX.read(new Uint8Array(e.target.result),{type:'array',cellDates:false}); }
+    catch(err){ toast('❌ No se pudo leer el archivo','danger'); return; }
+    const ws=wb.Sheets[wb.SheetNames[0]];
+    const rows=XLSX.utils.sheet_to_json(ws,{defval:''});
+    if(!rows.length){ toast('⚠️ Archivo vacío','warning'); return; }
+    const norm=s=>s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,'_');
+    const MAP={numero_orden:'numero_orden',n_orden:'numero_orden',no_orden:'numero_orden',
+      nombre_trabajador:'nombre_trabajador',empresa:'nombre_trabajador',empresa_afiliada:'nombre_trabajador',
+      tipo_servicio:'tipo_servicio',descripcion:'tipo_servicio',servicio:'tipo_servicio',
+      valor_servicio:'valor_servicio',valor:'valor_servicio',vr_total:'valor_servicio',
+      fecha_aprobacion:'fecha_aprobacion',fecha:'fecha_aprobacion',
+      estado:'estado',upr:'upr',numero_afiliacion:'numero_afiliacion',n_afiliacion:'numero_afiliacion',
+      nombre_contacto:'nombre_contacto',contacto:'nombre_contacto',
+      telefono_contacto:'telefono_contacto',telefono:'telefono_contacto',
+      cargo_contacto:'cargo_contacto',cargo:'cargo_contacto',
+      fecha_vencimiento:'fecha_vencimiento',f_vencimiento:'fecha_vencimiento',
+      codigo_actividad:'codigo_actividad',codigo:'codigo_actividad',actividad:'codigo_actividad',
+      ciudad_ejecucion:'ciudad_ejecucion',ciudad:'ciudad_ejecucion',
+      cantidad:'cantidad',valor_unitario:'valor_unitario',vr_unitario:'valor_unitario',
+      tecnico_arl:'tecnico_arl',tecnico:'tecnico_arl',consultor_asignado:'consultor_asignado',consultor:'consultor_asignado'};
+    filasParaImportar=rows.map(row=>{
+      const out={};
+      for(const [k,v] of Object.entries(row)){ const key=MAP[norm(k)]; if(key) out[key]=v; }
       return out;
-    }).filter(r => r.numero_orden || r.nombre_trabajador);
-
-    if(!filasParaImportar.length){
-      toast('⚠️ No se encontraron filas válidas. Verifica los encabezados.','warning'); return;
-    }
-
+    }).filter(r=>r.numero_orden||r.nombre_trabajador);
+    if(!filasParaImportar.length){ toast('⚠️ No se reconocieron columnas. Descarga la plantilla.','warning'); return; }
     renderPrevisualizacion();
   };
   reader.readAsArrayBuffer(file);
 }
 
 function renderPrevisualizacion(){
-  const co2 = new Intl.NumberFormat('es-CO',{style:'currency',currency:'COP',minimumFractionDigits:0});
-  const tb   = document.getElementById('importTbody');
-  let errCount = 0;
-
-  tb.innerHTML = filasParaImportar.map((r,i) => {
-    const faltantes = [];
-    if(!r.numero_orden)      faltantes.push('N° Orden');
-    if(!r.nombre_trabajador) faltantes.push('Trabajador');
-    if(!r.tipo_servicio)     faltantes.push('Servicio');
-    if(!r.valor_servicio)    faltantes.push('Valor');
-    if(!r.fecha_aprobacion)  faltantes.push('F. Aprobación');
-
-    const hayError = faltantes.length > 0;
-    if(hayError) errCount++;
-
-    const val = Number(String(r.valor_servicio||'').replace(/[^0-9.]/g,''));
-    return `<tr class="${hayError?'table-danger':''}">
+  const tb=document.getElementById('importTbody');
+  let err=0;
+  tb.innerHTML=filasParaImportar.map((r,i)=>{
+    const falt=[];
+    if(!r.numero_orden) falt.push('N° Orden');
+    if(!r.nombre_trabajador) falt.push('Empresa');
+    if(!r.tipo_servicio) falt.push('Descripción');
+    if(!r.valor_servicio) falt.push('VR Total');
+    if(!r.fecha_aprobacion) falt.push('F. Aprobación');
+    if(falt.length) err++;
+    const val=Number(String(r.valor_servicio||'').replace(/[^0-9.]/g,''));
+    return `<tr class="${falt.length?'table-danger':''}">
       <td class="text-muted small">${i+2}</td>
       <td class="font-mono fw-semibold">${r.numero_orden||'<span class="text-danger">—</span>'}</td>
       <td>${r.nombre_trabajador||'<span class="text-danger">—</span>'}</td>
+      <td><span class="badge bg-secondary">${r.codigo_actividad||'—'}</span></td>
       <td class="small">${r.tipo_servicio||'<span class="text-danger">—</span>'}</td>
-      <td class="text-end">${val?co2.format(val):'<span class="text-danger">—</span>'}</td>
+      <td class="small">${r.ciudad_ejecucion||'—'}</td>
+      <td class="text-center">${r.cantidad||1}</td>
+      <td class="text-end">${val?co.format(val):'<span class="text-danger">—</span>'}</td>
       <td class="small">${r.fecha_aprobacion||'<span class="text-danger">—</span>'}</td>
       <td><span class="badge bg-secondary">${r.estado||'Aprobada'}</span></td>
-      <td class="small text-muted">${r.observaciones||''}</td>
-      <td>${hayError?`<span class="text-danger small" title="${faltantes.join(', ')}"><i class="fas fa-exclamation-triangle"></i></span>`:'<i class="fas fa-check text-success"></i>'}</td>
+      <td>${falt.length?`<i class="fas fa-exclamation-triangle text-danger" title="${falt.join(', ')}"></i>`:'<i class="fas fa-check text-success"></i>'}</td>
     </tr>`;
   }).join('');
-
-  const validas = filasParaImportar.length - errCount;
-  document.getElementById('importResumen').textContent =
-    `${filasParaImportar.length} filas leídas — ${validas} válidas${errCount?' — '+errCount+' con errores':''}`;
-  document.getElementById('importErroresPrev').textContent =
-    errCount ? `⚠️ ${errCount} fila(s) con datos incompletos serán omitidas` : '';
-
-  document.getElementById('importStep1').style.display = 'none';
-  document.getElementById('importStep2').style.display = '';
-  document.getElementById('importStep3').style.display = 'none';
-
-  const btn = document.getElementById('btnConfirmarImport');
-  if(validas > 0){
-    btn.style.display = '';
-    document.getElementById('btnImportCount').textContent = validas;
-  } else {
-    btn.style.display = 'none';
-    toast('⚠️ No hay filas válidas para importar','warning');
-  }
+  const validas=filasParaImportar.length-err;
+  document.getElementById('importResumen').textContent=`${filasParaImportar.length} filas leídas — ${validas} válidas${err?' — '+err+' con errores':''}`;
+  document.getElementById('importStep1').style.display='none';
+  document.getElementById('importStep2').style.display='';
+  const btn=document.getElementById('btnConfirmarImport');
+  if(validas>0){ btn.style.display=''; document.getElementById('btnImportCount').textContent=validas; }
+  else{ btn.style.display='none'; }
 }
 
 async function confirmarImportar(){
-  const btn = document.getElementById('btnConfirmarImport');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Importando…';
-
-  try {
-    const r = await fetch(`${BASE}/ordenes/importar`, {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({filas: filasParaImportar}),
-    });
-    const data = await r.json();
+  const btn=document.getElementById('btnConfirmarImport');
+  btn.disabled=true; btn.innerHTML='<span class="spinner-border spinner-border-sm me-1"></span>Importando…';
+  try{
+    const r=await fetch(`${BASE}/ordenes/importar`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({filas:filasParaImportar})});
+    const data=await r.json();
     if(!r.ok) throw new Error(data.error||'Error al importar');
-
-    document.getElementById('importStep2').style.display = 'none';
-    document.getElementById('importStep3').style.display = '';
-    document.getElementById('btnConfirmarImport').style.display = 'none';
-
-    const icon = data.importadas > 0 ? '✅' : '⚠️';
-    document.getElementById('importResultIcon').textContent = icon;
-    document.getElementById('importResultMsg').textContent =
-      `${data.importadas} orden${data.importadas!==1?'es':''} importada${data.importadas!==1?'s':''}`;
-
-    let detalle = '';
-    if(data.errores?.length){
-      detalle = `${data.errores.length} fila(s) omitida(s): ` +
-        data.errores.map(e=>`Fila ${e.fila}: ${e.mensaje}`).join(' · ');
-    }
-    document.getElementById('importResultDetalle').textContent = detalle;
-
-    if(data.importadas > 0){
-      toast(`✅ ${data.importadas} órdenes importadas`,'success');
-      await cargar();
-    }
-  } catch(e){
-    toast('❌ '+e.message,'danger');
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = '<i class="fas fa-upload me-1"></i>Importar';
-  }
+    document.getElementById('importStep2').style.display='none';
+    document.getElementById('importStep3').style.display='';
+    document.getElementById('btnConfirmarImport').style.display='none';
+    document.getElementById('importResultIcon').textContent=data.importadas>0?'✅':'⚠️';
+    document.getElementById('importResultMsg').textContent=`${data.importadas} orden${data.importadas!==1?'es':''} importada${data.importadas!==1?'s':''}`;
+    document.getElementById('importResultDetalle').textContent=data.errores?.length?`${data.errores.length} fila(s) omitida(s)`:'';
+    if(data.importadas>0){ toast(`✅ ${data.importadas} órdenes importadas`,'success'); await cargar(); }
+  }catch(e){ toast('❌ '+e.message,'danger'); }
+  finally{ btn.disabled=false; btn.innerHTML='<i class="fas fa-upload me-1"></i>Importar'; }
 }
 
 function descargarPlantilla(){
-  const ws = XLSX.utils.aoa_to_sheet([
-    ['numero_orden','nombre_trabajador','tipo_servicio','valor_servicio','fecha_aprobacion','estado','observaciones'],
-    ['AXA-2025-00001','JUAN PEREZ GARCIA','Fisioterapia',350000,'15/08/2025','Aprobada',''],
-    ['AXA-2025-00002','MARIA LOPEZ RUIZ','Radiografía de Columna',180000,'20/08/2025','Aprobada',''],
+  const ws=XLSX.utils.aoa_to_sheet([
+    ['numero_orden','upr','nombre_trabajador','numero_afiliacion','nombre_contacto','telefono_contacto','cargo_contacto','codigo_actividad','tipo_servicio','ciudad_ejecucion','cantidad','valor_unitario','valor_servicio','fecha_aprobacion','fecha_vencimiento','estado','tecnico_arl','consultor_asignado','observaciones'],
+    ['70-0001014180','7053','COTRAFA COOPERATIVA FINANCIERA','9034403','ALEXANDRA MARIA BLAIR PARDO','4549595','REPRESENTANTE LEGAL','SIG083','ASE SG-SST ESP','MEDELLIN',2,75000,150000,'13/03/2026','11/05/2026','Aprobada','CHRISTIAN ANDRES RODRIGUEZ','',''],
   ]);
-  ws['!cols'] = [{wch:20},{wch:35},{wch:30},{wch:15},{wch:18},{wch:18},{wch:30}];
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Ordenes');
-  XLSX.writeFile(wb, 'plantilla-ordenes-axa.xlsx');
+  ws['!cols']=[{wch:20},{wch:8},{wch:40},{wch:14},{wch:35},{wch:14},{wch:22},{wch:10},{wch:30},{wch:14},{wch:8},{wch:12},{wch:14},{wch:14},{wch:14},{wch:18},{wch:35},{wch:30},{wch:40}];
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Ordenes');
+  XLSX.writeFile(wb,'plantilla-ordenes-axa.xlsx');
 }
 </script>
 </body>
