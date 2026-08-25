@@ -64,7 +64,7 @@ app.use((req, res, next) => {
   const host = req.hostname || '';
   if (host === 'creaia.co' || host === 'www.creaia.co') {
     const p = req.path;
-    if (p.startsWith('/contenido') || p.startsWith('/api') || p.startsWith('/assets')) {
+    if (p.startsWith('/contenido') || p.startsWith('/api') || p.startsWith('/assets') || p.startsWith('/axa')) {
       return next();
     }
     return res.redirect(302, '/contenido/planes.html');
