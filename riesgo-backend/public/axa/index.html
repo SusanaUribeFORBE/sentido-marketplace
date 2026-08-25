@@ -201,7 +201,18 @@ footer{background:#fff;border-top:1px solid var(--border)}
           <div class="col-12"><div class="form-section"><div class="form-section-title">Responsables</div>
             <div class="row g-2">
               <div class="col-12 col-md-4"><label class="form-label">Técnico ARL AXA</label><input type="text" id="oTecnico" class="form-control text-uppercase" placeholder="CHRISTIAN ANDRES RODRIGUEZ"/></div>
-              <div class="col-12 col-md-4"><label class="form-label">Consultor FORBE Asignado</label><input type="text" id="oConsultor" class="form-control text-uppercase" placeholder="(asignar manualmente)"/></div>
+              <div class="col-12 col-md-4"><label class="form-label">Consultor FORBE Asignado</label>
+                <select id="oConsultor" class="form-select">
+                  <option value="">— Sin asignar —</option>
+                  <option>ALEJANDRA ESCOBAR</option>
+                  <option>MARÍA SUSANA URIBE GALEANO</option>
+                  <option>HERIBERTO SAAVEDRA</option>
+                  <option>JUAN PABLO BAENA</option>
+                  <option>JULIANA RESTREPO</option>
+                  <option>LAURA RESTREPO</option>
+                  <option>MANUEL MARTÍNEZ CUADRADO</option>
+                </select>
+              </div>
               <div class="col-6 col-md-2"><label class="form-label">Estado</label>
                 <select id="oEstado" class="form-select" onchange="toggleCamposEstado()">
                   <option value="Aprobada">Aprobada</option>
