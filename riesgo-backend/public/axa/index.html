@@ -221,7 +221,11 @@ footer{background:#fff;border-top:1px solid var(--border)}
                   <option value="Facturada">Facturada</option>
                 </select>
               </div>
-              <div class="col-6 col-md-2" id="rowFechaEjec" style="display:none"><label class="form-label">F. Ejecución</label><input type="date" id="oFechaEjec" class="form-control"/></div>
+              <div class="col-12" id="rowFechasEjec" style="display:none">
+                <label class="form-label">Fechas de Ejecución</label>
+                <div id="fechasEjecList" class="d-flex flex-column gap-1 mb-1"></div>
+                <button type="button" class="btn btn-outline-success btn-sm" onclick="agregarFechaEjec()"><i class="fas fa-plus me-1"></i>Agregar fecha</button>
+              </div>
             </div>
           </div></div>
 
@@ -437,7 +441,7 @@ function abrirModalNueva(){
   document.getElementById('oValorUnit').value=75000;
   document.getElementById('oValorTotal').value=75000;
   document.getElementById('oEstado').value='Aprobada';
-  document.getElementById('oFechaEjec').value='';
+  document.getElementById('fechasEjecList').innerHTML='';
   document.getElementById('oFechaFact').value='';
   toggleCamposEstado();
   mOrden.show();
@@ -465,7 +469,9 @@ function editarOrden(id){
   document.getElementById('oTecnico').value       = o.tecnico_arl||'';
   document.getElementById('oConsultor').value     = o.consultor_asignado||'';
   document.getElementById('oEstado').value        = o.estado||'Aprobada';
-  document.getElementById('oFechaEjec').value     = o.fecha_ejecucion||'';
+  document.getElementById('fechasEjecList').innerHTML='';
+  (o.fechas_ejecucion||[]).forEach(f=>agregarFechaEjec(f));
+  if(!(o.fechas_ejecucion||[]).length && o.fecha_ejecucion) agregarFechaEjec(o.fecha_ejecucion);
   document.getElementById('oNumFact').value       = o.numero_factura||'';
   document.getElementById('oFechaFact').value     = o.fecha_facturacion||'';
   document.getElementById('oObs').value           = o.observaciones||'';
@@ -481,8 +487,18 @@ function calcularTotal(){
 
 function toggleCamposEstado(){
   const e=document.getElementById('oEstado').value;
-  document.getElementById('rowFechaEjec').style.display=['Ejecutada','Facturada'].includes(e)?'':'none';
+  document.getElementById('rowFechasEjec').style.display=['Ejecutada','Facturada'].includes(e)?'':'none';
   document.getElementById('rowFacturacion').style.display=e==='Facturada'?'':'none';
+}
+
+function agregarFechaEjec(fecha=''){
+  const list=document.getElementById('fechasEjecList');
+  const div=document.createElement('div');
+  div.className='d-flex gap-2 align-items-center';
+  div.innerHTML=`<input type="date" class="form-control fecha-ejec" value="${fecha}" style="max-width:190px"/>
+    <button type="button" class="btn btn-outline-danger btn-xs px-2" onclick="this.closest('.d-flex').remove()" title="Quitar"><i class="fas fa-times fa-sm"></i></button>`;
+  list.appendChild(div);
+  div.querySelector('input').focus();
 }
 
 async function guardarOrden(){
@@ -508,7 +524,8 @@ async function guardarOrden(){
     tecnico_arl:        document.getElementById('oTecnico').value.trim()||null,
     consultor_asignado: document.getElementById('oConsultor').value.trim()||null,
     estado:             document.getElementById('oEstado').value,
-    fecha_ejecucion:    document.getElementById('oFechaEjec').value||null,
+    fechas_ejecucion:   [...document.querySelectorAll('.fecha-ejec')].map(i=>i.value).filter(Boolean),
+    fecha_ejecucion:    [...document.querySelectorAll('.fecha-ejec')].map(i=>i.value).filter(Boolean)[0]||null,
     numero_factura:     document.getElementById('oNumFact').value||null,
     fecha_facturacion:  document.getElementById('oFechaFact').value||null,
     observaciones:      document.getElementById('oObs').value||null,
@@ -592,7 +609,9 @@ function verDetalle(id){
     ${fila('VR Total',`<strong class="text-success fs-6">${co.format(o.valor_servicio)}</strong>`)}
     ${fila('F. Aprobación', fmt(o.fecha_aprobacion))}
     ${fila('F. Vencimiento', fmt(o.fecha_vencimiento), esVencida(o.fecha_vencimiento)&&o.estado!=='Ejecutada'&&o.estado!=='Facturada'?'text-danger fw-bold':'')}
-    ${fila('F. Ejecución', fmt(o.fecha_ejecucion))}
+    ${fila('F. Ejecución', (o.fechas_ejecucion||[]).length>1
+      ? (o.fechas_ejecucion).map((f,i)=>`<span class="badge bg-secondary me-1">${fmt(f)}</span>`).join('')
+      : fmt(o.fecha_ejecucion))}
     ${fila('Técnico ARL AXA', o.tecnico_arl)}
     ${fila('Consultor FORBE', o.consultor_asignado||'<span class="text-muted fst-italic">Sin asignar</span>')}
     ${fila('N° Factura',`<span class="font-mono">${o.numero_factura||'—'}</span>`)}

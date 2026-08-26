@@ -11,7 +11,7 @@ const CAMPOS = [
   'nombre_contacto','telefono_contacto','cargo_contacto',
   'tipo_servicio','codigo_actividad','ciudad_ejecucion',
   'cantidad','valor_unitario','valor_servicio',
-  'fecha_aprobacion','fecha_vencimiento','fecha_ejecucion',
+  'fecha_aprobacion','fecha_vencimiento','fecha_ejecucion','fechas_ejecucion',
   'estado','numero_factura','fecha_facturacion',
   'tecnico_arl','consultor_asignado','observaciones','created_at',
 ];
@@ -294,8 +294,12 @@ axaOrdenesRouter.post('/ordenes/:id/ejecutar', async (req: Request, res: Respons
     if (!o) return res.status(404).json({ error: 'Orden no encontrada.' });
     if (!['Aprobada', 'PendienteEjecutar'].includes(o.estado))
       return res.status(422).json({ error: 'Solo se puede ejecutar una orden Aprobada o Pendiente.' });
+    const hoy = new Date().toISOString().slice(0, 10);
+    const { data: cur } = await supabase.from('axa_ordenes').select('fechas_ejecucion').eq('id', id).single();
+    const prevFechas: string[] = cur?.fechas_ejecucion || [];
+    const nuevasFechas = prevFechas.includes(hoy) ? prevFechas : [...prevFechas, hoy];
     const { data, error } = await supabase.from('axa_ordenes')
-      .update({ estado: 'Ejecutada', fecha_ejecucion: new Date().toISOString().slice(0, 10) })
+      .update({ estado: 'Ejecutada', fecha_ejecucion: hoy, fechas_ejecucion: nuevasFechas })
       .eq('id', id).select().single();
     if (error) throw error;
     res.json(data);
@@ -409,6 +413,7 @@ function buildRow(b: any, partial = false): Record<string, any> {
   }
   if ('cantidad' in b) r.cantidad = num(b.cantidad) || 1;
   if ('valor_unitario' in b) r.valor_unitario = num(b.valor_unitario) || 0;
+  if ('fechas_ejecucion' in b) r.fechas_ejecucion = Array.isArray(b.fechas_ejecucion) ? b.fechas_ejecucion : [];
 
   return r;
 }
