@@ -1,6 +1,9 @@
 import { Router } from 'express';
+import { Resend } from 'resend';
 import { supabase } from '../supabase';
 import { generarListadoAsistencia } from '../services/listadoAsistencia';
+
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 export const adminRouter = Router();
 
@@ -131,7 +134,7 @@ adminRouter.post('/pins', async (req, res) => {
 
   const { data: empresa, error: empresaError } = await supabase
     .from('empresas')
-    .select('id_empresa')
+    .select('id_empresa, nombre_constructora, email_sst')
     .eq('id_empresa', id_empresa)
     .maybeSingle();
 
@@ -172,10 +175,55 @@ adminRouter.post('/pins', async (req, res) => {
     return res.status(500).json({ error: 'No se pudieron generar todos los PINs solicitados' });
   }
 
+  const codigosPin = pinesGenerados.map((p) => p.codigo_pin);
+  const modulo     = modulo_asignado || 'SST General';
+  const nombreEmp  = (empresa as any)?.nombre_constructora || id_empresa;
+  const emailSst   = (empresa as any)?.email_sst as string | undefined;
+
+  if (resend && emailSst) {
+    const filas = codigosPin
+      .map((pin, i) => `<tr><td style="padding:6px 12px;font-family:monospace;font-size:15px;letter-spacing:.05em;border-bottom:1px solid #eee">${i + 1}</td><td style="padding:6px 12px;font-family:monospace;font-size:15px;letter-spacing:.05em;border-bottom:1px solid #eee"><strong>${pin}</strong></td></tr>`)
+      .join('');
+
+    await resend.emails.send({
+      from: process.env.RESEND_FROM || 'RiesGO <onboarding@resend.dev>',
+      to: emailSst,
+      subject: `${codigosPin.length} PINs generados — ${modulo} · ${nombreEmp}`,
+      html: `
+        <div style="font-family:system-ui,sans-serif;max-width:560px;margin:auto;color:#1C2333">
+          <div style="background:#0B1F3A;padding:20px 28px;border-radius:10px 10px 0 0">
+            <span style="font-size:1.2rem;font-weight:800;color:#fff;letter-spacing:.02em">RIESGO!</span>
+            <span style="font-size:.78rem;color:rgba(255,255,255,.6);margin-left:10px;text-transform:uppercase;letter-spacing:.08em">PINs generados</span>
+          </div>
+          <div style="border:1px solid #E2E8F0;border-top:none;padding:24px 28px;border-radius:0 0 10px 10px">
+            <p style="margin:0 0 6px">Se generaron <strong>${codigosPin.length} PINs</strong> para:</p>
+            <p style="margin:0 0 4px;color:#64748B;font-size:.9rem">Módulo: <strong style="color:#1C2333">${modulo}</strong></p>
+            <p style="margin:0 0 20px;color:#64748B;font-size:.9rem">Empresa: <strong style="color:#1C2333">${nombreEmp}</strong></p>
+            <table style="border-collapse:collapse;width:100%;background:#F8FAFC;border-radius:8px;overflow:hidden">
+              <thead><tr style="background:#EEF3FB">
+                <th style="padding:8px 12px;text-align:left;font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;color:#64748B">#</th>
+                <th style="padding:8px 12px;text-align:left;font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;color:#64748B">Código PIN</th>
+              </tr></thead>
+              <tbody>${filas}</tbody>
+            </table>
+            <div style="margin-top:20px;padding:14px 16px;background:#F0FDF4;border-left:3px solid #22C55E;border-radius:0 6px 6px 0;font-size:.88rem">
+              <strong>Instrucciones para los trabajadores:</strong><br>
+              Entrar a <a href="https://riesgo-backend-production.up.railway.app" style="color:#0B1F3A">riesgo-backend-production.up.railway.app</a>,
+              digitar nombre, cédula y el PIN asignado.
+            </div>
+            <p style="margin-top:20px;font-size:.8rem;color:#94A3B8">
+              FORBE SAS · consultoria@forbesas.com
+            </p>
+          </div>
+        </div>`,
+    }).catch((e: unknown) => console.error('Error enviando email PINs:', e));
+  }
+
   return res.status(201).json({
     id_empresa,
-    cantidad: pinesGenerados.length,
-    pins: pinesGenerados.map((p) => p.codigo_pin),
+    cantidad: codigosPin.length,
+    pins: codigosPin,
+    email_enviado_a: emailSst || null,
   });
 });
 
