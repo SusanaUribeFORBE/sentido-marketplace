@@ -145,8 +145,7 @@ function mostrarResultado(resultado, data, resumenTexto) {
       }
       ${
         cert
-          ? `<a class="result-link" href="${cert.url_pdf}" target="_blank" rel="noopener">Descargar certificado</a>
-             <p class="result-detail">${cert.enviado_a ? `Enviado a ${cert.enviado_a}` : ''}</p>`
+          ? `<p class="result-detail">🎓 Tu certificado fue enviado a <strong>${cert.enviado_a || 'tu coordinador SST'}</strong></p>`
           : ''
       }
     `;

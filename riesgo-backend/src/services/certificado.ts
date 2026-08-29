@@ -9,6 +9,7 @@ const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KE
 const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
 
 const EMAIL_ANDINA_COORDINADORA = 'vanessafranco@andina.com.co';
+const EMAIL_FORBE = 'consultoria@forbesas.com';
 
 const ASSETS_DIR = path.join(__dirname, '..', '..', 'assets');
 const LOGO_RIESGO = path.join(ASSETS_DIR, 'logo-riesgo.png');
@@ -45,6 +46,12 @@ const MODULOS_SIN_AVAL_AXA = new Set([
   'Ruta Segura',
   'PAS Vial – Emergencias en Ruta',
   'Liderazgo Vial',
+  'Control de Fuego Incipiente',
+]);
+
+// Módulos SST propios de FORBE SAS — certificado enviado a consultoria@forbesas.com
+const MODULOS_FORBE_SST = new Set([
+  'Control de Fuego Incipiente',
 ]);
 
 // Módulos RiesGO! Vial con respaldo de contenido técnico de la Escuela Andina de Automovilismo.
@@ -103,6 +110,7 @@ const INTENSIDAD_HORARIA: Record<string, number> = {
   'Plan de Emergencias y Evacuación': 4,
   'Primeros Auxilios Básicos': 4,
   'Incendios y Sismos': 4,
+  'Control de Fuego Incipiente': 4,
   'Seguridad Vial': 2,
   'Riesgos Críticos Viales': 4,
   'Antes de Arrancar': 2,
@@ -145,9 +153,12 @@ export async function generarCertificado(params: GenerarCertificadoParams) {
   const urlPdf = urlData.publicUrl;
 
   const esControladorVial = MODULOS_ANDINA_FORBE.has(params.modulo);
+  const esForbeSst        = MODULOS_FORBE_SST.has(params.modulo);
   const emailDestinatario = esControladorVial
     ? EMAIL_ANDINA_COORDINADORA
-    : params.emailSst;
+    : esForbeSst
+      ? EMAIL_FORBE
+      : params.emailSst;
 
   const { data: cert, error: insertError } = await supabase
     .from('certificados')
@@ -172,7 +183,9 @@ export async function generarCertificado(params: GenerarCertificadoParams) {
       to: emailDestinatario,
       subject: esControladorVial
         ? `Nuevo certificado Controladores Viales – ${params.nombreUsuario}`
-        : `Certificado RiesGO! - ${params.nombreUsuario} (${params.modulo})`,
+        : esForbeSst
+          ? `Nuevo certificado ${params.modulo} – ${params.nombreUsuario}`
+          : `Certificado RiesGO! - ${params.nombreUsuario} (${params.modulo})`,
       html: buildEmailHtml(params, urlPdf, verificationUrl),
       attachments: [{ filename: `${codigoQr}.pdf`, content: pdfBuffer.toString('base64') }],
     });
