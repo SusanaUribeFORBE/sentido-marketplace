@@ -110,7 +110,7 @@ const INTENSIDAD_HORARIA: Record<string, number> = {
   'Plan de Emergencias y Evacuación': 4,
   'Primeros Auxilios Básicos': 4,
   'Incendios y Sismos': 4,
-  'Control de Fuego Incipiente': 4,
+  'Control de Fuego Incipiente': 8,
   'Seguridad Vial': 2,
   'Riesgos Críticos Viales': 4,
   'Antes de Arrancar': 2,
