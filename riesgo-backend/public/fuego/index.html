@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="es" data-bs-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Control de Fuego — RIESGO!</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧯</text></svg>">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<style>
+  :root {
+    --rojo:   #C8102E;
+    --rojo-d: #9B0B22;
+    --fg:     #1a1a1a;
+    --bg:     #f5f5f5;
+    --card:   #ffffff;
+    --borde:  #dde1e7;
+    --muted:  #6c757d;
+    --ok:     #198754;
+    --warn:   #D97706;
+    --peligro:#C8102E;
+  }
+  [data-bs-theme="dark"] {
+    --fg:   #e8e8e8;
+    --bg:   #111318;
+    --card: #1e2028;
+    --borde:#2e3140;
+    --muted:#9499a4;
+  }
+  body { background: var(--bg); color: var(--fg); font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+
+  /* ── Header ── */
+  .hd { background: var(--rojo); color: #fff; padding: 0.6rem 1.2rem; display: flex; align-items: center; gap: 0.75rem; }
+  .hd-brand { font-weight: 800; font-size: 1.1rem; letter-spacing: .03em; }
+  .hd-sub { font-size: .78rem; opacity: .82; }
+  .hd-right { margin-left: auto; display: flex; align-items: center; gap: .5rem; }
+  .btn-theme { background: none; border: 1px solid rgba(255,255,255,.4); color: #fff; border-radius: 6px; padding: .25rem .55rem; font-size: .8rem; cursor: pointer; }
+
+  /* ── Nav Tabs ── */
+  .nav-tabs { background: var(--card); border-bottom: 2px solid var(--rojo); padding: 0 1rem; }
+  .nav-tabs .nav-link { color: var(--fg); border-radius: 0; border: none; border-bottom: 3px solid transparent; padding: .65rem 1.1rem; font-size: .88rem; font-weight: 500; }
+  .nav-tabs .nav-link.active { color: var(--rojo); border-bottom-color: var(--rojo); font-weight: 700; background: transparent; }
+  .nav-tabs .nav-link:hover:not(.active) { border-bottom-color: var(--borde); }
+
+  /* ── KPI Cards ── */
+  .kpi-card { background: var(--card); border: 1px solid var(--borde); border-radius: 10px; padding: 1rem 1.2rem; }
+  .kpi-num { font-size: 2rem; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1; }
+  .kpi-lbl { font-size: .78rem; color: var(--muted); margin-top: .15rem; text-transform: uppercase; letter-spacing: .05em; }
+  .kpi-icon { font-size: 1.6rem; opacity: .18; }
+
+  /* ── Table ── */
+  .tbl-wrap { overflow-x: auto; border-radius: 10px; border: 1px solid var(--borde); }
+  table { border-collapse: collapse; width: 100%; font-size: .87rem; }
+  th { background: var(--card); padding: .6rem .9rem; font-weight: 600; font-size: .8rem;
+       text-transform: uppercase; letter-spacing: .04em; color: var(--muted);
+       border-bottom: 2px solid var(--borde); white-space: nowrap; }
+  td { padding: .55rem .9rem; border-bottom: 1px solid var(--borde); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(200,16,46,.04); }
+  [data-bs-theme="dark"] tr:hover td { background: rgba(200,16,46,.08); }
+
+  /* ── Badges ── */
+  .bg-resultado-A { background: #d1fae5 !important; color: #065f46 !important; }
+  .bg-resultado-R { background: #fef3c7 !important; color: #92400e !important; }
+  .bg-resultado-F { background: #fee2e2 !important; color: #991b1b !important; }
+  [data-bs-theme="dark"] .bg-resultado-A { background: #064e3b !important; color: #6ee7b7 !important; }
+  [data-bs-theme="dark"] .bg-resultado-R { background: #451a03 !important; color: #fcd34d !important; }
+  [data-bs-theme="dark"] .bg-resultado-F { background: #450a0a !important; color: #fca5a5 !important; }
+  .badge-vencido { background: #fee2e2; color: #991b1b; font-size: .73rem; padding: .25em .55em; border-radius: 99px; }
+  .badge-ok      { background: #d1fae5; color: #065f46; font-size: .73rem; padding: .25em .55em; border-radius: 99px; }
+  .badge-prox    { background: #fef3c7; color: #92400e; font-size: .73rem; padding: .25em .55em; border-radius: 99px; }
+  [data-bs-theme="dark"] .badge-vencido { background: #450a0a; color: #fca5a5; }
+  [data-bs-theme="dark"] .badge-ok      { background: #064e3b; color: #6ee7b7; }
+  [data-bs-theme="dark"] .badge-prox    { background: #451a03; color: #fcd34d; }
+
+  /* ── Checklist ── */
+  .chk-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .35rem 1rem; }
+  .chk-item { display: flex; align-items: center; gap: .5rem; font-size: .88rem; padding: .3rem .5rem;
+              border-radius: 6px; background: var(--bg); border: 1px solid var(--borde); cursor: pointer; }
+  .chk-item.fail { background: #fee2e2; border-color: #fca5a5; }
+  [data-bs-theme="dark"] .chk-item.fail { background: #450a0a; border-color: #991b1b; }
+
+  /* ── Guía: clases de fuego ── */
+  .clase-card { border-radius: 10px; padding: 1rem; margin-bottom: .75rem; border-left: 5px solid; }
+  .clase-A { background: #fef9ee; border-color: #F59E0B; }
+  .clase-B { background: #eff6ff; border-color: #3B82F6; }
+  .clase-C { background: #fff7ed; border-color: #F97316; }
+  .clase-D { background: #f5f3ff; border-color: #8B5CF6; }
+  .clase-K { background: #fef2f2; border-color: #EF4444; }
+  .clase-L { background: #ecfdf5; border-color: #10B981; }
+  [data-bs-theme="dark"] .clase-A { background: #1c1700; }
+  [data-bs-theme="dark"] .clase-B { background: #00101f; }
+  [data-bs-theme="dark"] .clase-C { background: #1f0f00; }
+  [data-bs-theme="dark"] .clase-D { background: #120a2e; }
+  [data-bs-theme="dark"] .clase-K { background: #1a0000; }
+  [data-bs-theme="dark"] .clase-L { background: #001a0f; }
+  .clase-lbl { font-size: 1.5rem; font-weight: 900; margin-right: .4rem; }
+
+  /* ── Tetraedro ── */
+  .tetra-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; }
+  .tetra-item { border-radius: 10px; padding: .9rem 1rem; text-align: center; }
+  .tetra-ox   { background: #dbeafe; color: #1e3a8a; }
+  .tetra-cb   { background: #dcfce7; color: #14532d; }
+  .tetra-ca   { background: #fef3c7; color: #78350f; }
+  .tetra-rc   { background: #fee2e2; color: #7f1d1d; }
+  [data-bs-theme="dark"] .tetra-ox { background: #001a4d; color: #93c5fd; }
+  [data-bs-theme="dark"] .tetra-cb { background: #002210; color: #86efac; }
+  [data-bs-theme="dark"] .tetra-ca { background: #1c1000; color: #fcd34d; }
+  [data-bs-theme="dark"] .tetra-rc { background: #1a0000; color: #fca5a5; }
+
+  .section-title { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em;
+                   color: var(--rojo); border-bottom: 2px solid var(--rojo); padding-bottom: .3rem; margin-bottom: .8rem; }
+  .btn-rojo { background: var(--rojo); color: #fff; border: none; }
+  .btn-rojo:hover { background: var(--rojo-d); color: #fff; }
+  .modal-header-rojo { background: var(--rojo); color: #fff; }
+  .modal-header-rojo .btn-close { filter: invert(1); }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     HEADER
+══════════════════════════════════════════ -->
+<header class="hd">
+  <i class="fas fa-fire fa-lg"></i>
+  <div>
+    <div class="hd-brand">CONTROL DE FUEGO</div>
+    <div class="hd-sub">FORBE SAS · RIESGO!</div>
+  </div>
+  <div class="hd-right">
+    <button class="btn-theme" onclick="toggleTheme()"><i class="fas fa-circle-half-stroke"></i></button>
+  </div>
+</header>
+
+<!-- ══════════════════════════════════════════
+     TABS
+══════════════════════════════════════════ -->
+<ul class="nav nav-tabs" id="mainTab">
+  <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#tab-dashboard"><i class="fas fa-gauge-high me-1"></i>Dashboard</a></li>
+  <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-extintores"><i class="fas fa-fire-extinguisher me-1"></i>Extintores</a></li>
+  <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-inspecciones"><i class="fas fa-clipboard-check me-1"></i>Inspecciones</a></li>
+  <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-guia"><i class="fas fa-book-open me-1"></i>Guía Rápida</a></li>
+</ul>
+
+<div class="tab-content p-3">
+
+<!-- ══════════════════════════════════════════
+     TAB 1: DASHBOARD
+══════════════════════════════════════════ -->
+<div class="tab-pane fade show active" id="tab-dashboard">
+  <!-- KPIs -->
+  <div class="row g-3 mb-3">
+    <div class="col-6 col-md-3">
+      <div class="kpi-card d-flex justify-content-between align-items-start">
+        <div><div class="kpi-num" id="kTotal">—</div><div class="kpi-lbl">Total extintores</div></div>
+        <i class="fas fa-fire-extinguisher kpi-icon" style="color:var(--rojo)"></i>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="kpi-card d-flex justify-content-between align-items-start">
+        <div><div class="kpi-num" id="kActivos" style="color:var(--ok)">—</div><div class="kpi-lbl">Activos</div></div>
+        <i class="fas fa-circle-check kpi-icon" style="color:var(--ok)"></i>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="kpi-card d-flex justify-content-between align-items-start">
+        <div><div class="kpi-num" id="kInspec" style="color:#3B82F6">—</div><div class="kpi-lbl">Inspecciones este mes</div></div>
+        <i class="fas fa-clipboard-check kpi-icon" style="color:#3B82F6"></i>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="kpi-card d-flex justify-content-between align-items-start">
+        <div><div class="kpi-num" id="kVencen" style="color:var(--warn)">—</div><div class="kpi-lbl">Vencen en 60 días</div></div>
+        <i class="fas fa-triangle-exclamation kpi-icon" style="color:var(--warn)"></i>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <!-- Vencen pronto -->
+    <div class="col-12 col-md-6">
+      <div class="kpi-card">
+        <div class="section-title"><i class="fas fa-calendar-exclamation me-1"></i>Vencen próximamente</div>
+        <div id="listVencen"><div class="text-muted small">Cargando…</div></div>
+      </div>
+    </div>
+    <!-- Últimas inspecciones -->
+    <div class="col-12 col-md-6">
+      <div class="kpi-card">
+        <div class="section-title"><i class="fas fa-clock-rotate-left me-1"></i>Últimas inspecciones</div>
+        <div id="listUltimas"><div class="text-muted small">Cargando…</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TAB 2: EXTINTORES
+══════════════════════════════════════════ -->
+<div class="tab-pane fade" id="tab-extintores">
+  <div class="d-flex gap-2 mb-3 flex-wrap align-items-center">
+    <input type="text" id="filtEmpresa" class="form-control form-control-sm" style="max-width:220px" placeholder="Filtrar empresa…" oninput="cargarExtintores()">
+    <select id="filtEstado" class="form-select form-select-sm" style="max-width:160px" onchange="cargarExtintores()">
+      <option value="">Todos los estados</option>
+      <option>Activo</option>
+      <option>Mantenimiento</option>
+      <option>Dado de baja</option>
+    </select>
+    <button class="btn btn-sm btn-rojo ms-auto" onclick="abrirNuevoExtintor()"><i class="fas fa-plus me-1"></i>Nuevo extintor</button>
+  </div>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Empresa</th>
+          <th>Sede / Área</th>
+          <th>Ubicación</th>
+          <th>Tipo</th>
+          <th>Clases</th>
+          <th>Capacidad</th>
+          <th>Código</th>
+          <th>Vencimiento</th>
+          <th>Últ. Recarga</th>
+          <th>Estado</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="tbExtintores"><tr><td colspan="12" class="text-center text-muted py-4">Cargando…</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TAB 3: INSPECCIONES
+══════════════════════════════════════════ -->
+<div class="tab-pane fade" id="tab-inspecciones">
+  <div class="d-flex gap-2 mb-3 flex-wrap align-items-center">
+    <button class="btn btn-sm btn-rojo ms-auto" onclick="abrirNuevaInspeccion()"><i class="fas fa-plus me-1"></i>Nueva inspección</button>
+  </div>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Empresa</th>
+          <th>Ubicación</th>
+          <th>Tipo</th>
+          <th>Código</th>
+          <th>Inspector</th>
+          <th>Resultado</th>
+          <th>Obs.</th>
+        </tr>
+      </thead>
+      <tbody id="tbInspecciones"><tr><td colspan="8" class="text-center text-muted py-4">Cargando…</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TAB 4: GUÍA RÁPIDA
+══════════════════════════════════════════ -->
+<div class="tab-pane fade" id="tab-guia">
+  <div class="row g-4">
+
+    <!-- Tetraedro del fuego -->
+    <div class="col-12 col-md-6">
+      <div class="kpi-card h-100">
+        <div class="section-title"><i class="fas fa-triangle-exclamation me-1"></i>Tetraedro del Fuego</div>
+        <p class="small text-muted mb-2">Para que haya fuego deben coexistir los cuatro factores. La extinción consiste en eliminar al menos uno.</p>
+        <div class="tetra-grid">
+          <div class="tetra-item tetra-ox"><i class="fas fa-wind fa-2x mb-1"></i><div class="fw-700 mt-1">Oxígeno</div><div class="small opacity-75">Comburente</div></div>
+          <div class="tetra-item tetra-cb"><i class="fas fa-tree fa-2x mb-1"></i><div class="fw-700 mt-1">Combustible</div><div class="small opacity-75">Material inflamable</div></div>
+          <div class="tetra-item tetra-ca"><i class="fas fa-temperature-high fa-2x mb-1"></i><div class="fw-700 mt-1">Calor</div><div class="small opacity-75">Fuente de ignición</div></div>
+          <div class="tetra-item tetra-rc"><i class="fas fa-circle-nodes fa-2x mb-1"></i><div class="fw-700 mt-1">Reacción</div><div class="small opacity-75">Cadena en cadena</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Métodos de extinción -->
+    <div class="col-12 col-md-6">
+      <div class="kpi-card h-100">
+        <div class="section-title"><i class="fas fa-droplet me-1"></i>Métodos de Extinción</div>
+        <ul class="list-unstyled small mb-0">
+          <li class="mb-2"><strong>Sofocación</strong> — Eliminar el oxígeno (cubrir, CO₂, espuma)</li>
+          <li class="mb-2"><strong>Eliminación del combustible</strong> — Retirar el material que arde</li>
+          <li class="mb-2"><strong>Enfriamiento</strong> — Reducir la temperatura por debajo del punto de ignición (agua)</li>
+          <li><strong>Inhibición de la reacción</strong> — Interrumpir la reacción en cadena (polvo químico seco, agente limpio)</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Clases de fuego -->
+    <div class="col-12">
+      <div class="kpi-card">
+        <div class="section-title"><i class="fas fa-fire me-1"></i>Clases de Fuego</div>
+        <div class="row g-2">
+          <div class="col-12 col-md-6 col-lg-4">
+            <div class="clase-card clase-A">
+              <span class="clase-lbl">A</span><strong>Sólidos comunes</strong>
+              <div class="small mt-1 text-muted">Madera, papel, cartón, telas, plásticos</div>
+              <div class="small mt-1"><span class="badge bg-secondary me-1">Agua</span><span class="badge bg-secondary me-1">PQS-ABC</span><span class="badge bg-secondary me-1">Agente Limpio</span><span class="badge bg-secondary">Watermist</span></div>
+            </div>
+          </div>
+          <div class="col-12 col-md-6 col-lg-4">
+            <div class="clase-card clase-B">
+              <span class="clase-lbl">B</span><strong>Líquidos y gases inflamables</strong>
+              <div class="small mt-1 text-muted">Gasolina, aceite, gas LP, pinturas, solventes</div>
+              <div class="small mt-1"><span class="badge bg-secondary me-1">CO₂</span><span class="badge bg-secondary me-1">PQS-ABC</span><span class="badge bg-secondary me-1">Agente Limpio</span><span class="badge bg-secondary">Watermist</span></div>
+            </div>
+          </div>
+          <div class="col-12 col-md-6 col-lg-4">
+            <div class="clase-card clase-C">
+              <span class="clase-lbl">C</span><strong>Equipos eléctricos energizados</strong>
+              <div class="small mt-1 text-muted">Tableros, motores, cables, computadores activos</div>
+              <div class="small mt-1"><span class="badge bg-secondary me-1">CO₂</span><span class="badge bg-secondary me-1">PQS-ABC</span><span class="badge bg-secondary">Agente Limpio</span></div>
+              <div class="small text-danger mt-1"><i class="fas fa-ban me-1"></i>No usar agua</div>
+            </div>
+          </div>
+          <div class="col-12 col-md-6 col-lg-4">
+            <div class="clase-card clase-D">
+              <span class="clase-lbl">D</span><strong>Metales combustibles</strong>
+              <div class="small mt-1 text-muted">Magnesio, titanio, sodio, potasio, aluminio en polvo</div>
+              <div class="small mt-1"><span class="badge bg-secondary">PQS especial para metales</span></div>
+            </div>
+          </div>
+          <div class="col-12 col-md-6 col-lg-4">
+            <div class="clase-card clase-K">
+              <span class="clase-lbl">K</span><strong>Aceites de cocina</strong>
+              <div class="small mt-1 text-muted">Aceites vegetales y animales en freidoras y cocinas</div>
+              <div class="small mt-1"><span class="badge bg-secondary">Extintor Clase K</span></div>
+            </div>
+          </div>
+          <div class="col-12 col-md-6 col-lg-4">
+            <div class="clase-card clase-L">
+              <span class="clase-lbl">L</span><strong>Baterías ión-litio</strong>
+              <div class="small mt-1 text-muted">Celdas Li-ion en vehículos eléctricos, UPS, portátiles</div>
+              <div class="small mt-1"><span class="badge bg-secondary">Extintor especial ISO 3941:2026</span></div>
+              <div class="small text-info mt-1"><i class="fas fa-star me-1"></i>Nueva clase según ISO 3941:2026</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tipos de extintor -->
+    <div class="col-12">
+      <div class="kpi-card">
+        <div class="section-title"><i class="fas fa-fire-extinguisher me-1"></i>Tipos de Extintor</div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Tipo</th><th>Agente extintor</th><th>Clases</th><th>Capacidades típicas</th><th>No usar en</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Watermist</strong></td><td>Agua nebulizada</td><td>A · B · C · K</td><td>2,5 – 6 L</td><td>Metales</td></tr>
+              <tr><td><strong>Agua</strong></td><td>Agua a presión</td><td>A</td><td>2,5 – 9 L</td><td>B · C · D</td></tr>
+              <tr><td><strong>CO₂</strong></td><td>Dióxido de carbono</td><td>B · C</td><td>5 – 45 lb</td><td>A · D · espacios confinados sin ventilación</td></tr>
+              <tr><td><strong>PQS-ABC</strong></td><td>Polvo químico seco multipropósito</td><td>A · B · C</td><td>5 – 30 lb</td><td>D · equipo electrónico fino</td></tr>
+              <tr><td><strong>Clase K</strong></td><td>Acetato de potasio</td><td>K</td><td>1,75 – 6 L</td><td>Otras clases</td></tr>
+              <tr><td><strong>Agente Limpio</strong></td><td>Halón / HFC / FK-5-1-12</td><td>A · B · C</td><td>5 – 150 lb</td><td>D · espacios sin ventilación</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pasos de uso PASE -->
+    <div class="col-12 col-md-6">
+      <div class="kpi-card">
+        <div class="section-title"><i class="fas fa-person-running me-1"></i>Pasos de Uso — Método PASE</div>
+        <ol class="small ps-3 mb-0">
+          <li class="mb-1">Activar la alarma y dar aviso.</li>
+          <li class="mb-1">Verificar que la ruta de escape esté libre.</li>
+          <li class="mb-1">Tomar el extintor y trasladarlo al sitio.</li>
+          <li class="mb-1">Quitar el seguro (pin) halando el pasador.</li>
+          <li class="mb-1">Ponerse de espaldas al viento.</li>
+          <li class="mb-1">Apuntar la manguera a la <strong>base</strong> del fuego.</li>
+          <li class="mb-1">Apretar la manija con firmeza.</li>
+          <li class="mb-1">Barrer de lado a lado manteniendo distancia.</li>
+          <li class="mb-1">No alejarse; el fuego puede re-encenderse.</li>
+          <li>Evacuar si el fuego no cede en 30 segundos.</li>
+        </ol>
+        <div class="mt-2 p-2 rounded" style="background:rgba(200,16,46,.08)">
+          <strong class="small text-danger">P</strong><span class="small"> — Pull (halar)</span> &nbsp;
+          <strong class="small text-danger">A</strong><span class="small"> — Aim (apuntar)</span> &nbsp;
+          <strong class="small text-danger">S</strong><span class="small"> — Squeeze (apretar)</span> &nbsp;
+          <strong class="small text-danger">E</strong><span class="small"> — Sweep (barrer)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Inspección NTC 2885 -->
+    <div class="col-12 col-md-6">
+      <div class="kpi-card">
+        <div class="section-title"><i class="fas fa-list-check me-1"></i>Inspección Mensual — NTC 2885</div>
+        <ul class="list-unstyled small mb-0">
+          <li class="mb-2"><i class="fas fa-circle-check text-success me-2"></i>Extintor en su ubicación correcta y señalizada</li>
+          <li class="mb-2"><i class="fas fa-circle-check text-success me-2"></i>Acceso libre, sin obstrucciones</li>
+          <li class="mb-2"><i class="fas fa-circle-check text-success me-2"></i>Manómetro en zona verde (presión nominal)</li>
+          <li class="mb-2"><i class="fas fa-circle-check text-success me-2"></i>Sello de seguridad intacto</li>
+          <li class="mb-2"><i class="fas fa-circle-check text-success me-2"></i>Pasador (pin) en su lugar</li>
+          <li class="mb-2"><i class="fas fa-circle-check text-success me-2"></i>Manguera sin grietas ni daños</li>
+          <li class="mb-2"><i class="fas fa-circle-check text-success me-2"></i>Etiquetas e instrucciones legibles</li>
+          <li><i class="fas fa-circle-check text-success me-2"></i>Cilindro sin corrosión, daños físicos ni deformaciones</li>
+        </ul>
+        <div class="mt-2 small text-muted"><i class="fas fa-info-circle me-1"></i>Frecuencia: mensual. Registrar hallazgos y firma del inspector.</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div><!-- /.tab-content -->
+
+<!-- ══════════════════════════════════════════
+     MODAL: EXTINTOR
+══════════════════════════════════════════ -->
+<div class="modal fade" id="modalExtintor" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content" style="background:var(--card)">
+      <div class="modal-header modal-header-rojo">
+        <h5 class="modal-title" id="tituloModalExt"><i class="fas fa-fire-extinguisher me-2"></i>Extintor</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="eId">
+        <div class="row g-3">
+          <div class="col-md-6"><label class="form-label fw-600">Empresa <span class="text-danger">*</span></label>
+            <input id="eEmpresa" class="form-control" placeholder="Nombre de la empresa"></div>
+          <div class="col-md-6"><label class="form-label fw-600">Sede / Área</label>
+            <input id="eSede" class="form-control" placeholder="Ej. Planta 2, Bodega Norte"></div>
+          <div class="col-12"><label class="form-label fw-600">Ubicación específica <span class="text-danger">*</span></label>
+            <input id="eUbicacion" class="form-control" placeholder="Ej. Pasillo A, junto al extintor de emergencias"></div>
+          <div class="col-md-6"><label class="form-label fw-600">Tipo de extintor <span class="text-danger">*</span></label>
+            <select id="eTipo" class="form-select">
+              <option value="">— Seleccionar —</option>
+              <option>Watermist</option>
+              <option>Agua</option>
+              <option>CO2</option>
+              <option>PQS-ABC</option>
+              <option>Clase-K</option>
+              <option>Agente Limpio</option>
+            </select></div>
+          <div class="col-md-6"><label class="form-label fw-600">Clases de fuego que cubre</label>
+            <input id="eClases" class="form-control" placeholder="Ej. A, B, C"></div>
+          <div class="col-md-4"><label class="form-label fw-600">Capacidad</label>
+            <input id="eCapacidad" class="form-control" placeholder="Ej. 10 lb, 5 kg, 2.5 L"></div>
+          <div class="col-md-4"><label class="form-label fw-600">Código / Placa</label>
+            <input id="eCodigo" class="form-control" placeholder="Ej. EXT-001"></div>
+          <div class="col-md-4"><label class="form-label fw-600">Estado</label>
+            <select id="eEstado" class="form-select">
+              <option>Activo</option>
+              <option>Mantenimiento</option>
+              <option>Dado de baja</option>
+            </select></div>
+          <div class="col-md-6"><label class="form-label fw-600">Fecha de vencimiento</label>
+            <input id="eVencimiento" class="form-control" type="date"></div>
+          <div class="col-md-6"><label class="form-label fw-600">Fecha última recarga</label>
+            <input id="eRecarga" class="form-control" type="date"></div>
+          <div class="col-12"><label class="form-label fw-600">Observaciones</label>
+            <textarea id="eObs" class="form-control" rows="2"></textarea></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-rojo btn-sm" onclick="guardarExtintor()"><i class="fas fa-save me-1"></i>Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODAL: INSPECCIÓN
+══════════════════════════════════════════ -->
+<div class="modal fade" id="modalInspeccion" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content" style="background:var(--card)">
+      <div class="modal-header modal-header-rojo">
+        <h5 class="modal-title"><i class="fas fa-clipboard-check me-2"></i>Nueva Inspección — NTC 2885</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3">
+          <div class="col-md-6"><label class="form-label fw-600">Extintor <span class="text-danger">*</span></label>
+            <select id="iExtintor" class="form-select"><option value="">— Seleccionar —</option></select></div>
+          <div class="col-md-3"><label class="form-label fw-600">Fecha inspección</label>
+            <input id="iFecha" class="form-control" type="date"></div>
+          <div class="col-md-3"><label class="form-label fw-600">Inspector</label>
+            <input id="iInspector" class="form-control" placeholder="Nombre"></div>
+          <div class="col-12">
+            <div class="section-title mt-1">Checklist NTC 2885</div>
+            <div class="chk-grid">
+              <div class="chk-item" id="chk_ubicacion_correcta" onclick="toggleChk(this,'ubicacion_correcta')">
+                <i class="fas fa-circle-check text-success me-1"></i>Ubicación correcta y señalizada
+              </div>
+              <div class="chk-item" id="chk_sin_obstrucciones" onclick="toggleChk(this,'sin_obstrucciones')">
+                <i class="fas fa-circle-check text-success me-1"></i>Sin obstrucciones de acceso
+              </div>
+              <div class="chk-item" id="chk_manometro_ok" onclick="toggleChk(this,'manometro_ok')">
+                <i class="fas fa-circle-check text-success me-1"></i>Manómetro en zona verde
+              </div>
+              <div class="chk-item" id="chk_sello_ok" onclick="toggleChk(this,'sello_ok')">
+                <i class="fas fa-circle-check text-success me-1"></i>Sello de seguridad intacto
+              </div>
+              <div class="chk-item" id="chk_pin_ok" onclick="toggleChk(this,'pin_ok')">
+                <i class="fas fa-circle-check text-success me-1"></i>Pasador (pin) en su lugar
+              </div>
+              <div class="chk-item" id="chk_manguera_ok" onclick="toggleChk(this,'manguera_ok')">
+                <i class="fas fa-circle-check text-success me-1"></i>Manguera sin daños
+              </div>
+              <div class="chk-item" id="chk_etiquetas_ok" onclick="toggleChk(this,'etiquetas_ok')">
+                <i class="fas fa-circle-check text-success me-1"></i>Etiquetas legibles
+              </div>
+              <div class="chk-item" id="chk_cilindro_ok" onclick="toggleChk(this,'cilindro_ok')">
+                <i class="fas fa-circle-check text-success me-1"></i>Cilindro sin daños físicos
+              </div>
+            </div>
+            <div class="mt-2 p-2 rounded d-flex align-items-center gap-2" style="background:var(--bg);border:1px solid var(--borde)">
+              <span class="small fw-600">Resultado:</span>
+              <span id="resLabel" class="badge bg-success">Aprobado</span>
+            </div>
+          </div>
+          <div class="col-12"><label class="form-label fw-600">Observaciones</label>
+            <textarea id="iObs" class="form-control" rows="2"></textarea></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-rojo btn-sm" onclick="guardarInspeccion()"><i class="fas fa-save me-1"></i>Registrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const API = '/api/fuego';
+const hoy = new Date().toISOString().slice(0,10);
+
+// ── Utils ──
+const $ = id => document.getElementById(id);
+const fmt = d => d ? new Date(d + 'T00:00').toLocaleDateString('es-CO', {day:'2-digit',month:'short',year:'numeric'}) : '—';
+const fmtM = n => n != null ? new Intl.NumberFormat('es-CO',{style:'currency',currency:'COP',minimumFractionDigits:0}).format(n) : '—';
+
+function diasRestantes(d) {
+  if (!d) return null;
+  return Math.ceil((new Date(d) - new Date()) / 86400000);
+}
+function badgeVence(d) {
+  const dr = diasRestantes(d);
+  if (dr === null) return '<span class="text-muted">—</span>';
+  if (dr < 0)  return `<span class="badge-vencido"><i class="fas fa-circle-xmark me-1"></i>Vencido ${fmt(d)}</span>`;
+  if (dr <= 60) return `<span class="badge-prox"><i class="fas fa-triangle-exclamation me-1"></i>${fmt(d)} (${dr}d)</span>`;
+  return `<span class="badge-ok">${fmt(d)}</span>`;
+}
+function badgeEstado(e) {
+  const m = {Activo:'success', Mantenimiento:'warning', 'Dado de baja':'secondary'};
+  return `<span class="badge bg-${m[e]||'secondary'} text-${e==='Mantenimiento'?'dark':''}">${e}</span>`;
+}
+function badgeResultado(r) {
+  const map = {Aprobado:'A', 'Requiere atención':'R', 'Fuera de servicio':'F'};
+  const k = map[r] || 'A';
+  return `<span class="badge bg-resultado-${k}">${r}</span>`;
+}
+
+// ── Tema ──
+function toggleTheme() {
+  const html = document.documentElement;
+  html.setAttribute('data-bs-theme', html.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark');
+}
+
+// ══════════════ DASHBOARD ══════════════
+async function cargarDashboard() {
+  const r = await fetch(API + '/dashboard');
+  if (!r.ok) return;
+  const d = await r.json();
+  $('kTotal').textContent   = d.total_extintores;
+  $('kActivos').textContent = d.activos;
+  $('kInspec').textContent  = d.inspecciones_mes;
+  $('kVencen').textContent  = d.vencen_pronto.length;
+
+  // Vencen pronto
+  const lv = $('listVencen');
+  if (!d.vencen_pronto.length) { lv.innerHTML = '<div class="small text-muted">Ninguno en los próximos 60 días ✓</div>'; }
+  else {
+    lv.innerHTML = d.vencen_pronto.map(x => `
+      <div class="d-flex justify-content-between align-items-center py-1 border-bottom" style="border-color:var(--borde)!important">
+        <div class="small"><strong>${x.empresa}</strong><br><span class="text-muted">${x.ubicacion}${x.codigo?' · '+x.codigo:''}</span></div>
+        <div class="text-end small">${badgeVence(x.fecha_vencimiento)}</div>
+      </div>`).join('');
+  }
+
+  // Últimas inspecciones
+  const lu = $('listUltimas');
+  if (!d.ultimas_inspecciones.length) { lu.innerHTML = '<div class="small text-muted">Sin inspecciones registradas aún</div>'; }
+  else {
+    lu.innerHTML = d.ultimas_inspecciones.map(x => `
+      <div class="d-flex justify-content-between align-items-center py-1 border-bottom" style="border-color:var(--borde)!important">
+        <div class="small"><strong>${x.extintor?.empresa || '—'}</strong><br>
+          <span class="text-muted">${x.extintor?.ubicacion || '—'}${x.inspector?' · '+x.inspector:''}</span></div>
+        <div class="text-end small">${badgeResultado(x.resultado)}<br><span class="text-muted">${fmt(x.fecha_inspeccion)}</span></div>
+      </div>`).join('');
+  }
+}
+
+// ══════════════ EXTINTORES ══════════════
+let extintoresCache = [];
+
+async function cargarExtintores() {
+  const empresa = $('filtEmpresa').value;
+  const estado  = $('filtEstado').value;
+  const params  = new URLSearchParams();
+  if (empresa) params.set('empresa', empresa);
+  if (estado)  params.set('estado', estado);
+  const r = await fetch(API + '/extintores?' + params);
+  extintoresCache = r.ok ? await r.json() : [];
+  renderExtintores(extintoresCache);
+}
+
+function renderExtintores(list) {
+  const tb = $('tbExtintores');
+  if (!list.length) { tb.innerHTML = '<tr><td colspan="12" class="text-center text-muted py-4">Sin extintores registrados</td></tr>'; return; }
+  tb.innerHTML = list.map((x,i) => `
+    <tr>
+      <td class="text-muted small">${i+1}</td>
+      <td><strong>${x.empresa}</strong></td>
+      <td class="text-muted small">${x.sede || '—'}</td>
+      <td>${x.ubicacion}</td>
+      <td>${x.tipo}</td>
+      <td class="small text-muted">${x.clases_fuego || '—'}</td>
+      <td class="small">${x.capacidad || '—'}</td>
+      <td class="small"><code>${x.codigo || '—'}</code></td>
+      <td>${badgeVence(x.fecha_vencimiento)}</td>
+      <td class="small text-muted">${fmt(x.fecha_ultima_recarga)}</td>
+      <td>${badgeEstado(x.estado)}</td>
+      <td class="text-end">
+        <button class="btn btn-sm btn-outline-secondary py-0 px-2 me-1" onclick='editarExtintor(${JSON.stringify(x).replace(/'/g,"&apos;")})' title="Editar"><i class="fas fa-pencil fa-sm"></i></button>
+        <button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="eliminarExtintor(${x.id})" title="Eliminar"><i class="fas fa-trash fa-sm"></i></button>
+      </td>
+    </tr>`).join('');
+}
+
+function abrirNuevoExtintor() {
+  $('eId').value = '';
+  ['eEmpresa','eSede','eUbicacion','eCodigo','eCapacidad','eClases','eObs'].forEach(id => $(id).value = '');
+  $('eTipo').value = ''; $('eEstado').value = 'Activo';
+  $('eVencimiento').value = ''; $('eRecarga').value = '';
+  $('tituloModalExt').innerHTML = '<i class="fas fa-fire-extinguisher me-2"></i>Nuevo Extintor';
+  new bootstrap.Modal($('modalExtintor')).show();
+}
+
+function editarExtintor(x) {
+  $('eId').value = x.id;
+  $('eEmpresa').value    = x.empresa || '';
+  $('eSede').value       = x.sede || '';
+  $('eUbicacion').value  = x.ubicacion || '';
+  $('eTipo').value       = x.tipo || '';
+  $('eClases').value     = x.clases_fuego || '';
+  $('eCapacidad').value  = x.capacidad || '';
+  $('eCodigo').value     = x.codigo || '';
+  $('eEstado').value     = x.estado || 'Activo';
+  $('eVencimiento').value = x.fecha_vencimiento || '';
+  $('eRecarga').value    = x.fecha_ultima_recarga || '';
+  $('eObs').value        = x.observaciones || '';
+  $('tituloModalExt').innerHTML = '<i class="fas fa-pencil me-2"></i>Editar Extintor';
+  new bootstrap.Modal($('modalExtintor')).show();
+}
+
+async function guardarExtintor() {
+  const empresa   = $('eEmpresa').value.trim();
+  const ubicacion = $('eUbicacion').value.trim();
+  const tipo      = $('eTipo').value;
+  if (!empresa || !ubicacion || !tipo) { alert('Empresa, ubicación y tipo son obligatorios.'); return; }
+  const body = {
+    empresa, ubicacion, tipo,
+    sede:              $('eSede').value.trim() || null,
+    clases_fuego:      $('eClases').value.trim() || null,
+    capacidad:         $('eCapacidad').value.trim() || null,
+    codigo:            $('eCodigo').value.trim() || null,
+    estado:            $('eEstado').value,
+    fecha_vencimiento: $('eVencimiento').value || null,
+    fecha_ultima_recarga: $('eRecarga').value || null,
+    observaciones:     $('eObs').value.trim() || null,
+  };
+  const id = $('eId').value;
+  const url = id ? API + '/extintores/' + id : API + '/extintores';
+  const r = await fetch(url, { method: id ? 'PUT' : 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+  if (!r.ok) { const e = await r.json(); alert('Error: ' + e.error); return; }
+  bootstrap.Modal.getInstance($('modalExtintor'))?.hide();
+  cargarExtintores();
+  cargarDashboard();
+}
+
+async function eliminarExtintor(id) {
+  if (!confirm('¿Eliminar este extintor? También se borrarán sus inspecciones.')) return;
+  await fetch(API + '/extintores/' + id, { method: 'DELETE' });
+  cargarExtintores();
+  cargarDashboard();
+}
+
+// ══════════════ INSPECCIONES ══════════════
+const CHK_FIELDS = ['ubicacion_correcta','sin_obstrucciones','manometro_ok','sello_ok','pin_ok','manguera_ok','etiquetas_ok','cilindro_ok'];
+const chkState = {};
+
+function resetChecklist() {
+  CHK_FIELDS.forEach(f => {
+    chkState[f] = true;
+    const el = $('chk_' + f);
+    el.classList.remove('fail');
+    el.querySelector('i').className = 'fas fa-circle-check text-success me-1';
+  });
+  actualizarResultadoLabel();
+}
+
+function toggleChk(el, field) {
+  chkState[field] = !chkState[field];
+  if (chkState[field]) {
+    el.classList.remove('fail');
+    el.querySelector('i').className = 'fas fa-circle-check text-success me-1';
+  } else {
+    el.classList.add('fail');
+    el.querySelector('i').className = 'fas fa-circle-xmark text-danger me-1';
+  }
+  actualizarResultadoLabel();
+}
+
+function actualizarResultadoLabel() {
+  const fallos = CHK_FIELDS.filter(f => !chkState[f]).length;
+  const label = $('resLabel');
+  if (fallos === 0) { label.textContent = 'Aprobado'; label.className = 'badge bg-success'; }
+  else if (fallos <= 2) { label.textContent = 'Requiere atención'; label.className = 'badge bg-warning text-dark'; }
+  else { label.textContent = 'Fuera de servicio'; label.className = 'badge bg-danger'; }
+}
+
+async function abrirNuevaInspeccion() {
+  // Cargar extintores al select
+  if (!extintoresCache.length) await cargarExtintores();
+  const sel = $('iExtintor');
+  sel.innerHTML = '<option value="">— Seleccionar extintor —</option>' +
+    extintoresCache.filter(x => x.estado === 'Activo').map(x =>
+      `<option value="${x.id}">[${x.codigo || x.id}] ${x.empresa} — ${x.ubicacion} (${x.tipo})</option>`
+    ).join('');
+  $('iFecha').value = hoy;
+  $('iInspector').value = '';
+  $('iObs').value = '';
+  resetChecklist();
+  new bootstrap.Modal($('modalInspeccion')).show();
+}
+
+async function guardarInspeccion() {
+  const extintor_id = $('iExtintor').value;
+  if (!extintor_id) { alert('Selecciona un extintor.'); return; }
+  const fallos = CHK_FIELDS.filter(f => !chkState[f]).length;
+  const resultado = fallos === 0 ? 'Aprobado' : fallos <= 2 ? 'Requiere atención' : 'Fuera de servicio';
+  const body = {
+    extintor_id: parseInt(extintor_id),
+    fecha_inspeccion: $('iFecha').value || hoy,
+    inspector: $('iInspector').value.trim() || null,
+    observaciones: $('iObs').value.trim() || null,
+    resultado,
+  };
+  CHK_FIELDS.forEach(f => body[f] = chkState[f]);
+  const r = await fetch(API + '/inspecciones', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+  if (!r.ok) { const e = await r.json(); alert('Error: ' + e.error); return; }
+  bootstrap.Modal.getInstance($('modalInspeccion'))?.hide();
+  cargarInspecciones();
+  cargarDashboard();
+}
+
+async function cargarInspecciones() {
+  const r = await fetch(API + '/inspecciones');
+  const list = r.ok ? await r.json() : [];
+  const tb = $('tbInspecciones');
+  if (!list.length) { tb.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">Sin inspecciones registradas</td></tr>'; return; }
+  tb.innerHTML = list.map(x => `
+    <tr>
+      <td class="small">${fmt(x.fecha_inspeccion)}</td>
+      <td><strong>${x.extintor?.empresa || '—'}</strong></td>
+      <td class="small">${x.extintor?.ubicacion || '—'}</td>
+      <td class="small">${x.extintor?.tipo || '—'}</td>
+      <td class="small"><code>${x.extintor?.codigo || '—'}</code></td>
+      <td class="small">${x.inspector || '—'}</td>
+      <td>${badgeResultado(x.resultado)}</td>
+      <td class="small text-muted">${x.observaciones || '—'}</td>
+    </tr>`).join('');
+}
+
+// ══════════════ INIT ══════════════
+document.addEventListener('DOMContentLoaded', () => {
+  cargarDashboard();
+  document.querySelectorAll('[data-bs-toggle="tab"]').forEach(btn => {
+    btn.addEventListener('shown.bs.tab', e => {
+      const id = e.target.getAttribute('href');
+      if (id === '#tab-extintores') cargarExtintores();
+      if (id === '#tab-inspecciones') cargarInspecciones();
+    });
+  });
+});
+</script>
+</body>
+</html>

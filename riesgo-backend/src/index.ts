@@ -20,6 +20,7 @@ import { creaPlanesRouter } from './routes/creaPlanes';
 import { wompiRouter } from './routes/wompi';
 import { fraudeRouter } from './routes/fraude';
 import { axaOrdenesRouter } from './routes/axaOrdenes';
+import { fuegoRouter } from './routes/fuego';
 
 const app = express();
 app.set('trust proxy', 1);
@@ -64,7 +65,7 @@ app.use((req, res, next) => {
   const host = req.hostname || '';
   if (host === 'creaia.co' || host === 'www.creaia.co') {
     const p = req.path;
-    if (p.startsWith('/contenido') || p.startsWith('/api') || p.startsWith('/assets') || p.startsWith('/axa')) {
+    if (p.startsWith('/contenido') || p.startsWith('/api') || p.startsWith('/assets') || p.startsWith('/axa') || p.startsWith('/fuego')) {
       return next();
     }
     return res.redirect(302, '/contenido/planes.html');
@@ -90,6 +91,7 @@ app.get('/crea/app',         (_req, res) => res.redirect(301, '/contenido/estrat
 
 app.use('/api/fraude', fraudeRouter);
 app.use('/api/axa', axaOrdenesRouter);
+app.use('/api/fuego', fuegoRouter);
 app.use('/api/vigia', vigiaRouter);
 app.use('/api/crea', creaPlanesRouter);
 app.use('/api/contenido', creaAuth, contenidoRouter);
