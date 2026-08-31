@@ -1,6 +1,11 @@
 import { Router, Request, Response } from 'express';
+import Anthropic from '@anthropic-ai/sdk';
+import multer from 'multer';
 import { supabase } from '../supabase';
 import PDFDocument from 'pdfkit';
+
+const anthropic = process.env.ANTHROPIC_API_KEY ? new Anthropic() : null;
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 15 * 1024 * 1024 } });
 
 export const axaOrdenesRouter = Router();
 
@@ -15,6 +20,64 @@ const CAMPOS = [
   'estado','numero_factura','fecha_facturacion',
   'tecnico_arl','consultor_asignado','observaciones','created_at',
 ];
+
+// ── POST /api/axa/parsear-pdf ────────────────────────────────────────
+axaOrdenesRouter.post('/parsear-pdf', upload.single('pdf'), async (req: Request, res: Response) => {
+  if (!req.file) return res.status(400).json({ error: 'Falta el archivo PDF' });
+  if (!anthropic) return res.status(503).json({ error: 'ANTHROPIC_API_KEY no configurada en Railway' });
+
+  const pdfBase64 = req.file.buffer.toString('base64');
+
+  const prompt = `Eres un extractor preciso de datos de órdenes de servicio AXA Colpatria / ARL.
+Analiza el documento PDF y extrae los campos indicados EXACTAMENTE como aparecen.
+Si un campo no está presente o no puedes leerlo con certeza: devuelve null. NO inventes ni deduzca datos.
+Las fechas deben estar en formato YYYY-MM-DD. Los valores monetarios como número entero (sin puntos ni $).
+
+Devuelve ÚNICAMENTE un objeto JSON válido con esta estructura, sin texto adicional:
+{
+  "numero_orden": null,
+  "upr": null,
+  "nombre_trabajador": null,
+  "numero_afiliacion": null,
+  "nombre_contacto": null,
+  "telefono_contacto": null,
+  "cargo_contacto": null,
+  "codigo_actividad": null,
+  "tipo_servicio": null,
+  "ciudad_ejecucion": null,
+  "cantidad": null,
+  "valor_unitario": null,
+  "valor_servicio": null,
+  "fecha_aprobacion": null,
+  "fecha_vencimiento": null,
+  "tecnico_arl": null,
+  "observaciones": null
+}`;
+
+  try {
+    const response = await anthropic.messages.create({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 1024,
+      messages: [{
+        role: 'user',
+        content: [
+          { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: pdfBase64 } },
+          { type: 'text', text: prompt },
+        ],
+      }],
+    });
+
+    const text = (response.content[0] as { type: string; text: string }).text.trim();
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) return res.status(422).json({ error: 'No se pudo extraer datos del PDF' });
+
+    const datos = JSON.parse(jsonMatch[0]);
+    return res.json(datos);
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return res.status(500).json({ error: 'Error procesando el PDF: ' + msg });
+  }
+});
 
 // ── GET /api/axa/ordenes ─────────────────────────────────────────────
 axaOrdenesRouter.get('/ordenes', async (req: Request, res: Response) => {

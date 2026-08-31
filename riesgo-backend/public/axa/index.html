@@ -155,6 +155,16 @@ footer{background:#fff;border-top:1px solid var(--border)}
       </div>
       <div class="modal-body p-4">
         <input type="hidden" id="oId"/>
+
+        <!-- ── Zona de carga de PDF ── -->
+        <div id="pdfZona" class="mb-4 p-3 rounded-3 border border-2 border-dashed text-center" style="border-color:#1a237e!important;background:#f0f4ff;cursor:pointer" onclick="document.getElementById('pdfInput').click()">
+          <i class="fas fa-file-pdf fa-2x mb-2" style="color:#1a237e;opacity:.6"></i>
+          <div class="fw-semibold small" style="color:#1a237e">Cargar PDF de la orden</div>
+          <div class="text-muted" style="font-size:.78rem">Haz clic o arrastra el PDF — los campos se completarán automáticamente</div>
+          <input type="file" id="pdfInput" accept="application/pdf" style="display:none" onchange="parsearPdf(this.files[0])">
+        </div>
+        <div id="pdfEstado" class="mb-3" style="display:none"></div>
+
         <div class="row g-3">
 
           <!-- SECCIÓN: Identificación de la Orden -->
@@ -427,6 +437,54 @@ function badge(estado){
   return `<span class="badge ${cls[estado]||'bg-secondary'}">${lbl[estado]||estado}</span>`;
 }
 
+// ── Parsear PDF ────────────────────────────────────────────────────
+async function parsearPdf(file){
+  if(!file) return;
+  const estado = document.getElementById('pdfEstado');
+  const zona   = document.getElementById('pdfZona');
+  estado.style.display = 'block';
+  estado.innerHTML = '<div class="alert alert-info py-2 small"><i class="fas fa-spinner fa-spin me-2"></i>Leyendo el PDF con IA… puede tardar unos segundos.</div>';
+  zona.style.pointerEvents = 'none';
+
+  const fd = new FormData();
+  fd.append('pdf', file);
+
+  try {
+    const r = await fetch('/api/axa/parsear-pdf', { method:'POST', body:fd });
+    const d = await r.json();
+    if(!r.ok){ estado.innerHTML=`<div class="alert alert-danger py-2 small"><i class="fas fa-times me-2"></i>${d.error||'Error procesando el PDF'}</div>`; zona.style.pointerEvents=''; return; }
+
+    // Rellenar campos
+    const set = (id, val) => { if(val!=null && val!==undefined){ const el=document.getElementById(id); if(el) el.value=val; } };
+    set('oNumero',        d.numero_orden);
+    set('oUpr',           d.upr);
+    set('oEmpresa',       d.nombre_trabajador);
+    set('oAfiliacion',    d.numero_afiliacion);
+    set('oContacto',      d.nombre_contacto);
+    set('oTelContacto',   d.telefono_contacto);
+    set('oCargoContacto', d.cargo_contacto);
+    set('oCodigo',        d.codigo_actividad);
+    set('oDescripcion',   d.tipo_servicio);
+    set('oCiudad',        d.ciudad_ejecucion);
+    set('oCantidad',      d.cantidad);
+    set('oValorUnit',     d.valor_unitario);
+    set('oTecnico',       d.tecnico_arl);
+    set('oObs',           d.observaciones);
+    if(d.fecha_aprobacion) document.getElementById('oFechaAprob').value = d.fecha_aprobacion;
+    if(d.fecha_vencimiento) document.getElementById('oFechaVenc').value = d.fecha_vencimiento;
+    calcularTotal();
+
+    // Contar campos completados
+    const completados = Object.values(d).filter(v=>v!=null).length;
+    const total = Object.keys(d).length;
+    estado.innerHTML = `<div class="alert alert-success py-2 small"><i class="fas fa-check me-2"></i><strong>${completados} de ${total} campos completados</strong> desde el PDF. Revisa y corrige si es necesario.</div>`;
+  } catch(e){
+    estado.innerHTML='<div class="alert alert-danger py-2 small"><i class="fas fa-times me-2"></i>Error de conexión al procesar el PDF.</div>';
+  }
+  zona.style.pointerEvents='';
+  document.getElementById('pdfInput').value='';
+}
+
 // ── Nueva / Editar ─────────────────────────────────────────────────
 function abrirModalNueva(){
   document.getElementById('mOrdenTitle').innerHTML='<i class="fas fa-plus-circle me-2"></i>Nueva Orden';
@@ -444,6 +502,9 @@ function abrirModalNueva(){
   document.getElementById('fechasEjecList').innerHTML='';
   document.getElementById('oFechaFact').value='';
   toggleCamposEstado();
+  document.getElementById('pdfEstado').style.display='none';
+  document.getElementById('pdfZona').style.pointerEvents='';
+  document.getElementById('pdfInput').value='';
   mOrden.show();
 }
 
