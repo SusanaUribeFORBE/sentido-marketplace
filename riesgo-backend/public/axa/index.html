@@ -261,6 +261,29 @@ footer{background:#fff;border-top:1px solid var(--border)}
 </div>
 
 <!-- ── MODAL FACTURAR ──────────────────────────────────────────────── -->
+<!-- ── MODAL FECHA EJECUCIÓN ───────────────────────────────────────── -->
+<div class="modal fade" id="mEjecutar" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered" style="max-width:360px">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header text-white" style="background:#198754">
+        <h5 class="modal-title"><i class="fas fa-check-circle me-2"></i>Marcar como Ejecutada</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <input type="hidden" id="eId"/>
+        <p class="small text-muted mb-3">Orden: <strong id="eNumero" class="font-mono"></strong></p>
+        <label class="form-label fw-semibold">¿Cuándo se ejecutó?</label>
+        <input type="date" id="eFecha" class="form-control form-control-lg"/>
+        <div class="form-text">Selecciona la fecha real de ejecución.</div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-success px-4" onclick="confirmarEjecutada()"><i class="fas fa-check me-1"></i>Confirmar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="modal fade" id="mFacturar" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content border-0 shadow">
@@ -604,12 +627,23 @@ async function guardarOrden(){
 }
 
 // ── Ejecutar / Facturar / Eliminar ────────────────────────────────
-async function marcarEjecutada(id,numero){
-  if(!confirm(`¿Marcar la orden ${numero} como Ejecutada hoy?`)) return;
+let mEjecutarModal;
+function marcarEjecutada(id,numero){
+  document.getElementById('eId').value=id;
+  document.getElementById('eNumero').textContent=numero;
+  document.getElementById('eFecha').value=today();
+  if(!mEjecutarModal) mEjecutarModal=new bootstrap.Modal(document.getElementById('mEjecutar'));
+  mEjecutarModal.show();
+}
+async function confirmarEjecutada(){
+  const id=document.getElementById('eId').value;
+  const fecha=document.getElementById('eFecha').value;
+  if(!fecha){ toast('Selecciona una fecha','warning'); return; }
   try{
-    const r=await fetch(`${BASE}/ordenes/${id}/ejecutar`,{method:'POST'});
+    const r=await fetch(`${BASE}/ordenes/${id}/ejecutar`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({fecha})});
     const d=await r.json();
     if(!r.ok) throw new Error(d.error||'Error');
+    mEjecutarModal.hide();
     toast('✅ Orden marcada como Ejecutada','success'); await cargar();
   }catch(e){ toast('❌ '+e.message,'danger'); }
 }

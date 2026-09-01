@@ -333,12 +333,12 @@ axaOrdenesRouter.post('/ordenes/:id/ejecutar', async (req: Request, res: Respons
     if (!o) return res.status(404).json({ error: 'Orden no encontrada.' });
     if (!['Aprobada', 'PendienteEjecutar'].includes(o.estado))
       return res.status(422).json({ error: 'Solo se puede ejecutar una orden Aprobada o Pendiente.' });
-    const hoy = new Date().toISOString().slice(0, 10);
+    const fecha = req.body?.fecha || new Date().toISOString().slice(0, 10);
     const { data: cur } = await supabase.from('axa_ordenes').select('fechas_ejecucion').eq('id', id).single();
     const prevFechas: string[] = cur?.fechas_ejecucion || [];
-    const nuevasFechas = prevFechas.includes(hoy) ? prevFechas : [...prevFechas, hoy];
+    const nuevasFechas = prevFechas.includes(fecha) ? prevFechas : [...prevFechas, fecha];
     const { data, error } = await supabase.from('axa_ordenes')
-      .update({ estado: 'Ejecutada', fecha_ejecucion: hoy, fechas_ejecucion: nuevasFechas })
+      .update({ estado: 'Ejecutada', fecha_ejecucion: fecha, fechas_ejecucion: nuevasFechas })
       .eq('id', id).select().single();
     if (error) throw error;
     res.json(data);
