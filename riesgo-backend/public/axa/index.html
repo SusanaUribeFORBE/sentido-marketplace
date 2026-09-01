@@ -458,7 +458,7 @@ async function parsearPdf(file){
     const set = (id, val) => { if(val!=null && val!==undefined){ const el=document.getElementById(id); if(el) el.value=val; } };
     set('oNumero',        d.numero_orden);
     set('oUpr',           d.upr);
-    set('oEmpresa',       d.nombre_trabajador);
+    set('oEmpresa',       d.nombre_empresa || d.nombre_trabajador);
     set('oAfiliacion',    d.numero_afiliacion);
     set('oContacto',      d.nombre_contacto);
     set('oTelContacto',   d.telefono_contacto);

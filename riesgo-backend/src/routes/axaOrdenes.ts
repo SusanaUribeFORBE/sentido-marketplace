@@ -32,11 +32,13 @@ axaOrdenesRouter.post('/parsear-pdf', upload.single('pdf'), async (req: Request,
 Analiza el documento PDF y extrae los campos indicados EXACTAMENTE como aparecen.
 Si un campo no está presente o no puedes leerlo con certeza: devuelve null. NO inventes ni deduzca datos.
 Las fechas deben estar en formato YYYY-MM-DD. Los valores monetarios como número entero (sin puntos ni $).
+"nombre_empresa" es la razón social o nombre de la empresa afiliada (cliente). "nombre_trabajador" es el nombre de la persona trabajadora si aparece por separado.
 
 Devuelve ÚNICAMENTE un objeto JSON válido con esta estructura, sin texto adicional:
 {
   "numero_orden": null,
   "upr": null,
+  "nombre_empresa": null,
   "nombre_trabajador": null,
   "numero_afiliacion": null,
   "nombre_contacto": null,
