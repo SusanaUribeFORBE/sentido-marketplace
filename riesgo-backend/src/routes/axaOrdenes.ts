@@ -166,153 +166,127 @@ axaOrdenesRouter.get('/ordenes/:id/pdf', async (req: Request, res: Response) => 
       .from('axa_ordenes').select('*').eq('id', id).single();
     if (error || !o) return res.status(404).json({ error: 'Orden no encontrada' });
 
-    const doc = new PDFDocument({ size: 'A4', margin: 0, info: { Title: `Orden ${o.numero_orden}` } });
+    const doc = new PDFDocument({ size: 'A4', margin: 0, info: { Title: `OS ${o.numero_orden}` } });
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename="orden-${o.numero_orden}.pdf"`);
+    res.setHeader('Content-Disposition', `inline; filename="OS-${o.numero_orden}.pdf"`);
     doc.pipe(res);
 
-    const M = 45;
-    const W = 595 - M * 2;
-    const co = (n: number) => `$ ${Number(n).toLocaleString('es-CO')}`;
-    const fd = (d: string | null) => d ? d.split('-').reverse().join('/') : '—';
-    const blk = (title: string, val: string, x: number, y: number, w: number) => {
-      doc.font('Helvetica-Bold').fontSize(7).text(title, x, y, { width: w });
-      doc.font('Helvetica').fontSize(8).text(val || '—', x, y + 9, { width: w });
+    const M  = 40;
+    const PW = 595;
+    const W  = PW - M * 2;
+    const AXA = '#00008F';
+    const fd  = (d: string | null) => d ? d.split('-').reverse().join('/') : '—';
+
+    // helpers
+    const hdr = (label: string, val: string | null | undefined, x: number, y: number, w: number) => {
+      doc.font('Helvetica-Bold').fontSize(7).fillColor('#555555').text(label.toUpperCase(), x, y, { width: w });
+      doc.font('Helvetica').fontSize(9).fillColor('#000000').text(val || '—', x, y + 10, { width: w, lineBreak: false });
+    };
+    const divider = (y: number) => {
+      doc.moveTo(M, y).lineTo(M + W, y).lineWidth(0.4).strokeColor('#cccccc').stroke();
+    };
+    const sectionBar = (label: string, y: number): number => {
+      doc.rect(M, y, W, 18).fill(AXA);
+      doc.font('Helvetica-Bold').fontSize(8).fillColor('#ffffff')
+         .text(label, M + 8, y + 5, { width: W - 16 });
+      return y + 18;
     };
 
-    // ── Header ─────────────────────────────────────────────────────────
-    doc.rect(0, 0, 595, 72).fill('#00008F');
-    doc.fill('#ffffff').font('Helvetica-Bold').fontSize(13)
-       .text('AXA COLPATRIA', M, 14, { width: W, align: 'center' });
-    doc.fontSize(10)
-       .text('SEGUROS DE VIDA S.A', M, 30, { width: W, align: 'center' });
-    doc.fontSize(8)
-       .text(`ORDEN DE SERVICIO   EXTERNA NÚMERO:  ${o.numero_orden}`, M, 46, { width: W, align: 'center' });
-    const uprTxt = o.upr ? `UPR: ${o.upr}` : '';
-    doc.text(`${uprTxt}          ${fd(o.fecha_aprobacion)}`, M, 58, { width: W, align: 'center' });
+    // ── HEADER ────────────────────────────────────────────────────────
+    doc.rect(0, 0, PW, 80).fill(AXA);
+    // Título izquierda
+    doc.font('Helvetica-Bold').fontSize(16).fillColor('#ffffff')
+       .text('FORBE SAS', M, 16);
+    doc.font('Helvetica').fontSize(8).fillColor('rgba(255,255,255,0.8)')
+       .text('FORMACIÓN DE BRIGADAS DE EMERGENCIA', M, 36)
+       .text('NIT 901.048.333-3  ·  Medellín, Colombia', M, 48);
+    // Etiqueta derecha
+    doc.font('Helvetica-Bold').fontSize(9).fillColor('#ffffff')
+       .text('ASIGNACIÓN DE ORDEN DE SERVICIO', M, 18, { width: W, align: 'right' });
+    doc.font('Helvetica-Bold').fontSize(22).fillColor('#FFD600')
+       .text(o.numero_orden || '', M, 32, { width: W, align: 'right' });
+    doc.font('Helvetica').fontSize(8).fillColor('rgba(255,255,255,0.8)')
+       .text('AXA COLPATRIA · SEGUROS DE VIDA S.A.', M, 58, { width: W, align: 'right' });
 
-    // ── Bloque izquierdo: Señores FORBE ──────────────────────────────
-    let y = 88;
-    doc.fill('#000000').font('Helvetica-Bold').fontSize(8).text('Señores:', M, y);
-    doc.font('Helvetica').fontSize(8)
-       .text('FORMACION DE BRIGADAS DE EMERGENCIA SAS', M, y + 11)
-       .text('NIT/CED:  901048333', M, y + 21)
-       .text('CARRERA 72 A 31  51', M, y + 31)
-       .text('Telefono:  3008940799', M, y + 41)
-       .text('MEDELLÍN', M, y + 51);
+    // ── FILA REGIONAL / CIUDAD / FECHA / UPR ─────────────────────────
+    let y = 96;
+    hdr('Nombre Regional',  'REGIONAL ANTIOQUIA',    M,           y, 120);
+    hdr('Ciudad Ejecución', o.ciudad_ejecucion,       M + 130,     y, 120);
+    hdr('Fecha Asignación OS', fd(o.fecha_aprobacion), M + 270,   y, 120);
+    hdr('UPR',              o.upr,                     M + 400,    y,  70);
+    y += 32;
+    divider(y); y += 10;
 
-    // ── Bloque derecho: Empresa afiliada ──────────────────────────────
-    const rx = M + 230;
-    const rw = W - 230;
-    doc.rect(rx - 5, y - 5, rw + 10, 80).strokeColor('#cccccc').lineWidth(0.5).stroke();
-    blk('EMPRESA:', o.nombre_trabajador, rx, y, rw);
-    blk('DIRECCIÓN:', '', rx, y + 18, rw);
-    blk('PERSONA CONTACTO:', o.nombre_contacto, rx, y + 34, rw);
-    blk('AFILIACIÓN No:', o.numero_afiliacion, rx + 100, y, 100);
-    blk('TELÉFONO:', o.telefono_contacto, rx + 100, y + 18, 100);
-    blk('CARGO:', o.cargo_contacto, rx + 100, y + 34, 100);
-    blk('C.TRABAJO:', o.ciudad_ejecucion, rx + 100, y + 50, 100);
+    // ── EMPRESA AFILIADA ─────────────────────────────────────────────
+    y = sectionBar('EMPRESA AFILIADA', y); y += 8;
+    hdr('Empresa',              o.nombre_trabajador,  M,       y, 260);
+    hdr('# Afiliación Empresa', o.numero_afiliacion,  M + 280, y, 130);
+    y += 32;
 
-    // ── Texto introductorio ───────────────────────────────────────────
-    y = 185;
-    doc.fill('#000').font('Helvetica').fontSize(8)
-       .text('Apreciados señores:', M, y)
-       .text('Con la presente autorizamos la realización de los siguientes procedimientos.', M, y + 12);
+    // ── CONTACTO EMPRESA ─────────────────────────────────────────────
+    y = sectionBar('CONTACTO EMPRESA', y); y += 8;
+    hdr('Contacto Empresa', o.nombre_contacto,  M,       y, 200);
+    hdr('Cargo',            o.cargo_contacto,   M + 220, y, 150);
+    hdr('Teléfono / Celular', o.telefono_contacto, M + 390, y, 115);
+    y += 32;
 
-    // ── Tabla de actividades ──────────────────────────────────────────
-    y = 220;
-    const cols = { act: 55, desc: 155, ciudad: 70, cant: 40, vru: 75, vriva: 55, vrtotal: 55 };
-    const totalVr = Number(o.valor_servicio);
-    const vrUnit  = Number(o.valor_unitario) || (o.cantidad ? totalVr / o.cantidad : 0);
+    // ── ACTIVIDAD ────────────────────────────────────────────────────
+    y = sectionBar('ACTIVIDAD A EJECUTAR', y); y += 8;
+    hdr('Código Actividad', o.codigo_actividad,  M,       y, 100);
+    hdr('Actividad',        o.tipo_servicio,     M + 115, y, 250);
+    hdr('Cantidad (Horas)', String(o.cantidad ?? '—'), M + 380, y, 80);
+    y += 32;
 
-    // Header tabla
-    doc.rect(M, y, W, 16).fill('#333333');
-    doc.fill('#ffffff').font('Helvetica-Bold').fontSize(7);
-    let cx = M + 3;
-    doc.text('ACTIVIDAD', cx, y + 5, { width: cols.act });   cx += cols.act;
-    doc.text('DESCRIPCIÓN', cx, y + 5, { width: cols.desc }); cx += cols.desc;
-    doc.text('CIUDAD EJECUCIÓN', cx, y + 5, { width: cols.ciudad }); cx += cols.ciudad;
-    doc.text('CANTIDAD', cx, y + 5, { width: cols.cant, align: 'center' }); cx += cols.cant;
-    doc.text('VR. UNITARIO', cx, y + 5, { width: cols.vru, align: 'right' }); cx += cols.vru;
-    doc.text('VR IVA', cx, y + 5, { width: cols.vriva, align: 'right' }); cx += cols.vriva;
-    doc.text('VR TOTAL', cx, y + 5, { width: cols.vrtotal, align: 'right' });
+    // Descripción detallada
+    doc.font('Helvetica-Bold').fontSize(7).fillColor('#555555')
+       .text('DESCRIPCIÓN DETALLADA DE LA ACTIVIDAD', M, y);
+    y += 11;
+    const descText = o.observaciones || o.tipo_servicio || '—';
+    const descH = Math.max(40, doc.heightOfString(descText, { width: W, fontSize: 9 }) + 8);
+    doc.rect(M, y, W, descH).fillColor('#f7f8fc').fill();
+    doc.rect(M, y, W, descH).strokeColor('#dde3f0').lineWidth(0.5).stroke();
+    doc.font('Helvetica').fontSize(9).fillColor('#000000')
+       .text(descText, M + 6, y + 6, { width: W - 12 });
+    y += descH + 10;
 
-    // Fila datos
-    y += 16;
-    doc.rect(M, y, W, 18).fill('#f5f5f5').stroke();
-    doc.fill('#000000').font('Helvetica').fontSize(8);
-    cx = M + 3;
-    doc.text(o.codigo_actividad || '', cx, y + 5, { width: cols.act });  cx += cols.act;
-    doc.text(o.tipo_servicio || '', cx, y + 5, { width: cols.desc });     cx += cols.desc;
-    doc.text(o.ciudad_ejecucion || '', cx, y + 5, { width: cols.ciudad }); cx += cols.ciudad;
-    doc.text(String(o.cantidad || 1), cx, y + 5, { width: cols.cant, align: 'center' }); cx += cols.cant;
-    doc.text(co(vrUnit), cx, y + 5, { width: cols.vru, align: 'right' }); cx += cols.vru;
-    doc.text('', cx, y + 5, { width: cols.vriva, align: 'right' }); cx += cols.vriva;
-    doc.text(co(totalVr), cx, y + 5, { width: cols.vrtotal, align: 'right' });
+    // ── CONSULTOR EJECUTOR ────────────────────────────────────────────
+    y = sectionBar('CONSULTOR EJECUTOR', y); y += 10;
+    const consultor = o.consultor_asignado || '';
+    doc.font('Helvetica-Bold').fontSize(13).fillColor(AXA)
+       .text(consultor || 'Por asignar', M, y, { width: W, align: 'center' });
+    y += 24;
 
-    // Fila TOTAL
-    y += 18;
-    doc.rect(M, y, W, 16).fill('#e8e8e8').stroke();
-    doc.fill('#000').font('Helvetica-Bold').fontSize(8);
-    doc.text('TOTAL', M + 3, y + 4, { width: cols.act + cols.desc + cols.ciudad + cols.cant });
-    doc.text(String(o.cantidad || 1), M + 3 + cols.act + cols.desc + cols.ciudad, y + 4, { width: cols.cant, align: 'center' });
-    doc.text(co(totalVr), M + 3 + cols.act + cols.desc + cols.ciudad + cols.cant + cols.vru + cols.vriva, y + 4, { width: cols.vrtotal, align: 'right' });
+    // Línea de firma
+    divider(y); y += 14;
+    const fw2 = (W - 30) / 2;
+    doc.moveTo(M + 20, y + 28).lineTo(M + fw2 - 10, y + 28).strokeColor('#888').lineWidth(0.7).stroke();
+    doc.moveTo(M + fw2 + 40, y + 28).lineTo(M + W - 20, y + 28).strokeColor('#888').lineWidth(0.7).stroke();
 
-    // ── Observaciones ─────────────────────────────────────────────────
-    y += 28;
-    doc.rect(M, y, 100, 12).fill('#cccccc').stroke();
-    doc.fill('#000').font('Helvetica-Bold').fontSize(7).text('OBSERVACIONES:', M + 3, y + 3);
-    doc.font('Helvetica').fontSize(7.5)
-       .text(o.observaciones || '', M + 105, y + 2, { width: W - 105 });
+    doc.font('Helvetica').fontSize(7).fillColor('#555')
+       .text('Firma Consultor / Aceptación', M, y + 32, { width: fw2, align: 'center' })
+       .text('Firma Coordinadora FORBE SAS', M + fw2 + 30, y + 32, { width: fw2, align: 'center' });
 
-    // ── Fecha vencimiento ─────────────────────────────────────────────
-    y += 30;
-    doc.rect(M, y, 150, 12).fill('#cccccc').stroke();
-    doc.fill('#000').font('Helvetica-Bold').fontSize(7)
-       .text('FECHA VENCIMIENTO PARA PROGRAMACIÓN:', M + 3, y + 3);
-    doc.font('Helvetica').fontSize(8).text(fd(o.fecha_vencimiento), M + 155, y + 2);
+    // Campo Fecha de Recibido
+    doc.font('Helvetica-Bold').fontSize(7).fillColor('#555')
+       .text('Fecha de recibido: _______ / _______ / _______', M, y + 46, { width: W, align: 'center' });
+    y += 65;
 
-    // ── Consultor asignado ────────────────────────────────────────────
-    y += 22;
-    doc.font('Helvetica-Bold').fontSize(8)
-       .text('CONSULTOR ASIGNADO FORBE SAS:', M, y);
-    const consultorVal = o.consultor_asignado || '_______________________________';
-    doc.font('Helvetica').text(consultorVal, M + 175, y);
+    // ── LINEAMIENTOS ─────────────────────────────────────────────────
+    doc.rect(M, y, W, 36).fillColor('#f0f4ff').fill();
+    doc.rect(M, y, W, 36).strokeColor(AXA).lineWidth(0.4).stroke();
+    doc.font('Helvetica-Bold').fontSize(7).fillColor(AXA)
+       .text('SOPORTES PARA CIERRE DE ACTIVIDAD — AXA COLPATRIA:', M + 6, y + 5);
+    doc.font('Helvetica').fontSize(6.5).fillColor('#333')
+       .text('ASE / EST (1–16h): Listado en Excel · Ficha técnica de gestión (PDF) · Aval técnico (PDF)', M + 6, y + 15)
+       .text('ASE / EST (17h+): Listado en Excel · Informe técnico (PDF) · Aval técnico informe (PDF)', M + 6, y + 23)
+       .text('DIS (1h+): Informe técnico (PDF) · Aval técnico informe (PDF)', M + 6, y + 31);
+    y += 46;
 
-    // ── Lineamientos AXA ──────────────────────────────────────────────
-    y += 20;
-    doc.rect(M, y, W, 38).fill('#f0f4ff').strokeColor('#00008F').lineWidth(0.5).stroke();
-    doc.fill('#00008F').font('Helvetica-Bold').fontSize(7)
-       .text('LINEAMIENTOS AXA COLPATRIA — SOPORTES PARA CIERRE DE ACTIVIDAD:', M + 5, y + 4);
-    doc.fill('#333').font('Helvetica').fontSize(6.5)
-       .text('ASE / EST (1-16h): Listado en Excel + Ficha técnica de gestión (PDF) + Aval técnico (PDF)', M + 5, y + 14)
-       .text('ASE / EST (17h+): Listado en Excel + Informe técnico (PDF) + Aval técnico informe (PDF)', M + 5, y + 22)
-       .text('DIS (1h+): Informe técnico (PDF) + Aval técnico informe (PDF)', M + 5, y + 30);
-
-    // ── Firmas ────────────────────────────────────────────────────────
-    y += 50;
-    const fw = (W - 20) / 2;
-
-    doc.font('Helvetica-Bold').fontSize(8).text(o.tecnico_arl || '', M, y, { width: fw, align: 'center' });
-    doc.font('Helvetica').fontSize(7)
-       .text('TÉCNICO EN SEGURIDAD INDUSTRIAL', M, y + 11, { width: fw, align: 'center' });
-
-    doc.font('Helvetica-Bold').fontSize(8)
-       .text('DIRECTOR DE UNIDAD DE PREVENCIÓN DE RIESGOS', M + fw + 20, y, { width: fw, align: 'center' });
-
-    y += 26;
-    doc.moveTo(M + 30, y).lineTo(M + fw - 30, y).stroke();
-    doc.moveTo(M + fw + 50, y).lineTo(M + W - 30, y).stroke();
-
-    doc.font('Helvetica').fontSize(7)
-       .text('PREAPROBACIÓN', M, y + 3, { width: fw, align: 'center' })
-       .text('APROBACIÓN', M + fw + 20, y + 3, { width: fw, align: 'center' });
-
-    // ── Footer ────────────────────────────────────────────────────────
-    y += 25;
-    doc.rect(0, y, 595, 30).fill('#00008F');
-    doc.fill('#ffffff').font('Helvetica').fontSize(7)
-       .text('AXA COLPATRIA · SEGUROS DE VIDA S.A · Documento generado por FORBE SAS', M, y + 11, { width: W, align: 'center' });
+    // ── FOOTER ────────────────────────────────────────────────────────
+    doc.rect(0, 762, PW, 80).fillColor(AXA).fill();
+    doc.font('Helvetica').fontSize(7).fillColor('rgba(255,255,255,0.7)')
+       .text(`Generado por FORBE SAS · ${new Date().toLocaleDateString('es-CO')} · Técnico ARL: ${o.tecnico_arl || '—'}`,
+             M, 772, { width: W, align: 'center' });
 
     doc.end();
   } catch (e: any) { res.status(500).json({ error: e.message }); }
