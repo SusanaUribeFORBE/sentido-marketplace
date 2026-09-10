@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>AXA Colpatria · Seguimiento de Órdenes</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+<style>
+:root{--axa:#00008F;--axa-dk:#00006B;--gray:#F4F5F8;--border:#DEE2E9}
+body{background:var(--gray);font-size:.875rem}
+.axa-nav{background:var(--axa)}
+.axa-logo{background:#fff;color:var(--axa);font-weight:900;font-size:.85rem;letter-spacing:1px;padding:3px 8px;border-radius:4px}
+.kpi-card{border-radius:10px;border:1px solid var(--border)!important}
+.kpi-icon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.kpi-num{font-size:1.6rem;font-weight:800;line-height:1}
+.kpi-lbl{font-size:.68rem;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
+.form-label{font-size:.78rem;font-weight:600;margin-bottom:.25rem}
+.badge-estado{font-size:.7rem;padding:.3em .65em;border-radius:20px;font-weight:600}
+.font-mono{font-family:'Courier New',monospace}
+.table-card{border-radius:12px;overflow:hidden;border:1px solid var(--border)}
+table{font-size:.8rem}
+thead th{background:var(--axa);color:#fff;font-weight:600;font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;border:none;white-space:nowrap}
+tbody tr:hover{background:#f0f4ff}
+.text-danger.fw-bold{color:#dc3545!important}
+.badge-Aprobada{background:#0dcaf0;color:#fff}
+.badge-PendienteEjecutar{background:#ffc107;color:#000}
+.badge-Ejecutada{background:#198754;color:#fff}
+.badge-Facturada{background:#00008F;color:#fff}
+.forbe-footer{background:var(--axa);color:rgba(255,255,255,.6);font-size:.72rem}
+.updated-tag{font-size:.7rem;background:rgba(255,255,255,.15);color:#fff;border-radius:20px;padding:2px 10px}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="axa-nav py-2 px-3 d-flex align-items-center gap-3 shadow-sm">
+  <span class="axa-logo">AXA</span>
+  <div class="text-white fw-semibold" style="font-size:.9rem">ARL Colpatria · Seguimiento de Órdenes de Servicio</div>
+  <div class="ms-auto d-flex align-items-center gap-2">
+    <span class="updated-tag"><i class="fas fa-sync-alt me-1"></i>Actualizado: <span id="ultimaActualizacion">—</span></span>
+  </div>
+</nav>
+
+<div class="container-fluid px-3 py-3">
+
+  <!-- KPIs -->
+  <div class="row g-3 mb-3">
+    <div class="col-6 col-md-3">
+      <div class="card border-0 shadow-sm kpi-card h-100">
+        <div class="card-body d-flex align-items-center gap-3 py-3">
+          <div class="kpi-icon" style="background:rgba(0,0,143,.08)"><i class="fas fa-file-alt" style="color:var(--axa)"></i></div>
+          <div><div class="kpi-num" style="color:var(--axa)" id="kTotal">—</div><div class="kpi-lbl">Total Órdenes</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card border-0 shadow-sm kpi-card h-100">
+        <div class="card-body d-flex align-items-center gap-3 py-3">
+          <div class="kpi-icon bg-info bg-opacity-10"><i class="fas fa-clock text-info"></i></div>
+          <div><div class="kpi-num text-info" id="kAprobadas">—</div><div class="kpi-lbl">Aprobadas</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card border-0 shadow-sm kpi-card h-100">
+        <div class="card-body d-flex align-items-center gap-3 py-3">
+          <div class="kpi-icon bg-success bg-opacity-10"><i class="fas fa-check-double text-success"></i></div>
+          <div><div class="kpi-num text-success" id="kEjecutadas">—</div><div class="kpi-lbl">Ejecutadas</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card border-0 shadow-sm kpi-card h-100">
+        <div class="card-body d-flex align-items-center gap-3 py-3">
+          <div class="kpi-icon" style="background:rgba(0,0,143,.08)"><i class="fas fa-file-invoice-dollar" style="color:var(--axa)"></i></div>
+          <div><div class="kpi-num" style="color:var(--axa)" id="kFacturadas">—</div><div class="kpi-lbl">Facturadas</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Valores -->
+  <div class="row g-3 mb-3">
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm p-3">
+        <div class="text-muted small"><i class="fas fa-dollar-sign me-1"></i>Valor Total Órdenes</div>
+        <div class="fw-bold fs-5 mt-1" id="kValorTotal">—</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm p-3">
+        <div class="text-success small"><i class="fas fa-check-circle me-1"></i>Facturado</div>
+        <div class="fw-bold fs-5 text-success mt-1" id="kFacturado">—</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm p-3">
+        <div class="text-warning small"><i class="fas fa-hourglass-half me-1"></i>Por Facturar</div>
+        <div class="fw-bold fs-5 text-warning mt-1" id="kPorFacturar">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <div class="card border-0 shadow-sm mb-3 p-3">
+    <div class="row g-2 align-items-end">
+      <div class="col-12 col-md-4">
+        <label class="form-label">Buscar</label>
+        <div class="input-group input-group-sm">
+          <span class="input-group-text bg-white"><i class="fas fa-search text-muted"></i></span>
+          <input type="text" id="sBuscar" class="form-control" placeholder="N° Orden, Empresa, Consultor, Código" oninput="filtrar()"/>
+        </div>
+      </div>
+      <div class="col-6 col-md-2">
+        <label class="form-label">F. Aprobación desde</label>
+        <input type="date" id="sDesde" class="form-control form-control-sm" onchange="filtrar()"/>
+      </div>
+      <div class="col-6 col-md-2">
+        <label class="form-label">hasta</label>
+        <input type="date" id="sHasta" class="form-control form-control-sm" onchange="filtrar()"/>
+      </div>
+      <div class="col-6 col-md-2">
+        <label class="form-label">Estado</label>
+        <select id="sEstado" class="form-select form-select-sm" onchange="filtrar()">
+          <option value="">— Todos —</option>
+          <option value="Aprobada">Aprobada</option>
+          <option value="PendienteEjecutar">Pend. Ejecutar</option>
+          <option value="Ejecutada">Ejecutada</option>
+          <option value="Facturada">Facturada</option>
+        </select>
+      </div>
+      <div class="col-6 col-md-2 d-flex gap-2">
+        <button class="btn btn-primary btn-sm w-100" onclick="filtrar()"><i class="fas fa-filter me-1"></i>Filtrar</button>
+        <button class="btn btn-outline-secondary btn-sm" onclick="limpiarFiltros()" title="Limpiar"><i class="fas fa-times"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabla -->
+  <div class="card border-0 shadow-sm table-card">
+    <div class="d-flex align-items-center px-3 py-2 border-bottom">
+      <i class="fas fa-list me-2" style="color:var(--axa)"></i>
+      <span class="fw-semibold small" id="conteo">—</span>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-hover mb-0 align-middle">
+        <thead>
+          <tr>
+            <th>N° ORDEN</th>
+            <th>EMPRESA AFILIADA</th>
+            <th>N° AFIL.</th>
+            <th>CÓD.</th>
+            <th>DESCRIPCIÓN</th>
+            <th class="text-center">CANT.</th>
+            <th class="text-end">VR TOTAL</th>
+            <th>CIUDAD</th>
+            <th>F. APROB.</th>
+            <th>F. VENC.</th>
+            <th>F. EJEC.</th>
+            <th>ESTADO</th>
+            <th>CONSULTOR FORBE</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- Footer -->
+<footer class="forbe-footer text-center py-2 mt-4">
+  AXA Colpatria · Gestión de Órdenes ARL &nbsp;|&nbsp; FORBE SAS © 2026
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const BASE = '/api/axa';
+const co = new Intl.NumberFormat('es-CO',{style:'currency',currency:'COP',maximumFractionDigits:0});
+const fmt = d => d ? d.split('-').reverse().join('/') : '—';
+const esVencida = d => d && new Date(d+'T00:00:00') < new Date();
+
+let todasOrdenes = [];
+
+async function cargar(){
+  try {
+    const r = await fetch(`${BASE}/ordenes`);
+    todasOrdenes = await r.json();
+    document.getElementById('ultimaActualizacion').textContent =
+      new Date().toLocaleString('es-CO',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    filtrar();
+  } catch(e){ console.error(e); }
+}
+
+function filtrar(){
+  const buscar = document.getElementById('sBuscar').value.toLowerCase().trim();
+  const desde  = document.getElementById('sDesde').value;
+  const hasta  = document.getElementById('sHasta').value;
+  const estado = document.getElementById('sEstado').value;
+
+  let lista = todasOrdenes.filter(o => {
+    if(desde && o.fecha_aprobacion < desde) return false;
+    if(hasta && o.fecha_aprobacion > hasta) return false;
+    if(estado && o.estado !== estado) return false;
+    if(buscar){
+      const hay = [o.numero_orden,o.nombre_trabajador,o.consultor_asignado,o.codigo_actividad,o.tipo_servicio]
+        .some(v => v?.toLowerCase().includes(buscar));
+      if(!hay) return false;
+    }
+    return true;
+  });
+
+  renderTabla(lista);
+  renderKpis(lista);
+}
+
+function limpiarFiltros(){
+  ['sBuscar','sDesde','sHasta'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('sEstado').value='';
+  filtrar();
+}
+
+const estadoClase = {
+  Aprobada:'badge-Aprobada',
+  PendienteEjecutar:'badge-PendienteEjecutar',
+  Ejecutada:'badge-Ejecutada',
+  Facturada:'badge-Facturada'
+};
+const estadoLabel = {
+  Aprobada:'Aprobada',
+  PendienteEjecutar:'Pend. Ejecutar',
+  Ejecutada:'Ejecutada',
+  Facturada:'Facturada'
+};
+
+function renderTabla(lista){
+  document.getElementById('conteo').textContent = `${lista.length} ordene${lista.length!==1?'s':''} encontrada${lista.length!==1?'s':''}`;
+  const tbody = document.getElementById('tbody');
+  if(!lista.length){
+    tbody.innerHTML='<tr><td colspan="13" class="text-center text-muted py-4">No hay órdenes con esos filtros</td></tr>';
+    return;
+  }
+  tbody.innerHTML = lista.map(o => {
+    const vencida = esVencida(o.fecha_vencimiento) && !['Ejecutada','Facturada'].includes(o.estado);
+    return `<tr>
+      <td class="font-mono fw-semibold small">${o.numero_orden||'—'}</td>
+      <td class="fw-semibold">${o.nombre_trabajador||'—'}</td>
+      <td class="text-muted small">${o.numero_afiliacion||'—'}</td>
+      <td><span class="badge bg-secondary fw-normal">${o.codigo_actividad||'—'}</span></td>
+      <td>${o.tipo_servicio||'—'}</td>
+      <td class="text-center">${o.cantidad??'—'}</td>
+      <td class="text-end font-mono">${o.valor_servicio ? co.format(o.valor_servicio) : '—'}</td>
+      <td>${o.ciudad_ejecucion||'—'}</td>
+      <td>${fmt(o.fecha_aprobacion)}</td>
+      <td class="${vencida?'text-danger fw-bold':''}">${fmt(o.fecha_vencimiento)}</td>
+      <td>${fmt(o.fecha_ejecucion)}</td>
+      <td><span class="badge-estado ${estadoClase[o.estado]||'bg-secondary text-white'}">${estadoLabel[o.estado]||o.estado}</span></td>
+      <td>${o.consultor_asignado||'<span class="text-muted fst-italic">Sin asignar</span>'}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderKpis(lista){
+  document.getElementById('kTotal').textContent      = lista.length;
+  document.getElementById('kAprobadas').textContent  = lista.filter(o=>['Aprobada','PendienteEjecutar'].includes(o.estado)).length;
+  document.getElementById('kEjecutadas').textContent = lista.filter(o=>o.estado==='Ejecutada').length;
+  document.getElementById('kFacturadas').textContent = lista.filter(o=>o.estado==='Facturada').length;
+  const total      = lista.reduce((s,o)=>s+Number(o.valor_servicio||0),0);
+  const facturado  = lista.filter(o=>o.estado==='Facturada').reduce((s,o)=>s+Number(o.valor_servicio||0),0);
+  document.getElementById('kValorTotal').textContent   = co.format(total);
+  document.getElementById('kFacturado').textContent    = co.format(facturado);
+  document.getElementById('kPorFacturar').textContent  = co.format(total - facturado);
+}
+
+cargar();
+setInterval(cargar, 60000); // refresca cada minuto
+</script>
+</body>
+</html>
