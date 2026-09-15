@@ -21,6 +21,7 @@ import { wompiRouter } from './routes/wompi';
 import { fraudeRouter } from './routes/fraude';
 import { axaOrdenesRouter } from './routes/axaOrdenes';
 import { fuegoRouter } from './routes/fuego';
+import { vigia360Router } from './routes/vigia360';
 
 const app = express();
 app.set('trust proxy', 1);
@@ -98,6 +99,7 @@ app.get('/crea/app',         (_req, res) => res.redirect(301, '/contenido/estrat
 app.use('/api/fraude', fraudeRouter);
 app.use('/api/axa', axaOrdenesRouter);
 app.use('/api/fuego', fuegoRouter);
+app.use('/api/vigia360', vigia360Router);
 app.use('/api/vigia', vigiaRouter);
 app.use('/api/crea', creaPlanesRouter);
 app.use('/api/contenido', creaAuth, contenidoRouter);
