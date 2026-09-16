@@ -3,3 +3,4 @@ dist
 .env
 vigia360-pat.sql
 pesv-migration.sql
+pesv-representante.sql

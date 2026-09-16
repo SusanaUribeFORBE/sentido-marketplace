@@ -246,9 +246,19 @@ body{background:var(--gris);font-size:.82rem;color:var(--text);margin:0}
           <label class="form-label fw-semibold">Evidencia / Documento</label>
           <input type="text" id="mEvidencia" class="form-control" placeholder="Ej: Resolución de designación, Acta N°1..."/>
         </div>
-        <div class="mb-0">
+        <div class="mb-3">
           <label class="form-label fw-semibold">Observaciones</label>
           <textarea id="mObservaciones" class="form-control" rows="2" placeholder="Observaciones adicionales..."></textarea>
+        </div>
+        <hr class="my-2"/>
+        <div class="mb-1 small fw-semibold text-muted">Datos para documentos (Representante Legal)</div>
+        <div class="mb-2">
+          <label class="form-label fw-semibold" style="font-size:.78rem">Nombre Representante Legal</label>
+          <input type="text" id="mRepresentante" class="form-control form-control-sm" placeholder="Ej: Kruzi Paloma León Carrillo"/>
+        </div>
+        <div class="mb-0">
+          <label class="form-label fw-semibold" style="font-size:.78rem">Cargo del Representante</label>
+          <input type="text" id="mCargo" class="form-control form-control-sm" placeholder="Ej: Directora Ejecutiva"/>
         </div>
       </div>
       <div class="modal-footer">
@@ -418,8 +428,12 @@ function pasoHtml(p){
         </div>
       </div>
       ${p.observaciones ? `<div class="mt-2 text-muted small"><i class="fas fa-comment me-1"></i>${p.observaciones}</div>` : ''}
-      <button class="btn btn-sm mt-2" style="background:var(--azul-bg);color:var(--azul);font-size:.72rem"
-        onclick="abrirPaso(${p.id})"><i class="fas fa-edit me-1"></i>Editar detalle</button>
+      <div class="d-flex gap-2 mt-2">
+        <button class="btn btn-sm" style="background:var(--azul-bg);color:var(--azul);font-size:.72rem"
+          onclick="abrirPaso(${p.id})"><i class="fas fa-edit me-1"></i>Editar</button>
+        <button class="btn btn-sm" style="background:#E0F7FA;color:#006064;font-size:.72rem"
+          onclick="generarDocumento(${p.id})"><i class="fas fa-file-pdf me-1"></i>Generar modelo</button>
+      </div>
     </div>
   </div>`;
 }
@@ -467,6 +481,8 @@ function abrirPaso(id){
   document.getElementById('mResponsable').value     = p.responsable || '';
   document.getElementById('mEvidencia').value       = p.evidencia || '';
   document.getElementById('mObservaciones').value   = p.observaciones || '';
+  document.getElementById('mRepresentante').value   = p.representante_legal || '';
+  document.getElementById('mCargo').value           = p.cargo_representante || '';
   if(!mPasoModal) mPasoModal = new bootstrap.Modal(document.getElementById('mPaso'));
   mPasoModal.show();
 }
@@ -474,11 +490,13 @@ function abrirPaso(id){
 async function guardarPaso(){
   const id = Number(document.getElementById('mPasoId').value);
   const body = {
-    completado:        document.getElementById('mCompletado').checked,
-    fecha_completado:  document.getElementById('mFecha').value || null,
-    responsable:       document.getElementById('mResponsable').value.trim() || null,
-    evidencia:         document.getElementById('mEvidencia').value.trim() || null,
-    observaciones:     document.getElementById('mObservaciones').value.trim() || null,
+    completado:           document.getElementById('mCompletado').checked,
+    fecha_completado:     document.getElementById('mFecha').value || null,
+    responsable:          document.getElementById('mResponsable').value.trim() || null,
+    evidencia:            document.getElementById('mEvidencia').value.trim() || null,
+    observaciones:        document.getElementById('mObservaciones').value.trim() || null,
+    representante_legal:  document.getElementById('mRepresentante').value.trim() || null,
+    cargo_representante:  document.getElementById('mCargo').value.trim() || null,
   };
   try{
     const r = await fetch(`${BASE}/pesv/pasos/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
@@ -524,6 +542,17 @@ async function crearEmpresa(){
     const idx = empresas.findIndex(e=>e.empresa_nombre===empresa_nombre && e.año===año);
     if(idx>=0){ sel.value = idx; seleccionar(); }
   }catch(e){ alert('Error: '+e.message); }
+}
+
+// ── Generar documento PDF del paso ───────────────────────────────────
+function generarDocumento(id){
+  const p = pasos.find(x=>x.id===id);
+  if(!p) return;
+  const idx = document.getElementById('selEmpresa').value;
+  const emp = empresas[Number(idx)];
+  if(!emp) return;
+  const url = `${BASE}/pesv/documento?paso=${p.paso_numero}&empresa=${encodeURIComponent(emp.empresa_nombre)}&año=${emp.año}`;
+  window.open(url,'_blank');
 }
 
 init();

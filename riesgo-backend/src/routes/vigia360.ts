@@ -1,5 +1,8 @@
 import { Router, Request, Response } from 'express';
 import { supabase } from '../supabase';
+import PDFDocument from 'pdfkit';
+import fs from 'fs';
+import path from 'path';
 
 export const vigia360Router = Router();
 
@@ -160,9 +163,11 @@ vigia360Router.get('/pesv/pasos', async (req: Request, res: Response) => {
 vigia360Router.put('/pesv/pasos/:id', async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
-    const { completado, fecha_completado, responsable, evidencia, observaciones } = req.body;
+    const { completado, fecha_completado, responsable, evidencia, observaciones, representante_legal, cargo_representante } = req.body;
     const { data, error } = await supabase.from('pesv_pasos')
-      .update({ completado, fecha_completado: fecha_completado || null, responsable, evidencia, observaciones, updated_at: new Date().toISOString() })
+      .update({ completado, fecha_completado: fecha_completado || null, responsable, evidencia, observaciones,
+                representante_legal: representante_legal || null, cargo_representante: cargo_representante || null,
+                updated_at: new Date().toISOString() })
       .eq('id', id).select().single();
     if (error) throw error;
     res.json(data);
@@ -179,3 +184,354 @@ vigia360Router.delete('/pesv/empresas', async (req: Request, res: Response) => {
     res.json({ ok: true });
   } catch (e: any) { res.status(500).json({ error: e.message }); }
 });
+
+// ── GET /api/vigia360/pesv/documento?paso=N&empresa=X&año=Y ──────────
+vigia360Router.get('/pesv/documento', async (req: Request, res: Response) => {
+  try {
+    const { paso: pasoStr, empresa, año } = req.query as Record<string, string>;
+    const pasoNum = Number(pasoStr);
+
+    const [{ data: pasoData }, { data: paso1Data }] = await Promise.all([
+      supabase.from('pesv_pasos').select('*')
+        .ilike('empresa_nombre', `%${empresa}%`).eq('año', Number(año))
+        .eq('paso_numero', pasoNum).eq('activo', true).maybeSingle(),
+      supabase.from('pesv_pasos').select('representante_legal,cargo_representante,empresa_nombre,empresa_nit')
+        .ilike('empresa_nombre', `%${empresa}%`).eq('año', Number(año))
+        .eq('paso_numero', 1).eq('activo', true).maybeSingle(),
+    ]);
+
+    const template = PASOS_TEMPLATE.find(p => p.paso_numero === pasoNum);
+    if (!template) return res.status(400).json({ error: 'Paso no válido' });
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `inline; filename="PESV_Paso${String(pasoNum).padStart(2,'0')}.pdf"`);
+
+    const doc = new PDFDocument({ size: 'A4', margins: { top: 36, bottom: 36, left: 36, right: 36 } });
+    doc.pipe(res);
+
+    const ctx: PESVCtx = {
+      empresa:       paso1Data?.empresa_nombre  || empresa || '___________________________',
+      nit:           paso1Data?.empresa_nit     || '___________________________',
+      año:           Number(año),
+      responsable:   pasoData?.responsable      || '___________________________',
+      representante: paso1Data?.representante_legal   || '___________________________',
+      cargo:         paso1Data?.cargo_representante   || 'Representante Legal',
+      fecha:         pasoData?.fecha_completado
+                       ? fmtFecha(pasoData.fecha_completado)
+                       : fmtFecha(new Date().toISOString().slice(0, 10)),
+      pasoNum,
+      titulo:        TITULOS_DOC[pasoNum] || template.paso_nombre.toUpperCase(),
+      codigo:        `PESV-F${String(pasoNum).padStart(3,'0')}`,
+    };
+
+    pesv_dibujarPagina1(doc, ctx);
+    doc.addPage();
+    pesv_dibujarControlCambios(doc, ctx);
+    doc.end();
+  } catch (e: any) { res.status(500).json({ error: e.message }); }
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// Utilidades PDF — PESV
+// ══════════════════════════════════════════════════════════════════════
+
+interface PESVCtx {
+  empresa: string; nit: string; año: number;
+  responsable: string; representante: string; cargo: string;
+  fecha: string; pasoNum: number; titulo: string; codigo: string;
+}
+
+const TITULOS_DOC: Record<number, string> = {
+  1:  'ACTA DE NOMBRAMIENTO Y DESIGNACIÓN LÍDER PESV',
+  2:  'ACTA DE CONFORMACIÓN COMITÉ DE SEGURIDAD VIAL',
+  3:  'POLÍTICA DE SEGURIDAD VIAL DE LA ORGANIZACIÓN',
+  4:  'ACTA DE COMPROMISO DE LA ALTA DIRECCIÓN',
+  5:  'FORMATO DE DIAGNÓSTICO INICIAL PESV',
+  6:  'MATRIZ DE CARACTERIZACIÓN Y CONTROL DE RIESGOS VIALES',
+  7:  'OBJETIVOS Y METAS DEL PESV',
+  8:  'PROGRAMAS DE GESTIÓN DE RIESGOS CRÍTICOS',
+  9:  'PLAN ANUAL DE TRABAJO PESV',
+  10: 'PLAN ANUAL DE FORMACIÓN Y COMPETENCIAS',
+  11: 'REGLAMENTO DE COMPORTAMIENTO SEGURO EN LA VÍA',
+  12: 'PLAN DE PREPARACIÓN Y RESPUESTA ANTE EMERGENCIAS VIALES',
+  13: 'FORMATO DE INVESTIGACIÓN INTERNA DE SINIESTROS VIALES',
+  14: 'INSPECCIÓN DE VÍAS ADMINISTRADAS POR LA ORGANIZACIÓN',
+  15: 'PLANIFICACIÓN DE DESPLAZAMIENTOS LABORALES',
+  16: 'FORMATO DE INSPECCIÓN DE VEHÍCULOS Y EQUIPOS',
+  17: 'PROGRAMA DE MANTENIMIENTO DE VEHÍCULOS Y EQUIPOS',
+  18: 'GESTIÓN DEL CAMBIO Y GESTIÓN DE CONTRATISTAS',
+  19: 'TABLA DE RETENCIÓN DOCUMENTAL PESV',
+  20: 'FICHA DE INDICADORES Y REPORTE DE AUTOGESTIÓN PESV',
+  21: 'REGISTRO Y ANÁLISIS ESTADÍSTICO DE SINIESTROS VIALES',
+  22: 'PROGRAMA DE AUDITORÍA ANUAL PESV',
+  23: 'PLAN DE MEJORA CONTINUA, ACCIONES PREVENTIVAS Y CORRECTIVAS',
+  24: 'MECANISMOS DE COMUNICACIÓN Y PARTICIPACIÓN',
+};
+
+function fmtFecha(iso: string): string {
+  const [y, m, d] = iso.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+const LOGO_PATH = path.join(__dirname, '..', '..', 'assets', 'logo-proaves.jpeg');
+const PROAVES_NIT = '811.031.647-1';
+
+function pesv_dibujarEncabezado(doc: PDFKit.PDFDocument, ctx: PESVCtx) {
+  const X = 36, Y = doc.y, W = 523, H = 56;
+  const logoW = 80, codeW = 132;
+
+  // Outer border
+  doc.rect(X, Y, W, H).stroke('#333');
+  // Vertical dividers
+  doc.moveTo(X + logoW, Y).lineTo(X + logoW, Y + H).stroke('#333');
+  doc.moveTo(X + W - codeW, Y).lineTo(X + W - codeW, Y + H).stroke('#333');
+
+  // Logo (only for ProAves)
+  if (ctx.nit === PROAVES_NIT && fs.existsSync(LOGO_PATH)) {
+    doc.image(LOGO_PATH, X + 4, Y + 4, { fit: [logoW - 8, H - 8] });
+  } else {
+    doc.fontSize(7).font('Helvetica-Bold')
+      .text(ctx.empresa, X + 4, Y + H / 2 - 6, { width: logoW - 8, align: 'center' });
+  }
+
+  // Title
+  doc.fontSize(8).font('Helvetica-Bold')
+    .text(ctx.titulo, X + logoW + 4, Y + 8, {
+      width: W - logoW - codeW - 8, align: 'center', lineGap: 2,
+    });
+
+  // Code block
+  const cx = X + W - codeW + 5;
+  doc.fontSize(7).font('Helvetica-Bold')
+    .text(`CÓDIGO: ${ctx.codigo}`, cx, Y + 8, { width: codeW - 10 })
+    .text('VERSIÓN: 1', cx, Y + 20, { width: codeW - 10 })
+    .text('FECHA DE VIGENCIA:', cx, Y + 32, { width: codeW - 10 })
+    .text(ctx.fecha, cx, Y + 42, { width: codeW - 10 });
+
+  doc.y = Y + H + 16;
+}
+
+function pesv_firmas(doc: PDFKit.PDFDocument, ctx: PESVCtx, labelIzq: string, labelDer: string) {
+  const X = 36, W = 523;
+  const col = W / 2 - 20;
+  const y = doc.y + 30;
+
+  // Líneas de firma
+  doc.moveTo(X, y).lineTo(X + col, y).stroke('#999');
+  doc.moveTo(X + col + 40, y).lineTo(X + W, y).stroke('#999');
+
+  doc.fontSize(8).font('Helvetica-Bold')
+    .text(ctx.representante, X, y + 4, { width: col })
+    .text(ctx.responsable, X + col + 40, y + 4, { width: col });
+  doc.fontSize(7).font('Helvetica')
+    .text(ctx.cargo, X, y + 14, { width: col })
+    .text('Líder PESV', X + col + 40, y + 14, { width: col });
+  doc.fontSize(7).font('Helvetica')
+    .text(ctx.empresa, X, y + 24, { width: col })
+    .text(ctx.empresa, X + col + 40, y + 24, { width: col });
+  doc.fontSize(7).font('Helvetica-Bold')
+    .text(labelIzq, X, y + 36, { width: col })
+    .text(labelDer, X + col + 40, y + 36, { width: col });
+
+  doc.y = y + 50;
+}
+
+function pesv_dibujarPagina1(doc: PDFKit.PDFDocument, ctx: PESVCtx) {
+  pesv_dibujarEncabezado(doc, ctx);
+
+  const X = 36, W = 523;
+  const body: Record<number, () => void> = {
+    1: () => {
+      doc.fontSize(9).font('Helvetica-Bold').text(`Rionegro, ${ctx.fecha}`, X, doc.y).moveDown(0.8);
+      doc.fontSize(9).font('Helvetica').text(
+        `Por medio de la presente, yo ${ctx.representante}, actuando en mi calidad de ${ctx.cargo} y Representante Legal de ${ctx.empresa} (NIT: ${ctx.nit}), en cumplimiento de lo establecido en la Resolución 20223040040595 del Ministerio de Transporte, designo como Líder del diseño e implementación del Plan Estratégico de Seguridad Vial (PESV) a `,
+        X, doc.y, { width: W, align: 'justify', continued: true }
+      ).font('Helvetica-Bold').text(`${ctx.responsable}, `, { continued: true })
+       .font('Helvetica').text(
+        `quien tendrá la responsabilidad de velar por el cumplimiento de las etapas de planificación, implementación, seguimiento y mejora continua del PESV de conformidad con la Resolución 20223040040595 del Ministerio de Transporte y demás normatividad nacional vigente en materia de seguridad vial, así mismo el reporte de los indicadores del PESV ante las entidades correspondientes, e informará a la Alta Dirección sobre el funcionamiento y los resultados del Plan.`,
+        { width: W, align: 'justify' }
+      );
+      pesv_firmas(doc, ctx, 'Directora Ejecutiva — Representante Legal\nFIRMA DE APROBACIÓN', 'FIRMA DE ACEPTACIÓN DEL LÍDER DEL PESV');
+    },
+    2: () => {
+      doc.fontSize(9).font('Helvetica-Bold').text(`Rionegro, ${ctx.fecha}`, X, doc.y).moveDown(0.8);
+      doc.fontSize(9).font('Helvetica').text(
+        `Por medio de la presente acta, se deja constancia de la conformación del Comité de Seguridad Vial de ${ctx.empresa} (NIT: ${ctx.nit}), en cumplimiento del artículo 2° de la Resolución 20223040040595 del Ministerio de Transporte.\n\nEl Comité estará integrado por la Alta Dirección, el Líder del PESV y los representantes de las áreas involucradas en la gestión vial. Tendrá la responsabilidad de apoyar la implementación, seguimiento y revisión periódica del Plan Estratégico de Seguridad Vial.\n\nEl Comité se reunirá con una frecuencia mínima trimestral y dejará constancia de sus sesiones mediante actas debidamente firmadas.`,
+        X, doc.y, { width: W, align: 'justify', lineGap: 2 }
+      );
+      doc.moveDown(1);
+      doc.fontSize(8).font('Helvetica-Bold').text('INTEGRANTES DEL COMITÉ:', X, doc.y).moveDown(0.5);
+      const thY = doc.y;
+      const cols = [200, 160, 130];
+      const headers = ['Nombre completo', 'Cargo en la empresa', 'Firma'];
+      let cx2 = X;
+      headers.forEach((h, i) => {
+        doc.rect(cx2, thY, cols[i], 18).fillAndStroke('#1A237E', '#333');
+        doc.fillColor('#fff').fontSize(7).font('Helvetica-Bold').text(h, cx2 + 3, thY + 5, { width: cols[i] - 6 });
+        cx2 += cols[i];
+      });
+      doc.fillColor('#000');
+      for (let r = 0; r < 5; r++) {
+        const ry = thY + 18 + r * 22;
+        cx2 = X;
+        cols.forEach(cw => { doc.rect(cx2, ry, cw, 22).stroke('#CCC'); cx2 += cw; });
+      }
+      doc.y = thY + 18 + 5 * 22 + 12;
+      pesv_firmas(doc, ctx, 'Representante Legal\nFIRMA DE APROBACIÓN', 'Líder PESV\nFIRMA DE ELABORACIÓN');
+    },
+    3: () => {
+      doc.fontSize(9).font('Helvetica-Bold').text(`${ctx.empresa}`, X, doc.y).moveDown(0.3);
+      doc.fontSize(9).font('Helvetica').text(
+        `${ctx.empresa} (NIT: ${ctx.nit}), comprometida con la seguridad vial y el bienestar de sus colaboradores, contratistas, clientes y comunidad en general, adopta la siguiente política de seguridad vial:\n\n`,
+        X, doc.y, { width: W, align: 'justify' }
+      );
+      doc.fontSize(9).font('Helvetica-Bold').text('POLÍTICA DE SEGURIDAD VIAL', X, doc.y, { width: W, align: 'center' }).moveDown(0.5);
+      doc.fontSize(9).font('Helvetica').text(
+        `"En ${ctx.empresa} nos comprometemos a prevenir los accidentes de tránsito, proteger la vida de todas las personas que hacen parte de nuestras operaciones y contribuir a la seguridad vial del país. Para ello implementamos el Plan Estratégico de Seguridad Vial conforme a la Resolución 20223040040595 del Ministerio de Transporte, promovemos una cultura de respeto por las normas de tránsito, garantizamos la idoneidad de nuestros conductores y el buen estado de nuestros vehículos, y gestionamos los riesgos viales de forma sistemática y continua."`,
+        X, doc.y, { width: W, align: 'justify', lineGap: 2 }
+      );
+      doc.moveDown(1);
+      doc.fontSize(8).font('Helvetica').text('Esta política aplica a todos los colaboradores, contratistas y terceros que realicen desplazamientos en nombre de la organización. Será revisada anualmente y comunicada a todas las partes interesadas.', X, doc.y, { width: W, align: 'justify' });
+      pesv_firmas(doc, ctx, 'Representante Legal\nFIRMA DE APROBACIÓN', 'Líder PESV\nFIRMA DE ELABORACIÓN');
+    },
+    4: () => {
+      doc.fontSize(9).font('Helvetica-Bold').text(`Rionegro, ${ctx.fecha}`, X, doc.y).moveDown(0.8);
+      doc.fontSize(9).font('Helvetica').text(
+        `Por medio de la presente, la Alta Dirección de ${ctx.empresa} (NIT: ${ctx.nit}), representada por ${ctx.representante} en calidad de ${ctx.cargo}, manifiesta su pleno compromiso con la implementación, mantenimiento y mejora continua del Plan Estratégico de Seguridad Vial (PESV), en cumplimiento de la Resolución 20223040040595 del Ministerio de Transporte.\n\nEn consecuencia, la organización se compromete a:\n\n1. Asignar los recursos humanos, técnicos y financieros necesarios para la implementación del PESV.\n2. Designar el Líder del PESV con las competencias requeridas por la resolución.\n3. Promover una cultura de seguridad vial en todos los niveles de la organización.\n4. Revisar periódicamente el cumplimiento del PESV y tomar las acciones de mejora necesarias.\n5. Reportar oportunamente los indicadores de autogestión ante las entidades competentes.\n6. Cumplir con toda la normatividad vigente en materia de seguridad vial.`,
+        X, doc.y, { width: W, align: 'justify', lineGap: 2 }
+      );
+      pesv_firmas(doc, ctx, 'Representante Legal\nFIRMA DE COMPROMISO', 'Líder PESV\nFIRMA DE ELABORACIÓN');
+    },
+  };
+
+  if (body[ctx.pasoNum]) {
+    body[ctx.pasoNum]();
+  } else {
+    pesv_cuerpoGenerico(doc, ctx);
+  }
+}
+
+function pesv_cuerpoGenerico(doc: PDFKit.PDFDocument, ctx: PESVCtx) {
+  const X = 36, W = 523;
+  const OBJETIVOS: Record<number, string> = {
+    5:  'Establecer la línea base del estado actual de la organización frente a los requisitos de la Resolución 20223040040595, identificando brechas y oportunidades de mejora para el diseño del PESV.',
+    6:  'Identificar, caracterizar, evaluar y establecer controles para los riesgos viales asociados a los desplazamientos laborales, garantizando la gestión sistemática de los peligros en la vía.',
+    7:  'Definir los objetivos estratégicos y metas medibles del PESV, alineados con la política de seguridad vial y los resultados del diagnóstico inicial.',
+    8:  'Diseñar e implementar los programas de intervención sobre los riesgos críticos y factores de desempeño identificados en el diagnóstico y la matriz de riesgos viales.',
+    9:  'Planificar las actividades del PESV para el período anual, estableciendo responsables, recursos, fechas y mecanismos de seguimiento.',
+    10: 'Garantizar la competencia de los conductores y demás personal que interviene en la gestión vial, mediante un plan estructurado de formación, sensibilización y evaluación.',
+    11: 'Establecer las normas de comportamiento vial que deben cumplir todos los colaboradores y contratistas de la organización durante los desplazamientos laborales.',
+    12: 'Preparar a la organización para dar respuesta eficaz ante siniestros viales, minimizando el impacto sobre las personas y la continuidad del negocio.',
+    13: 'Investigar internamente los siniestros viales para identificar causas raíz, factores contribuyentes y establecer acciones correctivas y preventivas.',
+    14: 'Garantizar las condiciones adecuadas de seguridad en las vías administradas o habilitadas por la organización para el tránsito de personas y vehículos.',
+    15: 'Planificar los desplazamientos laborales minimizando la exposición al riesgo vial mediante la selección de rutas seguras, horarios apropiados y medios de transporte idóneos.',
+    16: 'Verificar periódicamente las condiciones técnicas y de seguridad de los vehículos y equipos utilizados en los desplazamientos laborales.',
+    17: 'Asegurar el mantenimiento preventivo y correctivo de los vehículos y equipos, garantizando su confiabilidad y condiciones seguras de operación.',
+    18: 'Gestionar los cambios en la organización y las relaciones con contratistas asegurando que no se incremente el riesgo vial.',
+    19: 'Establecer los criterios y tiempos de retención de los documentos generados en el marco del PESV, garantizando la trazabilidad y disponibilidad de la información.',
+    20: 'Medir y hacer seguimiento al desempeño del PESV mediante indicadores de gestión, resultado e impacto, y reportar la autogestión ante el Ministerio de Transporte.',
+    21: 'Registrar, analizar estadísticamente y difundir la información de los siniestros viales para orientar la toma de decisiones y las acciones de mejora.',
+    22: 'Evaluar de forma sistemática e independiente el grado de implementación y eficacia del PESV, identificando oportunidades de mejora.',
+    23: 'Implementar un proceso sistemático de mejora continua a partir de los hallazgos de auditorías, indicadores, siniestros e inconformidades del PESV.',
+    24: 'Establecer los canales y mecanismos para la comunicación interna y externa del PESV, y garantizar la participación activa de los colaboradores en la seguridad vial.',
+  };
+
+  doc.fontSize(9).font('Helvetica-Bold').text('OBJETIVO', X, doc.y).moveDown(0.3);
+  doc.fontSize(9).font('Helvetica')
+    .text(OBJETIVOS[ctx.pasoNum] || 'Dar cumplimiento al paso ' + ctx.pasoNum + ' del PESV conforme a la Resolución 20223040040595 del Ministerio de Transporte.', X, doc.y, { width: W, align: 'justify' })
+    .moveDown(1);
+
+  doc.fontSize(9).font('Helvetica-Bold').text('ALCANCE', X, doc.y).moveDown(0.3);
+  doc.fontSize(9).font('Helvetica')
+    .text(`Aplica a ${ctx.empresa} (NIT: ${ctx.nit}) y a todos sus colaboradores, contratistas y partes interesadas que intervienen en los desplazamientos laborales en el año ${ctx.año}.`, X, doc.y, { width: W, align: 'justify' })
+    .moveDown(1);
+
+  doc.fontSize(9).font('Helvetica-Bold').text('RESPONSABLE', X, doc.y).moveDown(0.3);
+  doc.fontSize(9).font('Helvetica').text(ctx.responsable || '___________________________', X, doc.y, { width: W }).moveDown(1);
+
+  doc.fontSize(9).font('Helvetica-Bold').text('FECHA DE IMPLEMENTACIÓN', X, doc.y).moveDown(0.3);
+  doc.fontSize(9).font('Helvetica').text(ctx.fecha, X, doc.y, { width: W }).moveDown(1);
+
+  doc.fontSize(9).font('Helvetica-Bold').text('EVIDENCIAS / DOCUMENTOS ASOCIADOS', X, doc.y).moveDown(0.4);
+  const thY = doc.y;
+  const cols2 = [280, 123, 120];
+  const heads2 = ['Documento / Evidencia', 'Fecha', 'Observaciones'];
+  let cx = X;
+  heads2.forEach((h, i) => {
+    doc.rect(cx, thY, cols2[i], 18).fillAndStroke('#1A237E', '#333');
+    doc.fillColor('#fff').fontSize(7).font('Helvetica-Bold').text(h, cx + 3, thY + 5, { width: cols2[i] - 6 });
+    cx += cols2[i];
+  });
+  doc.fillColor('#000');
+  for (let r = 0; r < 4; r++) {
+    const ry = thY + 18 + r * 20;
+    cx = X;
+    cols2.forEach(cw => { doc.rect(cx, ry, cw, 20).stroke('#CCC'); cx += cw; });
+  }
+  doc.y = thY + 18 + 4 * 20 + 12;
+
+  pesv_firmas(doc, ctx, 'Representante Legal\nFIRMA DE APROBACIÓN', 'Líder PESV\nFIRMA DE ELABORACIÓN');
+}
+
+function pesv_dibujarControlCambios(doc: PDFKit.PDFDocument, ctx: PESVCtx) {
+  pesv_dibujarEncabezado(doc, ctx);
+  const X = 36, W = 523;
+
+  // Control de cambios
+  doc.fontSize(9).font('Helvetica-Bold').text('CONTROL DE CAMBIOS', X, doc.y, { width: W, align: 'center' }).moveDown(0.5);
+
+  const thY = doc.y;
+  const cols = [80, 120, 323];
+  const heads = ['VERSIÓN', 'FECHA DE APROBACIÓN', 'DESCRIPCIÓN DE CAMBIOS REALIZADOS'];
+  let cx = X;
+  heads.forEach((h, i) => {
+    doc.rect(cx, thY, cols[i], 20).fillAndStroke('#1A237E', '#333');
+    doc.fillColor('#fff').fontSize(7).font('Helvetica-Bold').text(h, cx + 3, thY + 6, { width: cols[i] - 6, align: 'center' });
+    cx += cols[i];
+  });
+  const dataY = thY + 20;
+  cx = X;
+  const rowData = ['01', ctx.fecha, 'No aplica por ser primera versión'];
+  rowData.forEach((val, i) => {
+    doc.rect(cx, dataY, cols[i], 20).fillAndStroke('#fff', '#CCC');
+    doc.fillColor('#000').fontSize(8).font('Helvetica').text(val, cx + 3, dataY + 5, { width: cols[i] - 6, align: 'center' });
+    cx += cols[i];
+  });
+  doc.fillColor('#000');
+  doc.y = dataY + 20 + 20;
+
+  // Elaboró / Aprobó
+  const eY = doc.y;
+  const half = W / 2;
+  doc.rect(X, eY, half, 20).fillAndStroke('#1A237E', '#333');
+  doc.fillColor('#fff').fontSize(7).font('Helvetica-Bold').text('ELABORÓ:', X + 4, eY + 6);
+  doc.rect(X + half, eY, half, 20).fillAndStroke('#1A237E', '#333');
+  doc.fillColor('#fff').fontSize(7).font('Helvetica-Bold').text('REVISÓ Y APROBÓ:', X + half + 4, eY + 6);
+  doc.fillColor('#000');
+
+  const r2Y = eY + 20;
+  doc.rect(X, r2Y, half, 50).stroke('#CCC');
+  doc.rect(X + half, r2Y, half, 50).stroke('#CCC');
+  doc.fontSize(8).font('Helvetica-Bold')
+    .text(ctx.responsable, X + 4, r2Y + 5, { width: half - 8 })
+    .text(ctx.representante, X + half + 4, r2Y + 5, { width: half - 8 });
+  doc.fontSize(7).font('Helvetica')
+    .text('Líder PESV', X + 4, r2Y + 17, { width: half - 8 })
+    .text(ctx.cargo, X + half + 4, r2Y + 17, { width: half - 8 });
+  doc.fontSize(7).font('Helvetica')
+    .text(ctx.empresa, X + 4, r2Y + 29, { width: half - 8 })
+    .text(ctx.empresa, X + half + 4, r2Y + 29, { width: half - 8 });
+
+  const fY = r2Y + 50;
+  doc.rect(X, fY, half, 20).fillAndStroke('#1A237E', '#333');
+  doc.fillColor('#fff').fontSize(7).font('Helvetica-Bold').text('FECHA:', X + 4, fY + 6);
+  doc.rect(X + half, fY, half, 20).fillAndStroke('#1A237E', '#333');
+  doc.fillColor('#fff').fontSize(7).font('Helvetica-Bold').text('FECHA:', X + half + 4, fY + 6);
+  doc.fillColor('#000');
+  const f2Y = fY + 20;
+  doc.rect(X, f2Y, half, 20).stroke('#CCC');
+  doc.rect(X + half, f2Y, half, 20).stroke('#CCC');
+  doc.fontSize(8).font('Helvetica')
+    .text(ctx.fecha, X + 4, f2Y + 5, { width: half - 8 })
+    .text(ctx.fecha, X + half + 4, f2Y + 5, { width: half - 8 });
+}
