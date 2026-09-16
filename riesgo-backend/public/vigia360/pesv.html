@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>PESV · Vigia 360</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+<style>
+:root{
+  --azul:#1A237E;--azul-md:#283593;--azul-lt:#3949AB;--azul-bg:#E8EAF6;
+  --cyan:#00BCD4;--gris:#F4F5F8;--border:#DDE3E9;--text:#1A1A2E;
+}
+*{box-sizing:border-box}
+body{background:var(--gris);font-size:.82rem;color:var(--text);margin:0}
+
+.v-nav{background:var(--azul);padding:.6rem 1.2rem;display:flex;align-items:center;gap:1rem;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+.v-badge{background:#fff;color:var(--azul);font-weight:800;font-size:.78rem;letter-spacing:1px;padding:3px 9px;border-radius:5px}
+.pesv-badge{background:var(--cyan);color:#fff;font-weight:800;font-size:.72rem;letter-spacing:.5px;padding:2px 8px;border-radius:4px}
+.v-nav-title{color:#fff;font-weight:700;font-size:.95rem}
+
+/* Selector empresa */
+.empresa-bar{background:#fff;border-bottom:1px solid var(--border);padding:.7rem 1.2rem;display:flex;align-items:center;gap:.75rem;flex-wrap:wrap}
+.empresa-select{font-size:.82rem;font-weight:600;border:1.5px solid var(--border);border-radius:7px;padding:.35rem .75rem;min-width:260px;cursor:pointer}
+.empresa-select:focus{outline:none;border-color:var(--azul-lt)}
+
+/* KPIs */
+.kpi-card{background:#fff;border-radius:10px;border:1px solid var(--border);padding:.75rem .9rem;display:flex;align-items:center;gap:.75rem}
+.kpi-icon{width:38px;height:38px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1rem}
+.kpi-num{font-size:1.5rem;font-weight:800;line-height:1}
+.kpi-lbl{font-size:.63rem;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
+.pct-mini{height:4px;border-radius:2px;background:#E0E0E0;overflow:hidden;margin-top:4px}
+.pct-mini-fill{height:100%;border-radius:2px;background:var(--cyan);transition:.4s}
+
+/* Nivel badges */
+.badge-nivel{font-size:.62rem;font-weight:700;padding:2px 7px;border-radius:10px}
+.nivel-todos{background:#E8EAF6;color:#3949AB}
+.nivel-ea{background:#FFF8E1;color:#F57F17}
+.nivel-av{background:#FCE4EC;color:#880E4F}
+.nivel-no{background:#F5F5F5;color:#9E9E9E;text-decoration:line-through}
+
+/* Fase tabs */
+.fase-tabs{display:flex;gap:.4rem;flex-wrap:wrap}
+.fase-tab{border:2px solid var(--border);background:#fff;border-radius:7px;padding:.28rem .8rem;font-size:.77rem;font-weight:700;cursor:pointer;transition:.15s;white-space:nowrap}
+.fase-tab.active,.fase-tab:hover{border-color:var(--azul-lt);background:var(--azul-bg);color:var(--azul)}
+.fase-tab .cnt{background:var(--azul-lt);color:#fff;border-radius:8px;padding:1px 6px;font-size:.66rem;margin-left:.3rem}
+.fase-tab:not(.active) .cnt{background:var(--border);color:#555}
+
+/* Paso cards */
+.paso-card{background:#fff;border:1px solid var(--border);border-radius:10px;margin-bottom:.55rem;overflow:hidden;transition:.15s}
+.paso-card.completado{border-left:4px solid #00BCD4}
+.paso-card.pendiente{border-left:4px solid #E0E0E0}
+.paso-card.no-aplica{opacity:.5;border-left:4px solid #F5F5F5}
+.paso-header{display:flex;align-items:center;gap:.75rem;padding:.6rem .9rem;cursor:pointer}
+.paso-num{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.75rem;flex-shrink:0}
+.paso-num-ok{background:#00BCD4;color:#fff}
+.paso-num-pend{background:#E0E0E0;color:#666}
+.paso-num-na{background:#F5F5F5;color:#BBB}
+.paso-nombre{font-weight:600;font-size:.8rem;flex:1}
+.paso-check{width:22px;height:22px;border-radius:6px;border:2px solid #DDE3E9;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.15s;flex-shrink:0}
+.paso-check.on{background:#00BCD4;border-color:#00BCD4;color:#fff}
+.paso-check:hover{border-color:#00BCD4}
+
+/* Detalle expandible */
+.paso-detalle{padding:.65rem .9rem .75rem 3.2rem;border-top:1px solid #F0F4F8;display:none}
+.paso-detalle.show{display:block}
+.det-row{display:flex;gap:.75rem;flex-wrap:wrap;margin-top:.5rem}
+.det-field{flex:1;min-width:140px}
+.det-label{font-size:.66rem;color:#888;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px}
+.det-input{width:100%;border:1px solid var(--border);border-radius:6px;padding:.3rem .5rem;font-size:.78rem;font-family:inherit}
+.det-input:focus{outline:none;border-color:var(--azul-lt)}
+
+/* Progreso circular (simple) */
+.prog-ring{position:relative;width:52px;height:52px;flex-shrink:0}
+.prog-ring svg{transform:rotate(-90deg)}
+.prog-ring .pct-text{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:.68rem;font-weight:800;color:var(--azul)}
+
+/* Empty state */
+.empty-state{text-align:center;padding:3rem 1rem;color:#9E9E9E}
+.empty-state i{font-size:2.5rem;margin-bottom:.75rem;display:block;color:var(--border)}
+
+/* Modal */
+.modal-header{background:var(--azul);color:#fff}
+.modal-header .btn-close{filter:invert(1)}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="v-nav">
+  <span class="v-badge">VIGIA 360</span>
+  <span class="pesv-badge">PESV</span>
+  <span class="v-nav-title">Plan Estratégico de Seguridad Vial</span>
+  <div class="ms-auto text-white opacity-50" style="font-size:.7rem">Res. 40595/2022</div>
+</nav>
+
+<!-- BARRA EMPRESA -->
+<div class="empresa-bar">
+  <select id="selEmpresa" class="empresa-select" onchange="seleccionar()">
+    <option value="">— Seleccionar empresa —</option>
+  </select>
+  <button class="btn btn-sm" style="background:var(--azul);color:#fff;font-size:.78rem" onclick="abrirNuevaEmpresa()">
+    <i class="fas fa-plus me-1"></i>Nueva empresa
+  </button>
+  <span id="nivelBadge" class="ms-2" style="display:none"></span>
+  <span id="misionalBadge" class="ms-1" style="display:none"></span>
+</div>
+
+<div class="container-fluid px-3 py-3" id="mainContent" style="display:none">
+
+  <!-- KPIs -->
+  <div class="row g-2 mb-3">
+    <div class="col-6 col-md-3">
+      <div class="kpi-card">
+        <div class="kpi-icon" style="background:#E8EAF6"><i class="fas fa-road" style="color:var(--azul)"></i></div>
+        <div style="flex:1">
+          <div class="kpi-num" id="kTotal" style="color:var(--azul)">—</div>
+          <div class="kpi-lbl">Pasos Totales</div>
+          <div class="pct-mini"><div class="pct-mini-fill" id="kBar" style="width:0%"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="kpi-card">
+        <div class="kpi-icon" style="background:#E0F7FA"><i class="fas fa-check-circle" style="color:#00BCD4"></i></div>
+        <div>
+          <div class="kpi-num" style="color:#00BCD4" id="kCompletados">—</div>
+          <div class="kpi-lbl">Completados</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="kpi-card">
+        <div class="kpi-icon" style="background:#FFF8E1"><i class="fas fa-clock" style="color:#F57F17"></i></div>
+        <div>
+          <div class="kpi-num text-warning" id="kPendientes">—</div>
+          <div class="kpi-lbl">Pendientes</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="kpi-card">
+        <div class="kpi-icon" style="background:#E8EAF6"><i class="fas fa-percent" style="color:var(--azul)"></i></div>
+        <div>
+          <div class="kpi-num" style="color:var(--azul)" id="kPct">—</div>
+          <div class="kpi-lbl">% Cumplimiento</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs PHVA -->
+  <div class="fase-tabs mb-3">
+    <button class="fase-tab active" onclick="filtrarFase('')" id="tab-all">Todos <span class="cnt" id="cnt-all">0</span></button>
+    <button class="fase-tab" onclick="filtrarFase('PLANEAR')" id="tab-PLANEAR">P · Planear <span class="cnt" id="cnt-PLANEAR">0</span></button>
+    <button class="fase-tab" onclick="filtrarFase('HACER')" id="tab-HACER">H · Hacer <span class="cnt" id="cnt-HACER">0</span></button>
+    <button class="fase-tab" onclick="filtrarFase('VERIFICAR')" id="tab-VERIFICAR">V · Verificar <span class="cnt" id="cnt-VERIFICAR">0</span></button>
+    <button class="fase-tab" onclick="filtrarFase('ACTUAR')" id="tab-ACTUAR">A · Actuar <span class="cnt" id="cnt-ACTUAR">0</span></button>
+  </div>
+
+  <!-- Lista pasos -->
+  <div id="listaPasos"></div>
+
+</div>
+
+<!-- Empty state -->
+<div id="emptyState" class="empty-state">
+  <i class="fas fa-car-crash"></i>
+  <div class="fw-semibold mb-1">Ninguna empresa seleccionada</div>
+  <div class="small">Selecciona una empresa o crea una nueva para gestionar su PESV.</div>
+</div>
+
+<!-- Modal nueva empresa -->
+<div class="modal fade" id="mNuevaEmpresa" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered" style="max-width:440px">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header">
+        <h6 class="modal-title fw-bold"><i class="fas fa-road me-2"></i>Nueva Empresa — PESV</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Razón Social <span class="text-danger">*</span></label>
+          <input type="text" id="nEmpresa" class="form-control" placeholder="Nombre de la empresa"/>
+        </div>
+        <div class="row g-2 mb-3">
+          <div class="col-7">
+            <label class="form-label fw-semibold">NIT</label>
+            <input type="text" id="nNit" class="form-control" placeholder="800.123.456-1"/>
+          </div>
+          <div class="col-5">
+            <label class="form-label fw-semibold">Año</label>
+            <input type="number" id="nAño" class="form-control" value="2025"/>
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Misionalidad <span class="text-danger">*</span></label>
+          <select id="nMisionalidad" class="form-select">
+            <option value="otro">Actividad diferente al transporte</option>
+            <option value="transporte">Transporte Terrestre Automotor</option>
+          </select>
+        </div>
+        <div class="mb-2">
+          <label class="form-label fw-semibold">Nivel PESV <span class="text-danger">*</span></label>
+          <select id="nNivel" class="form-select" onchange="actualizarDescNivel()">
+            <option value="basico">Básico</option>
+            <option value="estandar">Estándar</option>
+            <option value="avanzado">Avanzado</option>
+          </select>
+        </div>
+        <div id="descNivel" class="alert alert-info p-2 small mb-0" style="font-size:.75rem"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-sm px-4" style="background:var(--azul);color:#fff" onclick="crearEmpresa()">
+          <i class="fas fa-check me-1"></i>Crear PESV
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal editar paso -->
+<div class="modal fade" id="mPaso" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered" style="max-width:480px">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header">
+        <h6 class="modal-title fw-bold" id="mPasoTitle"></h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <input type="hidden" id="mPasoId"/>
+        <div class="form-check form-switch mb-3">
+          <input class="form-check-input" type="checkbox" id="mCompletado" style="width:2.5em;height:1.3em"/>
+          <label class="form-check-label fw-semibold ms-2" for="mCompletado">Paso completado</label>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Fecha de cumplimiento</label>
+          <input type="date" id="mFecha" class="form-control"/>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Responsable</label>
+          <input type="text" id="mResponsable" class="form-control" placeholder="Nombre del responsable"/>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Evidencia / Documento</label>
+          <input type="text" id="mEvidencia" class="form-control" placeholder="Ej: Resolución de designación, Acta N°1..."/>
+        </div>
+        <div class="mb-0">
+          <label class="form-label fw-semibold">Observaciones</label>
+          <textarea id="mObservaciones" class="form-control" rows="2" placeholder="Observaciones adicionales..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-sm px-4" style="background:var(--azul);color:#fff" onclick="guardarPaso()">
+          <i class="fas fa-save me-1"></i>Guardar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const BASE = '/api/vigia360';
+let empresas = [];
+let pasos = [];
+let filtroFase = '';
+let mNuevaEmpresaModal, mPasoModal;
+
+const DESC_NIVEL = {
+  basico:   'Básico: empresas no transporte con 11–49 vehículos o 2–49 conductores. Aplican 18 de 24 pasos.',
+  estandar: 'Estándar: empresas no transporte con 50–100 vehículos o 50–100 conductores. Aplican 21 de 24 pasos.',
+  avanzado: 'Avanzado: más de 100 vehículos o más de 100 conductores. Aplican los 24 pasos.',
+};
+const NIVEL_COLOR = { basico:'#1565C0',estandar:'#F57F17',avanzado:'#880E4F' };
+const NIVEL_LABEL = { basico:'Básico',estandar:'Estándar',avanzado:'Avanzado' };
+const FASE_COLOR  = { PLANEAR:'#1A237E',HACER:'#006064',VERIFICAR:'#4A148C',ACTUAR:'#B71C1C' };
+
+// ── Init ─────────────────────────────────────────────────────────────
+async function init(){
+  await cargarEmpresas();
+  actualizarDescNivel();
+}
+
+async function cargarEmpresas(){
+  try{
+    const r = await fetch(`${BASE}/pesv/empresas`);
+    empresas = await r.json();
+    const sel = document.getElementById('selEmpresa');
+    sel.innerHTML = '<option value="">— Seleccionar empresa —</option>';
+    empresas.forEach((e,i)=>{
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = `${e.empresa_nombre} (${e.año})`;
+      sel.appendChild(opt);
+    });
+  }catch(e){ console.error(e); }
+}
+
+function seleccionar(){
+  const idx = document.getElementById('selEmpresa').value;
+  if(idx === ''){
+    document.getElementById('mainContent').style.display='none';
+    document.getElementById('emptyState').style.display='block';
+    document.getElementById('nivelBadge').style.display='none';
+    document.getElementById('misionalBadge').style.display='none';
+    return;
+  }
+  const emp = empresas[Number(idx)];
+  document.getElementById('nivelBadge').style.display='inline';
+  document.getElementById('nivelBadge').innerHTML =
+    `<span class="badge" style="background:${NIVEL_COLOR[emp.nivel]};font-size:.72rem">${NIVEL_LABEL[emp.nivel]}</span>`;
+  document.getElementById('misionalBadge').style.display='inline';
+  document.getElementById('misionalBadge').innerHTML =
+    `<span class="badge bg-secondary" style="font-size:.7rem">${emp.misionalidad==='transporte'?'Transporte':'Otro sector'}</span>`;
+  document.getElementById('mainContent').style.display='block';
+  document.getElementById('emptyState').style.display='none';
+  cargarPasos(emp.empresa_nombre, emp.año);
+}
+
+async function cargarPasos(empresa, año){
+  try{
+    const r = await fetch(`${BASE}/pesv/pasos?empresa=${encodeURIComponent(empresa)}&año=${año}`);
+    pasos = await r.json();
+    renderTabs();
+    renderPasos();
+  }catch(e){ console.error(e); }
+}
+
+// ── Tabs ─────────────────────────────────────────────────────────────
+function renderTabs(){
+  document.getElementById('cnt-all').textContent = pasos.length;
+  ['PLANEAR','HACER','VERIFICAR','ACTUAR'].forEach(f=>{
+    document.getElementById(`cnt-${f}`).textContent = pasos.filter(p=>p.fase===f).length;
+  });
+}
+
+function filtrarFase(f){
+  filtroFase = f;
+  document.querySelectorAll('.fase-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(f?`tab-${f}`:'tab-all').classList.add('active');
+  renderPasos();
+}
+
+// ── Render pasos ─────────────────────────────────────────────────────
+function renderPasos(){
+  const lista = filtroFase ? pasos.filter(p=>p.fase===filtroFase) : pasos;
+  const total = pasos.length;
+  const comp  = pasos.filter(p=>p.completado).length;
+  const pct   = total>0 ? Math.round(comp/total*100) : 0;
+
+  document.getElementById('kTotal').textContent      = total;
+  document.getElementById('kCompletados').textContent = comp;
+  document.getElementById('kPendientes').textContent  = total - comp;
+  document.getElementById('kPct').textContent         = pct+'%';
+  document.getElementById('kBar').style.width         = pct+'%';
+
+  const container = document.getElementById('listaPasos');
+
+  // Agrupar por fase si mostramos todos
+  if(!filtroFase){
+    container.innerHTML = ['PLANEAR','HACER','VERIFICAR','ACTUAR'].map(fase=>{
+      const items = lista.filter(p=>p.fase===fase);
+      if(!items.length) return '';
+      const fComp = items.filter(p=>p.completado).length;
+      const fPct  = Math.round(fComp/items.length*100);
+      return `<div class="mb-2">
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <span class="fw-bold" style="color:${FASE_COLOR[fase]||'#333'};font-size:.78rem">${fase}</span>
+          <span class="text-muted small">${fComp}/${items.length} completados</span>
+          <div class="flex-grow-1" style="height:4px;background:#EEE;border-radius:2px;max-width:120px">
+            <div style="height:4px;background:${FASE_COLOR[fase]};border-radius:2px;width:${fPct}%;transition:.3s"></div>
+          </div>
+        </div>
+        ${items.map(p=>pasoHtml(p)).join('')}
+      </div>`;
+    }).join('');
+  } else {
+    container.innerHTML = lista.map(p=>pasoHtml(p)).join('');
+  }
+}
+
+function pasoHtml(p){
+  const nivelHtml = p.aplica_nivel === 'todos'
+    ? '<span class="badge-nivel nivel-todos">Todos</span>'
+    : p.aplica_nivel === 'estandar_avanzado'
+    ? '<span class="badge-nivel nivel-ea">Est.+Avanz.</span>'
+    : '<span class="badge-nivel nivel-av">Avanzado</span>';
+
+  const numClass = p.completado ? 'paso-num-ok' : 'paso-num-pend';
+  const cardClass = p.completado ? 'completado' : 'pendiente';
+  const checkClass = p.completado ? 'on' : '';
+  const checkIcon = p.completado ? '<i class="fas fa-check" style="font-size:.65rem"></i>' : '';
+
+  return `<div class="paso-card ${cardClass}" id="card-${p.id}">
+    <div class="paso-header" onclick="toggleDetalle(${p.id})">
+      <div class="paso-num ${numClass}">${p.paso_numero}</div>
+      <div class="paso-nombre">${p.paso_nombre}</div>
+      ${nivelHtml}
+      <div class="paso-check ${checkClass}" onclick="event.stopPropagation();togglePaso(${p.id})">${checkIcon}</div>
+      <i class="fas fa-chevron-down text-muted ms-1" style="font-size:.65rem;transition:.2s" id="chev-${p.id}"></i>
+    </div>
+    <div class="paso-detalle" id="det-${p.id}">
+      <div class="d-flex gap-3 flex-wrap">
+        <div style="min-width:120px">
+          <div class="det-label">Fecha cumplimiento</div>
+          <div class="fw-semibold">${p.fecha_completado ? p.fecha_completado.substring(0,10) : '<span class="text-muted">—</span>'}</div>
+        </div>
+        <div style="min-width:140px">
+          <div class="det-label">Responsable</div>
+          <div>${p.responsable || '<span class="text-muted">—</span>'}</div>
+        </div>
+        <div style="flex:1;min-width:180px">
+          <div class="det-label">Evidencia / Documento</div>
+          <div>${p.evidencia || '<span class="text-muted">—</span>'}</div>
+        </div>
+      </div>
+      ${p.observaciones ? `<div class="mt-2 text-muted small"><i class="fas fa-comment me-1"></i>${p.observaciones}</div>` : ''}
+      <button class="btn btn-sm mt-2" style="background:var(--azul-bg);color:var(--azul);font-size:.72rem"
+        onclick="abrirPaso(${p.id})"><i class="fas fa-edit me-1"></i>Editar detalle</button>
+    </div>
+  </div>`;
+}
+
+function toggleDetalle(id){
+  const det  = document.getElementById(`det-${id}`);
+  const chev = document.getElementById(`chev-${id}`);
+  det.classList.toggle('show');
+  chev.style.transform = det.classList.contains('show') ? 'rotate(180deg)' : '';
+}
+
+// ── Toggle completado rápido ─────────────────────────────────────────
+async function togglePaso(id){
+  const paso = pasos.find(p=>p.id===id);
+  if(!paso) return;
+  const nuevo = !paso.completado;
+  try{
+    const r = await fetch(`${BASE}/pesv/pasos/${id}`,{
+      method:'PUT',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        completado: nuevo,
+        fecha_completado: nuevo ? new Date().toISOString().slice(0,10) : null,
+        responsable: paso.responsable,
+        evidencia: paso.evidencia,
+        observaciones: paso.observaciones,
+      })
+    });
+    const updated = await r.json();
+    if(!r.ok) throw new Error(updated.error||'Error');
+    const idx = pasos.findIndex(p=>p.id===id);
+    if(idx>=0) pasos[idx] = updated;
+    renderPasos();
+  }catch(e){ alert('Error: '+e.message); }
+}
+
+// ── Modal editar paso ────────────────────────────────────────────────
+function abrirPaso(id){
+  const p = pasos.find(x=>x.id===id);
+  if(!p) return;
+  document.getElementById('mPasoId').value          = id;
+  document.getElementById('mPasoTitle').textContent = `Paso ${p.paso_numero}: ${p.paso_nombre}`;
+  document.getElementById('mCompletado').checked    = p.completado;
+  document.getElementById('mFecha').value           = p.fecha_completado ? p.fecha_completado.substring(0,10) : '';
+  document.getElementById('mResponsable').value     = p.responsable || '';
+  document.getElementById('mEvidencia').value       = p.evidencia || '';
+  document.getElementById('mObservaciones').value   = p.observaciones || '';
+  if(!mPasoModal) mPasoModal = new bootstrap.Modal(document.getElementById('mPaso'));
+  mPasoModal.show();
+}
+
+async function guardarPaso(){
+  const id = Number(document.getElementById('mPasoId').value);
+  const body = {
+    completado:        document.getElementById('mCompletado').checked,
+    fecha_completado:  document.getElementById('mFecha').value || null,
+    responsable:       document.getElementById('mResponsable').value.trim() || null,
+    evidencia:         document.getElementById('mEvidencia').value.trim() || null,
+    observaciones:     document.getElementById('mObservaciones').value.trim() || null,
+  };
+  try{
+    const r = await fetch(`${BASE}/pesv/pasos/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    const updated = await r.json();
+    if(!r.ok) throw new Error(updated.error||'Error');
+    const idx = pasos.findIndex(p=>p.id===id);
+    if(idx>=0) pasos[idx] = updated;
+    mPasoModal.hide();
+    renderPasos();
+  }catch(e){ alert('Error: '+e.message); }
+}
+
+// ── Nueva empresa ────────────────────────────────────────────────────
+function abrirNuevaEmpresa(){
+  if(!mNuevaEmpresaModal) mNuevaEmpresaModal = new bootstrap.Modal(document.getElementById('mNuevaEmpresa'));
+  mNuevaEmpresaModal.show();
+}
+
+function actualizarDescNivel(){
+  const nivel = document.getElementById('nNivel')?.value;
+  const el = document.getElementById('descNivel');
+  if(el && nivel) el.textContent = DESC_NIVEL[nivel] || '';
+}
+
+async function crearEmpresa(){
+  const empresa_nombre = document.getElementById('nEmpresa').value.trim();
+  const empresa_nit    = document.getElementById('nNit').value.trim();
+  const año            = Number(document.getElementById('nAño').value);
+  const nivel          = document.getElementById('nNivel').value;
+  const misionalidad   = document.getElementById('nMisionalidad').value;
+  if(!empresa_nombre){ alert('Ingresa el nombre de la empresa'); return; }
+  try{
+    const r = await fetch(`${BASE}/pesv/empresas`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({empresa_nombre,empresa_nit,año,nivel,misionalidad})
+    });
+    const d = await r.json();
+    if(!r.ok) throw new Error(d.error||'Error');
+    mNuevaEmpresaModal.hide();
+    await cargarEmpresas();
+    // Auto-seleccionar la empresa recién creada
+    const sel = document.getElementById('selEmpresa');
+    const idx = empresas.findIndex(e=>e.empresa_nombre===empresa_nombre && e.año===año);
+    if(idx>=0){ sel.value = idx; seleccionar(); }
+  }catch(e){ alert('Error: '+e.message); }
+}
+
+init();
+</script>
+</body>
+</html>
