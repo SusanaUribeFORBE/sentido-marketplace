@@ -242,7 +242,7 @@ axaOrdenesRouter.get('/ordenes/:id/pdf', async (req: Request, res: Response) => 
        .text('DESCRIPCIÓN DETALLADA DE LA ACTIVIDAD', M, y);
     y += 11;
     const descText = o.observaciones || o.tipo_servicio || '—';
-    const descH = Math.max(40, doc.heightOfString(descText, { width: W, fontSize: 9 }) + 8);
+    const descH = Math.max(40, doc.fontSize(9).heightOfString(descText, { width: W }) + 8);
     doc.rect(M, y, W, descH).fillColor('#f7f8fc').fill();
     doc.rect(M, y, W, descH).strokeColor('#dde3f0').lineWidth(0.5).stroke();
     doc.font('Helvetica').fontSize(9).fillColor('#000000')
