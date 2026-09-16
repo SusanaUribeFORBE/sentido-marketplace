@@ -276,37 +276,44 @@ function fmtFecha(iso: string): string {
 const LOGO_PATH = path.join(__dirname, '..', '..', 'assets', 'logo-proaves.jpeg');
 
 function pesv_dibujarEncabezado(doc: PDFKit.PDFDocument, ctx: PESVCtx) {
-  const X = 36, Y = doc.y, W = 523, H = 56;
-  const logoW = 80, codeW = 132;
+  const X = 36, Y = doc.y, W = 523, H = 74;
+  const logoW = 92, codeW = 134;
+  const titleW = W - logoW - codeW;
 
-  // Outer border
+  // Outer border + vertical dividers
   doc.rect(X, Y, W, H).stroke('#333');
-  // Vertical dividers
   doc.moveTo(X + logoW, Y).lineTo(X + logoW, Y + H).stroke('#333');
-  doc.moveTo(X + W - codeW, Y).lineTo(X + W - codeW, Y + H).stroke('#333');
+  doc.moveTo(X + logoW + titleW, Y).lineTo(X + logoW + titleW, Y + H).stroke('#333');
 
-  // Logo if available for this company
+  // Logo — clipped to the cell so never overflows
   const logoExists = fs.existsSync(LOGO_PATH);
+  doc.save();
+  doc.rect(X + 2, Y + 2, logoW - 4, H - 4).clip();
   if (logoExists) {
-    doc.image(LOGO_PATH, X + 4, Y + 4, { fit: [logoW - 8, H - 8] });
+    doc.image(LOGO_PATH, X + 2, Y + 2, { fit: [logoW - 4, H - 4], align: 'center', valign: 'center' });
   } else {
     doc.fontSize(7).font('Helvetica-Bold')
-      .text(ctx.empresa, X + 4, Y + H / 2 - 6, { width: logoW - 8, align: 'center' });
+      .text(ctx.empresa, X + 4, Y + H / 2 - 8, { width: logoW - 8, align: 'center' });
   }
+  doc.restore();
 
-  // Title
+  // Title — vertically centered in the middle cell
+  const titleLines = ctx.titulo.split(' ');
+  // Approximate vertical center (8pt font, ~10pt/line)
+  const approxLines = Math.ceil(ctx.titulo.length / 32);
+  const titleY = Y + Math.max(8, (H - approxLines * 12) / 2);
   doc.fontSize(8).font('Helvetica-Bold')
-    .text(ctx.titulo, X + logoW + 4, Y + 8, {
-      width: W - logoW - codeW - 8, align: 'center', lineGap: 2,
+    .text(ctx.titulo, X + logoW + 6, titleY, {
+      width: titleW - 12, align: 'center', lineGap: 3,
     });
 
-  // Code block
-  const cx = X + W - codeW + 5;
-  doc.fontSize(7).font('Helvetica-Bold')
-    .text(`CÓDIGO: ${ctx.codigo}`, cx, Y + 8, { width: codeW - 10 })
-    .text('VERSIÓN: 1', cx, Y + 20, { width: codeW - 10 })
-    .text('FECHA DE VIGENCIA:', cx, Y + 32, { width: codeW - 10 })
-    .text(ctx.fecha, cx, Y + 42, { width: codeW - 10 });
+  // Code block (right cell)
+  const cx = X + logoW + titleW + 6;
+  doc.fontSize(7.5).font('Helvetica-Bold')
+    .text(`CÓDIGO: ${ctx.codigo}`, cx, Y + 10, { width: codeW - 12 })
+    .text('VERSIÓN: 1', cx, Y + 24, { width: codeW - 12 })
+    .text('FECHA DE VIGENCIA:', cx, Y + 38, { width: codeW - 12 })
+    .text(ctx.fecha, cx, Y + 50, { width: codeW - 12 });
 
   doc.y = Y + H + 16;
 }
@@ -342,16 +349,28 @@ function pesv_dibujarPagina1(doc: PDFKit.PDFDocument, ctx: PESVCtx) {
   const X = 36, W = 523;
   const body: Record<number, () => void> = {
     1: () => {
-      doc.fontSize(9).font('Helvetica-Bold').text(`Rionegro, ${ctx.fecha}`, X, doc.y).moveDown(0.8);
+      doc.fontSize(9).font('Helvetica-Bold').text(`___________, ${ctx.fecha}`, X, doc.y).moveDown(1);
       doc.fontSize(9).font('Helvetica').text(
-        `Por medio de la presente, yo ${ctx.representante}, actuando en mi calidad de ${ctx.cargo} y Representante Legal de ${ctx.empresa} (NIT: ${ctx.nit}), en cumplimiento de lo establecido en la Resolución 20223040040595 del Ministerio de Transporte, designo como Líder del diseño e implementación del Plan Estratégico de Seguridad Vial (PESV) a `,
+        `Por medio de la presente, yo `,
         X, doc.y, { width: W, align: 'justify', continued: true }
-      ).font('Helvetica-Bold').text(`${ctx.responsable}, `, { continued: true })
+      ).font('Helvetica-Bold').text(ctx.representante, { continued: true })
        .font('Helvetica').text(
-        `quien tendrá la responsabilidad de velar por el cumplimiento de las etapas de planificación, implementación, seguimiento y mejora continua del PESV de conformidad con la Resolución 20223040040595 del Ministerio de Transporte y demás normatividad nacional vigente en materia de seguridad vial, así mismo el reporte de los indicadores del PESV ante las entidades correspondientes, e informará a la Alta Dirección sobre el funcionamiento y los resultados del Plan.`,
+        `, identificada con Cédula de Ciudadanía No. _______________ de ___________, actuando en mi calidad de `,
+        { continued: true }
+      ).font('Helvetica-Bold').text(ctx.cargo, { continued: true })
+       .font('Helvetica').text(
+        ` de la `,
+        { continued: true }
+      ).font('Helvetica-Bold').text(ctx.empresa, { continued: true })
+       .font('Helvetica').text(
+        ` (NIT: ${ctx.nit}), en cumplimiento de lo establecido en la Resolución 20223040040595 del Ministerio de Transporte, designo como Líder del diseño e implementación del Plan Estratégico de Seguridad Vial (PESV) a `,
+        { continued: true }
+      ).font('Helvetica-Bold').text(ctx.responsable, { continued: true })
+       .font('Helvetica').text(
+        `, quien tendrá la responsabilidad de velar por el cumplimiento de las etapas de planificación, implementación, seguimiento y mejora continua del PESV de conformidad con la Resolución 20223040040595 del Ministerio de Transporte y demás normatividad nacional vigente en materia de seguridad vial, así mismo el reporte de los indicadores del PESV ante las entidades correspondientes, e informará a la Alta Dirección sobre el funcionamiento y los resultados del Plan.`,
         { width: W, align: 'justify' }
       );
-      pesv_firmas(doc, ctx, 'Directora Ejecutiva — Representante Legal\nFIRMA DE APROBACIÓN', 'FIRMA DE ACEPTACIÓN DEL LÍDER DEL PESV');
+      pesv_firmas(doc, ctx, ctx.cargo + '\nFIRMA DE APROBACIÓN', 'FIRMA DE ACEPTACIÓN DEL LÍDER DEL PESV');
     },
     2: () => {
       doc.fontSize(9).font('Helvetica-Bold').text(`Rionegro, ${ctx.fecha}`, X, doc.y).moveDown(0.8);
@@ -395,12 +414,33 @@ function pesv_dibujarPagina1(doc: PDFKit.PDFDocument, ctx: PESVCtx) {
       pesv_firmas(doc, ctx, 'Representante Legal\nFIRMA DE APROBACIÓN', 'Líder PESV\nFIRMA DE ELABORACIÓN');
     },
     4: () => {
-      doc.fontSize(9).font('Helvetica-Bold').text(`Rionegro, ${ctx.fecha}`, X, doc.y).moveDown(0.8);
+      doc.fontSize(9).font('Helvetica-Bold').text(`___________, ${ctx.fecha}`, X, doc.y).moveDown(1);
       doc.fontSize(9).font('Helvetica').text(
-        `Por medio de la presente, la Alta Dirección de ${ctx.empresa} (NIT: ${ctx.nit}), representada por ${ctx.representante} en calidad de ${ctx.cargo}, manifiesta su pleno compromiso con la implementación, mantenimiento y mejora continua del Plan Estratégico de Seguridad Vial (PESV), en cumplimiento de la Resolución 20223040040595 del Ministerio de Transporte.\n\nEn consecuencia, la organización se compromete a:\n\n1. Asignar los recursos humanos, técnicos y financieros necesarios para la implementación del PESV.\n2. Designar el Líder del PESV con las competencias requeridas por la resolución.\n3. Promover una cultura de seguridad vial en todos los niveles de la organización.\n4. Revisar periódicamente el cumplimiento del PESV y tomar las acciones de mejora necesarias.\n5. Reportar oportunamente los indicadores de autogestión ante las entidades competentes.\n6. Cumplir con toda la normatividad vigente en materia de seguridad vial.`,
-        X, doc.y, { width: W, align: 'justify', lineGap: 2 }
+        `Por medio de la presente, la Alta Dirección de `,
+        X, doc.y, { width: W, align: 'justify', continued: true }
+      ).font('Helvetica-Bold').text(ctx.empresa, { continued: true })
+       .font('Helvetica').text(
+        ` (NIT: ${ctx.nit}), representada por `,
+        { continued: true }
+      ).font('Helvetica-Bold').text(ctx.representante, { continued: true })
+       .font('Helvetica').text(
+        ` en calidad de ${ctx.cargo}, manifiesta su pleno compromiso con la implementación, mantenimiento y mejora continua del Plan Estratégico de Seguridad Vial (PESV), en cumplimiento de la Resolución 20223040040595 del Ministerio de Transporte.`,
+        { width: W, align: 'justify' }
       );
-      pesv_firmas(doc, ctx, 'Representante Legal\nFIRMA DE COMPROMISO', 'Líder PESV\nFIRMA DE ELABORACIÓN');
+      doc.moveDown(0.8);
+      doc.fontSize(9).font('Helvetica').text('En consecuencia, la organización se compromete a:', X, doc.y, { width: W }).moveDown(0.5);
+      const compromisos = [
+        'Asignar los recursos humanos, técnicos y financieros necesarios para la implementación del PESV.',
+        'Designar el Líder del PESV con las competencias requeridas por la resolución.',
+        'Promover una cultura de seguridad vial en todos los niveles de la organización.',
+        'Revisar periódicamente el cumplimiento del PESV y tomar las acciones de mejora necesarias.',
+        'Reportar oportunamente los indicadores de autogestión ante las entidades competentes.',
+        'Cumplir con toda la normatividad vigente en materia de seguridad vial.',
+      ];
+      compromisos.forEach((c, i) => {
+        doc.fontSize(9).font('Helvetica').text(`${i + 1}. ${c}`, X + 10, doc.y, { width: W - 10, align: 'justify' }).moveDown(0.3);
+      });
+      pesv_firmas(doc, ctx, ctx.cargo + '\nFIRMA DE COMPROMISO', 'Líder PESV\nFIRMA DE ELABORACIÓN');
     },
   };
 
