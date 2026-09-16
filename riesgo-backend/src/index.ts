@@ -83,6 +83,17 @@ app.use(express.static(path.join(__dirname, '..', 'public'), {
 }));
 app.use('/assets', express.static(path.join(__dirname, '..', 'assets')));
 
+// ── Vigia 360 páginas (rutas explícitas para garantizar serving en Railway) ──
+const V360_DIR = path.join(__dirname, '..', 'public', 'vigia360');
+app.get('/vigia360/plan-anual.html', (_req, res) => {
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.sendFile(path.join(V360_DIR, 'plan-anual.html'));
+});
+app.get('/vigia360/pesv.html', (_req, res) => {
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.sendFile(path.join(V360_DIR, 'pesv.html'));
+});
+
 app.get('/api', (_req, res) => {
   res.json({ status: 'RiesGO! backend corriendo ✅' });
 });

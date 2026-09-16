@@ -2,3 +2,4 @@ node_modules
 dist
 .env
 vigia360-pat.sql
+pesv-migration.sql
