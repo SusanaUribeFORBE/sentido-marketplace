@@ -274,7 +274,6 @@ function fmtFecha(iso: string): string {
 }
 
 const LOGO_PATH = path.join(__dirname, '..', '..', 'assets', 'logo-proaves.jpeg');
-const PROAVES_NIT = '811.031.647-1';
 
 function pesv_dibujarEncabezado(doc: PDFKit.PDFDocument, ctx: PESVCtx) {
   const X = 36, Y = doc.y, W = 523, H = 56;
@@ -286,8 +285,9 @@ function pesv_dibujarEncabezado(doc: PDFKit.PDFDocument, ctx: PESVCtx) {
   doc.moveTo(X + logoW, Y).lineTo(X + logoW, Y + H).stroke('#333');
   doc.moveTo(X + W - codeW, Y).lineTo(X + W - codeW, Y + H).stroke('#333');
 
-  // Logo (only for ProAves)
-  if (ctx.nit === PROAVES_NIT && fs.existsSync(LOGO_PATH)) {
+  // Logo if available for this company
+  const logoExists = fs.existsSync(LOGO_PATH);
+  if (logoExists) {
     doc.image(LOGO_PATH, X + 4, Y + 4, { fit: [logoW - 8, H - 8] });
   } else {
     doc.fontSize(7).font('Helvetica-Bold')
