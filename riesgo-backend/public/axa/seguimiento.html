@@ -174,6 +174,50 @@ tbody tr:hover{background:#f0f4ff}
 
 </div>
 
+<!-- Modal cambio de estado -->
+<div class="modal fade" id="mEstado" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered" style="max-width:420px">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header py-2" style="background:var(--axa)">
+        <h6 class="modal-title text-white fw-bold mb-0"><i class="fas fa-exchange-alt me-2"></i>Cambiar Estado</h6>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <div class="mb-3 p-2 rounded" style="background:#F4F5F8;font-size:.8rem">
+          <span class="text-muted">Orden:</span> <span class="fw-bold" id="mOrdenNum"></span>
+        </div>
+        <input type="hidden" id="mEstadoId"/>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Nuevo estado</label>
+          <select id="mEstadoSelect" class="form-select" onchange="toggleCamposFactura()">
+            <option value="Aprobada">Aprobada</option>
+            <option value="PendienteEjecutar">Pendiente Ejecutar</option>
+            <option value="Ejecutada">Ejecutada</option>
+            <option value="Facturada">Facturada</option>
+          </select>
+        </div>
+        <div id="camposFactura" style="display:none">
+          <hr class="my-2"/>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">N° Factura <span class="text-danger">*</span></label>
+            <input type="text" id="mNumFactura" class="form-control" placeholder="Ej: FE-1234" style="text-transform:uppercase"/>
+          </div>
+          <div class="mb-0">
+            <label class="form-label fw-semibold">Fecha de Facturación</label>
+            <input type="date" id="mFechaFacturacion" class="form-control"/>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-sm px-4 text-white" style="background:var(--axa)" onclick="guardarEstado()">
+          <i class="fas fa-save me-1"></i>Guardar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Footer -->
 <footer class="forbe-footer text-center py-2 mt-4">
   AXA Colpatria · Gestión de Órdenes ARL &nbsp;|&nbsp; FORBE SAS © 2026
@@ -260,7 +304,11 @@ function renderTabla(lista){
       <td>${fmt(o.fecha_aprobacion)}</td>
       <td class="${vencida?'text-danger fw-bold':''}">${fmt(o.fecha_vencimiento)}</td>
       <td>${fmt(o.fecha_ejecucion)}</td>
-      <td><span class="badge-estado ${estadoClase[o.estado]||'bg-secondary text-white'}">${estadoLabel[o.estado]||o.estado}</span></td>
+      <td>
+        <span class="badge-estado ${estadoClase[o.estado]||'bg-secondary text-white'}">${estadoLabel[o.estado]||o.estado}</span>
+        <button class="btn btn-link p-0 ms-1" style="font-size:.65rem;color:#aaa;vertical-align:middle" onclick="abrirCambioEstado(${o.id})" title="Cambiar estado"><i class="fas fa-pencil-alt"></i></button>
+        ${o.numero_factura?`<div class="text-muted mt-1" style="font-size:.65rem"><i class="fas fa-file-invoice me-1"></i>${o.numero_factura}</div>`:''}
+      </td>
       <td>${o.consultor_asignado||'<span class="text-muted fst-italic">Sin asignar</span>'}</td>
     </tr>`;
   }).join('');
@@ -293,6 +341,74 @@ function exportarExcel(){
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
+}
+
+// ── Cambio de estado ──────────────────────────────────────
+let mEstadoModal;
+
+function abrirCambioEstado(id){
+  const o = todasOrdenes.find(x => x.id === id);
+  if(!o) return;
+  document.getElementById('mEstadoId').value = id;
+  document.getElementById('mOrdenNum').textContent =
+    `${o.numero_orden||'—'} · ${o.nombre_trabajador||''}`;
+  document.getElementById('mEstadoSelect').value = o.estado || 'Aprobada';
+  document.getElementById('mNumFactura').value = o.numero_factura || '';
+  document.getElementById('mFechaFacturacion').value =
+    o.fecha_facturacion || new Date().toISOString().slice(0,10);
+  toggleCamposFactura();
+  if(!mEstadoModal) mEstadoModal = new bootstrap.Modal(document.getElementById('mEstado'));
+  mEstadoModal.show();
+}
+
+function toggleCamposFactura(){
+  const es = document.getElementById('mEstadoSelect').value;
+  document.getElementById('camposFactura').style.display = es === 'Facturada' ? 'block' : 'none';
+}
+
+async function guardarEstado(){
+  const id      = Number(document.getElementById('mEstadoId').value);
+  const estado  = document.getElementById('mEstadoSelect').value;
+  const factura = document.getElementById('mNumFactura').value.trim().toUpperCase();
+  const fecha   = document.getElementById('mFechaFacturacion').value;
+
+  if(estado === 'Facturada' && !factura){
+    document.getElementById('mNumFactura').focus();
+    document.getElementById('mNumFactura').classList.add('is-invalid');
+    return;
+  }
+  document.getElementById('mNumFactura').classList.remove('is-invalid');
+
+  const body = { estado };
+  if(estado === 'Facturada'){
+    body.numero_factura    = factura;
+    body.fecha_facturacion = fecha || null;
+  }
+
+  const btn = document.querySelector('#mEstado .modal-footer .btn-sm.px-4');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Guardando…';
+
+  try {
+    const r = await fetch(`${BASE}/ordenes/${id}`, {
+      method: 'PUT',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(body)
+    });
+    const data = await r.json();
+    if(!r.ok) throw new Error(data.error || 'Error al guardar');
+
+    const idx = todasOrdenes.findIndex(o => o.id === id);
+    if(idx >= 0) todasOrdenes[idx] = { ...todasOrdenes[idx], ...data };
+
+    mEstadoModal.hide();
+    filtrar();
+  } catch(e){
+    alert('Error: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-save me-1"></i>Guardar';
+  }
 }
 
 cargar();
