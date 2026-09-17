@@ -158,6 +158,126 @@ axaOrdenesRouter.get('/ordenes/exportar-csv', async (req: Request, res: Response
   } catch (e: any) { res.status(500).json({ error: e.message }); }
 });
 
+// ── GET /api/axa/ordenes/exportar-excel ──────────────────────────────
+axaOrdenesRouter.get('/ordenes/exportar-excel', async (req: Request, res: Response) => {
+  try {
+    const { buscar, estado, desde, hasta } = req.query as Record<string, string>;
+    let q = supabase.from('axa_ordenes').select(CAMPOS.join(',')).order('fecha_aprobacion', { ascending: false });
+    if (desde)  q = q.gte('fecha_aprobacion', desde);
+    if (hasta)  q = q.lte('fecha_aprobacion', hasta);
+    if (estado) q = q.eq('estado', estado);
+    const { data, error } = await q;
+    if (error) throw error;
+
+    let rows: any[] = data ?? [];
+    if (buscar) {
+      const b = buscar.toLowerCase();
+      rows = rows.filter(r =>
+        [r.numero_orden, r.nombre_trabajador, r.consultor_asignado, r.codigo_actividad, r.tipo_servicio]
+          .some(v => v?.toLowerCase().includes(b))
+      );
+    }
+
+    const ExcelJS = require('exceljs');
+    const wb = new ExcelJS.Workbook();
+    wb.creator = 'FORBE SAS';
+    wb.created = new Date();
+    const ws = wb.addWorksheet('Órdenes AXA Colpatria');
+
+    const AXA = 'FF00008F';
+    const WHITE = 'FFFFFFFF';
+    const STRIP = 'FFF0F4FF';
+
+    ws.columns = [
+      { header: 'N° ORDEN',         key: 'numero_orden',       width: 22 },
+      { header: 'EMPRESA AFILIADA', key: 'nombre_trabajador',  width: 34 },
+      { header: 'N° AFILIACIÓN',    key: 'numero_afiliacion',  width: 14 },
+      { header: 'CÓDIGO',           key: 'codigo_actividad',   width: 10 },
+      { header: 'DESCRIPCIÓN',      key: 'tipo_servicio',      width: 38 },
+      { header: 'CANT.',            key: 'cantidad',           width: 8  },
+      { header: 'VALOR TOTAL',      key: 'valor_servicio',     width: 16 },
+      { header: 'CIUDAD',           key: 'ciudad_ejecucion',   width: 14 },
+      { header: 'F. APROBACIÓN',    key: 'fecha_aprobacion',   width: 14 },
+      { header: 'F. VENCIMIENTO',   key: 'fecha_vencimiento',  width: 14 },
+      { header: 'F. EJECUCIÓN',     key: 'fecha_ejecucion',    width: 14 },
+      { header: 'ESTADO',           key: 'estado',             width: 16 },
+      { header: 'CONSULTOR FORBE',  key: 'consultor_asignado', width: 24 },
+      { header: 'N° FACTURA',       key: 'numero_factura',     width: 16 },
+      { header: 'F. FACTURACIÓN',   key: 'fecha_facturacion',  width: 14 },
+      { header: 'OBSERVACIONES',    key: 'observaciones',      width: 32 },
+    ];
+
+    // Header row style
+    const hdr = ws.getRow(1);
+    hdr.height = 30;
+    hdr.eachCell((cell: any) => {
+      cell.fill   = { type: 'pattern', pattern: 'solid', fgColor: { argb: AXA } };
+      cell.font   = { bold: true, color: { argb: WHITE }, size: 9 };
+      cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+    });
+
+    // Estado colors
+    const ESTADO_COLOR: Record<string, string> = {
+      Aprobada:           'FF0DCAF0',
+      PendienteEjecutar:  'FFFFC107',
+      Ejecutada:          'FF198754',
+      Facturada:          'FF00008F',
+    };
+    const fmtFecha = (d: string | null) => d ? d.split('-').reverse().join('/') : '';
+
+    rows.forEach((o, i) => {
+      const row = ws.addRow({
+        numero_orden:      o.numero_orden      ?? '',
+        nombre_trabajador: o.nombre_trabajador ?? '',
+        numero_afiliacion: o.numero_afiliacion ?? '',
+        codigo_actividad:  o.codigo_actividad  ?? '',
+        tipo_servicio:     o.tipo_servicio     ?? '',
+        cantidad:          o.cantidad          ?? '',
+        valor_servicio:    o.valor_servicio    != null ? Number(o.valor_servicio) : '',
+        ciudad_ejecucion:  o.ciudad_ejecucion  ?? '',
+        fecha_aprobacion:  fmtFecha(o.fecha_aprobacion),
+        fecha_vencimiento: fmtFecha(o.fecha_vencimiento),
+        fecha_ejecucion:   fmtFecha(o.fecha_ejecucion),
+        estado:            o.estado            ?? '',
+        consultor_asignado: o.consultor_asignado ?? '',
+        numero_factura:    o.numero_factura    ?? '',
+        fecha_facturacion: fmtFecha(o.fecha_facturacion),
+        observaciones:     o.observaciones     ?? '',
+      });
+
+      // Currency format
+      const vc = row.getCell('valor_servicio');
+      if (typeof vc.value === 'number') vc.numFmt = '"$"#,##0';
+
+      // Stripe rows
+      if (i % 2 === 1) {
+        row.eachCell((cell: any) => {
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: STRIP } };
+        });
+      }
+
+      // Color estado cell
+      const ec = row.getCell('estado');
+      const ec_color = ESTADO_COLOR[o.estado];
+      if (ec_color) {
+        ec.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: ec_color } };
+        ec.font = { bold: true, color: { argb: o.estado === 'PendienteEjecutar' ? 'FF000000' : WHITE }, size: 8 };
+        ec.alignment = { horizontal: 'center' };
+      }
+    });
+
+    // Freeze top row
+    ws.views = [{ state: 'frozen', ySplit: 1 }];
+
+    const buf = await wb.xlsx.writeBuffer();
+    const etiqueta = buscar || estado || 'todas';
+    const fecha    = new Date().toISOString().slice(0, 10);
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename="AXA_Ordenes_${etiqueta}_${fecha}.xlsx"`);
+    res.send(buf);
+  } catch (e: any) { res.status(500).json({ error: e.message }); }
+});
+
 // ── GET /api/axa/ordenes/:id/pdf ──────────────────────────────────────
 axaOrdenesRouter.get('/ordenes/:id/pdf', async (req: Request, res: Response) => {
   try {

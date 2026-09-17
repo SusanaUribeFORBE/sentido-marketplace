@@ -131,8 +131,13 @@ tbody tr:hover{background:#f0f4ff}
         </select>
       </div>
       <div class="col-6 col-md-2 d-flex gap-2">
-        <button class="btn btn-primary btn-sm w-100" onclick="filtrar()"><i class="fas fa-filter me-1"></i>Filtrar</button>
+        <button class="btn btn-primary btn-sm flex-grow-1" onclick="filtrar()"><i class="fas fa-filter me-1"></i>Filtrar</button>
         <button class="btn btn-outline-secondary btn-sm" onclick="limpiarFiltros()" title="Limpiar"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="col-12 col-md-auto">
+        <button class="btn btn-success btn-sm w-100" onclick="exportarExcel()">
+          <i class="fas fa-file-excel me-1"></i>Exportar Excel
+        </button>
       </div>
     </div>
   </div>
@@ -271,6 +276,23 @@ function renderKpis(lista){
   document.getElementById('kValorTotal').textContent   = co.format(total);
   document.getElementById('kFacturado').textContent    = co.format(facturado);
   document.getElementById('kPorFacturar').textContent  = co.format(total - facturado);
+}
+
+function exportarExcel(){
+  const params = new URLSearchParams();
+  const b = document.getElementById('sBuscar').value.trim();
+  const d = document.getElementById('sDesde').value;
+  const h = document.getElementById('sHasta').value;
+  const e = document.getElementById('sEstado').value;
+  if(b) params.set('buscar', b);
+  if(d) params.set('desde',  d);
+  if(h) params.set('hasta',  h);
+  if(e) params.set('estado', e);
+  const a = document.createElement('a');
+  a.href = `${BASE}/ordenes/exportar-excel?${params}`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
 }
 
 cargar();
