@@ -285,18 +285,11 @@ function pesv_dibujarEncabezado(doc: PDFKit.PDFDocument, ctx: PESVCtx) {
   doc.moveTo(X + logoW, Y).lineTo(X + logoW, Y + H).stroke('#333');
   doc.moveTo(X + logoW + titleW, Y).lineTo(X + logoW + titleW, Y + H).stroke('#333');
 
-  // Logo — openImage da dimensiones exactas para centrado manual preciso
+  // Logo — logo es cuadrado 1280x1260; width fijo rellena la celda
   const logoExists = fs.existsSync(LOGO_PATH);
   if (logoExists) {
-    const img = (doc as any).openImage(LOGO_PATH);
-    const maxW = logoW - 14;
-    const maxH = H - 14;
-    const scale = Math.min(maxW / img.width, maxH / img.height);
-    const iw = img.width * scale;
-    const ih = img.height * scale;
-    const ix = X + 7 + (maxW - iw) / 2;
-    const iy = Y + 7 + (maxH - ih) / 2;
-    doc.image(LOGO_PATH, ix, iy, { width: iw, height: ih });
+    // width:136 → alto proporcional ~134pt, cabe en celda de 150pt
+    doc.image(LOGO_PATH, X + 7, Y + 8, { width: logoW - 14 });
   } else {
     doc.fontSize(8).font('Helvetica-Bold')
       .text(ctx.empresa, X + 4, Y + H / 2 - 10, { width: logoW - 8, align: 'center' });
