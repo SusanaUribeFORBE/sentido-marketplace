@@ -276,8 +276,8 @@ function fmtFecha(iso: string): string {
 const LOGO_PATH = path.join(__dirname, '..', '..', 'assets', 'logo-proaves.jpeg');
 
 function pesv_dibujarEncabezado(doc: PDFKit.PDFDocument, ctx: PESVCtx) {
-  const X = 36, Y = doc.y, W = 523, H = 110;
-  const logoW = 130, codeW = 138;
+  const X = 36, Y = doc.y, W = 523, H = 150;
+  const logoW = 150, codeW = 138;
   const titleW = W - logoW - codeW;
 
   // Outer border + vertical dividers
@@ -285,32 +285,40 @@ function pesv_dibujarEncabezado(doc: PDFKit.PDFDocument, ctx: PESVCtx) {
   doc.moveTo(X + logoW, Y).lineTo(X + logoW, Y + H).stroke('#333');
   doc.moveTo(X + logoW + titleW, Y).lineTo(X + logoW + titleW, Y + H).stroke('#333');
 
-  // Logo — fit escala manteniendo relación de aspecto dentro de la celda
+  // Logo — openImage da dimensiones exactas para centrado manual preciso
   const logoExists = fs.existsSync(LOGO_PATH);
   if (logoExists) {
-    doc.image(LOGO_PATH, X + 6, Y + 6, { fit: [logoW - 12, H - 12] });
+    const img = (doc as any).openImage(LOGO_PATH);
+    const maxW = logoW - 14;
+    const maxH = H - 14;
+    const scale = Math.min(maxW / img.width, maxH / img.height);
+    const iw = img.width * scale;
+    const ih = img.height * scale;
+    const ix = X + 7 + (maxW - iw) / 2;
+    const iy = Y + 7 + (maxH - ih) / 2;
+    doc.image(LOGO_PATH, ix, iy, { width: iw, height: ih });
   } else {
-    doc.fontSize(7).font('Helvetica-Bold')
-      .text(ctx.empresa, X + 4, Y + H / 2 - 8, { width: logoW - 8, align: 'center' });
+    doc.fontSize(8).font('Helvetica-Bold')
+      .text(ctx.empresa, X + 4, Y + H / 2 - 10, { width: logoW - 8, align: 'center' });
   }
 
   // Title — centrado vertical en la celda central
-  const approxLines = Math.ceil(ctx.titulo.length / 25);
-  const titleY = Y + Math.max(14, (H - approxLines * 12) / 2);
-  doc.fontSize(9).font('Helvetica-Bold')
+  const approxLines = Math.ceil(ctx.titulo.length / 22);
+  const titleY = Y + Math.max(16, (H - approxLines * 13) / 2);
+  doc.fontSize(9.5).font('Helvetica-Bold')
     .text(ctx.titulo, X + logoW + 6, titleY, {
-      width: titleW - 12, align: 'center', lineGap: 4,
+      width: titleW - 12, align: 'center', lineGap: 5,
     });
 
   // Code block (celda derecha)
   const cx = X + logoW + titleW + 7;
   doc.fontSize(7.5).font('Helvetica-Bold')
-    .text(`CÓDIGO: ${ctx.codigo}`, cx, Y + 16, { width: codeW - 14 })
-    .text('VERSIÓN: 1',             cx, Y + 34, { width: codeW - 14 })
-    .text('FECHA DE VIGENCIA:',     cx, Y + 52, { width: codeW - 14 })
-    .text(ctx.fecha,                cx, Y + 67, { width: codeW - 14 });
+    .text(`CÓDIGO: ${ctx.codigo}`, cx, Y + 22, { width: codeW - 14 })
+    .text('VERSIÓN: 1',             cx, Y + 46, { width: codeW - 14 })
+    .text('FECHA DE VIGENCIA:',     cx, Y + 70, { width: codeW - 14 })
+    .text(ctx.fecha,                cx, Y + 88, { width: codeW - 14 });
 
-  doc.y = Y + H + 20;
+  doc.y = Y + H + 16;
 }
 
 function pesv_firmas(doc: PDFKit.PDFDocument, ctx: PESVCtx, labelIzq: string, labelDer: string) {
