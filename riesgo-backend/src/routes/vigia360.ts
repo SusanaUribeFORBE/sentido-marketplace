@@ -276,8 +276,8 @@ function fmtFecha(iso: string): string {
 const LOGO_PATH = path.join(__dirname, '..', '..', 'assets', 'logo-proaves.jpeg');
 
 function pesv_dibujarEncabezado(doc: PDFKit.PDFDocument, ctx: PESVCtx) {
-  const X = 36, Y = doc.y, W = 523, H = 80;
-  const logoW = 100, codeW = 138;
+  const X = 36, Y = doc.y, W = 523, H = 110;
+  const logoW = 130, codeW = 138;
   const titleW = W - logoW - codeW;
 
   // Outer border + vertical dividers
@@ -285,31 +285,30 @@ function pesv_dibujarEncabezado(doc: PDFKit.PDFDocument, ctx: PESVCtx) {
   doc.moveTo(X + logoW, Y).lineTo(X + logoW, Y + H).stroke('#333');
   doc.moveTo(X + logoW + titleW, Y).lineTo(X + logoW + titleW, Y + H).stroke('#333');
 
-  // Logo — sin clipping; fit escala la imagen dentro del bounding box
+  // Logo — fit escala manteniendo relación de aspecto dentro de la celda
   const logoExists = fs.existsSync(LOGO_PATH);
   if (logoExists) {
-    // Dibuja la imagen escalada para que quepa en la celda y centrada
-    doc.image(LOGO_PATH, X + 5, Y + 5, { fit: [logoW - 10, H - 10], align: 'center', valign: 'center' });
+    doc.image(LOGO_PATH, X + 6, Y + 6, { fit: [logoW - 12, H - 12] });
   } else {
     doc.fontSize(7).font('Helvetica-Bold')
       .text(ctx.empresa, X + 4, Y + H / 2 - 8, { width: logoW - 8, align: 'center' });
   }
 
-  // Title — centrado vertical y horizontal en la celda central
-  const approxLines = Math.ceil(ctx.titulo.length / 30);
-  const titleY = Y + Math.max(10, (H - approxLines * 11) / 2);
-  doc.fontSize(8.5).font('Helvetica-Bold')
+  // Title — centrado vertical en la celda central
+  const approxLines = Math.ceil(ctx.titulo.length / 25);
+  const titleY = Y + Math.max(14, (H - approxLines * 12) / 2);
+  doc.fontSize(9).font('Helvetica-Bold')
     .text(ctx.titulo, X + logoW + 6, titleY, {
-      width: titleW - 12, align: 'center', lineGap: 3,
+      width: titleW - 12, align: 'center', lineGap: 4,
     });
 
   // Code block (celda derecha)
   const cx = X + logoW + titleW + 7;
   doc.fontSize(7.5).font('Helvetica-Bold')
-    .text(`CÓDIGO: ${ctx.codigo}`, cx, Y + 12, { width: codeW - 14 })
-    .text('VERSIÓN: 1',             cx, Y + 27, { width: codeW - 14 })
-    .text('FECHA DE VIGENCIA:',     cx, Y + 42, { width: codeW - 14 })
-    .text(ctx.fecha,                cx, Y + 55, { width: codeW - 14 });
+    .text(`CÓDIGO: ${ctx.codigo}`, cx, Y + 16, { width: codeW - 14 })
+    .text('VERSIÓN: 1',             cx, Y + 34, { width: codeW - 14 })
+    .text('FECHA DE VIGENCIA:',     cx, Y + 52, { width: codeW - 14 })
+    .text(ctx.fecha,                cx, Y + 67, { width: codeW - 14 });
 
   doc.y = Y + H + 20;
 }
@@ -352,12 +351,14 @@ function pesv_dibujarPagina1(doc: PDFKit.PDFDocument, ctx: PESVCtx) {
   const X = 36, W = 523;
   const body: Record<number, () => void> = {
     1: () => {
-      doc.moveDown(0.5);
-      doc.fontSize(10).font('Helvetica-Bold').text(`___________, ${ctx.fecha}`, X, doc.y);
       doc.moveDown(1.5);
-      // Párrafo principal con negrilla en datos clave
-      doc.fontSize(10).font('Helvetica')
-        .text('Por medio de la presente, yo ', X, doc.y, { width: W, align: 'justify', continued: true, lineGap: 4 })
+      doc.fontSize(11).font('Helvetica-Bold')
+        .text(`___________, ${ctx.fecha}`, X, doc.y, { width: W, align: 'right' });
+      doc.moveDown(2);
+
+      // Párrafo principal de designación
+      doc.fontSize(11).font('Helvetica')
+        .text('Por medio de la presente, yo ', X, doc.y, { width: W, align: 'justify', continued: true, lineGap: 6 })
         .font('Helvetica-Bold').text(ctx.representante, { continued: true })
         .font('Helvetica').text(
           ', identificada con Cédula de Ciudadanía No. _______________ de ___________, ' +
@@ -381,8 +382,34 @@ function pesv_dibujarPagina1(doc: PDFKit.PDFDocument, ctx: PESVCtx) {
           'nacional vigente en materia de seguridad vial, así mismo el reporte de los indicadores ' +
           'del PESV ante las entidades correspondientes, e informará a la Alta Dirección sobre el ' +
           'funcionamiento y los resultados del Plan.',
-          { width: W, align: 'justify', lineGap: 4 }
+          { width: W, align: 'justify', lineGap: 6 }
         );
+
+      doc.moveDown(2);
+
+      // Funciones del Líder PESV
+      doc.fontSize(11).font('Helvetica')
+        .text('El Líder del PESV designado tendrá, entre otras, las siguientes funciones:', X, doc.y, { width: W, lineGap: 6 });
+      doc.moveDown(0.8);
+      const funciones = [
+        'Coordinar la elaboración, implementación y actualización del Plan Estratégico de Seguridad Vial.',
+        'Reportar periódicamente a la Alta Dirección los avances, resultados e indicadores del PESV.',
+        'Gestionar y hacer seguimiento a los indicadores de siniestralidad vial de la organización.',
+        'Promover la cultura de seguridad vial en todos los niveles de la organización.',
+        'Articular con las entidades competentes el cumplimiento de la normatividad vigente en seguridad vial.',
+      ];
+      funciones.forEach((f, i) => {
+        doc.fontSize(11).font('Helvetica')
+          .text(`${i + 1}. ${f}`, X + 15, doc.y, { width: W - 15, align: 'justify', lineGap: 5 })
+          .moveDown(0.5);
+      });
+
+      doc.moveDown(1.2);
+      doc.fontSize(11).font('Helvetica').text(
+        'La presente designación tiene vigencia a partir de la fecha de su firma y hasta tanto la Alta Dirección de la organización determine lo contrario.',
+        X, doc.y, { width: W, align: 'justify', lineGap: 6 }
+      );
+
       pesv_firmas(doc, ctx, ctx.cargo + '\nFIRMA DE APROBACIÓN', 'FIRMA DE ACEPTACIÓN DEL LÍDER DEL PESV');
     },
     2: () => {
