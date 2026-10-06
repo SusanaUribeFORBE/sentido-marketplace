@@ -306,7 +306,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="supabase-config.js"></script>
-<script src="data.js"></script>
+<script src="data.js?v=20261006"></script>
 <script>
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const ADMIN_WA = '573244793388';
@@ -317,40 +317,39 @@ let cart = loadCart();
 async function initProfile() {
   const empId = new URLSearchParams(location.search).get('id');
 
-  // 1. Supabase es la fuente viva (los emprendedores editan su propio perfil ahí) — se intenta primero.
-  let emp = null;
-  if (db) {
-    try {
-      const { data } = await db.from('entrepreneurs').select('*').eq('id', empId).eq('active', true).maybeSingle();
-      if (data) {
-        emp = {
-          id: data.id,
-          name: data.name,
-          city: data.city || '',
-          formal: data.formal || 'NO',
-          tagline: data.tagline || '',
-          seals: data.seals || '',
-          impact: data.impact || '',
-          photo: data.photo_url || 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&h=400&fit=crop',
-          whatsapp: data.whatsapp || '',
-          products: data.products || []
-        };
-      }
-    } catch (e) { console.warn('Supabase no disponible:', e.message); }
-  }
-
-  // 2. Si Supabase no responde o no tiene ese id, cae al respaldo local (BASE_DATA / localStorage)
-  if (!emp) emp = getEmpById(empId);
-
-  if (!emp) {
+  // 1. Renderizar inmediatamente desde BASE_DATA para no depender de Supabase
+  const local = getEmpById(empId);
+  if (!local) {
     document.body.innerHTML = '<div style="padding:60px;text-align:center"><h2>Emprendimiento no encontrado</h2><a href="marketplace.html" style="color:#2D5A3D">← Volver al marketplace</a></div>';
     return;
   }
-
-  currentEmp = emp;
-  renderProfile(emp);
+  currentEmp = local;
+  renderProfile(local);
   syncCartBadge();
   updatePanelSummary();
+
+  // 2. Enriquecer en segundo plano con datos de Supabase si están disponibles
+  if (!db) return;
+  try {
+    const { data } = await db.from('entrepreneurs').select('*').eq('id', empId).eq('active', true).maybeSingle();
+    if (data) {
+      const emp = {
+        id: data.id,
+        name: data.name,
+        city: data.city || '',
+        formal: data.formal || 'NO',
+        tagline: data.tagline || '',
+        seals: data.seals || '',
+        impact: data.impact || '',
+        photo: data.photo_url || local.photo,
+        whatsapp: data.whatsapp || '',
+        products: data.products || []
+      };
+      currentEmp = emp;
+      renderProfile(emp);
+      updatePanelSummary();
+    }
+  } catch (e) { console.warn('Supabase no disponible:', e.message); }
 }
 
 function renderProfile(emp) {
