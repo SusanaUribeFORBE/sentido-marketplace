@@ -250,6 +250,7 @@
     localStorage.setItem('vigia_resp_estado',      data.resp_estado  || 'PENDIENTE');
     localStorage.setItem('vigia_vigencia_desde',   data.vigencia_docs_desde || '');
     localStorage.setItem('vigia_nit',              data.nit || '');
+    localStorage.setItem('vigia_nombre_empresa',   data.nombre || document.getElementById('emp-nombre').value.trim());
     location.href = 'dashboard.html';
   }
 

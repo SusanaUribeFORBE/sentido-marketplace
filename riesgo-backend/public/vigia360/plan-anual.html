@@ -233,13 +233,19 @@ let filtroPhva = '';
 // ── Cargar datos ────────────────────────────────────────────────────────
 async function cargar(){
   try{
-    const r = await fetch(`${BASE}/pat?año=2022`);
+    const params = new URLSearchParams(location.search);
+    const empNombre = params.get('empresa') || localStorage.getItem('vigia_nombre_empresa') || '';
+    const año = params.get('año') || new Date().getFullYear();
+    let url = `${BASE}/pat?año=${año}`;
+    if (empNombre) url += `&empresa=${encodeURIComponent(empNombre)}`;
+    const r = await fetch(url);
     todasActs = await r.json();
     if(todasActs.length){
       const a = todasActs[0];
       document.getElementById('dEmpresa').textContent   = a.empresa_nombre;
       document.getElementById('dNit').textContent       = a.empresa_nit||'—';
       document.getElementById('dAño').textContent       = a.año;
+      document.title = `Plan Anual de Trabajo ${a.año} · ${a.empresa_nombre}`;
       document.getElementById('dResponsable').textContent = a.responsable_sgsst||'—';
       document.getElementById('dRL').textContent        = a.representante_legal||'—';
       document.getElementById('sFirmaRL').textContent   = a.representante_legal||'—';

@@ -347,7 +347,7 @@ vigiaRouter.post('/login', async (req: Request, res: Response) => {
     return res.status(500).json({ error: 'Error al crear sesión' });
   }
 
-  return res.json({ token: sesion.token, es_admin: esAdmin, empresa_id: empresaId, vigencia_meses: vigenciaMeses, num_trabajadores: numTrabajadores, clase_riesgo: claseRiesgo, logo_url: logoUrl, prefijo_docs: prefijoDocs, resp_estado: respEstado, vigencia_docs_desde: vigenciaDocsDesde, nit: nitEmpresa });
+  return res.json({ token: sesion.token, es_admin: esAdmin, empresa_id: empresaId, nombre: nombre || null, vigencia_meses: vigenciaMeses, num_trabajadores: numTrabajadores, clase_riesgo: claseRiesgo, logo_url: logoUrl, prefijo_docs: prefijoDocs, resp_estado: respEstado, vigencia_docs_desde: vigenciaDocsDesde, nit: nitEmpresa });
 });
 
 // POST /api/vigia/logout
