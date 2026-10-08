@@ -104,10 +104,13 @@
   <div class="card" style="padding:28px;margin-bottom:20px">
 
     <div style="background:#F0F4F8;border-radius:10px;padding:16px 20px;margin-bottom:24px;font-size:13px;color:var(--text)">
-      <strong style="color:var(--navy)">Formato CSV esperado</strong> — dos columnas separadas por coma o punto y coma:<br/>
+      <strong style="color:var(--navy)">Formato recomendado — CSV con nombre:</strong>
       <code style="display:block;margin-top:8px;background:white;padding:8px 12px;border-radius:6px;
-                   font-size:12px;color:var(--navy)">cc,nombre<br/>1007111063,ACEVEDO VELASQUEZ YIMMY<br/>1039473557,ACEVEDO VELASQUEZ YOMIN</code>
-      <span style="color:var(--muted);margin-top:6px;display:block">También puedes pegar solo las cédulas en el campo de texto, una por línea.</span>
+                   font-size:12px;color:var(--navy)">cc,nombre<br/>1007111063,ACEVEDO VELASQUEZ YIMMY<br/>1039473557,PÉREZ GÓMEZ CARLOS</code>
+      <span style="color:var(--muted);margin-top:6px;display:block">
+        ✅ Con nombre: se muestra aunque el empleado no esté en el sistema.<br/>
+        ⚠️ Solo cédula: aparece como <em>(desconocido)</em> si el empleado no tiene examen registrado en Vigía.
+      </span>
     </div>
 
     <!-- Dropzone -->
@@ -121,11 +124,11 @@
     <div style="text-align:center;color:var(--muted);font-size:13px;margin-bottom:16px">— o —</div>
 
     <div class="form-group" style="margin-bottom:20px">
-      <label>Pega las cédulas aquí (una por línea)</label>
-      <textarea id="txt-cedulas" rows="6"
+      <label>Pega el listado aquí — formato: <strong>cédula,nombre</strong> (una por línea)</label>
+      <textarea id="txt-cedulas" rows="7"
         style="width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;
-               font-size:14px;font-family:monospace;color:var(--text);background:var(--bg);resize:vertical"
-        placeholder="1007111063&#10;1039473557&#10;1036449041"></textarea>
+               font-size:13px;font-family:monospace;color:var(--text);background:var(--bg);resize:vertical"
+        placeholder="1007111063,ACEVEDO VELASQUEZ YIMMY&#10;1039473557,PÉREZ GÓMEZ CARLOS&#10;71337781,RODRÍGUEZ López ANDRÉS&#10;&#10;(También puedes pegar solo cédulas, una por línea)"></textarea>
     </div>
 
     <div class="flex gap-3 justify-between">
@@ -269,7 +272,7 @@
       const est      = estadoEmpleado(empVigia);
       return {
         cc,
-        nombre:      empVigia?.nombre || nombre || '(desconocido)',
+        nombre:      empVigia?.nombre || nombre || '',
         cargo:       empVigia?.cargo  || '—',
         arl:         empVigia?.arl    || '—',
         empId:       empVigia?.id     || null,
@@ -322,11 +325,13 @@
             <tr>
               <td><span class="badge ${r.clase}">${r.icono} ${r.label}</span></td>
               <td style="font-size:14px;color:var(--muted)">${r.cc}</td>
-              <td style="font-weight:600;color:var(--navy)">${r.nombre}</td>
+              <td style="font-weight:600;color:var(--navy)">${r.nombre
+                ? r.nombre
+                : `<span style="color:var(--muted);font-weight:400;font-style:italic;font-size:12px">sin nombre · incluir en CSV</span>`}</td>
               <td style="font-size:13px;color:var(--muted)">${r.cargo}</td>
               <td>${r.empId
                 ? `<a href="empleado.html?id=${r.empId}" class="btn btn-outline btn-sm" target="_blank">Ver →</a>`
-                : `<a href="subir.html" class="btn btn-primary btn-sm">Subir examen</a>`}
+                : `<a href="subir.html?cc=${encodeURIComponent(r.cc)}${r.nombre ? '&nombre='+encodeURIComponent(r.nombre) : ''}" class="btn btn-primary btn-sm">Subir examen</a>`}
               </td>
             </tr>`).join('')}
         </tbody>

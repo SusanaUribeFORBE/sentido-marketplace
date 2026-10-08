@@ -298,6 +298,11 @@
     const ok = await VigiaAPI.requireAuth();
     if (!ok) return;
 
+    // Pre-llenar desde lista-personal.html (?cc=...&nombre=...)
+    const qp = new URLSearchParams(location.search);
+    if (qp.get('cc'))     document.getElementById('f-cc').value     = qp.get('cc');
+    if (qp.get('nombre')) document.getElementById('f-nombre').value = qp.get('nombre');
+
     if (VigiaAPI.esAdmin()) {
       document.getElementById('empresa-selector').classList.remove('hidden');
       const empresas = await VigiaAPI.getEmpresas() || [];
